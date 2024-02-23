@@ -1,0 +1,13 @@
+apiVersion: v2
+name: workflows
+description: Data Analysis workflow orchestration
+type: application
+
+version: 0.1.0
+
+dependencies:
+  - name: argo-workflows
+    repository: https://argoproj.github.io/argo-helm
+    version: 0.40.10
+    condition: argo-workflows.enabled
+

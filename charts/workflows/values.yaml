@@ -1,0 +1,14 @@
+argo-workflows:
+  enabled: true
+  crds:
+    install: false
+  singleNamespace: true
+  createAggregateRoles: false
+  controller:
+    clusterWorkflowTemplates:
+      enabled: false
+  server:
+    clusterWorkflowTemplates:
+      enabled: false
+    authModes: ["server"]
+
