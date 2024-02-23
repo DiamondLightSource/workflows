@@ -15,4 +15,7 @@ argo-workflows:
       enabled: true
       hosts:
         - workflows.diamond.ac.uk
+  workflow:
+    serviceAccount:
+      create: true
 
