@@ -11,4 +11,8 @@ argo-workflows:
     clusterWorkflowTemplates:
       enabled: false
     authModes: ["server"]
+    ingress:
+      enabled: true
+      hosts:
+        - workflows.diamond.ac.uk
 
