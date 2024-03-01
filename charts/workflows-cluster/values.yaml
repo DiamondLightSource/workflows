@@ -1,0 +1,21 @@
+vcluster:
+  enabled: true
+  syncer:
+    storage:
+      persistence: false
+  coredns:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 20Mi
+  telemetry:
+    disabled: true
+  init:
+    manifests: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: workflows
+        labels:
+          name: workflows
+

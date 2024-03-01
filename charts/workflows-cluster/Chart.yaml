@@ -1,0 +1,13 @@
+apiVersion: v2
+name: workflows-cluster
+description: A virtual cluster for Data Analysis workflows
+type: application
+
+version: 0.1.0
+
+dependencies:
+  - name: vcluster
+    repository: https://charts.loft.sh
+    version: 0.19.3
+    condition: vcluster.enabled
+
