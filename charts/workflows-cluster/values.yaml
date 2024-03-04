@@ -8,6 +8,10 @@ vcluster:
       requests:
         cpu: 100m
         memory: 20Mi
+  mapServices:
+    fromVirtual:
+      - from: workflows/argo-workflows-server
+        to: argo-workflows-server
   telemetry:
     disabled: true
   init:
@@ -18,4 +22,18 @@ vcluster:
         name: workflows
         labels:
           name: workflows
+    helm:
+      - chart:
+          name: workflows
+          version: 0.1.0
+          repo: oci://ghcr.io/diamondlightsource
+        release:
+          name: argo-workflows
+          namespace: workflows
 
+ingress:
+  host: workflows.diamond.ac.uk
+  path: /
+  service:
+    name: argo-workflows-server
+    port: 2746

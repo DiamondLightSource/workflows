@@ -1,7 +1,5 @@
 argo-workflows:
   enabled: true
-  crds:
-    install: false
   singleNamespace: true
   createAggregateRoles: false
   controller:
@@ -13,14 +11,10 @@ argo-workflows:
   server:
     clusterWorkflowTemplates:
       enabled: false
-    authModes: ["sso"]
+    authModes: ["server"]
     sso:
-      enabled: true
+      enabled: false
       issuer: https://authbeta.diamond.ac.uk/cas/oidc
-    ingress:
-      enabled: true
-      hosts:
-        - workflows.diamond.ac.uk
   workflow:
     serviceAccount:
       create: true
