@@ -1,16 +1,10 @@
 argo-workflows:
   enabled: true
-  singleNamespace: true
-  createAggregateRoles: false
   controller:
-    clusterWorkflowTemplates:
-      enabled: false
     workflowDefaults:
       spec:
         serviceAccountName: argo-workflow
   server:
-    clusterWorkflowTemplates:
-      enabled: false
     authModes: ["server"]
     sso:
       enabled: false
