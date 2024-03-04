@@ -24,6 +24,15 @@ vcluster:
           name: workflows
     helm:
       - chart:
+          name: sealed-secrets
+          version: 2.15.0
+          repo: https://bitnami-labs.github.io/sealed-secrets
+        release:
+          name: sealed-secrets
+          namespace: kube-system
+        values: |-
+          fullnameOverride: sealed-secrets-controller
+      - chart:
           name: workflows
           version: 0.1.0
           repo: oci://ghcr.io/diamondlightsource
