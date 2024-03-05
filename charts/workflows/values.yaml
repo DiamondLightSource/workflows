@@ -5,9 +5,9 @@ argo-workflows:
       spec:
         serviceAccountName: argo-workflow
   server:
-    authModes: ["server"]
+    authModes: ["sso"]
     sso:
-      enabled: false
+      enabled: true
       issuer: https://authbeta.diamond.ac.uk/cas/oidc
   workflow:
     serviceAccount:
