@@ -9,6 +9,8 @@ argo-workflows:
     sso:
       enabled: true
       issuer: https://authbeta.diamond.ac.uk/cas/oidc
-  workflow:
-    serviceAccount:
-      create: true
+      rbac:
+        enabled: true
+    extraEnv:
+      - name: SSO_DELEGATE_RBAC_TO_NAMESPACE
+        value: "true"
