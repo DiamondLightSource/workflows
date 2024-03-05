@@ -2,7 +2,7 @@ vcluster-k0s:
   enabled: true
   syncer:
     storage:
-      persistence: false
+      className: netapp
   coredns:
     resources:
       requests:
