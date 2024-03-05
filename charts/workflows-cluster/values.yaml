@@ -1,4 +1,4 @@
-vcluster:
+vcluster-k0s:
   enabled: true
   syncer:
     storage:
@@ -7,11 +7,15 @@ vcluster:
     resources:
       requests:
         cpu: 100m
-        memory: 20Mi
   mapServices:
     fromVirtual:
       - from: workflows/argo-workflows-server
         to: argo-workflows-server
+  syncer:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
   telemetry:
     disabled: true
   init:
