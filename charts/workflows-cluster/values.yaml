@@ -3,6 +3,7 @@ vcluster-k0s:
   syncer:
     storage:
       className: netapp
+      size: 10Gi
   coredns:
     resources:
       requests:
@@ -14,8 +15,11 @@ vcluster-k0s:
   syncer:
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 1000m
+        memory: 5G
+      limits:
+        cpu: 10000m
+        memory: 10G
   telemetry:
     disabled: true
   init:
