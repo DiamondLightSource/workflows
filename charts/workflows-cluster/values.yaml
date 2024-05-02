@@ -10,7 +10,7 @@ vcluster-k0s:
         to: argo-workflows-server
   syncer:
     storage:
-      className: netapp
+      className: db-nvme-storage
     resources:
       requests:
         cpu: 100m
