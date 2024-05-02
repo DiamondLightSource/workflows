@@ -8,6 +8,5 @@ version: 0.1.0
 dependencies:
   - name: vcluster-k0s
     repository: https://charts.loft.sh
-    version: 0.19.3
+    version: 0.19.5
     condition: vcluster-k0s.enabled
-
