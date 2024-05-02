@@ -1,8 +1,5 @@
 vcluster-k0s:
   enabled: true
-  syncer:
-    storage:
-      className: netapp
   coredns:
     resources:
       requests:
@@ -12,6 +9,8 @@ vcluster-k0s:
       - from: workflows/argo-workflows-server
         to: argo-workflows-server
   syncer:
+    storage:
+      className: netapp
     resources:
       requests:
         cpu: 100m
