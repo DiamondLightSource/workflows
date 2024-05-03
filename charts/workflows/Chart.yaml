@@ -10,3 +10,7 @@ dependencies:
     repository: https://argoproj.github.io/argo-helm
     version: 0.41.4
     condition: argo-workflows.enabled
+  - name: postgresql-ha
+    repository: http://charts.bitnami.com/bitnami
+    version: 14.0.12
+    condition: postgresql-ha.enabled

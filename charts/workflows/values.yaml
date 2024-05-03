@@ -14,3 +14,30 @@ argo-workflows:
     extraEnv:
       - name: SSO_DELEGATE_RBAC_TO_NAMESPACE
         value: "true"
+
+postgresql-ha:
+  enabled: true
+  postgresql:
+    existingSecret: postgres-passwords
+    initdbScriptsSecret: postgres-initdb-script
+    podAntiAffinityPreset: hard
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+  pgpool:
+    exisitingSecret: pgpool-passwords
+    customUsersSecret: postgres-application-passwords
+    resources:
+      requests:
+        cpu: 500m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+  persistence:
+    storageClass: db-nvme-storage
+    size: 50Gi
