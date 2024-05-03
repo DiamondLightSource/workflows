@@ -6,7 +6,7 @@ vcluster-k0s:
         cpu: 100m
   mapServices:
     fromVirtual:
-      - from: workflows/argo-workflows-server
+      - from: workflows/workflows-argo-workflows-server
         to: argo-workflows-server
   syncer:
     storage:
@@ -40,7 +40,7 @@ vcluster-k0s:
           version: 0.1.0
           repo: oci://ghcr.io/diamondlightsource
         release:
-          name: argo-workflows
+          name: workflows
           namespace: workflows
 
 ingress:
