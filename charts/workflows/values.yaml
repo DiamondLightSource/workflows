@@ -1,10 +1,14 @@
 argo-workflows:
   enabled: true
   controller:
+    replicas: 2
+    pdb:
+      minAvailable: 1
     workflowDefaults:
       spec:
         serviceAccountName: argo-workflow
   server:
+    replicas: 3
     authModes: ["sso"]
     sso:
       enabled: true
