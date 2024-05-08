@@ -14,6 +14,9 @@ vcluster:
     statefulSet:
       highAvailability:
         replicas: 3
+      persistence:
+        volumeClaim:
+          storageClass: db-nvme-storage
   networking:
     replicateServices:
       toHost:
