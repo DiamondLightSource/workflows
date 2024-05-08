@@ -7,9 +7,13 @@ vcluster:
         enabled: true
     coredns:
       deployment:
+        replicas: 3
         resources:
           requests:
             cpu: 100m
+    statefulSet:
+      highAvailability:
+        replicas: 3
   networking:
     replicateServices:
       toHost:
