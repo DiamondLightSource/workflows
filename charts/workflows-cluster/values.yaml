@@ -43,6 +43,7 @@ vcluster:
             namespace: workflows
 
 ingress:
+  enabled: true
   host: workflows.diamond.ac.uk
   path: /
   service:
