@@ -31,7 +31,7 @@ vcluster:
       helm:
         - chart:
             name: sealed-secrets
-            version: 2.15.0
+            version: 2.15.3
             repo: https://bitnami-labs.github.io/sealed-secrets
           release:
             name: sealed-secrets
