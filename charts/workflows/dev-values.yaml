@@ -1,0 +1,53 @@
+argo-workflows:
+  controller:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 100m
+        memory: 256Mi
+        ephemeral-storage: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+        ephemeral-storage: 128Mi
+  server:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 100m
+        memory: 256Mi
+        ephemeral-storage: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+        ephemeral-storage: 128Mi
+  executor:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+postgresql-ha:
+  postgresql:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  pgpool:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  persistence:
+    storageClass: netapp
+    size: 5Gi
