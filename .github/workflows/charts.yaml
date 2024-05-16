@@ -21,6 +21,12 @@ jobs:
       - name: Setup Chart Testing
         uses: helm/chart-testing-action@v2.6.1
 
+      - name: Install chart dependencies
+        run: |
+          helm repo add vcluster https://charts.loft.sh
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo add bitnami http://charts.bitnami.com/bitnami
+
       - name: Lint
         run: >
           ct
@@ -50,8 +56,9 @@ jobs:
 
       - name: Install chart dependencies
         run: |
-          helm repo add vluster https://charts.loft.sh
+          helm repo add vcluster https://charts.loft.sh
           helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo add bitnami http://charts.bitnami.com/bitnami
           helm dependency update
         working-directory: charts/${{ matrix.chart }}
 
