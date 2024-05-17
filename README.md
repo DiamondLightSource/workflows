@@ -28,3 +28,16 @@ Secondly, deploy the workflows service in the virtual cluster using the develope
 vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows -f charts/workflows/dev-values.yaml
 ```
 Note that for getting the workflows-server to run inside the dev environment it is necessary to extract the argo-server-sso secret, delete the deployed sealed secret and then deploy a new sealed secret using ```kubectl create -f <SEALED-SECRET>``` inside the virtual cluster.
+
+## Serve Docs
+
+Firstly, install `mkdocs` and the requisite dependencies in `docs/requirements.txt`; For this you may wish to use `pipx`, as:
+```sh
+pipx install mkdocs
+pipx runpip mkdocs install -r docs/requirements.txt
+```
+
+Now, serve the docs with `mkdocs`:
+```sh
+mkdocs serve
+```
