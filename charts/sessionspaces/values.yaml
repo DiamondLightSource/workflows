@@ -1,0 +1,8 @@
+sessionspaces:
+  enabled: true
+  database:
+    host: mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb
+    user: ispyb_ro
+    password:
+      secretName: ispyb
+      secretKey: password
