@@ -1,0 +1,4 @@
+[workspace]
+default-members = ["sessionspaces"]
+members = ["sessionspaces"]
+resolver = "2"
