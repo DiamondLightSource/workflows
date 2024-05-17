@@ -1,2 +1,10 @@
+.env
+# k8s configs
+ca.crt
+config_argus
+# vcluster config
+kubeconfig.yaml
+# Rust
+sessionspaces/target
 # Mkdocs
 /site
