@@ -1,0 +1,18 @@
+{{- if .Values.argoevents.enabled }}
+  {{- range $eventSource := $.Values.eventSources }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: {{ $eventSource.name }}
+spec:
+  service:
+    ports:
+      - port: {{$eventSource.port }}
+        targetPort: {{$eventSource.port }}
+  {{- if $eventSource.webhook }} 
+  webhook:
+    {{- $eventSource.webhook | toYaml | nindent 6 }}
+  {{- end }}
+  {{- end }}
+{{- end }}

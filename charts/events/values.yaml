@@ -1,0 +1,36 @@
+argo-events:
+  enabled: true
+  controller:
+    replicas: 1
+    pdb:
+      minAvailable: 1
+    serviceAccount:
+      name: argo-events-sa
+    volumeMounts:
+      - name: controller-config-volume
+        mountPath: /etc/argo-events
+    volumes:
+      - name: controller-config-volume
+        configMap:
+          name: argo-events-controller-config
+  webhook:
+    enabled: true
+    serviceAccount:
+      name: argo-events-webhook-sa
+
+eventBuses:
+  - name: default
+    namespace: events
+
+eventSources:
+  - name: webhook
+    port: 12000
+    webhook:
+      # event-source can run multiple HTTP servers. Simply define a unique port to start a new HTTP server
+      example:
+        # port to run HTTP server on
+        port: "12000"
+        # endpoint to listen to
+        endpoint: /example
+        # HTTP request method to allow. In this case, only POST requests are accepted
+        method: POST
