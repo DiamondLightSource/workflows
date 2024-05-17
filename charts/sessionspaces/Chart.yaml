@@ -1,0 +1,11 @@
+apiVersion: v2
+name: sessionspaces
+description: A deployment for Namespace controller for creating session namespaces
+type: application
+
+version: 0.1.0
+
+dependencies:
+  - name: sessionspaces
+    version: 0.1.0
+    condition: sessionspaces.enabled
