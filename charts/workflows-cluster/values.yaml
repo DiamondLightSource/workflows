@@ -24,13 +24,6 @@ vcluster:
           to: argo-workflows-server
   experimental:
     deploy:
-      manifests: |-
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: workflows
-          labels:
-            name: workflows
       helm:
         - chart:
             name: sealed-secrets
