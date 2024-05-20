@@ -13,7 +13,7 @@ helm install workflows-cluster charts/workflows-cluster
 
 Secondly, deploy the workflows service in the virtual cluster:
 ```sh
-vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows
+vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows --create-namespace
 ```
 
 ## Deployment in developer mode
@@ -25,7 +25,7 @@ helm install workflows-cluster charts/workflows-cluster -f charts/workflows-clus
 
 Secondly, deploy the workflows service in the virtual cluster using the developer manifest :
 ```sh
-vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows -f charts/workflows/dev-values.yaml
+vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows -f charts/workflows/dev-values.yaml --create-namespace
 ```
 Note that for getting the workflows-server to run inside the dev environment it is necessary to extract the argo-server-sso secret, delete the deployed sealed secret and then deploy a new sealed secret using ```kubectl create -f <SEALED-SECRET>``` inside the virtual cluster.
 
