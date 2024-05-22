@@ -12,6 +12,8 @@ vcluster:
           requests:
             cpu: 100m
     statefulSet:
+      image:
+        repository: ghcr.io/loft-sh/vcluster-oss
       highAvailability:
         replicas: 3
       persistence:
