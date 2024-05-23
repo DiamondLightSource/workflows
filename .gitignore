@@ -1,9 +1,9 @@
-# Secrets
 .env
-.vscode
 # k8s configs
 ca.crt
 config_argus
 # vcluster config
 kubeconfig.yaml
 /target
+# Mkdocs
+/site
