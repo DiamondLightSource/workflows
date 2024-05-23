@@ -2,9 +2,20 @@ vcluster:
   telemetry:
     enabled: false
   controlPlane:
-    distro:
-      k0s:
-        enabled: true
+    backingStore:
+      etcd:
+        deploy:
+          enabled: true
+          statefulSet:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 500Mi
+            highAvailability:
+              replicas: 3
+            persistence:
+              volumeClaim:
+                storageClass: db-nvme-storage
     coredns:
       deployment:
         replicas: 3
@@ -16,9 +27,6 @@ vcluster:
         repository: ghcr.io/loft-sh/vcluster-oss
       highAvailability:
         replicas: 3
-      persistence:
-        volumeClaim:
-          storageClass: db-nvme-storage
   networking:
     replicateServices:
       toHost:
