@@ -1,0 +1,42 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sessionspaces-clusterrole
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "list", "watch", "patch", "create"] 
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["create", "delete", "get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["pods/logs"]
+  verbs: ["get", "watch"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles"]
+  verbs: ["create", "get", "list", "update", "patch"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["role", "rolebindings"]
+  verbs: ["get", "list", "create", "patch"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get", "list", "create", "patch"]
+- apiGroups: ["argoproj.io"]
+  resources: [
+    "workflowartifactgctasks",
+    "workflowartifactgctasks/status",
+    "workflowtaskresults",
+    "workflowtasksets",
+    "workflowtasksets/status",
+    "clusterworkflowtemplates",
+    "cronworkflows",
+    "eventsources",
+    "sensors",
+    "workfloweventbindings",
+    "workflows",
+    "workflowtemplates"
+  ]
+  verbs: ["get", "list", "watch", "patch", "create"]

@@ -1,13 +1,13 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
-  name: sessionspaces-rolebinding
+  name: sessionspaces-clusterrolebinding
   namespace: kube-system
 subjects:
 - kind: ServiceAccount
   name: {{ include "sessionspaces.serviceAccountName" . }}
-  namespace: my-namespace
+  namespace: kube-system
 roleRef:
-  kind: Role
-  name: sessionspaces-role
+  kind: ClusterRole
+  name: sessionspaces-clusterrole
   apiGroup: rbac.authorization.k8s.io
