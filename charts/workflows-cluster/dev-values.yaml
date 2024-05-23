@@ -1,5 +1,21 @@
 vcluster:
   controlPlane:
+    backingStore:
+      etcd:
+        deploy:
+          statefulSet:
+            resources:
+              limits:
+                cpu: 200m
+                memory: 500Mi
+              requests:
+                cpu: 100m
+                memory: 250Mi
+            highAvailability:
+              replicas: 1
+            persistence:
+              volumeClaim:
+                storageClass: netapp
     coredns:
       deployment:
         replicas: 1
@@ -13,9 +29,6 @@ vcluster:
     statefulSet:
       highAvailability:
         replicas: 1
-      persistence:
-        volumeClaim:
-          storageClass: netapp
       resources:
         limits:
           cpu: 500m
