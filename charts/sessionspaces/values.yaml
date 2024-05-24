@@ -1,8 +1,19 @@
-sessionspaces:
-  enabled: true
-  database:
-    host: mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb
-    user: ispyb_ro
-    password:
-      secretName: ispyb
-      secretKey: password
+database:
+  host: mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb
+  user: ispyb_ro
+  password:
+    secretName: ispyb
+    secretKey: password
+
+image:
+  repository: ghcr.io/diamondlightsource/workflows
+  pullPolicy: Always
+  tag: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+nameOverride: ""
+fullnameOverride: ""

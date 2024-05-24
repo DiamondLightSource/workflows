@@ -4,6 +4,7 @@ ca.crt
 config_argus
 # vcluster config
 kubeconfig.yaml
-/target
+# Rust
+sessionspaces/target
 # Mkdocs
 /site
