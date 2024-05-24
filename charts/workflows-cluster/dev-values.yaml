@@ -37,6 +37,18 @@ vcluster:
         requests:
           cpu: 250m
           memory: 500Mi
+  experimental:
+    deploy:
+      helm:
+        - chart:
+            name: sealed-secrets
+            version: 2.15.3
+            repo: https://bitnami-labs.github.io/sealed-secrets
+          release:
+            name: sealed-secrets
+            namespace: kube-system
+          values: |-
+            fullnameOverride: sealed-secrets-controller
 
 ingress:
   enabled: false
