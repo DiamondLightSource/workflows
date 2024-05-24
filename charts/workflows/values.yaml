@@ -58,3 +58,8 @@ postgresql-ha:
   persistence:
     storageClass: db-nvme-storage
     size: 50Gi
+
+ingress:
+  enabled: true
+  host: workflows.diamond.ac.uk
+  path: /

@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: argo-workflows-server
+  name: {{ .Release.Name}}-argo-workflows-server
   namespace: {{ .Release.Namespace }}
 spec:
   rules:
@@ -13,12 +13,8 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.ingress.service.name }}
+                name: {{ .Release.Name}}-argo-workflows-server
                 port:
-                  {{- if kindIs "float64" .Values.ingress.service.port }}
-                  number: {{ .Values.ingress.service.port }}
-                  {{- else }}
-                  name: {{ .Values.ingress.service.port }}
-                  {{- end }}
+                  number: 2746
 {{- end }}
 
