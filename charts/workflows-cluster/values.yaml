@@ -2,6 +2,17 @@ vcluster:
   telemetry:
     enabled: false
   controlPlane:
+    distro:
+      k8s:
+        enabled: true
+        apiServer:
+          extraArgs:
+          - --oidc-issuer-url
+          - https://authn.diamond.ac.uk/realms/master
+          - --oidc-client-id
+          - workflows-cluster
+          - --oidc-username-claim
+          - sub
     backingStore:
       etcd:
         deploy:
