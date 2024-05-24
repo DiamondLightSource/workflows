@@ -51,3 +51,6 @@ postgresql-ha:
   persistence:
     storageClass: netapp
     size: 5Gi
+
+ingress:
+  enabled: false

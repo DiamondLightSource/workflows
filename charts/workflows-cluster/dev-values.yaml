@@ -49,6 +49,3 @@ vcluster:
             namespace: kube-system
           values: |-
             fullnameOverride: sealed-secrets-controller
-
-ingress:
-  enabled: false
