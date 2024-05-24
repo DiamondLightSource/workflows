@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-authn-config
+  namespace: {{ .Release.Namespace }}
+data:
+  authn-config.yaml: |
+    apiVersion: apiserver.config.k8s.io/v1beta1
+    kind: AuthenticationConfiguration
+    {{- .Values.authenticationConfiguration | toYaml | nindent 4 }}

@@ -2,6 +2,12 @@ vcluster:
   telemetry:
     enabled: false
   controlPlane:
+    distro:
+      k8s:
+        enabled: true
+        apiServer:
+          extraArgs:
+            - --authentication-config=/etc/authn-config/authn-config.yaml
     backingStore:
       etcd:
         deploy:
@@ -35,6 +41,15 @@ vcluster:
     statefulSet:
       image:
         repository: ghcr.io/loft-sh/vcluster-oss
+      persistence:
+        addVolumes:
+          - name: authn-config
+            configMap:
+              name: "workflows-cluster-authn-config"  # TODO: Replace with templated value "{{ .Release.Name }}-authn-config"
+        addVolumeMounts:
+          - name: authn-config
+            mountPath: /etc/authn-config
+            readOnly: true
       highAvailability:
         replicas: 3
       resources:
@@ -91,3 +106,26 @@ vcluster:
     toHost:
       ingresses:
         enabled: true
+
+authenticationConfiguration:
+  jwt:
+    - issuer:
+        url: https://authn.diamond.ac.uk/realms/master
+        audiences:
+          - workflows-cluster
+          - workflows-argo-server
+        audienceMatchPolicy: MatchAny
+      claimMappings:
+        username:
+          claim: fedid
+          prefix: "oidc:"
+        groups:
+          claim: groups
+          prefix: "oidc:"
+        uid:
+          claim: fedid
+      userValidationRules:
+      - expression: "!user.username.startsWith('system:')"
+        message: 'username cannot use reserved system: prefix'
+      - expression: "user.groups.all(group, !group.startsWith('system:'))"
+        message: 'groups cannot use reserved system: prefix'
