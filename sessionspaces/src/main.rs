@@ -140,20 +140,20 @@ async fn perform_update(
                 )
                 .await?;
             }
-        } else if members.is_some() {
-            if current_members.is_none() || current_members.as_ref() != Some(&members.unwrap()) {
-                info!(
-                    "Updating Member Service Account in Namespace: {}",
-                    namespace
-                );
-                if let Some(members) = sessions.get(namespace) {
-                    create_visit_member_service_account(
-                        namespace.clone(),
-                        members.clone(),
-                        k8s_client.clone(),
-                    )
-                    .await?;
-                }
+        } else if members.is_some_and(|members| {
+            current_members.is_none() || current_members.as_ref() != Some(&members)
+        }) {
+            info!(
+                "Updating Member Service Account in Namespace: {}",
+                namespace
+            );
+            if let Some(members) = sessions.get(namespace) {
+                create_visit_member_service_account(
+                    namespace.clone(),
+                    members.clone(),
+                    k8s_client.clone(),
+                )
+                .await?;
             }
         }
     }

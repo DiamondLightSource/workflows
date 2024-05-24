@@ -1,4 +1,4 @@
-name: Container
+name: Container-sessionspaces
 
 on:
   push:
@@ -53,6 +53,7 @@ jobs:
       - name: Build Image
         uses: docker/build-push-action@v5.3.0
         with:
+          context: ./sessionspaces
           build-args: DATABASE_URL=mysql://root:rootpassword@localhost:3306/ispyb_build
           target: deploy
           push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}

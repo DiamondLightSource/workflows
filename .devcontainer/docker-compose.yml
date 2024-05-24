@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  sessionspaces:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached,z
+    command: sleep infinity
+    environment:
+      DATABASE_URL: mysql://root:rootpassword@ispyb/ispyb_build
+      LOG_LEVEL: DEBUG
+
+  ispyb:
+    image: ghcr.io/diamondlightsource/ispyb-database:v3.0.0
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
