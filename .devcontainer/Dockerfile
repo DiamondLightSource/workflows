@@ -23,10 +23,8 @@ ENV PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 RUN krew install oidc-login
 
 # Download and install vcluster
-RUN wget https://github.com/loft-sh/vcluster/releases/download/v0.19.5/vcluster-linux-amd64 -O /usr/local/bin/vcluster && \
-    chmod +x /usr/local/bin/vcluster
-
-RUN mv /usr/local/bin/vcluster /bin/vcluster
+RUN wget https://github.com/loft-sh/vcluster/releases/download/v0.19.5/vcluster-linux-amd64 -O /bin/vcluster && \
+    chmod +x /bin/vcluster
 
 COPY ./config_argus /root/.kube/config
 
