@@ -1,5 +1,5 @@
 # https://raw.githubusercontent.com/argoproj/argo-events/stable/examples/eventbus/native.yaml
-{{- if .Values.argoevents.enabled }}
+{{- if index .Values "argo-events" "enabled" }}
   {{- range $eventBus := $.Values.eventBuses }}
 ---
 apiVersion: argoproj.io/v1alpha1

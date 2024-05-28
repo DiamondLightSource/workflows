@@ -21,6 +21,11 @@ argo-events:
 eventBuses:
   - name: default
     namespace: events
+    resources:
+      requests:
+        cpu: 10m
+      limits:
+        cpu: 100m
 
 eventSources:
   - name: webhook
