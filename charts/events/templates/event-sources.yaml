@@ -1,4 +1,4 @@
-{{- if .Values.argoevents.enabled }}
+{{- if index .Values "argo-events" "enabled" }}
   {{- range $eventSource := $.Values.eventSources }}
 ---
 apiVersion: argoproj.io/v1alpha1

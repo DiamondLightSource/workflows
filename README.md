@@ -18,7 +18,7 @@ vcluster connect workflows-cluster -- helm install workflows charts/workflows -n
 
 Finally, deploy the events service in the virtual cluster:
 ```sh
-vcluster connect workflows-cluster -- helm install workflows charts/events -n events --create-namespace
+vcluster connect workflows-cluster -- helm install events charts/events -n events --create-namespace
 ```
 
 ## Deployment in developer mode
@@ -36,7 +36,7 @@ Note that for getting the workflows-server to run inside the dev environment it 
 
 Finally, deploy the events service in the virtual cluster using the developer manifest:
 ```sh
-vcluster connect workflows-cluster -- helm install workflows charts/events -n events -f charts/events/dev-values.yaml --create-namespace
+vcluster connect workflows-cluster -- helm install events charts/events -n events -f charts/events/dev-values.yaml --create-namespace
 ```
 
 ## Serve Docs
