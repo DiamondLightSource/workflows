@@ -82,21 +82,45 @@ mod tests {
     use super::Session;
     use sqlx::MySqlPool;
 
-    #[sqlx::test(migrations = "tests/migrations")]
+    #[sqlx::test(migrations = "tests/migrations",)]
     async fn fetch_empty(ispyb_pool: MySqlPool) {
         let sessions = Session::fetch(&ispyb_pool).await.unwrap();
         let expected: Vec<Session> = Vec::new();
         assert_eq!(expected, sessions);
     }
-    // #[sqlx::test(
-    //     migrations = "tests/migrations",
-    //     fixtures(path = "../../tests/fixtures", scripts("bl_sessions", "persons"))
-    // )]
-    // async fn fetch_some(ispyb_pool: MySqlPool) {
-    //     let sessions = Session::fetch(&ispyb_pool).await.unwrap();
-    //     let mut expected: Vec<Session> = Vec::new();
-    //     // expected.insert("foo".to_string(), vec![40, 41]);
-    //     // expected.insert("bar".to_string(), vec![43]);
-    //     assert_eq!(expected, sessions);
-    // }
+
+    #[sqlx::test(
+        migrations = "tests/migrations",
+        fixtures(path = "../../tests/fixtures", scripts("bl_sessions", "proposals"))
+    )]
+    async fn fetch_some(ispyb_pool: MySqlPool) {
+        let sessions = Session::fetch(&ispyb_pool).await.unwrap();
+        let expected: Vec<Session> = vec![
+            Session {
+                id: 43, 
+                code: "cm".to_string(),
+                proposal: 10031,
+                visit: 4
+            },
+            Session {
+                id: 44, 
+                code: "cm".to_string(),
+                proposal: 10031,
+                visit: 5
+            },
+            Session {
+                id: 40, 
+                code: "sw".to_string(),
+                proposal: 10030,
+                visit: 1
+            },
+            Session {
+                id: 41, 
+                code: "sw".to_string(),
+                proposal: 10030,
+                visit: 2
+            },
+        ];
+        assert_eq!(expected, sessions);
+    }
 }
