@@ -63,7 +63,69 @@ postgresql-ha:
     storageClass: db-nvme-storage
     size: 50Gi
 
-ingress:
+oauth2-proxy:
   enabled: true
-  host: workflows.diamond.ac.uk
-  path: /
+  replicaCount: 3
+  ingress:
+    enabled: true
+    hostname: workflows.diamond.ac.uk
+    pathType: Prefix
+    hosts:
+      - workflows.diamond.ac.uk
+    path: /
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+  config:
+    configFile: |-
+      email_domains = [
+        "*"
+      ]
+      skip_auth_routes = [
+        "OPTIONS=^/$",
+        "GET=^/api/"
+      ]
+  alphaConfig:
+    enabled: true
+    configFile: |-
+      upstreamConfig:
+        upstreams:
+          - id: argo-workflows-server
+            path: /
+            uri: http://{{ .Release.Name }}-argo-workflows-server:2746
+    configData:
+      injectRequestHeaders:
+        - name: Authorization
+          values:
+            - claim: id_token
+              prefix: "Bearer "
+          preserveRequestValue: true
+      injectResponseHeaders:
+        - name: Identity
+          values:
+            - claim: id_token
+      providers:
+        - provider: oidc
+          scope: "openid profile email fedid"
+          clientId: workflows-argo-server
+          clientSecretFile: /etc/alpha/secret
+          id: authn
+          oidcConfig:
+            issuerURL: https://authn.diamond.ac.uk/realms/master
+            insecureAllowUnverifiedEmail: true
+            audienceClaims:
+              - aud
+            emailClaim: email
+            userIDClaim: fedid
+  extraArgs:
+    - --cookie-refresh=55s
+  extraVolumes:
+    - name: secret
+      secret:
+        secretName: argo-server-sso
+        items:
+          - key: secret
+            path: secret
+  extraVolumeMounts:
+    - name: secret
+      mountPath: /etc/alpha
+      readOnly: true

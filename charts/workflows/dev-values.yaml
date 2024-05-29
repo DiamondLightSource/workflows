@@ -52,5 +52,25 @@ postgresql-ha:
     storageClass: netapp
     size: 5Gi
 
-ingress:
-  enabled: false
+oauth2-proxy:
+  replicaCount: 1
+  ingress:
+    enabled: false
+  redis:
+    master:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    replica:
+      replicaCount: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi

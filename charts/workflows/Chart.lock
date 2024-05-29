@@ -5,5 +5,8 @@ dependencies:
 - name: postgresql-ha
   repository: https://charts.bitnami.com/bitnami
   version: 14.0.12
-digest: sha256:a077ad1689685506668c37e9a639b5e0903097318797d208e129de58843ff68a
-generated: "2024-06-24T14:36:23.518223904Z"
+- name: oauth2-proxy
+  repository: https://oauth2-proxy.github.io/manifests
+  version: 7.7.9
+digest: sha256:b718250cffabe18d7e81ad1e06569b54bc145841b017a363f1753ee3e134039b
+generated: "2024-08-15T16:46:47.793495702+01:00"
