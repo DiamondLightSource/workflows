@@ -34,15 +34,7 @@ argo-workflows:
         serviceAccountName: argo-workflow
   server:
     replicas: 3
-    authModes: ["sso"]
-    sso:
-      enabled: true
-      issuer: https://authbeta.diamond.ac.uk/cas/oidc
-      rbac:
-        enabled: true
-    extraEnv:
-      - name: SSO_DELEGATE_RBAC_TO_NAMESPACE
-        value: "true"
+    authModes: ["client"]
 
 postgresql-ha:
   enabled: true
