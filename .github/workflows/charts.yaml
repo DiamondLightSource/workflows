@@ -26,6 +26,7 @@ jobs:
           helm repo add vcluster https://charts.loft.sh
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
 
       - name: Lint
         run: >
