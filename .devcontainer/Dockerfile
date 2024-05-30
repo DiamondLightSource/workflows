@@ -28,4 +28,4 @@ RUN wget https://github.com/loft-sh/vcluster/releases/download/v0.19.5/vcluster-
 
 COPY ./config_argus /root/.kube/config
 
-COPY ./ca.crt /root/ca.crt
+COPY ./ca.crt /root/.kube/ca.crt

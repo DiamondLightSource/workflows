@@ -11,8 +11,9 @@ mod resources;
 use crate::{
     permissionables::{Session, SubjectSession},
     resources::{
-        create_argo_workflows_role, create_argo_workflows_service_account, create_namespace,
-        create_visit_member_role, create_visit_member_service_account, delete_namespace,
+        create_argo_workflows_role, create_argo_workflows_service_account, create_configmap,
+        create_namespace, create_visit_member_role, create_visit_member_service_account,
+        delete_namespace,
     },
 };
 use clap::Parser;
@@ -26,7 +27,7 @@ use url::Url;
 #[derive(Debug, Parser)]
 struct Cli {
     /// The URL of the ISPyB instance which should be connected to
-    #[clap(long, env)]
+    #[clap(long, env = "DATABASE_URL")]
     database_url: Url,
     /// The period to wait after a succesful bundle server request
     #[clap(long, env, default_value = "60s")]
@@ -132,6 +133,7 @@ async fn perform_update(
             info!("Creating Namespace: {}", namespace);
             create_namespace(namespace.clone(), k8s_client.clone()).await?;
             create_argo_workflows_service_account(namespace.clone(), k8s_client.clone()).await?;
+            create_configmap(namespace.clone(), k8s_client.clone()).await?;
             if let Some(members) = sessions.get(namespace) {
                 create_visit_member_service_account(
                     namespace.clone(),
