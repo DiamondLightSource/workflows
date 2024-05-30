@@ -82,7 +82,7 @@ mod tests {
     use super::Session;
     use sqlx::MySqlPool;
 
-    #[sqlx::test(migrations = "tests/migrations",)]
+    #[sqlx::test(migrations = "tests/migrations")]
     async fn fetch_empty(ispyb_pool: MySqlPool) {
         let sessions = Session::fetch(&ispyb_pool).await.unwrap();
         let expected: Vec<Session> = Vec::new();
@@ -97,28 +97,28 @@ mod tests {
         let sessions = Session::fetch(&ispyb_pool).await.unwrap();
         let expected: Vec<Session> = vec![
             Session {
-                id: 43, 
+                id: 43,
                 code: "cm".to_string(),
                 proposal: 10031,
-                visit: 4
+                visit: 4,
             },
             Session {
-                id: 44, 
+                id: 44,
                 code: "cm".to_string(),
                 proposal: 10031,
-                visit: 5
+                visit: 5,
             },
             Session {
-                id: 40, 
+                id: 40,
                 code: "sw".to_string(),
                 proposal: 10030,
-                visit: 1
+                visit: 1,
             },
             Session {
-                id: 41, 
+                id: 41,
                 code: "sw".to_string(),
                 proposal: 10030,
-                visit: 2
+                visit: 2,
             },
         ];
         assert_eq!(expected, sessions);
