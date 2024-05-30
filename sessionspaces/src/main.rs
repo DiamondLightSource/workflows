@@ -27,7 +27,7 @@ use url::Url;
 #[derive(Debug, Parser)]
 struct Cli {
     /// The URL of the ISPyB instance which should be connected to
-    #[clap(long, env = "DATABASE_URL")]
+    #[clap(long, env)]
     database_url: Url,
     /// The period to wait after a succesful bundle server request
     #[clap(long, env, default_value = "60s")]
@@ -107,7 +107,7 @@ async fn perform_update(
     ispyb_pool: &MySqlPool,
     k8s_client: kube::Client,
     current_sessions: &mut SessionSpaces,
-) -> Result<(), anyhow::Error> {
+) -> std::result::Result<(), anyhow::Error> {
     info!("Fetching Sessions");
     let sessions = Session::fetch(ispyb_pool).await?;
     info!("Fetching Subjects");
