@@ -55,10 +55,8 @@ mod tests {
     use super::SubjectSession;
     use sqlx::MySqlPool;
 
-    #[sqlx::test(
-        migrations = "tests/migrations",
-    )]
-    async fn fetch_empty(ispyb_pool : MySqlPool) {
+    #[sqlx::test(migrations = "tests/migrations")]
+    async fn fetch_empty(ispyb_pool: MySqlPool) {
         let subject_sessions = SubjectSession::fetch(&ispyb_pool).await.unwrap();
         let expected: Vec<SubjectSession> = Vec::new();
         assert_eq!(expected, subject_sessions);
@@ -66,9 +64,12 @@ mod tests {
 
     #[sqlx::test(
         migrations = "tests/migrations",
-        fixtures(path = "../../tests/fixtures", scripts("persons", "session_has_person"))
+        fixtures(
+            path = "../../tests/fixtures",
+            scripts("persons", "session_has_person")
+        )
     )]
-    async fn fetch_some(ispyb_pool : MySqlPool) {
+    async fn fetch_some(ispyb_pool: MySqlPool) {
         let subject_sessions = SubjectSession::fetch(&ispyb_pool).await.unwrap();
         let expected = vec![
             SubjectSession {
@@ -94,5 +95,4 @@ mod tests {
         ];
         assert_eq!(expected, subject_sessions);
     }
-
 }
