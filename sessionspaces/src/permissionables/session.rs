@@ -2,7 +2,7 @@ use sqlx::{query_as, MySqlPool};
 use tracing::instrument;
 
 /// A singular beamline session
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Session {
     /// The opaque identifier of the session
     pub id: u32,
@@ -65,6 +65,12 @@ impl TryFrom<SessionRow> for Session {
             None => Err(anyhow::anyhow!("Proposal code was NULL")),
         }?;
 
+        let visit = match value.visit {
+            Some(visit) if visit == 0 => Err(anyhow::anyhow!("Visit number was zero")),
+            Some(visit) => Ok(visit),
+            None => Err(anyhow::anyhow!("Visit number was NULL")),
+        }?;
+
         Ok(Self {
             id: value.id,
             code,
@@ -72,7 +78,7 @@ impl TryFrom<SessionRow> for Session {
                 .proposal
                 .ok_or(anyhow::anyhow!("Proposal number was NULL"))?
                 .parse()?,
-            visit: value.visit.unwrap_or_default(),
+            visit: visit,
         })
     }
 }
