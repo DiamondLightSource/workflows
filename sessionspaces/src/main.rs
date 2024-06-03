@@ -11,8 +11,7 @@ mod resources;
 use crate::{
     permissionables::{Session, SubjectSession},
     resources::{
-        create_argo_workflows_role, create_argo_workflows_service_account, create_configmap,
-        create_namespace, create_visit_member_role, create_visit_member_service_account,
+        create_argo_workflows_role, create_configmap, create_namespace, create_visit_member_role,
         delete_namespace,
     },
 };
@@ -75,9 +74,15 @@ async fn main() {
     }
 }
 
-/// A mapping of session namespaces to their member subjects
+#[derive(Debug)]
+struct SessionInfo {
+    session: Session,
+    members: BTreeSet<String>,
+}
+
+/// A mapping of session namespaces to their session info
 #[derive(Debug, Default, derive_more::Deref)]
-struct SessionSpaces(BTreeMap<String, BTreeSet<String>>);
+struct SessionSpaces(BTreeMap<String, SessionInfo>);
 
 impl SessionSpaces {
     #[instrument(skip_all)]
@@ -88,13 +93,16 @@ impl SessionSpaces {
                 session.id,
                 (
                     format!("{}{}-{}", session.code, session.proposal, session.visit),
-                    BTreeSet::new(),
+                    SessionInfo {
+                        session: session.clone(),
+                        members: BTreeSet::new(),
+                    },
                 ),
             );
         }
         for SubjectSession { subject, session } in subject_sessions.into_iter() {
             if let Some(space) = spaces.get_mut(&session) {
-                space.1.insert(subject);
+                space.1.members.insert(subject);
             }
         }
         Self(spaces.into_values().collect())
@@ -122,41 +130,59 @@ async fn perform_update(
 
     info!("Updating {} SessionSpaces", to_update.len());
     for namespace in to_update.into_iter() {
-        let current_exists = current_sessions.contains_key(namespace);
-        let new_exists = sessions.contains_key(namespace);
-        let current_members = current_sessions.get(namespace);
-        let members = sessions.get(namespace);
-        if current_exists && !new_exists {
+        let session_info = sessions.get(namespace);
+        let current_sesssion_info = current_sessions.get(namespace);
+        let members = match session_info.as_ref() {
+            Some(sess_info) => {
+                if !sess_info.members.is_empty() {
+                    Some(sess_info.members.clone())
+                } else {
+                    None
+                }
+            }
+            None => None,
+        };
+        let current_members = if let Some(ref current_session_info) = current_sesssion_info {
+            if !current_session_info.members.is_empty() {
+                Some(current_session_info.members.clone())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        if current_sesssion_info.is_some() && !session_info.is_some() {
             info!("Deleting Namespace: {}", namespace);
             delete_namespace(namespace, k8s_client.clone()).await?;
-        } else if !current_exists && new_exists {
+        } else if !current_sesssion_info.is_some() && session_info.is_some() {
             info!("Creating Namespace: {}", namespace);
             create_namespace(namespace.clone(), k8s_client.clone()).await?;
-            create_argo_workflows_service_account(namespace.clone(), k8s_client.clone()).await?;
-            create_configmap(namespace.clone(), k8s_client.clone()).await?;
-            if let Some(members) = sessions.get(namespace) {
-                create_visit_member_service_account(
-                    namespace.clone(),
-                    members.clone(),
-                    k8s_client.clone(),
-                )
-                .await?;
-            }
-        } else if members.is_some_and(|members| {
-            current_members.is_none() || current_members.as_ref() != Some(&members)
-        }) {
+            create_configmap(
+                namespace.clone(),
+                session_info.unwrap().session.code.clone(),
+                session_info.unwrap().session.proposal,
+                session_info.unwrap().session.visit,
+                members.clone(),
+                k8s_client.clone(),
+            )
+            .await?;
+        } else if members
+            .clone()
+            .is_some_and(|mem| current_members.is_none() || current_members.unwrap() != mem)
+        {
             info!(
-                "Updating Member Service Account in Namespace: {}",
+                "Updating policy configMap with members in Namespace: {}",
                 namespace
             );
-            if let Some(members) = sessions.get(namespace) {
-                create_visit_member_service_account(
-                    namespace.clone(),
-                    members.clone(),
-                    k8s_client.clone(),
-                )
-                .await?;
-            }
+            create_configmap(
+                namespace.clone(),
+                session_info.unwrap().session.code.clone(),
+                session_info.unwrap().session.proposal,
+                session_info.unwrap().session.visit,
+                Some(members.unwrap().clone()),
+                k8s_client.clone(),
+            )
+            .await?;
         }
     }
     *current_sessions = sessions;
