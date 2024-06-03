@@ -1,7 +1,4 @@
-use k8s_openapi::api::{
-    core::v1::ServiceAccount,
-    rbac::v1::{ClusterRole, PolicyRule, RoleBinding, RoleRef, Subject},
-};
+use k8s_openapi::api::rbac::v1::{ClusterRole, PolicyRule};
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
     discovery::verbs::{CREATE, GET, LIST, PATCH, WATCH},
@@ -73,60 +70,6 @@ pub async fn create_argo_workflows_role(k8s_client: kube::Client) -> Result<(), 
                     },
                 ]),
                 ..Default::default()
-            }),
-        )
-        .await?;
-    Ok(())
-}
-
-/// Creates the `argo-workflows` ServiceAccount and corresponding Role
-#[instrument(skip(k8s_client))]
-pub async fn create_argo_workflows_service_account(
-    namespace: String,
-    k8s_client: kube::Client,
-) -> Result<(), kube::Error> {
-    let service_accounts = Api::<ServiceAccount>::namespaced(k8s_client.clone(), &namespace);
-    let role_bindings = Api::<RoleBinding>::namespaced(k8s_client, &namespace);
-    service_accounts
-        .patch(
-            ARGO_WORKFLOWS,
-            &PatchParams {
-                field_manager: Some("kubectl".to_string()),
-                ..Default::default()
-            },
-            &Patch::Apply(&ServiceAccount {
-                metadata: ObjectMeta {
-                    name: Some(ARGO_WORKFLOWS.to_string()),
-                    namespace: Some(namespace.clone()),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }),
-        )
-        .await?;
-    role_bindings
-        .patch(
-            ARGO_WORKFLOWS,
-            &PatchParams {
-                field_manager: Some("kubectl".to_string()),
-                ..Default::default()
-            },
-            &Patch::Apply(&RoleBinding {
-                metadata: ObjectMeta {
-                    name: Some(ARGO_WORKFLOWS.to_string()),
-                    namespace: Some(namespace),
-                    ..Default::default()
-                },
-                subjects: Some(vec![Subject {
-                    kind: "ServiceAccount".to_string(),
-                    name: ARGO_WORKFLOWS.to_string(),
-                    ..Default::default()
-                }]),
-                role_ref: RoleRef {
-                    kind: "ClusterRole".to_string(),
-                    name: ARGO_WORKFLOWS.to_string(),
-                    api_group: "rbac.authorization.k8s.io".to_string(),
-                },
             }),
         )
         .await?;
