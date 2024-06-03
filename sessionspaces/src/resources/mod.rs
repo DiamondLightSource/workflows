@@ -9,7 +9,7 @@ mod workflows_sa;
 
 pub use self::{
     config_maps::create_configmap,
-    member_sa::{create_visit_member_role, create_visit_member_service_account},
+    member_sa::create_visit_member_role,
     namespace::{create_namespace, delete_namespace},
-    workflows_sa::{create_argo_workflows_role, create_argo_workflows_service_account},
+    workflows_sa::create_argo_workflows_role,
 };
