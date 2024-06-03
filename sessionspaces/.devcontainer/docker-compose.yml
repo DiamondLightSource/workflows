@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.10"
 
 services:
   sessionspaces:
@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ..:/workspace:cached,z
+      - ../..:/workspace:cached,z
     command: sleep infinity
     environment:
       DATABASE_URL: mysql://root:rootpassword@ispyb/ispyb_build

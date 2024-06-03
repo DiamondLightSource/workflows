@@ -17,13 +17,10 @@ rules:
   verbs: ["get", "watch"]
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["clusterroles"]
-  verbs: ["create", "get", "list", "update", "patch"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["role", "rolebindings"]
-  verbs: ["get", "list", "create", "patch"]
+  verbs: ["create", "patch"]
 - apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["get", "list", "create", "patch"]
+  resources: ["configmaps"]
+  verbs: ["create", "patch"]
 - apiGroups: ["argoproj.io"]
   resources: [
     "workflowartifactgctasks",
