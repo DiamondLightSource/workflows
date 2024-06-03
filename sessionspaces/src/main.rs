@@ -132,7 +132,7 @@ async fn perform_update(
     for namespace in to_update.into_iter() {
         let session_info = sessions.get(namespace);
         let current_sesssion_info = current_sessions.get(namespace);
-        let members = match session_info.as_ref() {
+        let members = match session_info {
             Some(sess_info) => {
                 if !sess_info.members.is_empty() {
                     Some(sess_info.members.clone())
@@ -142,7 +142,7 @@ async fn perform_update(
             }
             None => None,
         };
-        let current_members = if let Some(ref current_session_info) = current_sesssion_info {
+        let current_members = if let Some(current_session_info) = current_sesssion_info {
             if !current_session_info.members.is_empty() {
                 Some(current_session_info.members.clone())
             } else {

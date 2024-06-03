@@ -55,7 +55,7 @@ Add krew to the path and install oidc-login:
 ```bash
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
-krew install oidc-login
+kubectl krew install oidc-login
 ```
 
 Before starting the dev container mount the argus_config from
