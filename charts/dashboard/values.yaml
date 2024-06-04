@@ -1,0 +1,64 @@
+kubernetes-dashboard:
+  enabled: true
+
+oauth2-proxy:
+  enabled: true
+  ingress:
+    enabled: true
+    hostname: workflows.diamond.ac.uk
+    pathType: Prefix
+    hosts:
+    - workflows.diamond.ac.uk
+    path: /dashboard(/|$)(.*)
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+  config:
+    configFile: |-
+      email_domains = [
+        "*"
+      ]
+  alphaConfig:
+    enabled: true
+    configFile: |-
+      upstreamConfig:
+        upstreams:
+        - id: kubernetes-dashboard
+          path: /
+          uri: http://{{ .Release.Name }}-kong-proxy
+      injectRequestHeaders:
+      - name: Authorization
+        values:
+        - claim: id_token
+          prefix: "Bearer "
+      injectResponseHeaders:
+      - name: Identity
+        values:
+        - claim: id_token
+      providers:
+      - provider: oidc
+        scope: "openid profile email"
+        clientId: workflows-dashboard
+        clientSecretFile: /etc/alpha/client-secret
+        id: authn
+        oidcConfig:
+          issuerURL: https://authn.diamond.ac.uk/realms/master
+          insecureAllowUnverifiedEmail: true
+          audienceClaims:
+          - aud
+          emailClaim: email
+          userIDClaim: sub
+  extraArgs:
+  - --cookie-refresh=55s
+  extraVolumes:
+  - name: client-secret
+    secret:
+      secretName: kubernetes-dashboard-sso
+      items:
+      - key: client-secret
+        path: client-secret
+  extraVolumeMounts:
+  - name: client-secret
+    mountPath: /etc/alpha
+    readOnly: true
+

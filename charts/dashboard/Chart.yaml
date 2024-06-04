@@ -1,0 +1,17 @@
+apiVersion: v2
+name: dashboard
+description: Workflows vCluster Kubernetes Dashboard
+type: application
+
+version: 0.1.0
+
+dependencies:
+  - name: kubernetes-dashboard
+    repository: https://kubernetes.github.io/dashboard
+    version: 7.4.0
+    condition: kubernetes-dashboard.enabled
+  - name: oauth2-proxy
+    repository: https://oauth2-proxy.github.io/manifests
+    version: 7.1.0
+    condition: oauth2-proxy.enabled
+
