@@ -12,3 +12,4 @@ roleRef:
   kind: ClusterRole
   name: {{ include "sessionspaces.fullname" . }}
   apiGroup: rbac.authorization.k8s.io
+{{- end }}

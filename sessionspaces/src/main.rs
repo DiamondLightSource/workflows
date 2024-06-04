@@ -10,10 +10,7 @@ mod resources;
 
 use crate::{
     permissionables::{Session, SubjectSession},
-    resources::{
-        create_argo_workflows_role, create_configmap, create_namespace, create_visit_member_role,
-        delete_namespace,
-    },
+    resources::{create_configmap, create_namespace, delete_namespace},
 };
 use clap::Parser;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
@@ -54,13 +51,6 @@ async fn main() {
         .unwrap();
 
     let k8s_client = kube::Client::try_default().await.unwrap();
-    info!("Creating argo-workflows Role");
-    create_argo_workflows_role(k8s_client.clone())
-        .await
-        .unwrap();
-    info!("Creating visit-member Role");
-    create_visit_member_role(k8s_client.clone()).await.unwrap();
-
     let mut current_sessions = SessionSpaces::default();
     let mut request_at = Instant::now();
     loop {
