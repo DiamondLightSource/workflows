@@ -13,6 +13,7 @@ use crate::{
     resources::{create_configmap, create_namespace, delete_namespace},
 };
 use clap::Parser;
+use permissionables::ldap_search;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
 use std::collections::{BTreeMap, BTreeSet};
 use tokio::time::{sleep_until, Instant};
@@ -68,6 +69,7 @@ async fn main() {
 struct SessionInfo {
     session: Session,
     members: BTreeSet<String>,
+    gid: Option<String>,
 }
 
 /// A mapping of session namespaces to their session info
@@ -76,16 +78,18 @@ struct SessionSpaces(BTreeMap<String, SessionInfo>);
 
 impl SessionSpaces {
     #[instrument(skip_all)]
-    fn new(sessions: Vec<Session>, subject_sessions: Vec<SubjectSession>) -> Self {
+    async fn new(sessions: Vec<Session>, subject_sessions: Vec<SubjectSession>) -> Self {
         let mut spaces = BTreeMap::new();
         for session in sessions.into_iter() {
+            let session_name = format!("{}{}-{}", session.code, session.proposal, session.visit);
             spaces.insert(
                 session.id,
                 (
-                    format!("{}{}-{}", session.code, session.proposal, session.visit),
+                    session_name.clone(),
                     SessionInfo {
                         session: session.clone(),
                         members: BTreeSet::new(),
+                        gid: ldap_search(session_name).await,
                     },
                 ),
             );
@@ -110,7 +114,7 @@ async fn perform_update(
     let sessions = Session::fetch(ispyb_pool).await?;
     info!("Fetching Subjects");
     let subjects = SubjectSession::fetch(ispyb_pool).await?;
-    let sessions = SessionSpaces::new(sessions, subjects);
+    let sessions = SessionSpaces::new(sessions, subjects).await;
 
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();
@@ -152,6 +156,7 @@ async fn perform_update(
                 session_info.unwrap().session.code.clone(),
                 session_info.unwrap().session.proposal,
                 session_info.unwrap().session.visit,
+                session_info.unwrap().gid.clone(),
                 members.clone(),
                 k8s_client.clone(),
             )
@@ -159,16 +164,20 @@ async fn perform_update(
         } else if members
             .clone()
             .is_some_and(|mem| current_members.is_none() || current_members.unwrap() != mem)
+            || <Option<String> as Clone>::clone(&session_info.unwrap().gid).is_some_and(|gid| {
+                current_sesssion_info.unwrap().gid.is_none()
+                    || <Option<String> as Clone>::clone(&current_sesssion_info.unwrap().gid)
+                        .unwrap()
+                        != gid
+            })
         {
-            info!(
-                "Updating policy configMap with members in Namespace: {}",
-                namespace
-            );
+            info!("Updating policy configMap in Namespace: {}", namespace);
             create_configmap(
                 namespace.clone(),
                 session_info.unwrap().session.code.clone(),
                 session_info.unwrap().session.proposal,
                 session_info.unwrap().session.visit,
+                session_info.unwrap().gid.clone(),
                 Some(members.unwrap().clone()),
                 k8s_client.clone(),
             )

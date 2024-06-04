@@ -1,4 +1,3 @@
-use crate::permissionables::ldap_search;
 use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
@@ -15,11 +14,11 @@ pub async fn create_configmap(
     session_code: String,
     session_number: u32,
     visit_number: u32,
+    gid_number: Option<String>,
     members: Option<BTreeSet<String>>,
     k8s_client: Client,
 ) -> std::result::Result<(), kube::Error> {
     let configmaps = Api::<ConfigMap>::namespaced(k8s_client, &namespace);
-    let ldap_result = ldap_search(namespace).await;
     let mut configmap_data = BTreeMap::from([
         ("session_code".to_string(), session_code),
         ("Session_number".to_string(), session_number.to_string()),
@@ -36,11 +35,11 @@ pub async fn create_configmap(
         }
         None => {}
     };
-    match ldap_result {
-        Ok(gid) => {
+    match gid_number {
+        Some(gid) => {
             configmap_data.insert("gid".to_string(), gid);
         }
-        Err(_) => {}
+        None => {}
     }
     configmaps
         .patch(
