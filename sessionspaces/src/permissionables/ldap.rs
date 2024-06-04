@@ -1,8 +1,9 @@
 use ldap3::{LdapConnAsync, Scope, SearchEntry};
-use tracing::info;
 
-pub async fn ldap_search(namespace: String) -> Result<String, Box<dyn std::error::Error>> {
-    let (conn, mut ldap) = LdapConnAsync::new("ldap://ldap.diamond.ac.uk").await?;
+pub async fn ldap_search(namespace: String) -> Option<String> {
+    let (conn, mut ldap) = LdapConnAsync::new("ldap://ldap.diamond.ac.uk")
+        .await
+        .unwrap();
     ldap3::drive!(conn);
     let common_name = namespace.replace("-", "_");
     let filter = format!("(&(objectClass=posixgroup)(cn={common_name}))",);
@@ -19,9 +20,8 @@ pub async fn ldap_search(namespace: String) -> Result<String, Box<dyn std::error
         .unwrap();
     for entry in rs {
         if let Some(res) = SearchEntry::construct(entry).attrs.get("gidNumber") {
-            return Ok(res.concat());
+            return Some(res.concat());
         }
     }
-    info!("gidNumber not found for session {}", common_name);
-    Err("gidNumber not found".into())
+    None
 }
