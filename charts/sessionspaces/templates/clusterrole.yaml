@@ -5,36 +5,9 @@ metadata:
   name: {{ include "sessionspaces.serviceAccountName" . }}
 rules:
 - apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "watch", "patch"] 
-- apiGroups: [""]
   resources: ["namespaces"]
   verbs: ["create", "delete", "get", "list"]
 - apiGroups: [""]
-  resources: ["pods/exec"]
-  verbs: ["create"]
-- apiGroups: [""]
-  resources: ["pods/logs"]
-  verbs: ["get", "watch"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["clusterroles"]
-  verbs: ["create", "patch"]
-- apiGroups: [""]
   resources: ["configmaps"]
   verbs: ["create", "patch"]
-- apiGroups: ["argoproj.io"]
-  resources: [
-    "workflowartifactgctasks",
-    "workflowartifactgctasks/status",
-    "workflowtaskresults",
-    "workflowtasksets",
-    "workflowtasksets/status",
-    "clusterworkflowtemplates",
-    "cronworkflows",
-    "eventsources",
-    "sensors",
-    "workfloweventbindings",
-    "workflows",
-    "workflowtemplates"
-  ]
-  verbs: ["get", "list", "watch", "patch", "create"]
+{{- end }}

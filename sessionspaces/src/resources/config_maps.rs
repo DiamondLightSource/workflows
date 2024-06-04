@@ -1,41 +1,13 @@
+use crate::permissionables::ldap_search;
 use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
     Api, Client,
 };
-use ldap3::{LdapConnAsync, Scope, SearchEntry};
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    error::Error,
-};
+use std::collections::{BTreeMap, BTreeSet};
 use tracing::{info, instrument};
 
 const POLICY_CONFIG: &str = "policy-config";
-
-pub async fn ldap_search(namespace: String) -> Result<String, Box<dyn Error>> {
-    let (conn, mut ldap) = LdapConnAsync::new("ldap://ldap.diamond.ac.uk").await?;
-    ldap3::drive!(conn);
-    let common_name = namespace.replace("-", "_");
-    let filter = format!("(&(objectClass=posixgroup)(cn={common_name}))",);
-    let (rs, _res) = ldap
-        .search(
-            "ou=Group,dc=diamond,dc=ac,dc=uk",
-            Scope::Subtree,
-            &filter,
-            vec!["gidnumber"],
-        )
-        .await
-        .unwrap()
-        .success()
-        .unwrap();
-    for entry in rs {
-        if let Some(res) = SearchEntry::construct(entry).attrs.get("gidNumber") {
-            return Ok(res.concat());
-        }
-    }
-    info!("gidNumber not found for session {}", common_name);
-    Err("gidNumber not found".into())
-}
 
 #[instrument(skip(k8s_client))]
 pub async fn create_configmap(
