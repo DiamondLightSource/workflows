@@ -1,0 +1,31 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argo-workflows
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "patch"]
+- apiGroups: [""]
+  resources: ["pods/logs"]
+  verbs: ["get", "watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+- apiGroups: ["argoproj.io"]
+  resources: [
+    "workflowtaskresults",
+    ]
+  verbs: ["create","patch"] 
+- apiGroups: ["argoproj.io"]
+  resources: [
+    "workflowtasksets",
+    "workflowartifactgctasks",
+    ]
+  verbs: ["list", "watch"] 
+- apiGroups: ["argoproj.io"]
+  resources: [
+    "workflowtasksets/status",
+    "workflowartifactgctasks/status",
+    ]
+  verbs: ["patch"] 
