@@ -13,7 +13,7 @@ use crate::{
     resources::{create_configmap, create_namespace, delete_namespace},
 };
 use clap::Parser;
-use permissionables::ldap_search;
+use permissionables::update_gid;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
 use std::collections::{BTreeMap, BTreeSet};
 use tokio::time::{sleep_until, Instant};
@@ -65,7 +65,7 @@ async fn main() {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct SessionInfo {
     session: Session,
     members: BTreeSet<String>,
@@ -73,7 +73,7 @@ struct SessionInfo {
 }
 
 /// A mapping of session namespaces to their session info
-#[derive(Debug, Default, derive_more::Deref)]
+#[derive(Debug, Default, derive_more::Deref, Clone)]
 struct SessionSpaces(BTreeMap<String, SessionInfo>);
 
 impl SessionSpaces {
@@ -89,7 +89,7 @@ impl SessionSpaces {
                     SessionInfo {
                         session: session.clone(),
                         members: BTreeSet::new(),
-                        gid: ldap_search(session_name).await,
+                        gid: None,
                     },
                 ),
             );
@@ -114,7 +114,8 @@ async fn perform_update(
     let sessions = Session::fetch(ispyb_pool).await?;
     info!("Fetching Subjects");
     let subjects = SubjectSession::fetch(ispyb_pool).await?;
-    let sessions = SessionSpaces::new(sessions, subjects).await;
+    let mut sessions = SessionSpaces::new(sessions, subjects).await;
+    update_gid(&mut sessions).await;
 
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();

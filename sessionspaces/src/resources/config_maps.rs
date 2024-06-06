@@ -21,7 +21,7 @@ pub async fn create_configmap(
     let configmaps = Api::<ConfigMap>::namespaced(k8s_client, &namespace);
     let mut configmap_data = BTreeMap::from([
         ("session_code".to_string(), session_code),
-        ("Session_number".to_string(), session_number.to_string()),
+        ("session_number".to_string(), session_number.to_string()),
         ("visit_number".to_string(), visit_number.to_string()),
     ]);
     match members {
