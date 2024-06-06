@@ -4,6 +4,11 @@ ARG DATABASE_URL
 
 WORKDIR /app
 
+COPY Cargo.toml Cargo.lock . 
+
+RUN mkdir src && echo "fn main() {}" > src/main.rs \
+    && cargo build --release
+
 COPY . .
 
 RUN cargo build --release
