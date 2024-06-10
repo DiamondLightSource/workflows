@@ -6,7 +6,7 @@ use kube::{
 use std::collections::{BTreeMap, BTreeSet};
 use tracing::{info, instrument};
 
-const POLICY_CONFIG: &str = "policy-config";
+const CONFIG: &str = "sessionspaces";
 
 #[instrument(skip(k8s_client))]
 pub async fn create_configmap(
@@ -24,33 +24,27 @@ pub async fn create_configmap(
         ("session_number".to_string(), session_number.to_string()),
         ("visit_number".to_string(), visit_number.to_string()),
     ]);
-    match members {
-        Some(members_set) => {
-            let quoted_members: Vec<String> =
-                members_set.iter().map(|s| format!("\"{}\"", s)).collect();
-            configmap_data.insert(
-                "members".to_string(),
-                format!("[{}]", quoted_members.join(", ")),
-            );
-        }
-        None => {}
-    };
-    match gid_number {
-        Some(gid) => {
-            configmap_data.insert("gid".to_string(), gid);
-        }
-        None => {}
+    if let Some(members_set) = members {
+        let quoted_members: Vec<String> =
+            members_set.iter().map(|s| format!("\"{}\"", s)).collect();
+        configmap_data.insert(
+            "members".to_string(),
+            format!("[{}]", quoted_members.join(", ")),
+        );
+    }
+    if let Some(gid) = gid_number {
+        configmap_data.insert("gid".to_string(), gid);
     }
     configmaps
         .patch(
-            POLICY_CONFIG,
+            CONFIG,
             &PatchParams {
                 field_manager: Some("kubectl".to_string()),
                 ..Default::default()
             },
             &Patch::Apply(&ConfigMap {
                 metadata: ObjectMeta {
-                    name: Some(POLICY_CONFIG.to_string()),
+                    name: Some(CONFIG.to_string()),
                     ..Default::default()
                 },
                 data: Some(configmap_data),
@@ -59,6 +53,6 @@ pub async fn create_configmap(
         )
         .await?;
 
-    info!("ConfigMap {POLICY_CONFIG} created");
+    info!("ConfigMap {CONFIG} created");
     Ok(())
 }

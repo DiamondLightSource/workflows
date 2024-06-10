@@ -1,8 +1,8 @@
 /// gidNumber for sessions
-mod ldap;
+mod posix_attributes;
 /// Beamline sessions
 mod session;
 /// Associations between subjects and sessions
 mod subject_session;
 
-pub use self::{ldap::update_gid, session::Session, subject_session::SubjectSession};
+pub use self::{posix_attributes::fetch_gid, session::Session, subject_session::SubjectSession};
