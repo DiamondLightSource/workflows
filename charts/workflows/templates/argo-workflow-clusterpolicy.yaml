@@ -1,0 +1,54 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: argo-workflow
+spec:
+  rules:
+    - name: generate-serviceaccount
+      match:
+        resources:
+          kinds:
+            - ConfigMap
+          names:
+            - sessionspaces
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      generate:
+        synchronize: true
+        apiVersion: v1
+        kind: ServiceAccount
+        name: argo-workflow
+        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+    
+    - name: generate-rolebinding
+      match:
+        resources:
+          kinds:
+            - ConfigMap
+          names:
+            - sessionspaces
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      generate:
+        synchronize: true
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        name: argo-workflow
+        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        data:
+          subjects:
+            - kind: ServiceAccount
+              name: argo-workflow
+              namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+          roleRef:
+            kind: ClusterRole
+            name: argo-workflow
+            apiGroup: rbac.authorization.k8s.io
