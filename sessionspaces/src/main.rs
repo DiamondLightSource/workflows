@@ -13,7 +13,8 @@ use crate::{
     resources::{create_configmap, create_namespace, delete_namespace},
 };
 use clap::Parser;
-use permissionables::update_gid;
+use ldap3::{Ldap, LdapConnAsync};
+use permissionables::fetch_gid;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
 use std::collections::{BTreeMap, BTreeSet};
 use tokio::time::{sleep_until, Instant};
@@ -35,6 +36,9 @@ struct Cli {
     /// The [`tracing::Level`] to log at
     #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
     log_level: tracing::Level,
+    /// The URL of the LDAP database where the posix attributes are stored
+    #[clap(long, env)]
+    ldap_url: Url,
 }
 
 #[tokio::main(flavor = "current_thread")]
@@ -51,16 +55,25 @@ async fn main() {
         .await
         .unwrap();
 
+    let (conn, mut ldap) = LdapConnAsync::new(args.ldap_url.as_str()).await.unwrap();
+    ldap3::drive!(conn);
+
     let k8s_client = kube::Client::try_default().await.unwrap();
     let mut current_sessions = SessionSpaces::default();
     let mut request_at = Instant::now();
     loop {
         sleep_until(request_at).await;
-        let interval =
-            match perform_update(&ispyb_pool, k8s_client.clone(), &mut current_sessions).await {
-                Ok(_) => args.update_interval,
-                Err(_) => args.retry_interval,
-            };
+        let interval = match perform_update(
+            &ispyb_pool,
+            k8s_client.clone(),
+            &mut current_sessions,
+            &mut ldap,
+        )
+        .await
+        {
+            Ok(_) => args.update_interval,
+            Err(_) => args.retry_interval,
+        };
         request_at = request_at.checked_add(*interval).unwrap();
     }
 }
@@ -101,6 +114,15 @@ impl SessionSpaces {
         }
         Self(spaces.into_values().collect())
     }
+
+    #[instrument(skip_all)]
+    async fn update_gid(&mut self, posix_attr: BTreeMap<String, String>) {
+        for (session_id, gid) in posix_attr {
+            if let Some(session_info) = self.0.get_mut(&session_id) {
+                session_info.gid = Some(gid);
+            }
+        }
+    }
 }
 
 /// Requests a new bundle from the bundle server and performs templating accordingly
@@ -109,13 +131,15 @@ async fn perform_update(
     ispyb_pool: &MySqlPool,
     k8s_client: kube::Client,
     current_sessions: &mut SessionSpaces,
+    ldap: &mut Ldap,
 ) -> std::result::Result<(), anyhow::Error> {
     info!("Fetching Sessions");
     let sessions = Session::fetch(ispyb_pool).await?;
     info!("Fetching Subjects");
     let subjects = SubjectSession::fetch(ispyb_pool).await?;
     let mut sessions = SessionSpaces::new(sessions, subjects).await;
-    update_gid(&mut sessions).await;
+    let posix_attr = fetch_gid(ldap).await;
+    sessions.update_gid(posix_attr).await;
 
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();
