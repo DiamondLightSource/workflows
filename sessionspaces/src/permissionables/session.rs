@@ -2,7 +2,7 @@ use sqlx::{query_as, MySqlPool};
 use tracing::instrument;
 
 /// A singular beamline session
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Session {
     /// The opaque identifier of the session
     pub id: u32,

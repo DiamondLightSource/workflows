@@ -9,12 +9,11 @@ mod permissionables;
 mod resources;
 
 use crate::{
-    permissionables::{Session, SubjectSession},
+    permissionables::{PosixAttributes, Session, SubjectSession},
     resources::{create_configmap, create_namespace, delete_namespace},
 };
 use clap::Parser;
 use ldap3::{Ldap, LdapConnAsync};
-use permissionables::fetch_gid;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
 use std::collections::{BTreeMap, BTreeSet};
 use tokio::time::{sleep_until, Instant};
@@ -78,7 +77,7 @@ async fn main() {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct SessionInfo {
     session: Session,
     members: BTreeSet<String>,
@@ -91,7 +90,11 @@ struct SessionSpaces(BTreeMap<String, SessionInfo>);
 
 impl SessionSpaces {
     #[instrument(skip_all)]
-    async fn new(sessions: Vec<Session>, subject_sessions: Vec<SubjectSession>) -> Self {
+    async fn new(
+        sessions: Vec<Session>,
+        subject_sessions: Vec<SubjectSession>,
+        posix_attr: BTreeMap<String, PosixAttributes>,
+    ) -> Self {
         let mut spaces = BTreeMap::new();
         for session in sessions.into_iter() {
             let session_name = format!("{}{}-{}", session.code, session.proposal, session.visit);
@@ -102,7 +105,7 @@ impl SessionSpaces {
                     SessionInfo {
                         session: session.clone(),
                         members: BTreeSet::new(),
-                        gid: None,
+                        gid: posix_attr.get(&session_name).map(|attr| attr.gid.clone()),
                     },
                 ),
             );
@@ -113,15 +116,6 @@ impl SessionSpaces {
             }
         }
         Self(spaces.into_values().collect())
-    }
-
-    #[instrument(skip_all)]
-    async fn update_gid(&mut self, posix_attr: BTreeMap<String, String>) {
-        for (session_id, gid) in posix_attr {
-            if let Some(session_info) = self.0.get_mut(&session_id) {
-                session_info.gid = Some(gid);
-            }
-        }
     }
 }
 
@@ -137,10 +131,8 @@ async fn perform_update(
     let sessions = Session::fetch(ispyb_pool).await?;
     info!("Fetching Subjects");
     let subjects = SubjectSession::fetch(ispyb_pool).await?;
-    let mut sessions = SessionSpaces::new(sessions, subjects).await;
-    let posix_attr = fetch_gid(ldap).await;
-    sessions.update_gid(posix_attr).await;
-
+    let posix_attr = PosixAttributes::fetch_gid(ldap).await?;
+    let sessions = SessionSpaces::new(sessions, subjects, posix_attr).await;
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();
     let to_update = current_session_names
@@ -151,62 +143,40 @@ async fn perform_update(
     for namespace in to_update.into_iter() {
         let session_info = sessions.get(namespace);
         let current_sesssion_info = current_sessions.get(namespace);
-        let members = match session_info {
-            Some(sess_info) => {
-                if !sess_info.members.is_empty() {
-                    Some(sess_info.members.clone())
-                } else {
-                    None
-                }
+        let members = session_info.map(|info| info.members.clone());
+        match (current_sesssion_info, session_info) {
+            (Some(_), None) => {
+                info!("Deleting Namespace: {}", namespace);
+                delete_namespace(namespace, k8s_client.clone()).await?;
             }
-            None => None,
-        };
-        let current_members = if let Some(current_session_info) = current_sesssion_info {
-            if !current_session_info.members.is_empty() {
-                Some(current_session_info.members.clone())
-            } else {
-                None
+            (None, Some(_)) => {
+                info!("Creating Namespace: {}", namespace);
+                create_namespace(namespace.clone(), k8s_client.clone()).await?;
+                create_configmap(
+                    namespace.clone(),
+                    session_info.unwrap().session.code.clone(),
+                    session_info.unwrap().session.proposal,
+                    session_info.unwrap().session.visit,
+                    session_info.unwrap().gid.clone(),
+                    members.clone(),
+                    k8s_client.clone(),
+                )
+                .await?;
             }
-        } else {
-            None
-        };
-        if current_sesssion_info.is_some() && !session_info.is_some() {
-            info!("Deleting Namespace: {}", namespace);
-            delete_namespace(namespace, k8s_client.clone()).await?;
-        } else if !current_sesssion_info.is_some() && session_info.is_some() {
-            info!("Creating Namespace: {}", namespace);
-            create_namespace(namespace.clone(), k8s_client.clone()).await?;
-            create_configmap(
-                namespace.clone(),
-                session_info.unwrap().session.code.clone(),
-                session_info.unwrap().session.proposal,
-                session_info.unwrap().session.visit,
-                session_info.unwrap().gid.clone(),
-                members.clone(),
-                k8s_client.clone(),
-            )
-            .await?;
-        } else if members
-            .clone()
-            .is_some_and(|mem| current_members.is_none() || current_members.unwrap() != mem)
-            || <Option<String> as Clone>::clone(&session_info.unwrap().gid).is_some_and(|gid| {
-                current_sesssion_info.unwrap().gid.is_none()
-                    || <Option<String> as Clone>::clone(&current_sesssion_info.unwrap().gid)
-                        .unwrap()
-                        != gid
-            })
-        {
-            info!("Updating policy configMap in Namespace: {}", namespace);
-            create_configmap(
-                namespace.clone(),
-                session_info.unwrap().session.code.clone(),
-                session_info.unwrap().session.proposal,
-                session_info.unwrap().session.visit,
-                session_info.unwrap().gid.clone(),
-                Some(members.unwrap().clone()),
-                k8s_client.clone(),
-            )
-            .await?;
+            (Some(current_info), Some(info)) if current_info != info => {
+                info!("Updating policy configMap in Namespace: {}", namespace);
+                create_configmap(
+                    namespace.clone(),
+                    session_info.unwrap().session.code.clone(),
+                    session_info.unwrap().session.proposal,
+                    session_info.unwrap().session.visit,
+                    session_info.unwrap().gid.clone(),
+                    Some(members.unwrap().clone()),
+                    k8s_client.clone(),
+                )
+                .await?;
+            }
+            (_, _) => {}
         }
     }
     *current_sessions = sessions;

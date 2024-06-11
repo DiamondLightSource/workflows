@@ -5,4 +5,6 @@ mod session;
 /// Associations between subjects and sessions
 mod subject_session;
 
-pub use self::{posix_attributes::fetch_gid, session::Session, subject_session::SubjectSession};
+pub use self::{
+    posix_attributes::PosixAttributes, session::Session, subject_session::SubjectSession,
+};
