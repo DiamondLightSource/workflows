@@ -58,8 +58,8 @@ export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 kubectl krew install oidc-login
 ```
 
-Before starting the dev container mount the argus_config from
-```/home/$USER/.kube``` and ```ca.crt``` from ```/dls_sw/apps/kubernetes
+Before starting the dev container mount the config_argus from
+```/home/$USER/.kube/config_argus``` and ```ca.crt``` from ```/dls_sw/apps/kubernetes
 /argus/ca.crt``` to ```/root/.kube/config``` and ```/root/.kube/ca.crt```
 
 or copy both the files to the ```.devcontainer``` directory and

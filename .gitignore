@@ -1,3 +1,5 @@
+# Mkdocs
+/site
 .env
 # k8s configs
 ca.crt
@@ -6,6 +8,3 @@ config_argus
 kubeconfig.yaml
 # Rust
 sessionspaces/target
-# Mkdocs
-/site
-/target
