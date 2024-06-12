@@ -80,8 +80,12 @@ async fn main() {
 /// Attributes of a Sessionspace
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Sessionspace {
-    /// Session attributes from ISPyB
-    session: Session,
+    /// The two letter prefix code associated with the proposal
+    proposal_code: String,
+    /// The unique number of the proposal
+    proposal_number: u32,
+    /// The number of the visit within the proposal
+    visit: u32,
     /// A set of session members
     members: BTreeSet<String>,
     /// The posix GID of the session group
@@ -101,13 +105,18 @@ impl SessionSpaces {
     ) -> Self {
         let mut spaces = BTreeMap::new();
         for session in sessions.into_iter() {
-            let session_name = format!("{}{}-{}", session.code, session.proposal, session.visit);
+            let session_name = format!(
+                "{}{}-{}",
+                session.proposal_code, session.proposal_number, session.visit
+            );
             spaces.insert(
                 session.id,
                 (
                     session_name.clone(),
                     Sessionspace {
-                        session: session.clone(),
+                        proposal_code: session.proposal_code,
+                        proposal_number: session.proposal_number,
+                        visit: session.visit,
                         members: BTreeSet::new(),
                         gid: posix_attr.get(&session_name).map(|attr| attr.gid.clone()),
                     },
@@ -158,9 +167,9 @@ async fn perform_update(
                 create_namespace(namespace.clone(), k8s_client.clone()).await?;
                 create_configmap(
                     namespace.clone(),
-                    session_info.unwrap().session.code.clone(),
-                    session_info.unwrap().session.proposal,
-                    session_info.unwrap().session.visit,
+                    session_info.unwrap().proposal_code.clone(),
+                    session_info.unwrap().proposal_number,
+                    session_info.unwrap().visit,
                     session_info.unwrap().gid.clone(),
                     members.clone(),
                     k8s_client.clone(),
@@ -171,9 +180,9 @@ async fn perform_update(
                 info!("Updating policy configMap in Namespace: {}", namespace);
                 create_configmap(
                     namespace.clone(),
-                    session_info.unwrap().session.code.clone(),
-                    session_info.unwrap().session.proposal,
-                    session_info.unwrap().session.visit,
+                    session_info.unwrap().proposal_code.clone(),
+                    session_info.unwrap().proposal_number,
+                    session_info.unwrap().visit,
                     session_info.unwrap().gid.clone(),
                     Some(members.unwrap().clone()),
                     k8s_client.clone(),
