@@ -1,3 +1,4 @@
+use super::{MANAGED_BY, MANAGED_BY_LABEL};
 use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
@@ -46,6 +47,10 @@ pub async fn create_configmap(
             &Patch::Apply(&ConfigMap {
                 metadata: ObjectMeta {
                     name: Some(NAME.to_string()),
+                    labels: Some(BTreeMap::from([(
+                        MANAGED_BY_LABEL.to_string(),
+                        MANAGED_BY.to_string(),
+                    )])),
                     ..Default::default()
                 },
                 data: Some(configmap_data),
