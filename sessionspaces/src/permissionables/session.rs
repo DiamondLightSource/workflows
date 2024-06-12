@@ -2,7 +2,7 @@ use sqlx::{query_as, MySqlPool};
 use tracing::instrument;
 
 /// A singular beamline session
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
 pub struct Session {
     /// The opaque identifier of the session
     pub id: u32,
@@ -87,6 +87,7 @@ impl TryFrom<SessionRow> for Session {
 mod tests {
     use super::Session;
     use sqlx::MySqlPool;
+    use std::collections::BTreeSet;
 
     #[sqlx::test(migrations = "tests/migrations")]
     async fn fetch_empty(ispyb_pool: MySqlPool) {
@@ -100,8 +101,12 @@ mod tests {
         fixtures(path = "../../tests/fixtures", scripts("bl_sessions", "proposals"))
     )]
     async fn fetch_some(ispyb_pool: MySqlPool) {
-        let sessions = Session::fetch(&ispyb_pool).await.unwrap();
-        let expected: Vec<Session> = vec![
+        let sessions = Session::fetch(&ispyb_pool)
+            .await
+            .unwrap()
+            .into_iter()
+            .collect();
+        let expected = BTreeSet::from([
             Session {
                 id: 43,
                 code: "cm".to_string(),
@@ -126,7 +131,7 @@ mod tests {
                 proposal: 10030,
                 visit: 2,
             },
-        ];
+        ]);
         assert_eq!(expected, sessions);
     }
 }
