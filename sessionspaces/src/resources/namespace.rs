@@ -1,9 +1,11 @@
+use super::{MANAGED_BY, MANAGED_BY_LABEL};
 use k8s_openapi::api::core::v1::Namespace;
 use kube::Error as KubeError;
 use kube::{
     api::{DeleteParams, ObjectMeta, PostParams},
     Api,
 };
+use std::collections::BTreeMap;
 use tracing::{info, instrument};
 
 /// Removes a Namespace from the cluster
@@ -44,6 +46,10 @@ pub async fn create_namespace(
                 &Namespace {
                     metadata: ObjectMeta {
                         name: Some(namespace.clone()),
+                        labels: Some(BTreeMap::from([(
+                            MANAGED_BY_LABEL.to_string(),
+                            MANAGED_BY.to_string(),
+                        )])),
                         ..Default::default()
                     },
                     ..Default::default()
