@@ -164,29 +164,11 @@ async fn perform_update(
             (None, Some(session_info)) => {
                 info!("Creating Namespace: {}", namespace);
                 create_namespace(namespace.clone(), k8s_client.clone()).await?;
-                create_configmap(
-                    namespace.clone(),
-                    session_info.proposal_code.clone(),
-                    session_info.proposal_number,
-                    session_info.visit,
-                    session_info.gid.clone(),
-                    session_info.members.clone(),
-                    k8s_client.clone(),
-                )
-                .await?;
+                create_configmap(namespace, session_info.clone(), k8s_client.clone()).await?;
             }
             (Some(current_info), Some(session_info)) if current_info != session_info => {
                 info!("Updating policy configMap in Namespace: {}", namespace);
-                create_configmap(
-                    namespace.clone(),
-                    session_info.proposal_code.clone(),
-                    session_info.proposal_number,
-                    session_info.visit,
-                    session_info.gid.clone(),
-                    session_info.members.clone(),
-                    k8s_client.clone(),
-                )
-                .await?;
+                create_configmap(namespace, session_info.clone(), k8s_client.clone()).await?;
             }
             (_, _) => {}
         }
