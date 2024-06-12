@@ -86,6 +86,8 @@ struct Sessionspace {
     proposal_number: u32,
     /// The number of the visit within the proposal
     visit: u32,
+    /// The beamline with which the session is associated
+    beamline: String,
     /// A set of session members
     members: BTreeSet<String>,
     /// The posix GID of the session group
@@ -117,6 +119,7 @@ impl SessionSpaces {
                         proposal_code: session.proposal_code,
                         proposal_number: session.proposal_number,
                         visit: session.visit,
+                        beamline: session.beamline,
                         members: BTreeSet::new(),
                         gid: posix_attr.get(&session_name).map(|attr| attr.gid.clone()),
                     },

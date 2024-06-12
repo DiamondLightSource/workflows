@@ -34,6 +34,7 @@ pub async fn create_configmap(
             sessionspace.proposal_number.to_string(),
         ),
         ("visit".to_string(), sessionspace.visit.to_string()),
+        ("beamline".to_string(), sessionspace.beamline),
         ("members".to_string(), members),
     ]);
     if let Some(gid) = sessionspace.gid {
