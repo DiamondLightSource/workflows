@@ -2,7 +2,7 @@ use sqlx::{query_as, MySqlPool};
 use tracing::instrument;
 
 /// The association of a subject with a session
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SubjectSession {
     /// The subject associated with the session
     pub subject: String,
@@ -54,6 +54,7 @@ impl SubjectSession {
 mod tests {
     use super::SubjectSession;
     use sqlx::MySqlPool;
+    use std::collections::BTreeSet;
 
     #[sqlx::test(migrations = "tests/migrations")]
     async fn fetch_empty(ispyb_pool: MySqlPool) {
@@ -70,8 +71,12 @@ mod tests {
         )
     )]
     async fn fetch_some(ispyb_pool: MySqlPool) {
-        let subject_sessions = SubjectSession::fetch(&ispyb_pool).await.unwrap();
-        let expected = vec![
+        let subject_sessions = SubjectSession::fetch(&ispyb_pool)
+            .await
+            .unwrap()
+            .into_iter()
+            .collect();
+        let expected = BTreeSet::from([
             SubjectSession {
                 subject: "bar".to_string(),
                 session: 43,
@@ -92,7 +97,7 @@ mod tests {
                 subject: "foo".to_string(),
                 session: 42,
             },
-        ];
+        ]);
         assert_eq!(expected, subject_sessions);
     }
 }
