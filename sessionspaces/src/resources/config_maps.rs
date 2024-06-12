@@ -1,4 +1,5 @@
 use super::{MANAGED_BY, MANAGED_BY_LABEL};
+use itertools::Itertools;
 use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
@@ -17,7 +18,7 @@ pub async fn create_configmap(
     session_number: u32,
     visit_number: u32,
     gid_number: Option<String>,
-    members: Option<BTreeSet<String>>,
+    members: BTreeSet<String>,
     k8s_client: Client,
 ) -> std::result::Result<(), kube::Error> {
     let configmaps = Api::<ConfigMap>::namespaced(k8s_client, &namespace);
@@ -26,14 +27,13 @@ pub async fn create_configmap(
         ("session_number".to_string(), session_number.to_string()),
         ("visit_number".to_string(), visit_number.to_string()),
     ]);
-    if let Some(members_set) = members {
-        let quoted_members: Vec<String> =
-            members_set.iter().map(|s| format!("\"{}\"", s)).collect();
-        configmap_data.insert(
-            "members".to_string(),
-            format!("[{}]", quoted_members.join(", ")),
-        );
-    }
+    configmap_data.insert(
+        "members".to_string(),
+        format!(
+            "[{}]",
+            members.iter().map(|s| format!("\"{}\"", s)).join(", ")
+        ),
+    );
     if let Some(gid) = gid_number {
         configmap_data.insert("gid".to_string(), gid);
     }
