@@ -7,9 +7,9 @@ pub struct Session {
     /// The opaque identifier of the session
     pub id: u32,
     /// The proposal type code
-    pub code: String,
+    pub proposal_code: String,
     /// The proposal number with which this session is associated
-    pub proposal: u32,
+    pub proposal_number: u32,
     /// The visit number within the proposal
     pub visit: u32,
 }
@@ -73,8 +73,8 @@ impl TryFrom<SessionRow> for Session {
 
         Ok(Self {
             id: value.id,
-            code,
-            proposal: value
+            proposal_code: code,
+            proposal_number: value
                 .proposal
                 .ok_or(anyhow::anyhow!("Proposal number was NULL"))?
                 .parse()?,
@@ -109,26 +109,26 @@ mod tests {
         let expected = BTreeSet::from([
             Session {
                 id: 43,
-                code: "cm".to_string(),
-                proposal: 10031,
+                proposal_code: "cm".to_string(),
+                proposal_number: 10031,
                 visit: 4,
             },
             Session {
                 id: 44,
-                code: "cm".to_string(),
-                proposal: 10031,
+                proposal_code: "cm".to_string(),
+                proposal_number: 10031,
                 visit: 5,
             },
             Session {
                 id: 40,
-                code: "sw".to_string(),
-                proposal: 10030,
+                proposal_code: "sw".to_string(),
+                proposal_number: 10030,
                 visit: 1,
             },
             Session {
                 id: 41,
-                code: "sw".to_string(),
-                proposal: 10030,
+                proposal_code: "sw".to_string(),
+                proposal_number: 10030,
                 visit: 2,
             },
         ]);
