@@ -77,16 +77,20 @@ async fn main() {
     }
 }
 
+/// Attributes of a Sessionspace
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct SessionInfo {
+struct Sessionspace {
+    /// Session attributes from ISPyB
     session: Session,
+    /// A set of session members
     members: BTreeSet<String>,
+    /// The posix GID of the session group
     gid: Option<String>,
 }
 
 /// A mapping of session namespaces to their session info
 #[derive(Debug, Default, derive_more::Deref, Clone)]
-struct SessionSpaces(BTreeMap<String, SessionInfo>);
+struct SessionSpaces(BTreeMap<String, Sessionspace>);
 
 impl SessionSpaces {
     #[instrument(skip_all)]
@@ -102,7 +106,7 @@ impl SessionSpaces {
                 session.id,
                 (
                     session_name.clone(),
-                    SessionInfo {
+                    Sessionspace {
                         session: session.clone(),
                         members: BTreeSet::new(),
                         gid: posix_attr.get(&session_name).map(|attr| attr.gid.clone()),
@@ -131,7 +135,7 @@ async fn perform_update(
     let sessions = Session::fetch(ispyb_pool).await?;
     info!("Fetching Subjects");
     let subjects = SubjectSession::fetch(ispyb_pool).await?;
-    let posix_attr = PosixAttributes::fetch_gid(ldap).await?;
+    let posix_attr = PosixAttributes::fetch(ldap).await?;
     let sessions = SessionSpaces::new(sessions, subjects, posix_attr).await;
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();

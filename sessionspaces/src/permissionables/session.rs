@@ -66,7 +66,7 @@ impl TryFrom<SessionRow> for Session {
         }?;
 
         let visit = match value.visit {
-            Some(visit) if visit == 0 => Err(anyhow::anyhow!("Visit number was zero")),
+            Some(0) => Err(anyhow::anyhow!("Visit number was zero")),
             Some(visit) => Ok(visit),
             None => Err(anyhow::anyhow!("Visit number was NULL")),
         }?;
@@ -78,7 +78,7 @@ impl TryFrom<SessionRow> for Session {
                 .proposal
                 .ok_or(anyhow::anyhow!("Proposal number was NULL"))?
                 .parse()?,
-            visit: visit,
+            visit,
         })
     }
 }

@@ -22,7 +22,7 @@ pub async fn delete_namespace(
             info!("Namespace {namespace} does not exist, skipping deletion");
             Ok(())
         }
-        Err(e) => Err(e.into()),
+        Err(e) => Err(e),
     }
 }
 
@@ -52,7 +52,7 @@ pub async fn create_namespace(
             .await?;
             Ok(())
         }
-        Err(e) => Err(e.into()),
+        Err(e) => Err(e),
     }
 }
 
