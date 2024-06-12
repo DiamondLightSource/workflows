@@ -12,6 +12,8 @@ pub struct Session {
     pub proposal_number: u32,
     /// The visit number within the proposal
     pub visit: u32,
+    /// The beamline with which the session is associated
+    pub beamline: String,
 }
 
 impl Session {
@@ -25,7 +27,8 @@ impl Session {
                 sessionId as id,
                 proposalCode as code,
                 proposalNumber as proposal,
-                visit_number as visit
+                visit_number as visit,
+                beamLineName as beamline
             FROM
                 BLSession
                 JOIN Proposal USING (proposalId)
@@ -45,6 +48,7 @@ struct SessionRow {
     code: Option<String>,
     proposal: Option<String>,
     visit: Option<u32>,
+    beamline: Option<String>,
 }
 
 impl TryFrom<SessionRow> for Session {
@@ -79,6 +83,7 @@ impl TryFrom<SessionRow> for Session {
                 .ok_or(anyhow::anyhow!("Proposal number was NULL"))?
                 .parse()?,
             visit,
+            beamline: value.beamline.ok_or(anyhow::anyhow!("Beamline was NULL"))?,
         })
     }
 }
@@ -112,24 +117,28 @@ mod tests {
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 4,
+                beamline: "i22".to_string(),
             },
             Session {
                 id: 44,
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 5,
+                beamline: "p45".to_string(),
             },
             Session {
                 id: 40,
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 1,
+                beamline: "i03".to_string(),
             },
             Session {
                 id: 41,
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 2,
+                beamline: "i04-1".to_string(),
             },
         ]);
         assert_eq!(expected, sessions);
