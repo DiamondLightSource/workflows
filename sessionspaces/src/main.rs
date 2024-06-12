@@ -156,35 +156,34 @@ async fn perform_update(
     for namespace in to_update.into_iter() {
         let session_info = sessions.get(namespace);
         let current_sesssion_info = current_sessions.get(namespace);
-        let members = session_info.map(|info| info.members.clone());
         match (current_sesssion_info, session_info) {
             (Some(_), None) => {
                 info!("Deleting Namespace: {}", namespace);
                 delete_namespace(namespace, k8s_client.clone()).await?;
             }
-            (None, Some(_)) => {
+            (None, Some(session_info)) => {
                 info!("Creating Namespace: {}", namespace);
                 create_namespace(namespace.clone(), k8s_client.clone()).await?;
                 create_configmap(
                     namespace.clone(),
-                    session_info.unwrap().proposal_code.clone(),
-                    session_info.unwrap().proposal_number,
-                    session_info.unwrap().visit,
-                    session_info.unwrap().gid.clone(),
-                    members.clone(),
+                    session_info.proposal_code.clone(),
+                    session_info.proposal_number,
+                    session_info.visit,
+                    session_info.gid.clone(),
+                    session_info.members.clone(),
                     k8s_client.clone(),
                 )
                 .await?;
             }
-            (Some(current_info), Some(info)) if current_info != info => {
+            (Some(current_info), Some(session_info)) if current_info != session_info => {
                 info!("Updating policy configMap in Namespace: {}", namespace);
                 create_configmap(
                     namespace.clone(),
-                    session_info.unwrap().proposal_code.clone(),
-                    session_info.unwrap().proposal_number,
-                    session_info.unwrap().visit,
-                    session_info.unwrap().gid.clone(),
-                    Some(members.unwrap().clone()),
+                    session_info.proposal_code.clone(),
+                    session_info.proposal_number,
+                    session_info.visit,
+                    session_info.gid.clone(),
+                    session_info.members.clone(),
                     k8s_client.clone(),
                 )
                 .await?;
