@@ -6,7 +6,8 @@ use kube::{
 use std::collections::{BTreeMap, BTreeSet};
 use tracing::{info, instrument};
 
-const CONFIG: &str = "sessionspaces";
+/// The name to be given to the ConfigMap
+const NAME: &str = "sessionspaces";
 
 #[instrument(skip(k8s_client))]
 pub async fn create_configmap(
@@ -37,14 +38,14 @@ pub async fn create_configmap(
     }
     configmaps
         .patch(
-            CONFIG,
+            NAME,
             &PatchParams {
                 field_manager: Some("kubectl".to_string()),
                 ..Default::default()
             },
             &Patch::Apply(&ConfigMap {
                 metadata: ObjectMeta {
-                    name: Some(CONFIG.to_string()),
+                    name: Some(NAME.to_string()),
                     ..Default::default()
                 },
                 data: Some(configmap_data),
@@ -53,6 +54,6 @@ pub async fn create_configmap(
         )
         .await?;
 
-    info!("ConfigMap {CONFIG} created");
+    info!("ConfigMap {NAME} created");
     Ok(())
 }
