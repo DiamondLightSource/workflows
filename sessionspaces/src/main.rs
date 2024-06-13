@@ -4,18 +4,18 @@
 #![doc = include_str!("../README.md")]
 
 /// ISPyB permissionables tables
-mod permissionables;
+pub mod permissionables;
 /// Kubernetes resource templating
 mod resources;
 
 use crate::{
-    permissionables::{PosixAttributes, Session, SubjectSession},
+    permissionables::Sessions,
     resources::{create_configmap, create_namespace, delete_namespace},
 };
 use clap::Parser;
 use ldap3::{Ldap, LdapConnAsync};
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use tokio::time::{sleep_until, Instant};
 use tracing::{info, instrument, warn};
 use url::Url;
@@ -58,7 +58,7 @@ async fn main() {
     ldap3::drive!(conn);
 
     let k8s_client = kube::Client::try_default().await.unwrap();
-    let mut current_sessions = SessionSpaces::default();
+    let mut current_sessions = Sessions::default();
     let mut request_at = Instant::now();
     loop {
         sleep_until(request_at).await;
@@ -77,78 +77,15 @@ async fn main() {
     }
 }
 
-/// Attributes of a Sessionspace
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct Sessionspace {
-    /// The two letter prefix code associated with the proposal
-    proposal_code: String,
-    /// The unique number of the proposal
-    proposal_number: u32,
-    /// The number of the visit within the proposal
-    visit: u32,
-    /// The beamline with which the session is associated
-    beamline: String,
-    /// A set of session members
-    members: BTreeSet<String>,
-    /// The posix GID of the session group
-    gid: Option<String>,
-}
-
-/// A mapping of session namespaces to their session info
-#[derive(Debug, Default, derive_more::Deref, Clone)]
-struct SessionSpaces(BTreeMap<String, Sessionspace>);
-
-impl SessionSpaces {
-    #[instrument(skip_all)]
-    async fn new(
-        sessions: Vec<Session>,
-        subject_sessions: Vec<SubjectSession>,
-        posix_attr: BTreeMap<String, PosixAttributes>,
-    ) -> Self {
-        let mut spaces = BTreeMap::new();
-        for session in sessions.into_iter() {
-            let session_name = format!(
-                "{}{}-{}",
-                session.proposal_code, session.proposal_number, session.visit
-            );
-            spaces.insert(
-                session.id,
-                (
-                    session_name.clone(),
-                    Sessionspace {
-                        proposal_code: session.proposal_code,
-                        proposal_number: session.proposal_number,
-                        visit: session.visit,
-                        beamline: session.beamline,
-                        members: BTreeSet::new(),
-                        gid: posix_attr.get(&session_name).map(|attr| attr.gid.clone()),
-                    },
-                ),
-            );
-        }
-        for SubjectSession { subject, session } in subject_sessions.into_iter() {
-            if let Some(space) = spaces.get_mut(&session) {
-                space.1.members.insert(subject);
-            }
-        }
-        Self(spaces.into_values().collect())
-    }
-}
-
 /// Requests a new bundle from the bundle server and performs templating accordingly
 #[instrument(skip(k8s_client, current_sessions), err(level=tracing::Level::WARN))]
 async fn perform_update(
     ispyb_pool: &MySqlPool,
     k8s_client: kube::Client,
-    current_sessions: &mut SessionSpaces,
-    ldap: &mut Ldap,
+    current_sessions: &mut Sessions,
+    ldap_connection: &mut Ldap,
 ) -> std::result::Result<(), anyhow::Error> {
-    info!("Fetching Sessions");
-    let sessions = Session::fetch(ispyb_pool).await?;
-    info!("Fetching Subjects");
-    let subjects = SubjectSession::fetch(ispyb_pool).await?;
-    let posix_attr = PosixAttributes::fetch(ldap).await?;
-    let sessions = SessionSpaces::new(sessions, subjects, posix_attr).await;
+    let sessions = Sessions::fetch(ispyb_pool, ldap_connection).await?;
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();
     let to_update = current_session_names

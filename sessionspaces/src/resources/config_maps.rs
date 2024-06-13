@@ -1,5 +1,5 @@
 use super::{MANAGED_BY, MANAGED_BY_LABEL};
-use crate::Sessionspace;
+use crate::permissionables::Session;
 use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
@@ -14,24 +14,24 @@ const NAME: &str = "sessionspaces";
 #[instrument(skip(k8s_client))]
 pub async fn create_configmap(
     namespace: &str,
-    sessionspace: Sessionspace,
+    session: Session,
     k8s_client: Client,
 ) -> std::result::Result<(), anyhow::Error> {
     let configmaps = Api::<ConfigMap>::namespaced(k8s_client, namespace);
     let mut configmap_data = BTreeMap::from([
-        ("proposal_code".to_string(), sessionspace.proposal_code),
+        ("proposal_code".to_string(), session.proposal_code),
         (
             "proposal_number".to_string(),
-            sessionspace.proposal_number.to_string(),
+            session.proposal_number.to_string(),
         ),
-        ("visit".to_string(), sessionspace.visit.to_string()),
-        ("beamline".to_string(), sessionspace.beamline),
+        ("visit".to_string(), session.visit.to_string()),
+        ("beamline".to_string(), session.beamline),
         (
             "members".to_string(),
-            serde_json::to_string(&sessionspace.members)?,
+            serde_json::to_string(&session.members)?,
         ),
     ]);
-    if let Some(gid) = sessionspace.gid {
+    if let Some(gid) = session.gid {
         configmap_data.insert("gid".to_string(), gid);
     }
     configmaps
