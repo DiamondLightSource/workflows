@@ -12,8 +12,10 @@ pub struct PosixAttributes {
 
 impl PosixAttributes {
     /// Fetches [`PosixAttributes`] from the SciComp LDAP
-    pub async fn fetch(ldap: &mut Ldap) -> Result<BTreeMap<String, PosixAttributes>, LdapError> {
-        let (rs, _res) = ldap
+    pub async fn fetch(
+        ldap_connection: &mut Ldap,
+    ) -> Result<BTreeMap<String, PosixAttributes>, LdapError> {
+        let (rs, _res) = ldap_connection
             .search(
                 "ou=Group,dc=diamond,dc=ac,dc=uk",
                 Scope::Subtree,

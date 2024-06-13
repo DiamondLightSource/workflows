@@ -3,7 +3,7 @@ use tracing::instrument;
 
 /// A singular beamline session
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
-pub struct Session {
+pub struct BasicInfo {
     /// The opaque identifier of the session
     pub id: u32,
     /// The proposal type code
@@ -16,12 +16,12 @@ pub struct Session {
     pub beamline: String,
 }
 
-impl Session {
+impl BasicInfo {
     /// Fetches [`Session`]s from ISPyB
     #[instrument(name = "fetch_sessions")]
     pub async fn fetch(ispyb_pool: &MySqlPool) -> Result<Vec<Self>, sqlx::Error> {
         Ok(query_as!(
-            SessionRow,
+            BasicInfoRow,
             "
             SELECT
                 sessionId as id,
@@ -43,7 +43,7 @@ impl Session {
 }
 
 #[allow(clippy::missing_docs_in_private_items)]
-struct SessionRow {
+struct BasicInfoRow {
     id: u32,
     code: Option<String>,
     proposal: Option<String>,
@@ -51,10 +51,10 @@ struct SessionRow {
     beamline: Option<String>,
 }
 
-impl TryFrom<SessionRow> for Session {
+impl TryFrom<BasicInfoRow> for BasicInfo {
     type Error = anyhow::Error;
 
-    fn try_from(value: SessionRow) -> Result<Self, Self::Error> {
+    fn try_from(value: BasicInfoRow) -> Result<Self, Self::Error> {
         let code = match value.code {
             Some(code) if code.is_empty() => Err(anyhow::anyhow!("Proposal code was empty")),
             Some(code)
@@ -90,14 +90,14 @@ impl TryFrom<SessionRow> for Session {
 
 #[cfg(test)]
 mod tests {
-    use super::Session;
+    use super::BasicInfo;
     use sqlx::MySqlPool;
     use std::collections::BTreeSet;
 
     #[sqlx::test(migrations = "tests/migrations")]
     async fn fetch_empty(ispyb_pool: MySqlPool) {
-        let sessions = Session::fetch(&ispyb_pool).await.unwrap();
-        let expected: Vec<Session> = Vec::new();
+        let sessions = BasicInfo::fetch(&ispyb_pool).await.unwrap();
+        let expected: Vec<BasicInfo> = Vec::new();
         assert_eq!(expected, sessions);
     }
 
@@ -106,34 +106,34 @@ mod tests {
         fixtures(path = "../../tests/fixtures", scripts("bl_sessions", "proposals"))
     )]
     async fn fetch_some(ispyb_pool: MySqlPool) {
-        let sessions = Session::fetch(&ispyb_pool)
+        let sessions = BasicInfo::fetch(&ispyb_pool)
             .await
             .unwrap()
             .into_iter()
             .collect();
         let expected = BTreeSet::from([
-            Session {
+            BasicInfo {
                 id: 43,
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 4,
                 beamline: "i22".to_string(),
             },
-            Session {
+            BasicInfo {
                 id: 44,
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 5,
                 beamline: "p45".to_string(),
             },
-            Session {
+            BasicInfo {
                 id: 40,
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 1,
                 beamline: "i03".to_string(),
             },
-            Session {
+            BasicInfo {
                 id: 41,
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
