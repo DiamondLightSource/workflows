@@ -1,0 +1,40 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: argo-workflow
+spec:
+  steps:
+  - try:
+    - apply:
+        resource:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: test
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+    - apply:
+        resource:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: sessionspaces
+            namespace: test
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+          data:
+            members: '["member1", "member2"]'
+    - assert:
+        resource:
+          apiVersion: v1
+          kind: ServiceAccount
+          metadata:
+            name: argo-workflow
+            namespace: test
+    - assert:
+        resource:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: RoleBinding
+          metadata:
+            name: argo-workflow
+            namespace: test
