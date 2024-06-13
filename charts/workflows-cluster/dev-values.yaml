@@ -49,3 +49,43 @@ vcluster:
             namespace: kube-system
           values: |-
             fullnameOverride: sealed-secrets-controller
+        - chart:
+            name: kyverno
+            version: 3.2.2
+            repo: https://kyverno.github.io/kyverno
+          release:
+            name: kyverno
+            namespace: kyverno
+          values: |-
+            admissionController:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 500Mi
+                requests:
+                  cpu: 100m
+                  memory: 250Mi
+            backgroundController:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 500Mi
+                requests:
+                  cpu: 100m
+                  memory: 250Mi
+            cleanupController:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 500Mi
+                requests:
+                  cpu: 100m
+                  memory: 250Mi
+            reportsController:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 500Mi
+                requests:
+                  cpu: 100m
+                  memory: 250Mi
