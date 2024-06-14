@@ -8,14 +8,6 @@ spec:
     - apply:
         resource:
           apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: test
-            labels:
-              app.kubernetes.io/managed-by: sessionspaces
-    - apply:
-        resource:
-          apiVersion: v1
           kind: ConfigMap
           metadata:
             name: sessionspaces

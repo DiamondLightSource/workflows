@@ -1,0 +1,50 @@
+name: Kyverno Policy
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-policy:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Setup Chainsaw
+        uses: kyverno/action-install-chainsaw@v0.1.0
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+
+      - name: Install chart dependencies
+        run: |
+          helm repo add bitnami http://charts.bitnami.com/bitnami
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo add kyverno https://kyverno.github.io/kyverno/
+          helm repo update
+          helm dep build charts/workflows
+
+      - name: Install SealedSecret CRDs
+        run: |
+          kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.0/controller.yaml
+
+      - name: Install Kyvenro
+        run: helm install kyverno kyverno/kyverno -n kyverno --create-namespace
+
+      - name: Deploy Workflows
+        run: |
+          helm install workflows charts/workflows -n workflows --create-namespace
+        
+      - name: Wait for clusterpolicies
+        run: |
+          kubectl wait --for=condition=Ready clusterpolicy/argo-workflow
+          kubectl wait --for=condition=Ready clusterpolicy/visit-member
+
+      - name: Run Chainsaw Tests
+        run: chainsaw test
