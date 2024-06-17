@@ -3,11 +3,9 @@ mod basic_info;
 /// Beamline Session posix Group ID
 mod posix_attributes;
 /// Associations between sessions and subjects
-mod subject_session;
+mod subjects;
 
-use self::{
-    basic_info::BasicInfo, posix_attributes::PosixAttributes, subject_session::SubjectSession,
-};
+use self::{basic_info::BasicInfo, posix_attributes::PosixAttributes, subjects::SessionSubjects};
 use ldap3::Ldap;
 use sqlx::MySqlPool;
 use std::collections::{BTreeMap, BTreeSet};
@@ -38,7 +36,7 @@ impl Sessions {
     /// Creates [`Sessions`] from Session [`BasicInfo`], [`SubjectSession`], and [`PosixAttributes`]
     fn new(
         basic_info: Vec<BasicInfo>,
-        subject_sessions: Vec<SubjectSession>,
+        mut session_subjects: SessionSubjects,
         posix_attributes: BTreeMap<String, PosixAttributes>,
     ) -> Self {
         let mut spaces = BTreeMap::new();
@@ -56,18 +54,13 @@ impl Sessions {
                         proposal_number: session.proposal_number,
                         visit: session.visit,
                         beamline: session.beamline,
-                        members: BTreeSet::new(),
+                        members: session_subjects.remove(&session.id).unwrap_or_default(),
                         gid: posix_attributes
                             .get(&session_name)
                             .map(|attr| attr.gid.clone()),
                     },
                 ),
             );
-        }
-        for SubjectSession { subject, session } in subject_sessions.into_iter() {
-            if let Some(space) = spaces.get_mut(&session) {
-                space.1.members.insert(subject);
-            }
         }
         Self(spaces.into_values().collect())
     }
@@ -79,7 +72,7 @@ impl Sessions {
         ldap_connection: &mut Ldap,
     ) -> Result<Self, anyhow::Error> {
         let basic_info = BasicInfo::fetch(ispyb_pool).await?;
-        let subject_sessions = SubjectSession::fetch(ispyb_pool).await?;
+        let subject_sessions = SessionSubjects::fetch(ispyb_pool).await?;
         let posix_attributes = PosixAttributes::fetch(ldap_connection).await?;
         Ok(Self::new(basic_info, subject_sessions, posix_attributes))
     }
