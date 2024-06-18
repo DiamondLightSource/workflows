@@ -5,8 +5,9 @@ mod posix_attributes;
 /// Associations between sessions and subjects
 mod subjects;
 
-use self::{basic_info::BasicInfo, posix_attributes::PosixAttributes, subjects::SessionSubjects};
+use self::{basic_info::BasicInfo, subjects::SessionSubjects};
 use ldap3::Ldap;
+use posix_attributes::SessionPosixAttributes;
 use sqlx::MySqlPool;
 use std::collections::{BTreeMap, BTreeSet};
 use tracing::instrument;
@@ -37,7 +38,7 @@ impl Sessions {
     fn new(
         basic_info: Vec<BasicInfo>,
         mut session_subjects: SessionSubjects,
-        posix_attributes: BTreeMap<String, PosixAttributes>,
+        posix_attributes: SessionPosixAttributes,
     ) -> Self {
         let mut spaces = BTreeMap::new();
         for session in basic_info.into_iter() {
@@ -73,7 +74,7 @@ impl Sessions {
     ) -> Result<Self, anyhow::Error> {
         let basic_info = BasicInfo::fetch(ispyb_pool).await?;
         let subject_sessions = SessionSubjects::fetch(ispyb_pool).await?;
-        let posix_attributes = PosixAttributes::fetch(ldap_connection).await?;
+        let posix_attributes = SessionPosixAttributes::fetch(ldap_connection).await?;
         Ok(Self::new(basic_info, subject_sessions, posix_attributes))
     }
 }
