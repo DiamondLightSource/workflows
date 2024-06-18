@@ -10,6 +10,7 @@ use ldap3::Ldap;
 use posix_attributes::SessionPosixAttributes;
 use sqlx::MySqlPool;
 use std::collections::{BTreeMap, BTreeSet};
+use time::PrimitiveDateTime;
 use tracing::instrument;
 
 /// Attributes of a Sessionspace
@@ -27,6 +28,10 @@ pub struct Session {
     pub members: BTreeSet<String>,
     /// The posix GID of the session group
     pub gid: Option<String>,
+    /// The session start date and time
+    pub start_date: PrimitiveDateTime,
+    /// The session end date and time
+    pub end_date: PrimitiveDateTime,
 }
 
 /// A mapping of session namespaces to their session info
@@ -59,6 +64,8 @@ impl Sessions {
                         gid: posix_attributes
                             .get(&session_name)
                             .map(|attr| attr.gid.clone()),
+                        start_date: session.start_date,
+                        end_date: session.end_date,
                     },
                 ),
             );
