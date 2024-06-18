@@ -63,3 +63,6 @@ ingress:
   enabled: true
   host: workflows.diamond.ac.uk
   path: /
+
+securityContext:
+  runAsUser: 36055
