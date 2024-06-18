@@ -8,10 +8,18 @@ spec:
     - apply:
         resource:
           apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: test-visit-member
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+    - apply:
+        resource:
+          apiVersion: v1
           kind: ConfigMap
           metadata:
             name: sessionspaces
-            namespace: test
+            namespace: test-visit-member
             labels:
               app.kubernetes.io/managed-by: sessionspaces
           data:
@@ -22,11 +30,11 @@ spec:
           kind: ServiceAccount
           metadata:
             name: visit-member
-            namespace: test
+            namespace: test-visit-member
     - assert:
         resource:
           apiVersion: rbac.authorization.k8s.io/v1
           kind: RoleBinding
           metadata:
             name: visit-member
-            namespace: test
+            namespace: test-visit-member

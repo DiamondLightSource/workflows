@@ -10,7 +10,7 @@ spec:
           apiVersion: v1
           kind: Namespace
           metadata:
-            name: test
+            name: test-argo-workflow
             labels:
               app.kubernetes.io/managed-by: sessionspaces
     - apply:
@@ -19,7 +19,7 @@ spec:
           kind: ConfigMap
           metadata:
             name: sessionspaces
-            namespace: test
+            namespace: test-argo-workflow
             labels:
               app.kubernetes.io/managed-by: sessionspaces
           data:
@@ -30,11 +30,11 @@ spec:
           kind: ServiceAccount
           metadata:
             name: argo-workflow
-            namespace: test
+            namespace: test-argo-workflow
     - assert:
         resource:
           apiVersion: rbac.authorization.k8s.io/v1
           kind: RoleBinding
           metadata:
             name: argo-workflow
-            namespace: test
+            namespace: test-argo-workflow

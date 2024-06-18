@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: pod-securitycontext
 spec:
+  validationFailureAction: Enforce 
   rules:
     - name: pod-securitycontext
       match:
@@ -22,3 +23,19 @@ spec:
           spec:
             securityContext:
               runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+              runAsUser: {{ .Values.securityContext.runAsUser }}
+
+    - name: reject-privilegeEscalation
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      validate:
+        pattern:
+          spec:
+            containers:
+            - =(securityContext):
+                allowPrivilegeEscalation: false
