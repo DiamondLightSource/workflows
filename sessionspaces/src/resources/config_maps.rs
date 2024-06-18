@@ -1,4 +1,4 @@
-use super::{MANAGED_BY, MANAGED_BY_LABEL};
+use super::{BL_WITH_PATH, MANAGED_BY, MANAGED_BY_LABEL};
 use crate::permissionables::Session;
 use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
@@ -25,14 +25,25 @@ pub async fn create_configmap(
             session.proposal_number.to_string(),
         ),
         ("visit".to_string(), session.visit.to_string()),
-        ("beamline".to_string(), session.beamline),
+        ("beamline".to_string(), session.beamline.clone()),
         (
             "members".to_string(),
             serde_json::to_string(&session.members)?,
         ),
+        ("start_date".to_string(), session.start_date.to_string()),
+        ("end_date".to_string(), session.end_date.to_string()),
     ]);
     if let Some(gid) = session.gid {
         configmap_data.insert("gid".to_string(), gid);
+    }
+    if BL_WITH_PATH.contains(&session.beamline.as_str()) {
+        let mount_path = format!(
+            "/dls/{}/data/{}/{}",
+            session.beamline,
+            session.start_date.year(),
+            namespace
+        );
+        configmap_data.insert("dataDirectory".to_string(), mount_path);
     }
     configmaps
         .patch(
