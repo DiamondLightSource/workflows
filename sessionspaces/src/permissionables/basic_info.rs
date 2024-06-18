@@ -1,5 +1,6 @@
 use sqlx::{query_as, MySqlPool};
 use tracing::instrument;
+use time::PrimitiveDateTime;
 
 /// A singular beamline session
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
@@ -14,6 +15,10 @@ pub struct BasicInfo {
     pub visit: u32,
     /// The beamline with which the session is associated
     pub beamline: String,
+    /// The session start date and time
+    pub start_date: PrimitiveDateTime,
+    /// The session end date and time
+    pub end_date: PrimitiveDateTime,
 }
 
 impl BasicInfo {
@@ -28,7 +33,9 @@ impl BasicInfo {
                 proposalCode as code,
                 proposalNumber as proposal,
                 visit_number as visit,
-                beamLineName as beamline
+                beamLineName as beamline,
+                startDate as start_date,
+                endDate as end_date
             FROM
                 BLSession
                 JOIN Proposal USING (proposalId)
@@ -49,6 +56,8 @@ struct BasicInfoRow {
     proposal: Option<String>,
     visit: Option<u32>,
     beamline: Option<String>,
+    start_date: Option<PrimitiveDateTime>,
+    end_date: Option<PrimitiveDateTime>,
 }
 
 impl TryFrom<BasicInfoRow> for BasicInfo {
@@ -84,6 +93,9 @@ impl TryFrom<BasicInfoRow> for BasicInfo {
                 .parse()?,
             visit,
             beamline: value.beamline.ok_or(anyhow::anyhow!("Beamline was NULL"))?,
+            start_date: value.start_date.ok_or(anyhow::anyhow!("startDate was NULL"))?,
+            end_date: value.end_date.ok_or(anyhow::anyhow!("endDate was NULL"))?,
+
         })
     }
 }
@@ -92,6 +104,7 @@ impl TryFrom<BasicInfoRow> for BasicInfo {
 mod tests {
     use super::BasicInfo;
     use sqlx::MySqlPool;
+    use time::{macros::{date, time}, PrimitiveDateTime};
     use std::collections::BTreeSet;
 
     #[sqlx::test(migrations = "tests/migrations")]
@@ -118,6 +131,8 @@ mod tests {
                 proposal_number: 10031,
                 visit: 4,
                 beamline: "i22".to_string(),
+                start_date: PrimitiveDateTime::new(date!(2011-01-19), time!(00:00:00)),
+                end_date: PrimitiveDateTime::new(date!(2011-01-19), time!(00:00:00)),
             },
             BasicInfo {
                 id: 44,
@@ -125,6 +140,8 @@ mod tests {
                 proposal_number: 10031,
                 visit: 5,
                 beamline: "p45".to_string(),
+                start_date: PrimitiveDateTime::new(date!(2011-01-19), time!(00:00:00)),
+                end_date: PrimitiveDateTime::new(date!(2011-01-19), time!(00:00:00)),
             },
             BasicInfo {
                 id: 40,
@@ -132,6 +149,8 @@ mod tests {
                 proposal_number: 10030,
                 visit: 1,
                 beamline: "i03".to_string(),
+                start_date: PrimitiveDateTime::new(date!(2009-06-19), time!(09:00:00)),
+                end_date: PrimitiveDateTime::new(date!(2009-07-19), time!(09:00:00)),
             },
             BasicInfo {
                 id: 41,
@@ -139,6 +158,8 @@ mod tests {
                 proposal_number: 10030,
                 visit: 2,
                 beamline: "i04-1".to_string(),
+                start_date: PrimitiveDateTime::new(date!(2010-06-19), time!(00:00:00)),
+                end_date: PrimitiveDateTime::new(date!(2010-06-19), time!(00:00:00)),
             },
         ]);
         assert_eq!(expected, sessions);
