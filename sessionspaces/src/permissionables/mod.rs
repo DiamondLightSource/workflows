@@ -1,11 +1,11 @@
 /// Basic Beamline Sessions attributes
 mod basic_info;
+/// Associations between sessions and subjects
+mod direct_subjects;
 /// Beamline Session posix Group ID
 mod posix_attributes;
-/// Associations between sessions and subjects
-mod subjects;
 
-use self::{basic_info::BasicInfo, subjects::SessionSubjects};
+use self::{basic_info::BasicInfo, direct_subjects::DirectSubjects};
 use ldap3::Ldap;
 use posix_attributes::SessionPosixAttributes;
 use sqlx::MySqlPool;
@@ -42,7 +42,7 @@ impl Sessions {
     /// Creates [`Sessions`] from Session [`BasicInfo`], [`SubjectSession`], and [`PosixAttributes`]
     fn new(
         basic_info: Vec<BasicInfo>,
-        mut session_subjects: SessionSubjects,
+        mut direct_subjects: DirectSubjects,
         posix_attributes: SessionPosixAttributes,
     ) -> Self {
         let mut spaces = BTreeMap::new();
@@ -60,7 +60,7 @@ impl Sessions {
                         proposal_number: session.proposal_number,
                         visit: session.visit,
                         beamline: session.beamline,
-                        members: session_subjects.remove(&session.id).unwrap_or_default(),
+                        members: direct_subjects.remove(&session.id).unwrap_or_default(),
                         gid: posix_attributes
                             .get(&session_name)
                             .map(|attr| attr.gid.clone()),
@@ -80,8 +80,8 @@ impl Sessions {
         ldap_connection: &mut Ldap,
     ) -> Result<Self, anyhow::Error> {
         let basic_info = BasicInfo::fetch(ispyb_pool).await?;
-        let subject_sessions = SessionSubjects::fetch(ispyb_pool).await?;
+        let direct_subjects = DirectSubjects::fetch(ispyb_pool).await?;
         let posix_attributes = SessionPosixAttributes::fetch(ldap_connection).await?;
-        Ok(Self::new(basic_info, subject_sessions, posix_attributes))
+        Ok(Self::new(basic_info, direct_subjects, posix_attributes))
     }
 }
