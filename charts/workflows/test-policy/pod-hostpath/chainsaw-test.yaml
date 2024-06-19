@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: pod-securitycontext
+  name: hostpath
 spec:
   steps:
   - try:
@@ -10,7 +10,7 @@ spec:
           apiVersion: v1
           kind: Namespace
           metadata:
-            name: test-pod-securitycontext
+            name: test-hostpath
             labels:
               app.kubernetes.io/managed-by: sessionspaces
     - apply:
@@ -19,9 +19,9 @@ spec:
           kind: ConfigMap
           metadata:
             name: sessionspaces
-            namespace: test-pod-securitycontext
-          labels:
-            app.kubernetes.io/managed-by: sessionspaces
+            namespace: test-hostpath
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
           data:
             dataDirectory: "/allowed/path"
             gid: "1234"
@@ -30,32 +30,28 @@ spec:
           apiVersion: v1
           kind: Pod
           metadata:
-            name: test
-            namespace: test-pod-securitycontext
+            name: allowed
+            namespace: test-hostpath
           spec:
             containers:
             - name: nginx
               image: nginx:latest
-    - assert:
-        resource:
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            namespace: test-pod-securitycontext
-          spec:
-            securityContext:
-              runAsGroup: 1234
-              runAsUser: 36055
+            volumes:
+            - name: test-volume
+              hostPath:
+                path: "/allowed/path"
     - error:
         resource:
           apiVersion: v1
           kind: Pod
           metadata:
-            name: fail
-            namespace: test-pod-securitycontext
+            name: disallowed
+            namespace: test-hostpath
           spec:
             containers:
             - name: nginx
               image: nginx:latest
-              securityContext:
-                allowPrivilegeEscalation: true
+            volumes:
+            - name: test-volume
+              hostPath:
+                path: "/disallowed/path"
