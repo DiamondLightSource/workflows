@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: hostpath
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: check-hostpath
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      context:
+        - name: values
+          configMap:
+            name: sessionspaces
+            namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+      validate:
+        message: The hostPath must point to the session directory
+        pattern:
+          spec:
+            volumes:
+            - =(hostPath):
+                path: "{{ `{{values.data.dataDirectory}}` }}"
