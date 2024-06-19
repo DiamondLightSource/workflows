@@ -4,10 +4,13 @@ mod basic_info;
 mod direct_subjects;
 /// Beamline Session posix Group ID
 mod posix_attributes;
+/// Associations between proposals and subjects
+mod proposal_subjects;
 
 use self::{basic_info::BasicInfo, direct_subjects::DirectSubjects};
 use ldap3::Ldap;
 use posix_attributes::SessionPosixAttributes;
+use proposal_subjects::ProposalSubjects;
 use sqlx::MySqlPool;
 use std::collections::{BTreeMap, BTreeSet};
 use time::PrimitiveDateTime;
@@ -43,6 +46,7 @@ impl Sessions {
     fn new(
         basic_info: Vec<BasicInfo>,
         mut direct_subjects: DirectSubjects,
+        proposal_subjects: ProposalSubjects,
         posix_attributes: SessionPosixAttributes,
     ) -> Self {
         let mut spaces = BTreeMap::new();
@@ -51,6 +55,16 @@ impl Sessions {
                 "{}{}-{}",
                 session.proposal_code, session.proposal_number, session.visit
             );
+            let members = [
+                direct_subjects.remove(&session.id).unwrap_or_default(),
+                proposal_subjects
+                    .get(&session.proposal_id)
+                    .cloned()
+                    .unwrap_or_default(),
+            ]
+            .into_iter()
+            .flatten()
+            .collect();
             spaces.insert(
                 session.id,
                 (
@@ -60,7 +74,7 @@ impl Sessions {
                         proposal_number: session.proposal_number,
                         visit: session.visit,
                         beamline: session.beamline,
-                        members: direct_subjects.remove(&session.id).unwrap_or_default(),
+                        members,
                         gid: posix_attributes
                             .get(&session_name)
                             .map(|attr| attr.gid.clone()),
@@ -81,7 +95,13 @@ impl Sessions {
     ) -> Result<Self, anyhow::Error> {
         let basic_info = BasicInfo::fetch(ispyb_pool).await?;
         let direct_subjects = DirectSubjects::fetch(ispyb_pool).await?;
+        let proposal_subjects = ProposalSubjects::fetch(ispyb_pool).await?;
         let posix_attributes = SessionPosixAttributes::fetch(ldap_connection).await?;
-        Ok(Self::new(basic_info, direct_subjects, posix_attributes))
+        Ok(Self::new(
+            basic_info,
+            direct_subjects,
+            proposal_subjects,
+            posix_attributes,
+        ))
     }
 }
