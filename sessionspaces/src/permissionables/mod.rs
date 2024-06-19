@@ -49,7 +49,7 @@ impl Sessions {
         proposal_subjects: ProposalSubjects,
         mut posix_attributes: SessionPosixAttributes,
     ) -> Self {
-        let mut spaces = BTreeMap::new();
+        let mut sessions = Self::default();
         for session in basic_info.into_iter() {
             let session_name = format!(
                 "{}{}-{}",
@@ -65,26 +65,23 @@ impl Sessions {
             .into_iter()
             .flatten()
             .collect();
-            spaces.insert(
-                session.id,
-                (
-                    session_name.clone(),
-                    Session {
-                        proposal_code: session.proposal_code,
-                        proposal_number: session.proposal_number,
-                        visit: session.visit,
-                        beamline: session.beamline,
-                        members,
-                        gid: posix_attributes
-                            .remove(&session_name)
-                            .map(|attributes| attributes.gid),
-                        start_date: session.start_date,
-                        end_date: session.end_date,
-                    },
-                ),
+            sessions.insert(
+                session_name.clone(),
+                Session {
+                    proposal_code: session.proposal_code,
+                    proposal_number: session.proposal_number,
+                    visit: session.visit,
+                    beamline: session.beamline,
+                    members,
+                    gid: posix_attributes
+                        .remove(&session_name)
+                        .map(|attributes| attributes.gid),
+                    start_date: session.start_date,
+                    end_date: session.end_date,
+                },
             );
         }
-        Self(spaces.into_values().collect())
+        sessions
     }
 
     /// Fetches the neccasary information to create Sessions from ISPyB and the SciComp LDAP
