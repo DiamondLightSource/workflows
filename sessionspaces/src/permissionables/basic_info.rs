@@ -7,7 +7,9 @@ use tracing::instrument;
 pub struct BasicInfo {
     /// The opaque identifier of the session
     pub id: u32,
-    /// The proposal type code
+    /// The opaque identifier of the proposal with which this session is associated
+    pub proposal_id: u32,
+    /// The type code of the proposal with which this session is associated
     pub proposal_code: String,
     /// The proposal number with which this session is associated
     pub proposal_number: u32,
@@ -30,8 +32,9 @@ impl BasicInfo {
             "
             SELECT
                 sessionId as id,
-                proposalCode as code,
-                proposalNumber as proposal,
+                proposalId as proposal_id,
+                proposalCode as proposal_code,
+                proposalNumber as proposal_number,
                 visit_number as visit,
                 beamLineName as beamline,
                 startDate as start_date,
@@ -52,8 +55,9 @@ impl BasicInfo {
 #[allow(clippy::missing_docs_in_private_items)]
 struct BasicInfoRow {
     id: u32,
-    code: Option<String>,
-    proposal: Option<String>,
+    proposal_id: u32,
+    proposal_code: Option<String>,
+    proposal_number: Option<String>,
     visit: Option<u32>,
     beamline: Option<String>,
     start_date: Option<PrimitiveDateTime>,
@@ -64,10 +68,12 @@ impl TryFrom<BasicInfoRow> for BasicInfo {
     type Error = anyhow::Error;
 
     fn try_from(value: BasicInfoRow) -> Result<Self, Self::Error> {
-        let code = match value.code {
-            Some(code) if code.is_empty() => Err(anyhow::anyhow!("Proposal code was empty")),
-            Some(code)
-                if code
+        let code = match value.proposal_code {
+            Some(proposal_code) if proposal_code.is_empty() => {
+                Err(anyhow::anyhow!("Proposal code was empty"))
+            }
+            Some(proposal_code)
+                if proposal_code
                     .chars()
                     .next()
                     .is_some_and(|char| !char.is_alphanumeric()) =>
@@ -86,9 +92,10 @@ impl TryFrom<BasicInfoRow> for BasicInfo {
 
         Ok(Self {
             id: value.id,
+            proposal_id: value.proposal_id,
             proposal_code: code,
             proposal_number: value
-                .proposal
+                .proposal_number
                 .ok_or(anyhow::anyhow!("Proposal number was NULL"))?
                 .parse()?,
             visit,
@@ -131,6 +138,7 @@ mod tests {
         let expected = BTreeSet::from([
             BasicInfo {
                 id: 43,
+                proposal_id: 31,
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 4,
@@ -140,6 +148,7 @@ mod tests {
             },
             BasicInfo {
                 id: 44,
+                proposal_id: 31,
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 5,
@@ -149,6 +158,7 @@ mod tests {
             },
             BasicInfo {
                 id: 40,
+                proposal_id: 30,
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 1,
@@ -158,6 +168,7 @@ mod tests {
             },
             BasicInfo {
                 id: 41,
+                proposal_id: 30,
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 2,
