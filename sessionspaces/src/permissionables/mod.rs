@@ -47,7 +47,7 @@ impl Sessions {
         basic_info: Vec<BasicInfo>,
         mut direct_subjects: DirectSubjects,
         proposal_subjects: ProposalSubjects,
-        posix_attributes: SessionPosixAttributes,
+        mut posix_attributes: SessionPosixAttributes,
     ) -> Self {
         let mut spaces = BTreeMap::new();
         for session in basic_info.into_iter() {
@@ -76,8 +76,8 @@ impl Sessions {
                         beamline: session.beamline,
                         members,
                         gid: posix_attributes
-                            .get(&session_name)
-                            .map(|attr| attr.gid.clone()),
+                            .remove(&session_name)
+                            .map(|attributes| attributes.gid),
                         start_date: session.start_date,
                         end_date: session.end_date,
                     },
