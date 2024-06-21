@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-artifacts:
+        patterns:
+          - actions/*-artifact
+      minor:
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: docker
+    directories:
+      - /sessionspaces/
+      - /sessionspaces/.devcontainer/
+    schedule:
+      interval: weekly
+    groups:
+      minor:
+        update-types:
+          - patch
+          - minor
+  - package-ecosystem: cargo
+    directory: /sessionspaces/
+    schedule:
+      interval: weekly
+    groups:
+      patch:
+        update-types:
+          - patch
