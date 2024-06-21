@@ -39,3 +39,18 @@ spec:
             containers:
             - =(securityContext):
                 allowPrivilegeEscalation: false
+
+    - name: reject-writerootfilesystem
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      validate:
+        pattern:
+          spec:
+            containers:
+            - =(securityContext):
+                readOnlyRootFilesystem: true

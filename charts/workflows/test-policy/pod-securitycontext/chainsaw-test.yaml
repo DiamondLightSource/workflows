@@ -30,7 +30,7 @@ spec:
           apiVersion: v1
           kind: Pod
           metadata:
-            name: test
+            name: allowed
             namespace: test-pod-securitycontext
           spec:
             containers:
@@ -51,7 +51,7 @@ spec:
           apiVersion: v1
           kind: Pod
           metadata:
-            name: fail
+            name: disallowed-privilageescalation
             namespace: test-pod-securitycontext
           spec:
             containers:
@@ -59,3 +59,16 @@ spec:
               image: nginx:latest
               securityContext:
                 allowPrivilegeEscalation: true
+    - error:
+        resource:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: disallowed-writerootfilesystem
+            namespace: test-pod-securitycontext
+          spec:
+            containers:
+            - name: nginx
+              image: nginx:latest
+              securityContext:
+                readOnlyRootFilesystem: false
