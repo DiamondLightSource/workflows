@@ -26,6 +26,9 @@ struct Cli {
     /// The URL of the ISPyB instance which should be connected to
     #[clap(long, env)]
     database_url: Url,
+    /// The URL of the LDAP database where the posix attributes are stored
+    #[clap(long, env)]
+    ldap_url: Url,
     /// The period to wait after a succesful bundle server request
     #[clap(long, env, default_value = "60s")]
     update_interval: humantime::Duration,
@@ -35,9 +38,6 @@ struct Cli {
     /// The [`tracing::Level`] to log at
     #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
     log_level: tracing::Level,
-    /// The URL of the LDAP database where the posix attributes are stored
-    #[clap(long, env)]
-    ldap_url: Url,
 }
 
 #[tokio::main(flavor = "current_thread")]
