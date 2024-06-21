@@ -37,14 +37,16 @@ jobs:
       - name: Install Kyvenro
         run: helm install kyverno kyverno/kyverno -n kyverno --create-namespace
 
-      - name: Deploy Workflows
+      - name: Deploy Policies
         run: |
-          helm install workflows charts/workflows -n workflows --create-namespace
-        
+          helm install sessionspaces charts/sessionspaces --namespace sessionspaces --create-namespace --set deployment.create=false
+          helm install workflows charts/workflows --namespace workflows --create-namespace --set argo-workflows.enabled=false --set postgresql-ha.enabled=false
+
       - name: Wait for clusterpolicies
         run: |
-          kubectl wait --for=condition=Ready clusterpolicy/argo-workflow --timeout=90s
-          kubectl wait --for=condition=Ready clusterpolicy/visit-member --timeout=0s
+          kubectl wait --for=condition=Ready --timeout=90s clusterpolicy/argo-workflow
+          kubectl wait --for=condition=Ready --timeout=0s clusterpolicy/visit-member
+          kubectl wait --for=condition=Ready --timeout=0s clusterpolicy/sessionspace-pod
 
       - name: Run Chainsaw Tests
         run: chainsaw test

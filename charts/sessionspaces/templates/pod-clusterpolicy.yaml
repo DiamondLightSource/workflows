@@ -1,9 +1,9 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: pod-securitycontext
+  name: sessionspace-pod
 spec:
-  validationFailureAction: Enforce 
+  validationFailureAction: Enforce
   rules:
     - name: pod-securitycontext
       match:
@@ -23,7 +23,28 @@ spec:
           spec:
             securityContext:
               runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-              runAsUser: {{ .Values.securityContext.runAsUser }}
+              runAsUser: {{ .Values.policy.runAsUser }}
+
+    - name: check-hostpath
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      context:
+        - name: values
+          configMap:
+            name: sessionspaces
+            namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+      validate:
+        message: The hostPath must point to the session directory
+        pattern:
+          spec:
+            volumes:
+            - =(hostPath):
+                path: "{{ `{{values.data.dataDirectory}}` }}"
 
     - name: reject-privilegeEscalation
       match:
