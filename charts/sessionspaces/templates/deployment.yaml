@@ -1,3 +1,4 @@
+{{- if .Values.deployment.create -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,3 +30,4 @@ spec:
               value: {{ include "sessionspaces.databaseURL" . }}
             - name: LDAP_URL
               value: {{ .Values.ldapUrl }}
+{{- end -}}

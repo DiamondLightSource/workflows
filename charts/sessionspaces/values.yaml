@@ -11,6 +11,12 @@ image:
   pullPolicy: Always
   tag: ""
 
+deployment:
+  create: true
+
+policy:
+  runAsUser: 36055
+
 serviceAccount:
   create: true
   annotations: {}
