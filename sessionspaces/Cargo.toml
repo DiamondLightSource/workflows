@@ -17,6 +17,7 @@ ldap3 = { version = "0.11.4", default-features = false, features = [
 ] }
 mockito = { version = "1.4.0" }
 serde_json = { version = "1.0.117" }
+strum = { version = "0.26.3", features = ["derive"] }
 sqlx = { version = "0.7.3", features = [
     "runtime-tokio",
     "tls-rustls",

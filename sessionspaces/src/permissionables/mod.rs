@@ -8,6 +8,7 @@ mod posix_attributes;
 mod proposal_subjects;
 
 use self::{basic_info::BasicInfo, direct_subjects::DirectSubjects};
+use crate::instruments::Instrument;
 use ldap3::Ldap;
 use posix_attributes::SessionPosixAttributes;
 use proposal_subjects::ProposalSubjects;
@@ -25,8 +26,8 @@ pub struct Session {
     pub proposal_number: u32,
     /// The number of the visit within the proposal
     pub visit: u32,
-    /// The beamline with which the session is associated
-    pub beamline: String,
+    /// The instrument with which the session is associated
+    pub instrument: Instrument,
     /// A set of session members
     pub members: BTreeSet<String>,
     /// The posix GID of the session group
@@ -71,7 +72,7 @@ impl Sessions {
                     proposal_code: session.proposal_code,
                     proposal_number: session.proposal_number,
                     visit: session.visit,
-                    beamline: session.beamline,
+                    instrument: session.instrument,
                     members,
                     gid: posix_attributes
                         .remove(&session_name)
