@@ -1,6 +1,10 @@
+use std::str::FromStr;
+
 use sqlx::{query_as, MySqlPool};
 use time::PrimitiveDateTime;
 use tracing::instrument;
+
+use crate::instruments::Instrument;
 
 /// A singular beamline session
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone)]
@@ -16,7 +20,7 @@ pub struct BasicInfo {
     /// The visit number within the proposal
     pub visit: u32,
     /// The beamline with which the session is associated
-    pub beamline: String,
+    pub instrument: Instrument,
     /// The session start date and time
     pub start_date: PrimitiveDateTime,
     /// The session end date and time
@@ -36,7 +40,7 @@ impl BasicInfo {
                 proposalCode as proposal_code,
                 proposalNumber as proposal_number,
                 visit_number as visit,
-                beamLineName as beamline,
+                beamLineName as instrument,
                 startDate as start_date,
                 endDate as end_date
             FROM
@@ -59,7 +63,7 @@ struct BasicInfoRow {
     proposal_code: Option<String>,
     proposal_number: Option<String>,
     visit: Option<u32>,
-    beamline: Option<String>,
+    instrument: Option<String>,
     start_date: Option<PrimitiveDateTime>,
     end_date: Option<PrimitiveDateTime>,
 }
@@ -99,7 +103,11 @@ impl TryFrom<BasicInfoRow> for BasicInfo {
                 .ok_or(anyhow::anyhow!("Proposal number was NULL"))?
                 .parse()?,
             visit,
-            beamline: value.beamline.ok_or(anyhow::anyhow!("Beamline was NULL"))?,
+            instrument: Instrument::from_str(
+                &value
+                    .instrument
+                    .ok_or(anyhow::anyhow!("Beamline was NULL"))?,
+            )?,
             start_date: value
                 .start_date
                 .ok_or(anyhow::anyhow!("startDate was NULL"))?,
@@ -110,6 +118,8 @@ impl TryFrom<BasicInfoRow> for BasicInfo {
 
 #[cfg(test)]
 mod tests {
+    use crate::instruments::Instrument;
+
     use super::BasicInfo;
     use sqlx::MySqlPool;
     use std::collections::BTreeSet;
@@ -142,7 +152,7 @@ mod tests {
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 4,
-                beamline: "i22".to_string(),
+                instrument: Instrument::I22,
                 start_date: PrimitiveDateTime::new(date!(2011 - 01 - 19), time!(00:00:00)),
                 end_date: PrimitiveDateTime::new(date!(2011 - 01 - 19), time!(00:00:00)),
             },
@@ -152,7 +162,7 @@ mod tests {
                 proposal_code: "cm".to_string(),
                 proposal_number: 10031,
                 visit: 5,
-                beamline: "p45".to_string(),
+                instrument: Instrument::P45,
                 start_date: PrimitiveDateTime::new(date!(2011 - 01 - 19), time!(00:00:00)),
                 end_date: PrimitiveDateTime::new(date!(2011 - 01 - 19), time!(00:00:00)),
             },
@@ -162,7 +172,7 @@ mod tests {
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 1,
-                beamline: "i03".to_string(),
+                instrument: Instrument::I03,
                 start_date: PrimitiveDateTime::new(date!(2009 - 06 - 19), time!(09:00:00)),
                 end_date: PrimitiveDateTime::new(date!(2009 - 07 - 19), time!(09:00:00)),
             },
@@ -172,7 +182,7 @@ mod tests {
                 proposal_code: "sw".to_string(),
                 proposal_number: 10030,
                 visit: 2,
-                beamline: "i04-1".to_string(),
+                instrument: Instrument::I04_1,
                 start_date: PrimitiveDateTime::new(date!(2010 - 06 - 19), time!(00:00:00)),
                 end_date: PrimitiveDateTime::new(date!(2010 - 06 - 19), time!(00:00:00)),
             },

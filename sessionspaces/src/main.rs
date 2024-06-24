@@ -3,6 +3,8 @@
 #![warn(clippy::missing_docs_in_private_items)]
 #![doc = include_str!("../README.md")]
 
+/// Known instruments
+pub mod instruments;
 /// ISPyB permissionables tables
 pub mod permissionables;
 /// Kubernetes resource templating
