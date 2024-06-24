@@ -48,6 +48,7 @@ jobs:
           - workflows
           - workflows-cluster
           - events
+          - argocd-apps
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4.1.7

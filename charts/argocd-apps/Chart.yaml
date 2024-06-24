@@ -1,0 +1,6 @@
+apiVersion: v2
+name: argocd
+description: An argocd app to deploy apps inside the virtual cluster
+type: application
+
+version: 0.1.0
