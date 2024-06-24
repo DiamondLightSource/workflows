@@ -3,7 +3,7 @@ dependencies:
   repository: https://argoproj.github.io/argo-helm
   version: 0.41.4
 - name: postgresql-ha
-  repository: http://charts.bitnami.com/bitnami
+  repository: https://charts.bitnami.com/bitnami
   version: 14.0.12
-digest: sha256:2a055eafa4be9312f3ee8ba2ff58f80bbc39cfb5105ff509f3221aaf65a32fda
-generated: "2024-05-13T14:25:08.353522503+01:00"
+digest: sha256:a077ad1689685506668c37e9a639b5e0903097318797d208e129de58843ff68a
+generated: "2024-06-24T14:36:23.518223904Z"
