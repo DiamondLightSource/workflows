@@ -23,7 +23,7 @@ sqlx = { version = "0.7.3", features = [
     "mysql",
     "time",
 ] }
-tokio = { version = "1.36.0", features = ["macros", "time"] }
+tokio = { version = "1.38.0", features = ["macros", "time"] }
 time = { version = "0.3.36" }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
