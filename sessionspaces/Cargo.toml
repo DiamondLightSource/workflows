@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.80" }
-clap = { version = "4.5.1", features = ["derive", "env"] }
-derive_more = { version = "0.99.17" }
+anyhow = { version = "1.0.86" }
+clap = { version = "4.5.7", features = ["derive", "env"] }
+derive_more = { version = "0.99.18" }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
 itertools = { version = "0.13.0" }
@@ -27,4 +27,4 @@ tokio = { version = "1.38.0", features = ["macros", "time"] }
 time = { version = "0.3.36" }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
-url = { version = "2.5.0" }
+url = { version = "2.5.2" }
