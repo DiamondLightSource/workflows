@@ -24,7 +24,7 @@ jobs:
 
       - name: Install chart dependencies
         run: |
-          helm repo add bitnami http://charts.bitnami.com/bitnami
+          helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo add kyverno https://kyverno.github.io/kyverno/
           helm repo update
