@@ -9,7 +9,7 @@ clap = { version = "4.5.1", features = ["derive", "env"] }
 derive_more = { version = "0.99.17" }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
-itertools = { version = "0.12.1" }
+itertools = { version = "0.13.0" }
 k8s-openapi = { version = "0.21.1", features = ["latest"] }
 kube = { version = "0.88.1" }
 ldap3 = { version = "0.11.4", default-features = false, features = [
