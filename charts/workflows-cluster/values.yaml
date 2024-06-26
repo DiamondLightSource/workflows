@@ -27,6 +27,11 @@ vcluster:
         repository: ghcr.io/loft-sh/vcluster-oss
       highAvailability:
         replicas: 3
+      resources:
+        requests:
+          cpu: 4000m
+        limits:
+          cpu: 8000m
   experimental:
     deploy:
       helm:
