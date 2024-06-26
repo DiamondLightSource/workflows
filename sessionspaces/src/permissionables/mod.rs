@@ -2,6 +2,8 @@
 mod basic_info;
 /// Associations between sessions and subjects
 mod direct_subjects;
+/// Associations between instruments and subjects
+mod instrument_subjects;
 /// Beamline Session posix Group ID
 mod posix_attributes;
 /// Associations between proposals and subjects
@@ -9,6 +11,7 @@ mod proposal_subjects;
 
 use self::{basic_info::BasicInfo, direct_subjects::DirectSubjects};
 use crate::instruments::Instrument;
+use instrument_subjects::InstrumentSubjects;
 use ldap3::Ldap;
 use posix_attributes::SessionPosixAttributes;
 use proposal_subjects::ProposalSubjects;
@@ -48,6 +51,7 @@ impl Sessions {
         basic_info: Vec<BasicInfo>,
         mut direct_subjects: DirectSubjects,
         proposal_subjects: ProposalSubjects,
+        instrument_subjects: InstrumentSubjects,
         mut posix_attributes: SessionPosixAttributes,
     ) -> Self {
         let mut sessions = Self::default();
@@ -60,6 +64,10 @@ impl Sessions {
                 direct_subjects.remove(&session.id).unwrap_or_default(),
                 proposal_subjects
                     .get(&session.proposal_id)
+                    .cloned()
+                    .unwrap_or_default(),
+                instrument_subjects
+                    .get(&session.instrument)
                     .cloned()
                     .unwrap_or_default(),
             ]
@@ -94,11 +102,13 @@ impl Sessions {
         let basic_info = BasicInfo::fetch(ispyb_pool).await?;
         let direct_subjects = DirectSubjects::fetch(ispyb_pool).await?;
         let proposal_subjects = ProposalSubjects::fetch(ispyb_pool).await?;
+        let instrument_subjects = InstrumentSubjects::fetch(ldap_connection).await?;
         let posix_attributes = SessionPosixAttributes::fetch(ldap_connection).await?;
         Ok(Self::new(
             basic_info,
             direct_subjects,
             proposal_subjects,
+            instrument_subjects,
             posix_attributes,
         ))
     }
