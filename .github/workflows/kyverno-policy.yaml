@@ -37,6 +37,12 @@ jobs:
       - name: Install Kyvenro
         run: helm install kyverno kyverno/kyverno -n kyverno --create-namespace
 
+      - name: Wait for CRDs
+        run: |
+          kubectl wait --for=condition=Established --timeout=60s crd/sealedsecrets.bitnami.com
+          kubectl wait --for=condition=Established --timeout=60s crd/clusterpolicies.kyverno.io
+          kubectl wait --for=condition=Established --timeout=0s crd/policies.kyverno.io
+
       - name: Deploy Policies
         run: |
           helm install sessionspaces charts/sessionspaces --namespace sessionspaces --create-namespace --set deployment.create=false
@@ -44,7 +50,7 @@ jobs:
 
       - name: Wait for clusterpolicies
         run: |
-          kubectl wait --for=condition=Ready --timeout=90s clusterpolicy/argo-workflow
+          kubectl wait --for=condition=Ready --timeout=60s clusterpolicy/argo-workflow
           kubectl wait --for=condition=Ready --timeout=0s clusterpolicy/visit-member
           kubectl wait --for=condition=Ready --timeout=0s clusterpolicy/sessionspace-pod
 
