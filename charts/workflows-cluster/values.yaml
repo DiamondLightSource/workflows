@@ -35,20 +35,46 @@ vcluster:
   experimental:
     deploy:
       helm:
-        - chart:
+        - release:
+            name: argocd
+            namespace: argocd
+          chart:
             name: argo-cd
             version: 7.3.0
             repo: https://argoproj.github.io/argo-helm
-          release:
-            name: argocd
+        - release:
+            name: argocd-app-of-apps
             namespace: argocd
-        - chart:
-            name: argocd-apps
-            version: 0.1.0
-            repo: oci://ghcr.io/diamondlightsource
-          release:
-            name: argocd-apps
-            namespace: argocd
+          # This is an empty helm chart compressed into a base64 string
+          # The actual content is defined in the values below
+          # The reason for this hack is that helm charts and manifests
+          # are not executed in order (should be fixed upstream in vcluster)
+          bundle: H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOzUsQrDIBCAYec8hU9gzsSLkLXvEOh4g9CAxhBNoKR599JCh2bpUGxp8VsOXDyHX/JUHk40RXEmZ1kSAACNUvcJAPsJgMCkamqNqBGRgZQaK8YhzTrP5hBpYvD2XfvH/Qga+85MofdDy5eqGMiZlpOnYnmcgpACim/vmaVx6z8aN1qKJpTkKcE/8LL/Su/6rxXWuf9PWFcuOrKzCfzCoz+Ss3zbcu5ZlmX/7hoAAP//U7FpAgAMAAA=
+          values: |-
+            apiVersion: argoproj.io/v1alpha1
+            kind: Application
+            metadata:
+              name: argocd-apps
+              namespace: argocd
+              annotations:
+                argocd.argoproj.io/sync-wave: "0"
+            spec:
+              destination:
+                namespace: argocd
+                server: https://kubernetes.default.svc
+              project: default
+              source:
+                helm:
+                  valuesObject:
+                    dev:
+                      enabled: false
+                path: charts/argocd-apps
+                repoURL: https://github.com/DiamondLightSource/workflows.git
+                targetRevision: HEAD
+              syncPolicy:
+                automated:
+                  prune: true
+                  selfHeal: true
   sync:
     toHost:
       ingresses:
