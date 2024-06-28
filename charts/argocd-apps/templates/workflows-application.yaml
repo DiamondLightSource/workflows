@@ -12,15 +12,19 @@ spec:
     server: {{ .Values.destination.server }}
   project: default
   source:
-    helm:
-      valueFiles:
-      - values.yaml
-      {{- if.Values.dev.enabled }}
-      - dev-values.yaml
-      {{- end }}
     path: charts/workflows
     repoURL: https://github.com/DiamondLightSource/workflows.git
     targetRevision: {{ .Values.workflows.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.workflows.extraValueFiles }}
+        {{- .Values.workflows.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.workflows.valuesObject }}
+      valuesObject:
+        {{ .Values.workflows.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
   syncPolicy:
     automated:
       prune: true

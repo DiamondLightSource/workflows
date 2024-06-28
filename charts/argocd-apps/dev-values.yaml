@@ -1,0 +1,58 @@
+events:
+  enabled: true
+  extraValuesFiles:
+    - dev-values.yaml
+
+kyverno:
+  enabled: true
+  valuesObject:
+    admissionController:
+      replicas: 1
+      container:
+        resources:
+          limits:
+            cpu: 200m
+          requests:
+            cpu: 100m
+    backgroundController:
+      replicas: 1
+      resources:
+        limits:
+          cpu: 200m
+        requests:
+          cpu: 100m
+    cleanupController:
+      replicas: 1
+      resources:
+        limits:
+          cpu: 200m
+        requests:
+          cpu: 100m
+    reportsController:
+      replicas: 1
+      resources:
+        limits:
+          cpu: 200m
+        requests:
+          cpu: 100m
+
+sessionspaces:
+  enabled: true
+  extraValuesFiles:
+    - dev-values.yaml
+
+sealedsecrets:
+  enabled: true
+  valuesObject:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+workflows:
+  enabled: true
+  extraValuesFiles:
+    - dev-values.yaml

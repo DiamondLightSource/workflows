@@ -12,15 +12,19 @@ spec:
     server: {{ .Values.destination.server }}
   project: default
   source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/events
+    targetRevision: {{ .Values.events.targetRevision }}
     helm:
       valueFiles:
-      - values.yaml
-      {{- if.Values.dev.enabled }}
-      - dev-values.yaml
+        - values.yaml
+        {{- if .Values.events.extraValueFiles }}
+        {{- .Values.events.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.events.valuesObject }}
+      valuesObject:
+        {{- .Values.events.valuesObject | toYaml | nindent 8 }}
       {{- end }}
-    path: charts/events
-    repoURL: https://github.com/DiamondLightSource/workflows.git
-    targetRevision: {{ .Values.events.targetRevision }}
   syncPolicy:
     automated:
       prune: true
