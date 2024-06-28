@@ -12,12 +12,19 @@ spec:
     server: {{ .Values.destination.server }}
   project: default
   source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/sessionspaces
+    targetRevision: {{ .Values.sessionspaces.targetRevision }}
     helm:
       valueFiles:
-      - values.yaml
-    path: charts/sessionspaces
-    repoURL: https://github.com/DiamondLightSource/workflows.git
-    targetRevision: {{ .Values.sessionspaces.targetRevision }}
+        - values.yaml
+        {{- if .Values.sessionspaces.extraValueFiles }}
+        {{- .Values.sessionspaces.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.sessionspaces.valuesObject }}
+      valuesObject:
+        {{ .Values.sessionspaces.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
   syncPolicy:
     automated:
       prune: true

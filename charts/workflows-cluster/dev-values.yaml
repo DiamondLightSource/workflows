@@ -31,11 +31,11 @@ vcluster:
         replicas: 1
       resources:
         limits:
-          cpu: 500m
+          cpu: 1
           ephemeral-storage: 2Gi
           memory: 1Gi
         requests:
-          cpu: 250m
+          cpu: 500m
           memory: 500Mi
   experimental:
     deploy:
@@ -47,7 +47,7 @@ vcluster:
           release:
             name: argocd
             namespace: argocd
-          valuesObject:
+          values: |-
             controller:
               resources:
                 limits:

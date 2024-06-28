@@ -12,34 +12,25 @@ spec:
     server: {{ .Values.destination.server }}
   project: default
   source:
-    helm:
-      values: |
-        admissionController:
-          replicas: 3
-        backgroundController:
-          replicas: 2
-        cleanupController:
-          replicas: 2
-        reportsController:
-          replicas: 2
-      {{- if.Values.dev.enabled }}
-      values: |
-        admissionController:
-          replicas: 1
-        backgroundController:
-          replicas: 1
-        cleanupController:
-          replicas: 1
-        reportsController:
-          replicas: 1
-      {{- end }}
-    chart: kyverno
     repoURL: https://kyverno.github.io/kyverno
+    chart: kyverno
     targetRevision: {{ .Values.kyverno.targetRevision }}
+    {{- if or .Values.kyverno.extraValueFiles .Values.kyverno.valuesObject }}
+    helm:
+      {{- if .Values.kyverno.extraValueFiles }}
+      values:
+        {{ .Values.kyverno.extraValueFiles }}
+      {{- end }}
+      {{- if .Values.kyverno.valuesObject }}
+      valuesObject:
+        {{ .Values.kyverno.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+    {{- end }}
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - Replace=true
 {{- end }}
