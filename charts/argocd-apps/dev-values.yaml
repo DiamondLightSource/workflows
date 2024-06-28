@@ -1,0 +1,21 @@
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+
+events:
+  enabled: true
+
+kyverno:
+  enabled: true
+
+sessionspaces:
+  enabled: true
+
+sealedsecrets:
+  enabled: true
+
+workflows:
+  enabled: true
+
+dev:
+  enabled: true
