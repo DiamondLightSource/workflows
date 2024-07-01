@@ -4,6 +4,8 @@ kind: Application
 metadata:
   name: workflows
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   destination:
     namespace: workflows
@@ -13,7 +15,7 @@ spec:
     helm:
       valueFiles:
       - values.yaml
-      {{- if.Values.dev.enabled }}
+      {{- if .Values.dev.enabled }}
       - dev-values.yaml
       {{- end }}
     path: charts/workflows

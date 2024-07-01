@@ -4,6 +4,8 @@ kind: Application
 metadata:
   name: kyverno
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   destination:
     namespace: kyverno
@@ -11,7 +13,46 @@ spec:
   project: default
   source:
     helm:
-      values: |
+      valuesObject:
+      {{- if .Values.dev.enabled }}
+        admissionController:
+          replicas: 1
+          container:
+            resources:
+              limits:
+                cpu: 200m
+                memory: 384Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+        backgroundController:
+          replicas: 1
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+        cleanupController:
+          replicas: 1
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+        reportsController:
+          replicas: 1
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      {{- else }}
         admissionController:
           replicas: 3
         backgroundController:
@@ -20,16 +61,6 @@ spec:
           replicas: 2
         reportsController:
           replicas: 2
-      {{- if.Values.dev.enabled }}
-      values: |
-        admissionController:
-          replicas: 1
-        backgroundController:
-          replicas: 1
-        cleanupController:
-          replicas: 1
-        reportsController:
-          replicas: 1
       {{- end }}
     chart: kyverno
     repoURL: https://kyverno.github.io/kyverno
@@ -40,4 +71,5 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - Replace=true
 {{- end }}
