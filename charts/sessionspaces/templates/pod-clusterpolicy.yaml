@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: sessionspace-pod
 spec:
+  background: false
   validationFailureAction: Enforce
   rules:
     - name: pod-securitycontext
