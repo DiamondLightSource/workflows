@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: argo-workflow
 spec:
+  background: false
   rules:
     - name: generate-serviceaccount
       match:

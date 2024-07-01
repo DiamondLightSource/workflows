@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: visit-member
 spec:
+  background: false
   rules:
     - name: generate-service-account
       match:
