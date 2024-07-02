@@ -43,14 +43,13 @@ vcluster:
             version: 7.3.0
             repo: https://argoproj.github.io/argo-helm
         - release:
-            name: argocd-app-of-apps
+            name: verflixt
             namespace: argocd
-          # This is an empty helm chart compressed into a base64 string
-          # The actual content is defined in the values below
-          # The reason for this hack is that helm charts and manifests
-          # are not executed in order (should be fixed upstream in vcluster)
-          bundle: H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOzUsQrDIBCAYec8hU9gzsSLkLXvEOh4g9CAxhBNoKR599JCh2bpUGxp8VsOXDyHX/JUHk40RXEmZ1kSAACNUvcJAPsJgMCkamqNqBGRgZQaK8YhzTrP5hBpYvD2XfvH/Qga+85MofdDy5eqGMiZlpOnYnmcgpACim/vmaVx6z8aN1qKJpTkKcE/8LL/Su/6rxXWuf9PWFcuOrKzCfzCoz+Ss3zbcu5ZlmX/7hoAAP//U7FpAgAMAAA=
-          values: |-
+          # This is the `charts/verflixt` chart as a packaged base64 string.
+          # You can re-create it with `helm package charts/verflixt && base64 aoa-*.tgz`.
+          # This hack allows us to deploy manifests in a deterministic order, which is not possible using `manifests`.
+          bundle: H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOzVsWrDMBAGYM1+Cj2B8ktRIsjadwh0vEHQgJQYSxYurt+92NCh7uChyKXhvuXAi8/8/Ocy5MPLG3VZvVMMogoAOFu7TADrCZwgtD1bDX10DgLaQENI1Fnnuz5l6gR+/a71x/0T1N6uvku3x/0ii2nuFP1FliE35esplFZo/npPVsfc/0Kh96neAdjsP37031jN/d/DnH/2sQ2UfTqUocZ/YDN/41b5H0/OcP57GEeprkv/5YfMj1eKQU4Tn3vGGHt2nwEAAP//izRyhQAOAAA=
+          valuesObject:
             apiVersion: argoproj.io/v1alpha1
             kind: Application
             metadata:
