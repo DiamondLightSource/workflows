@@ -4,40 +4,28 @@ The data analysis workflows platform deployment. The deployment consists of a Ku
 
 ## Deployment
 
-The workflow engine can be deployed using Helm in two stages:
+The workflow engine can be deployed using Helm:
 
-First, deploy the workflows virtual cluster:
 ```sh
 helm install workflows-cluster charts/workflows-cluster
 ```
 
-Secondly, deploy the workflows service in the virtual cluster:
-```sh
-vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows --create-namespace
-```
+This will install a virtual cluster together with Argo CD, which then installs all other services
+inside the vcluster including the workflow engine itself.
 
-Finally, deploy the events service in the virtual cluster:
+To connect to the virtual cluster and run a command inside the vcluster, use
+
 ```sh
-vcluster connect workflows-cluster -- helm install events charts/events -n events --create-namespace
+vcluster connect workflows-cluster -- <COMMAND>
 ```
 
 ## Deployment in developer mode
 
-First, deploy the workflows virtual cluster using the developer manifest:
 ```sh
 helm install workflows-cluster charts/workflows-cluster -f charts/workflows-cluster/dev-values.yaml
 ```
 
-Secondly, deploy the workflows service in the virtual cluster using the developer manifest:
-```sh
-vcluster connect workflows-cluster -- helm install workflows charts/workflows -n workflows -f charts/workflows/dev-values.yaml --create-namespace
-```
 Note that for getting the workflows-server to run inside the dev environment it is necessary to extract the argo-server-sso secret, delete the deployed sealed secret and then deploy a new sealed secret using ```kubectl create -f <SEALED-SECRET>``` inside the virtual cluster.
-
-Finally, deploy the events service in the virtual cluster using the developer manifest:
-```sh
-vcluster connect workflows-cluster -- helm install events charts/events -n events -f charts/events/dev-values.yaml --create-namespace
-```
 
 ## Serve Docs
 
@@ -50,4 +38,18 @@ pipx runpip mkdocs install -r docs/requirements.txt
 Now, serve the docs with `mkdocs`:
 ```sh
 mkdocs serve
+```
+
+## Accessing the Argo CD dashboard
+
+To access the Argo CD dashboard, we need to use port-forwarding to connect to the argocd-server inside the vcluster
+
+```sh
+kubectl -n workflows port-forward svc/argocd-server-x-argocd-x-workflows-cluster 8080:80 &
+```
+
+and then open the dashboard on [localhost:8080](localhost:8080). To obtain the admin password, you can use
+
+```sh
+vcluster connect workflows-cluster -- argocd admin initial-password -n argocd
 ```
