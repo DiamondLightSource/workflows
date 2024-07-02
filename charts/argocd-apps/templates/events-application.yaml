@@ -15,7 +15,7 @@ spec:
     helm:
       valueFiles:
       - values.yaml
-      {{- if .Values.dev.enabled }}      
+      {{- if .Values.dev.enabled }}
       - dev-values.yaml
       {{- end }}
     path: charts/events
