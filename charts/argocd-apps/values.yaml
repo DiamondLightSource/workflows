@@ -19,3 +19,4 @@ workflows:
 
 dev:
   enabled: false
+  target: vcluster-dev-mode-fixed

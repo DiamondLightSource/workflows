@@ -69,7 +69,7 @@ vcluster:
                       enabled: false
                 path: charts/argocd-apps
                 repoURL: https://github.com/DiamondLightSource/workflows.git
-                targetRevision: HEAD
+                targetRevision: vcluster-dev-mode-fixed
               syncPolicy:
                 automated:
                   prune: true

@@ -17,7 +17,7 @@ spec:
       - values.yaml
     path: charts/sessionspaces
     repoURL: https://github.com/DiamondLightSource/workflows.git
-    targetRevision: HEAD
+    targetRevision: {{ .Values.dev.target }}
   syncPolicy:
     automated:
       prune: true
