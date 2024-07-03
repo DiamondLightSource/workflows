@@ -20,7 +20,7 @@ spec:
       {{- end }}
     path: charts/events
     repoURL: https://github.com/DiamondLightSource/workflows.git
-    targetRevision: HEAD
+    targetRevision: {{ .Values.events.targetRevision }}
   syncPolicy:
     automated:
       prune: true
