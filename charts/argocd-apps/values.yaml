@@ -4,18 +4,23 @@ spec:
 
 events:
   enabled: false
+  targetRevision: HEAD
 
 kyverno:
   enabled: true
+  targetRevision: HEAD
 
 sessionspaces:
   enabled: true
+  targetRevision: HEAD
 
 sealedsecrets:
   enabled: true
+  targetRevision: 2.16.0
 
 workflows:
   enabled: true
+  targetRevision: HEAD
 
 dev:
   enabled: false
