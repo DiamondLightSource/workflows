@@ -14,54 +14,75 @@ spec:
   source:
     helm:
       valuesObject:
-      {{- if .Values.dev.enabled }}
+        {{- if .Values.dev.enabled }}
         admissionController:
           replicas: 1
           container:
             resources:
               limits:
                 cpu: 200m
-                memory: 384Mi
               requests:
                 cpu: 100m
-                memory: 128Mi
         backgroundController:
           replicas: 1
           resources:
             limits:
               cpu: 200m
-              memory: 512Mi
             requests:
               cpu: 100m
-              memory: 256Mi
         cleanupController:
           replicas: 1
           resources:
             limits:
               cpu: 200m
-              memory: 512Mi
             requests:
               cpu: 100m
-              memory: 256Mi
         reportsController:
           replicas: 1
           resources:
             limits:
               cpu: 200m
-              memory: 512Mi
             requests:
               cpu: 100m
-              memory: 256Mi
-      {{- else }}
+        {{- else }}
         admissionController:
           replicas: 3
+          container:
+            resources:
+              limits:
+                cpu: 2
+                memory: 8Gi
+              requests:
+                cpu: 1
+                memory: 4Gi
         backgroundController:
           replicas: 2
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
         cleanupController:
           replicas: 2
+          resources:
+            limits:
+              cpu: 2
+              memory: 512Mi
+            requests:
+              cpu: 1
+              memory: 256Mi
         reportsController:
           replicas: 2
-      {{- end }}
+          resources:
+            limits:
+              cpu: 2
+              memory: 512Mi
+            requests:
+              cpu: 1
+              memory: 256Mi
+        {{- end }}
     chart: kyverno
     repoURL: https://kyverno.github.io/kyverno
     targetRevision: 3.2.2
