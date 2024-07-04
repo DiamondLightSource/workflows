@@ -3,7 +3,7 @@ spec:
     server: https://kubernetes.default.svc
 
 events:
-  enabled: true
+  enabled: false
 
 kyverno:
   enabled: true
