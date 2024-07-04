@@ -4,7 +4,7 @@ database:
   password:
     secretName: ispyb
     secretKey: password
-ldapUrl: https://ldap.diamond.ac.uk
+ldapUrl: ldap://ldapmaster.diamond.ac.uk
 requestRate: 10
 
 image:
