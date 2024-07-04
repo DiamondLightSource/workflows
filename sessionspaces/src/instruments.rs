@@ -1,8 +1,9 @@
 use strum::{Display, EnumIter, EnumString};
 
 /// Known Instruments at Diamond
-#[derive(Debug, Clone, Display, EnumString, EnumIter, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Display, EnumString, EnumIter, PartialEq, Eq, PartialOrd, Ord)]
 #[allow(missing_docs)]
+#[repr(u8)]
 pub enum Instrument {
     #[strum(serialize = "b01")]
     B01,

@@ -80,7 +80,7 @@ async fn main() {
 }
 
 /// Requests a new bundle from the bundle server and performs templating accordingly
-#[instrument(skip(k8s_client, current_sessions), err(level=tracing::Level::WARN))]
+#[instrument(skip_all, err(level=tracing::Level::WARN))]
 async fn perform_update(
     ispyb_pool: &MySqlPool,
     k8s_client: kube::Client,
@@ -104,12 +104,18 @@ async fn perform_update(
                 delete_namespace(namespace, k8s_client.clone()).await?;
             }
             (None, Some(session_info)) => {
-                info!("Creating Namespace: {}", namespace);
+                info!(
+                    "Creating Namespace, {}, with Config: {}",
+                    namespace, session_info
+                );
                 create_namespace(namespace.clone(), k8s_client.clone()).await?;
                 create_configmap(namespace, session_info.clone(), k8s_client.clone()).await?;
             }
             (Some(current_info), Some(session_info)) if current_info != session_info => {
-                info!("Updating policy configMap in Namespace: {}", namespace);
+                info!(
+                    "Updating Namespace, {}, with Config: {}",
+                    namespace, session_info
+                );
                 create_configmap(namespace, session_info.clone(), k8s_client.clone()).await?;
             }
             (_, _) => {}
