@@ -33,7 +33,7 @@ spec:
         data:
           metadata:
             annotations:
-              workflows.argoproj.io/rbac-rule: "'sub' in {{ `{{values.data.members}}` }}"
+              workflows.argoproj.io/rbac-rule: 'sub in {{ `{{values.data.members}}` }}'
               workflows.argoproj.io/rbac-rule-precedence: "1"
 
     - name: generate-rolebinding
