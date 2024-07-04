@@ -35,7 +35,30 @@ spec:
             annotations:
               workflows.argoproj.io/rbac-rule: 'sub in {{ `{{values.data.members}}` }}'
               workflows.argoproj.io/rbac-rule-precedence: "1"
-
+    - name: generate-service-account-token
+      match:
+        resources:
+          kinds:
+            - ConfigMap
+          names:
+            - sessionspaces
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      generate:
+        synchronize: true
+        apiVersion: v1
+        kind: Secret
+        name: visit-member.service-account-token
+        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        data:
+          type: kubernetes.io/service-account-token
+          metadata:
+            annotations:
+              kubernetes.io/service-account.name: visit-member
     - name: generate-rolebinding
       match:
         resources:
