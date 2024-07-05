@@ -10,16 +10,13 @@ pub mod permissionables;
 /// Kubernetes resource templating
 mod resources;
 
-use crate::{
-    permissionables::Sessions,
-    resources::{create_configmap, create_namespace, delete_namespace},
-};
+use crate::permissionables::Sessions;
 use clap::Parser;
-use ldap3::{Ldap, LdapConnAsync};
-use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
-use std::collections::BTreeSet;
+use ldap3::LdapConnAsync;
+use resources::update_resources;
+use sqlx::mysql::MySqlPoolOptions;
 use tokio::time::{sleep_until, Instant};
-use tracing::{info, instrument, warn};
+use tracing::warn;
 use url::Url;
 
 /// SessionSpaces periodically polls the authorization bundle server and applies templates to the cluster accordingly
@@ -56,7 +53,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let (conn, mut ldap) = LdapConnAsync::new(args.ldap_url.as_str()).await.unwrap();
+    let (conn, mut ldap_connection) = LdapConnAsync::new(args.ldap_url.as_str()).await.unwrap();
     ldap3::drive!(conn);
 
     let k8s_client = kube::Client::try_default().await.unwrap();
@@ -64,63 +61,17 @@ async fn main() {
     let mut request_at = Instant::now();
     loop {
         sleep_until(request_at).await;
-        let interval = match perform_update(
-            &ispyb_pool,
-            k8s_client.clone(),
-            &mut current_sessions,
-            &mut ldap,
-        )
+        if let Ok(new_sessions) = async {
+            let new_sessions = Sessions::fetch(&ispyb_pool, &mut ldap_connection).await?;
+            update_resources(k8s_client.clone(), &current_sessions, &new_sessions).await?;
+            Ok::<_, anyhow::Error>(new_sessions)
+        }
         .await
         {
-            Ok(_) => args.update_interval,
-            Err(_) => args.retry_interval,
+            current_sessions = new_sessions;
+            request_at = request_at.checked_add(*args.update_interval).unwrap();
+        } else {
+            request_at = request_at.checked_add(*args.retry_interval).unwrap();
         };
-        request_at = request_at.checked_add(*interval).unwrap();
     }
-}
-
-/// Requests a new bundle from the bundle server and performs templating accordingly
-#[instrument(skip_all, err(level=tracing::Level::WARN))]
-async fn perform_update(
-    ispyb_pool: &MySqlPool,
-    k8s_client: kube::Client,
-    current_sessions: &mut Sessions,
-    ldap_connection: &mut Ldap,
-) -> std::result::Result<(), anyhow::Error> {
-    let sessions = Sessions::fetch(ispyb_pool, ldap_connection).await?;
-    let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
-    let session_names = sessions.keys().cloned().collect::<BTreeSet<_>>();
-    let to_update = current_session_names
-        .union(&session_names)
-        .collect::<BTreeSet<_>>();
-
-    info!("Updating {} SessionSpaces", to_update.len());
-    for namespace in to_update.into_iter() {
-        let session_info = sessions.get(namespace);
-        let current_sesssion_info = current_sessions.get(namespace);
-        match (current_sesssion_info, session_info) {
-            (Some(_), None) => {
-                info!("Deleting Namespace: {}", namespace);
-                delete_namespace(namespace, k8s_client.clone()).await?;
-            }
-            (None, Some(session_info)) => {
-                info!(
-                    "Creating Namespace, {}, with Config: {}",
-                    namespace, session_info
-                );
-                create_namespace(namespace.clone(), k8s_client.clone()).await?;
-                create_configmap(namespace, session_info.clone(), k8s_client.clone()).await?;
-            }
-            (Some(current_info), Some(session_info)) if current_info != session_info => {
-                info!(
-                    "Updating Namespace, {}, with Config: {}",
-                    namespace, session_info
-                );
-                create_configmap(namespace, session_info.clone(), k8s_client.clone()).await?;
-            }
-            (_, _) => {}
-        }
-    }
-    *current_sessions = sessions;
-    Ok(())
 }

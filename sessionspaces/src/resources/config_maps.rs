@@ -84,6 +84,6 @@ pub async fn create_configmap(
         )
         .await?;
 
-    info!("ConfigMap {NAME} created");
+    info!("{NAME} ConfigMap created / updated for {namespace}");
     Ok(())
 }
