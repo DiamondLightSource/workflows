@@ -12,11 +12,12 @@ mod resources;
 
 use crate::permissionables::Sessions;
 use clap::Parser;
-use ldap3::LdapConnAsync;
-use resources::update_resources;
-use sqlx::mysql::MySqlPoolOptions;
+use ldap3::{Ldap, LdapConnAsync};
+use resources::{create_configmap, create_namespace, delete_namespace};
+use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
+use std::collections::BTreeSet;
 use tokio::time::{sleep_until, Instant};
-use tracing::warn;
+use tracing::{info, warn};
 use url::Url;
 
 /// SessionSpaces periodically polls the authorization bundle server and applies templates to the cluster accordingly
@@ -31,9 +32,6 @@ struct Cli {
     /// The period to wait after a succesful bundle server request
     #[clap(long, env, default_value = "60s")]
     update_interval: humantime::Duration,
-    /// The period to wait after an unsuccesful bundle server request
-    #[arg(long, env, default_value = "10s")]
-    retry_interval: humantime::Duration,
     /// The [`tracing::Level`] to log at
     #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
     log_level: tracing::Level,
@@ -61,17 +59,64 @@ async fn main() {
     let mut request_at = Instant::now();
     loop {
         sleep_until(request_at).await;
-        if let Ok(new_sessions) = async {
-            let new_sessions = Sessions::fetch(&ispyb_pool, &mut ldap_connection).await?;
-            update_resources(k8s_client.clone(), &current_sessions, &new_sessions).await?;
-            Ok::<_, anyhow::Error>(new_sessions)
-        }
+        if let Ok(()) = perform_updates(
+            &mut current_sessions,
+            &ispyb_pool,
+            &mut ldap_connection,
+            &k8s_client,
+        )
         .await
         {
-            current_sessions = new_sessions;
             request_at = request_at.checked_add(*args.update_interval).unwrap();
-        } else {
-            request_at = request_at.checked_add(*args.retry_interval).unwrap();
         };
     }
+}
+
+/// Fetches new [`Sessions`] and updates k8s resources according to the observed changes.
+async fn perform_updates(
+    current_sessions: &mut Sessions,
+    ispyb_pool: &MySqlPool,
+    ldap_connection: &mut Ldap,
+    k8s_client: &kube::Client,
+) -> Result<(), anyhow::Error> {
+    let mut new_sessions = Sessions::fetch(ispyb_pool, ldap_connection).await?;
+
+    let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
+    let new_session_names = new_sessions.keys().cloned().collect::<BTreeSet<_>>();
+    let to_update = current_session_names
+        .union(&new_session_names)
+        .collect::<BTreeSet<_>>();
+
+    info!("Updating {} SessionSpaces", to_update.len());
+    for namespace in to_update.into_iter() {
+        match (
+            current_sessions.get(namespace),
+            new_sessions.remove(namespace),
+        ) {
+            (Some(_), None) => {
+                info!("Deleting Namespace: {}", namespace);
+                delete_namespace(namespace, k8s_client.clone()).await?;
+                current_sessions.remove(namespace);
+            }
+            (None, Some(new_session)) => {
+                info!(
+                    "Creating Namespace, {}, with Config: {}",
+                    namespace, new_session
+                );
+                create_namespace(namespace.clone(), k8s_client.clone()).await?;
+                create_configmap(namespace, new_session.clone(), k8s_client.clone()).await?;
+                current_sessions.insert(namespace.clone(), new_session);
+            }
+            (Some(current_session), Some(new_session)) if current_session != &new_session => {
+                info!(
+                    "Updating Namespace, {}, with Config: {}",
+                    namespace, new_session
+                );
+                create_configmap(namespace, new_session.clone(), k8s_client.clone()).await?;
+                current_sessions.insert(namespace.clone(), new_session);
+            }
+            (_, _) => {}
+        }
+    }
+    Ok(())
 }
