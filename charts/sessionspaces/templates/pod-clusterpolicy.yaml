@@ -45,7 +45,7 @@ spec:
           spec:
             volumes:
             - =(hostPath):
-                path: "{{ `{{values.data.dataDirectory}}` }}"
+                path: "{{ `{{values.data.data_directory}}` }}"
 
     - name: reject-privilegeEscalation
       match:
