@@ -40,7 +40,7 @@ spec:
             name: sessionspaces
             namespace: "{{ `{{request.object.metadata.namespace}}` }}"
       validate:
-        message: The hostPath must point to the session directory
+        message: "{{ `The hostPath must point to the session directory ({{values.data.data_directory}})` }}"
         pattern:
           spec:
             volumes:
