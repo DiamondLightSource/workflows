@@ -65,10 +65,7 @@ pub async fn create_configmap(
     configmaps
         .patch(
             NAME,
-            &PatchParams {
-                field_manager: Some("kubectl".to_string()),
-                ..Default::default()
-            },
+            &PatchParams::default(),
             &Patch::Apply(&ConfigMap {
                 metadata: ObjectMeta {
                     name: Some(NAME.to_string()),
