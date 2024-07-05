@@ -38,7 +38,10 @@ pub async fn create_namespace(
     let api = Api::<Namespace>::all(k8s_client.clone());
     api.patch(
         &namespace,
-        &PatchParams::default(),
+        &PatchParams {
+            field_manager: Some("sessionspaces".to_string()),
+            ..Default::default()
+        },
         &Patch::Apply(&Namespace {
             metadata: ObjectMeta {
                 name: Some(namespace.clone()),
@@ -67,7 +70,10 @@ mod tests {
     async fn create_new_namespace() {
         let mut server = Server::new_async().await;
         let mock_patch_test_namespace = server
-            .mock("PATCH", "/api/v1/namespaces/test?")
+            .mock(
+                "PATCH",
+                "/api/v1/namespaces/test?&fieldManager=sessionspaces",
+            )
             .with_status(201)
             .with_header("content-type", "application/json")
             .with_body(

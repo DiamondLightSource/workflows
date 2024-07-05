@@ -65,7 +65,10 @@ pub async fn create_configmap(
     configmaps
         .patch(
             NAME,
-            &PatchParams::default(),
+            &PatchParams {
+                field_manager: Some("sessionspaces".to_string()),
+                ..Default::default()
+            },
             &Patch::Apply(&ConfigMap {
                 metadata: ObjectMeta {
                     name: Some(NAME.to_string()),
