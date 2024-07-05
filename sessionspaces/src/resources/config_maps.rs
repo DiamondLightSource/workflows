@@ -43,7 +43,7 @@ pub async fn create_configmap(
         | I19_1 | I19_2 | I20 | I20_1 | I21 | I22 | I23 | I24 | K11 | M01 | M02 | M03 | M04
         | M05 | M06 | M07 | M08 | M10 | M11 | M12 | M13 | M14 | P02 | P29 | P32 | P33 | P38
         | P45 | P99 | S01 | S02 | S03 | S04 => Some(PathBuf::from_iter([
-            "dls",
+            "/dls",
             &session.instrument.to_string(),
             "data",
             &session.start_date.year().to_string(),
