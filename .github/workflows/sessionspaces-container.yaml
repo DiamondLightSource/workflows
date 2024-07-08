@@ -46,12 +46,12 @@ jobs:
             type=raw,value=latest
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.3.0
+        uses: docker/setup-buildx-action@v3.4.0
         with:
           driver-opts: network=host
 
       - name: Build Image
-        uses: docker/build-push-action@v6.2.0
+        uses: docker/build-push-action@v6.3.0
         with:
           context: ./sessionspaces
           build-args: DATABASE_URL=mysql://root:rootpassword@localhost:3306/ispyb_build
