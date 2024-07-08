@@ -25,7 +25,16 @@ spec:
             securityContext:
               runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
               runAsUser: {{ .Values.policy.runAsUser }}
-
+            containers:
+              - (name): "*"
+                securityContext:
+                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+                  runAsUser: {{ .Values.policy.runAsUser }}
+            initContainers:
+              - (name): "*"
+                securityContext:
+                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+                  runAsUser: {{ .Values.policy.runAsUser }}
     - name: check-hostpath
       match:
         resources:
