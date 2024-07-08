@@ -55,6 +55,9 @@ spec:
               requests:
                 cpu: 1
                 memory: 4Gi
+            extraArgs:
+              clientRateLimitBurst: 1000
+              clientRateLimitQPS: 1000
         backgroundController:
           replicas: 2
           resources:
@@ -64,6 +67,10 @@ spec:
             requests:
               cpu: 1
               memory: 2Gi
+          extraArgs:
+            clientRateLimitBurst: 1000
+            clientRateLimitQPS: 1000
+            genWorkers: 100
         cleanupController:
           replicas: 2
           resources:
