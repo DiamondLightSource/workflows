@@ -12,9 +12,9 @@ mod resources;
 
 use crate::permissionables::Sessions;
 use clap::Parser;
-use ldap3::{Ldap, LdapConnAsync};
+use ldap3::LdapConnAsync;
 use resources::{create_configmap, create_namespace, delete_namespace};
-use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
+use sqlx::mysql::MySqlPoolOptions;
 use std::collections::BTreeSet;
 use tokio::time::{sleep_until, Instant};
 use tracing::{info, warn};
@@ -59,28 +59,22 @@ async fn main() {
     let mut request_at = Instant::now();
     loop {
         sleep_until(request_at).await;
-        if let Ok(()) = perform_updates(
-            &mut current_sessions,
-            &ispyb_pool,
-            &mut ldap_connection,
-            &k8s_client,
-        )
-        .await
-        {
-            request_at = request_at.checked_add(*args.update_interval).unwrap();
-        };
+        match Sessions::fetch(&ispyb_pool, &mut ldap_connection).await {
+            Ok(mut new_sessions) => {
+                update_sessionspaces(&mut current_sessions, &mut new_sessions, &k8s_client).await;
+                request_at = request_at.checked_add(*args.update_interval).unwrap();
+            }
+            Err(err) => warn!("Encountered error when fetching sessions: {err}"),
+        }
     }
 }
 
-/// Fetches new [`Sessions`] and updates k8s resources according to the observed changes.
-async fn perform_updates(
+/// Updates the k8s resources in all sessionspaces according to observed changes between current and new [`Sessions`].
+async fn update_sessionspaces(
     current_sessions: &mut Sessions,
-    ispyb_pool: &MySqlPool,
-    ldap_connection: &mut Ldap,
+    new_sessions: &mut Sessions,
     k8s_client: &kube::Client,
-) -> Result<(), anyhow::Error> {
-    let mut new_sessions = Sessions::fetch(ispyb_pool, ldap_connection).await?;
-
+) {
     let current_session_names = current_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let new_session_names = new_sessions.keys().cloned().collect::<BTreeSet<_>>();
     let to_update = current_session_names
@@ -89,34 +83,53 @@ async fn perform_updates(
 
     info!("Updating {} SessionSpaces", to_update.len());
     for namespace in to_update.into_iter() {
-        match (
-            current_sessions.get(namespace),
-            new_sessions.remove(namespace),
-        ) {
-            (Some(_), None) => {
-                info!("Deleting Namespace: {}", namespace);
-                delete_namespace(namespace, k8s_client.clone()).await?;
-                current_sessions.remove(namespace);
-            }
-            (None, Some(new_session)) => {
-                info!(
-                    "Creating Namespace, {}, with Config: {}",
-                    namespace, new_session
-                );
-                create_namespace(namespace.clone(), k8s_client.clone()).await?;
-                create_configmap(namespace, new_session.clone(), k8s_client.clone()).await?;
-                current_sessions.insert(namespace.clone(), new_session);
-            }
-            (Some(current_session), Some(new_session)) if current_session != &new_session => {
-                info!(
-                    "Updating Namespace, {}, with Config: {}",
-                    namespace, new_session
-                );
-                create_configmap(namespace, new_session.clone(), k8s_client.clone()).await?;
-                current_sessions.insert(namespace.clone(), new_session);
-            }
-            (_, _) => {}
+        if let Err(err) = update_sessionspace(
+            namespace.clone(),
+            current_sessions,
+            new_sessions,
+            k8s_client,
+        )
+        .await
+        {
+            warn!("Encountered error when trying to update resources: {err}")
         }
+    }
+}
+
+/// Updates a single sessionspace according to the changes between a current and new [`permissionables::Session`].
+async fn update_sessionspace(
+    namespace: String,
+    current_sessions: &mut Sessions,
+    new_sessions: &mut Sessions,
+    k8s_client: &kube::Client,
+) -> Result<(), anyhow::Error> {
+    match (
+        current_sessions.get(&namespace),
+        new_sessions.remove(&namespace),
+    ) {
+        (Some(_), None) => {
+            info!("Deleting Namespace: {}", namespace);
+            delete_namespace(&namespace, k8s_client.clone()).await?;
+            current_sessions.remove(&namespace);
+        }
+        (None, Some(new_session)) => {
+            info!(
+                "Creating Namespace, {}, with Config: {}",
+                namespace, new_session
+            );
+            create_namespace(namespace.clone(), k8s_client.clone()).await?;
+            create_configmap(&namespace, new_session.clone(), k8s_client.clone()).await?;
+            current_sessions.insert(namespace, new_session);
+        }
+        (Some(current_session), Some(new_session)) if current_session != &new_session => {
+            info!(
+                "Updating Namespace, {}, with Config: {}",
+                namespace, new_session
+            );
+            create_configmap(&namespace, new_session.clone(), k8s_client.clone()).await?;
+            current_sessions.insert(namespace, new_session);
+        }
+        (_, _) => {}
     }
     Ok(())
 }
