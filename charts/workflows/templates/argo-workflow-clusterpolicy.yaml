@@ -4,9 +4,9 @@ metadata:
   name: argo-workflow
 spec:
   background: false
-  generateExistingOnPolicyUpdate: true
+  generateExisting: true
   rules:
-    - name: generate-serviceaccount
+    - name: generate-service-account
       match:
         resources:
           kinds:
@@ -25,8 +25,7 @@ spec:
         kind: ServiceAccount
         name: argo-workflow
         namespace: "{{ `{{request.object.metadata.namespace}}` }}"
-    
-    - name: generate-rolebinding
+    - name: generate-role-binding
       match:
         resources:
           kinds:

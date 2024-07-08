@@ -4,7 +4,7 @@ metadata:
   name: visit-member
 spec:
   background: false
-  generateExistingOnPolicyUpdate: true
+  generateExisting: true
   rules:
     - name: generate-service-account
       match:
@@ -59,7 +59,7 @@ spec:
           metadata:
             annotations:
               kubernetes.io/service-account.name: visit-member
-    - name: generate-rolebinding
+    - name: generate-role-binding
       match:
         resources:
           kinds:
