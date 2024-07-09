@@ -30,6 +30,8 @@ spec:
               value: {{ include "sessionspaces.databaseURL" . }}
             - name: LDAP_URL
               value: {{ .Values.ldapUrl }}
+            {{- if .Values.requestRate }}
             - name: REQUEST_RATE
               value: {{ .Values.requestRate | toString }}
+            {{- end }}
 {{- end -}}

@@ -34,7 +34,7 @@ struct Cli {
     update_interval: humantime::Duration,
     /// The maximum allowable k8s API requests per second
     #[clap(long, env, default_value = "10")]
-    request_rate: u64,
+    request_rate: Option<u64>,
     /// The [`tracing::Level`] to log at
     #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
     log_level: tracing::Level,
@@ -57,13 +57,16 @@ async fn main() {
     let (conn, mut ldap_connection) = LdapConnAsync::new(args.ldap_url.as_str()).await.unwrap();
     ldap3::drive!(conn);
 
-    let k8s_client = kube::client::ClientBuilder::try_from(kube::Config::infer().await.unwrap())
-        .unwrap()
-        .with_layer(&tower_limit::RateLimitLayer::new(
-            args.request_rate,
-            Duration::from_secs(1),
-        ))
-        .build();
+    let k8s_client = {
+        let mut builder =
+            kube::client::ClientBuilder::try_from(kube::Config::infer().await.unwrap()).unwrap();
+        if let Some(request_rate) = args.request_rate {
+            builder = builder.with_layer(&tower::util::BoxLayer::new(
+                tower::limit::RateLimitLayer::new(request_rate, Duration::from_secs(1)),
+            ))
+        }
+        builder.build()
+    };
     let mut current_sessions = Sessions::default();
     let mut update_interval = interval(args.update_interval.into());
     loop {
