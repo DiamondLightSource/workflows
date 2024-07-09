@@ -5,6 +5,7 @@ database:
     secretName: ispyb
     secretKey: password
 ldapUrl: https://ldap.diamond.ac.uk
+requestRate: 10
 
 image:
   repository: ghcr.io/diamondlightsource/workflows
