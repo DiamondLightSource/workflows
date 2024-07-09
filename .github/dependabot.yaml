@@ -28,6 +28,10 @@ updates:
     schedule:
       interval: weekly
     groups:
+      kube:
+        patterns:
+          - kube
+          - k8s-openapi
       patch:
         update-types:
           - patch
