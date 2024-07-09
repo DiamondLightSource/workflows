@@ -15,8 +15,8 @@ use clap::Parser;
 use ldap3::LdapConnAsync;
 use resources::{create_configmap, create_namespace, delete_namespace};
 use sqlx::mysql::MySqlPoolOptions;
-use std::collections::BTreeSet;
-use tokio::time::{sleep_until, Instant};
+use std::{collections::BTreeSet, time::Duration};
+use tokio::time::interval;
 use tracing::{info, warn};
 use url::Url;
 
@@ -32,6 +32,9 @@ struct Cli {
     /// The period to wait after a succesful bundle server request
     #[clap(long, env, default_value = "60s")]
     update_interval: humantime::Duration,
+    /// The maximum allowable k8s API requests per second
+    #[clap(long, env, default_value = "10")]
+    request_rate: u64,
     /// The [`tracing::Level`] to log at
     #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
     log_level: tracing::Level,
@@ -54,15 +57,20 @@ async fn main() {
     let (conn, mut ldap_connection) = LdapConnAsync::new(args.ldap_url.as_str()).await.unwrap();
     ldap3::drive!(conn);
 
-    let k8s_client = kube::Client::try_default().await.unwrap();
+    let k8s_client = kube::client::ClientBuilder::try_from(kube::Config::infer().await.unwrap())
+        .unwrap()
+        .with_layer(&tower_limit::RateLimitLayer::new(
+            args.request_rate,
+            Duration::from_secs(1),
+        ))
+        .build();
     let mut current_sessions = Sessions::default();
-    let mut request_at = Instant::now();
+    let mut update_interval = interval(args.update_interval.into());
     loop {
-        sleep_until(request_at).await;
+        update_interval.tick().await;
         match Sessions::fetch(&ispyb_pool, &mut ldap_connection).await {
             Ok(mut new_sessions) => {
                 update_sessionspaces(&mut current_sessions, &mut new_sessions, &k8s_client).await;
-                request_at = request_at.checked_add(*args.update_interval).unwrap();
             }
             Err(err) => warn!("Encountered error when fetching sessions: {err}"),
         }
