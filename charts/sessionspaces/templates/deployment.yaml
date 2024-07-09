@@ -32,6 +32,6 @@ spec:
               value: {{ .Values.ldapUrl }}
             {{- if .Values.requestRate }}
             - name: REQUEST_RATE
-              value: {{ .Values.requestRate | toString }}
+              value: "{{ .Values.requestRate }}"
             {{- end }}
 {{- end -}}
