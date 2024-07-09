@@ -44,37 +44,23 @@ pub struct Session {
     pub end_date: PrimitiveDateTime,
 }
 
-#[derive(Debug)]
-#[allow(dead_code, clippy::missing_docs_in_private_items)]
-struct SessionSummary<'s> {
-    proposal_code: &'s str,
-    proposal_number: u32,
-    visit: u32,
-    instrument: Instrument,
-    members: usize,
-    gid: Option<&'s str>,
-    start_date: &'s PrimitiveDateTime,
-    end_date: &'s PrimitiveDateTime,
-}
-
-impl<'s> From<&'s Session> for SessionSummary<'s> {
-    fn from(value: &'s Session) -> Self {
-        Self {
-            proposal_code: &value.proposal_code,
-            proposal_number: value.proposal_number,
-            visit: value.visit,
-            instrument: value.instrument,
-            members: value.members.len(),
-            gid: value.gid.as_deref(),
-            start_date: &value.start_date,
-            end_date: &value.end_date,
-        }
-    }
-}
-
 impl Display for Session {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", SessionSummary::from(self))
+        write!(
+            f,
+            "{{ session: {}{}-{}, instrument: {}, members: {}, gid: {}, start: {}, end: {} }}",
+            self.proposal_code,
+            self.proposal_number,
+            self.visit,
+            self.instrument,
+            self.members.len(),
+            match &self.gid {
+                Some(gid) => gid.to_string(),
+                None => "None".to_string(),
+            },
+            self.start_date,
+            self.end_date
+        )
     }
 }
 

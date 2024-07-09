@@ -11,7 +11,7 @@ use tracing::{info, instrument};
 /// The name to be given to the ConfigMap
 const NAME: &str = "sessionspaces";
 
-#[instrument(skip(k8s_client))]
+#[instrument(skip(k8s_client, session))]
 pub async fn create_configmap(
     namespace: &str,
     session: Session,
@@ -84,6 +84,6 @@ pub async fn create_configmap(
         )
         .await?;
 
-    info!("{NAME} ConfigMap created / updated for {namespace}");
+    info!("ConfigMap {NAME} created / updated for {namespace}");
     Ok(())
 }
