@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: groups-resources
+spec:
+  background: false
+  validationFailureAction: Enforce
+  rules:
+    - name: forbid-disallowed-resources
+      match:
+        any:
+          - resources:
+              kinds:
+                - "*"
+              names:
+                - "*"
+            namespaces:
+              {{- range .Values.groups }}
+              - "{{ .name }}-workflows"
+              {{- end }}
+      exclude:
+        any:
+          - resources:
+              kinds:
+                - "workflowtemplates.argoproj.io"
+                - "clusterworkflowtemplates.argoproj.io"
+      validate:
+        message: "Only ClusterWorkflowTemplates may be deployed in this Namespace"
+        deny: {}
