@@ -17,5 +17,7 @@ sealedsecrets:
 workflows:
   enabled: true
 
+groups:
+
 dev:
   enabled: false

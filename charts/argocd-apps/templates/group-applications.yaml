@@ -1,0 +1,25 @@
+{{- range .Values.groups }}
+{{- if .enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "{{ .name }}-workflows"
+spec:
+  destination:
+    namespace: "{{ .name }}-workflows"
+    server: {{ $.Values.spec.destination.server }}
+  project: default
+  source:
+    path: {{ default "/" .path }}
+    repoURL: {{ .repoURL }}
+    targetRevision: {{ default "HEAD" .targetRevision}}
+    directory:
+      recurse: {{ default true .recurse }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}
+{{- end }}
