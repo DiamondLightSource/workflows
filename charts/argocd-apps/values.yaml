@@ -18,6 +18,9 @@ workflows:
   enabled: true
 
 groups:
+  - name: imaging
+    enabled: true
+    repoURL: https://github.com/DiamondLightSource/imaging-workflows
 
 dev:
   enabled: false
