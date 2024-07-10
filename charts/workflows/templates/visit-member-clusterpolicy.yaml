@@ -4,6 +4,7 @@ metadata:
   name: visit-member
 spec:
   background: false
+  generateExisting: true
   rules:
     - name: generate-service-account
       match:
