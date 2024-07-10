@@ -4,6 +4,7 @@ metadata:
   name: argo-workflow
 spec:
   background: false
+  generateExisting: true
   rules:
     - name: generate-serviceaccount
       match:
