@@ -34,6 +34,10 @@ A task could be specified by a ```container``` with a given ```image``` and ```c
           - Hello world
 ```
 
+You can find more detailed information in the
+[Argo Workflows](https://argo-workflows.readthedocs.io/en/latest/workflow-concepts/)
+documentation.
+
 !!! example "Hello world"
 
     A Workflow executing a `busybox` instance which prints "Hello world":
@@ -75,6 +79,9 @@ modify the ```command``` to reference our parameter using ```{{ inputs.parameter
 ```
 
 We can then provide a message at runtime as a parameter when we submit the workflow.
+You can find more parametrized workflow examples in the
+[Argo Workflows](https://argo-workflows.readthedocs.io/en/latest/workflow-templates/)
+documentation.
 
 ## Using the Argo dashboard to submit a workflow
 
