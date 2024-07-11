@@ -81,4 +81,7 @@ We can then provide a message at runtime as a parameter when we submit the workf
 
 ## Using the Argo CLI to submit a workflow
 
-## Using ```kubectl``` to submit a workflow
+!!! info "Authentication"
+
+    Since we currently rely on CAS for authentication, we cannot use the Argo CLI to submit a workflow.
+    
