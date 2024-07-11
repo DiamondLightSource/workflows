@@ -7,6 +7,44 @@ spec:
   background: false
   generateExisting: true
   rules:
+    - name: prohibit-artifact-s3-secret-usage
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      validate:
+        message: "The artifact-s3 secret cannot be used by workflow pods"
+        pattern:
+          spec:
+            =(volumes):
+              - (name): "!artifact-s3"
+                =(secret):
+                  secretName: "!artifact-s3"
+            =(initContainers):
+              - (name): "!init"
+                image: "!quay.io/argoproj/argoexec:?"
+                =(env):
+                  - =(valueFrom):
+                      =(secretKeyRef):
+                        name: "!artifact-s3"
+                =(volumeMounts):
+                  - name: "!artifact-s3"
+            =(ephemeralContainers):
+              - name: "*"
+                =(volumeMounts):
+                  - name: "!artifact-s3"
+            containers:
+              - (name): "!wait"
+                image: "!quay.io/argoproj/argoexec:?"
+                =(env):
+                  - =(valueFrom):
+                      =(secretKeyRef):
+                        name: "!artifact-s3"
+                =(volumeMounts):
+                  - name: "!artifact-s3"
     - name: copy-artifact-s3-secret
       match:
         resources:
