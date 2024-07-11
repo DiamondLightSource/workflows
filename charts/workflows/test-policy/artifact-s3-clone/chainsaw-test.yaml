@@ -1,0 +1,40 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: artifact-s3-clone
+spec:
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: workflows
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: workflows
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: session
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+        - sleep:
+            duration: 5s
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: session
