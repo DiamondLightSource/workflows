@@ -9,7 +9,7 @@ events:
 
 kyverno:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: 3.2.2
   extraValuesFiles: []
   valuesObject:
     admissionController:
