@@ -14,12 +14,41 @@ kyverno:
   valuesObject:
     admissionController:
       replicas: 3
+      container:
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     backgroundController:
       replicas: 2
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
     cleanupController:
       replicas: 2
+      resources:
+        limits:
+          cpu: 2
+          memory: 512Mi
+        requests:
+          cpu: 1
+          memory: 256Mi
     reportsController:
       replicas: 2
+      resources:
+        limits:
+          cpu: 2
+          memory: 512Mi
+        requests:
+          cpu: 1
+          memory: 256Mi
 
 sessionspaces:
   enabled: true
