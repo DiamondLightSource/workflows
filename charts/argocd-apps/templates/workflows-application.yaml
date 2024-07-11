@@ -9,7 +9,7 @@ metadata:
 spec:
   destination:
     namespace: workflows
-    server: {{ .Values.spec.destination.server }}
+    server: {{ .Values.destination.server }}
   project: default
   source:
     helm:
