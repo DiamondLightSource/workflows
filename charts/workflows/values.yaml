@@ -1,5 +1,17 @@
 argo-workflows:
   enabled: true
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      accessKeySecret:
+        name: artifact-s3
+        key: access-key
+      secretKeySecret:
+        name: artifact-s3
+        key: secret-key
+      endpoint: sci-nas-s3.diamond.ac.uk
+      bucket: k8s-workflows-test
+      region: unsupported
   controller:
     replicas: 2
     pdb:
