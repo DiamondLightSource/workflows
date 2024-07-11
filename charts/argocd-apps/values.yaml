@@ -1,6 +1,5 @@
-spec:
-  destination:
-    server: https://kubernetes.default.svc
+destination:
+  server: https://kubernetes.default.svc
 
 events:
   enabled: false
