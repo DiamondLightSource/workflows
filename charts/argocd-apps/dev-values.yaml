@@ -3,6 +3,9 @@ events:
   extraValuesFiles:
     - dev-values.yaml
 
+groupProjects:
+  enabled: true
+
 kyverno:
   enabled: true
   valuesObject:
