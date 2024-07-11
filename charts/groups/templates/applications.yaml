@@ -1,0 +1,27 @@
+{{- range .Values.groups }}
+{{- if .enabled }}
+{{ $group := . }}
+{{- range .apps }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "{{ .name }}-group"
+spec:
+  destination:
+    namespace: "{{ $group.name }}-group"
+    name: {{ $.Values.destination.name }}
+    server: {{ $.Values.destination.server }}
+  project: {{ $group.name }}
+  source:
+    repoURL: {{ .repoURL }}
+    path: {{ .path }}
+    targetRevision: {{ .targetRevision }}
+    directory:
+      recurse: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}
+{{- end }}
+{{- end }}
