@@ -7,6 +7,12 @@ events:
   extraValuesFiles: []
   valuesObject: {}
 
+groups:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
 kyverno:
   enabled: true
   targetRevision: 3.2.2
