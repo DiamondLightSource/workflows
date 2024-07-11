@@ -7,6 +7,23 @@ spec:
   background: false
   generateExisting: true
   rules:
+    - name: copy-artifact-s3-secret
+      match:
+        resources:
+          kinds:
+            - Namespace
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      generate:
+        synchronize: true
+        apiVersion: v1
+        kind: Secret
+        name: artifact-s3
+        namespace: "{{ `{{request.object.metadata.name}}` }}"
+        clone:
+          namespace: workflows
+          name: artifact-s3
     - name: generate-visit-member-service-account
       match:
         resources:
