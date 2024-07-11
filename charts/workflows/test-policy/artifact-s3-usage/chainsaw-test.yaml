@@ -1,0 +1,101 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: artifact-s3-usage
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                data_directory: "/allowed/path"
+                gid: "1234"
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: allowed
+              spec:
+                initContainers:
+                  - name: init
+                    image: quay.io/argoproj/argoexec:v3.5.6
+                    volumeMounts:
+                      - name: artifact-s3
+                        mountPath: /argo/secret/artifact-s3
+                containers:
+                  - name: main
+                    image: docker.io/library/busybox:latest
+                  - name: wait
+                    image: quay.io/argoproj/argoexec:v3.5.6
+                    volumeMounts:
+                      - name: artifact-s3
+                        mountPath: /argo/secret/artifact-s3
+                volumes:
+                  - name: allowed
+                    secret:
+                      secretName: allowed-secret
+                  - name: artifact-s3
+                    secret:
+                      secretName: artifact-s3
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: denied-mount
+              spec:
+                containers:
+                - name: denied-mount
+                  image: docker.io/library/busybox:latest
+                volumes:
+                  - name: secret
+                    secret:
+                      secretName: artifact-s3
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: denied-container-environment
+              spec:
+                containers:
+                - name: denied-environment
+                  image: docker.io/library/busybox:latest
+                  env:
+                    valueFrom:
+                      secretKeyRef:
+                        name: artifact-s3
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: denied-init-container-environment
+              spec:
+                initContainers:
+                - name: denied-environment
+                  image: docker.io/library/busybox:latest
+                  env:
+                    valueFrom:
+                      secretKeyRef:
+                        name: artifact-s3
