@@ -1,0 +1,13 @@
+destination:
+  name: in-cluster
+  server: ""
+
+groups:
+  - name: imaging
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: imaging
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: .
+        targetRevision: HEAD
