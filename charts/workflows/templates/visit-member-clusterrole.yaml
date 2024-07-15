@@ -3,18 +3,24 @@ kind: ClusterRole
 metadata:
   name: visit-member
 rules:
-- apiGroups: ["argoproj.io"]
-  resources: [
-    "eventsources",
-    "sensors",
-    "workflows",
-    "workfloweventbindings",
-    "workflowtemplates",
-    "clusterworkflowtemplates",
-    "cronworkflows",
-    "workflowtaskresults",
-    ]
-  verbs: ["get", "watch", "list"] 
-- apiGroups: ["argoproj.io"]
-  resources: ["workflows"]
-  verbs: ["create"]
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - eventsources
+      - sensors
+      - workflows
+      - workfloweventbindings
+      - workflowtemplates
+      - clusterworkflowtemplates
+      - cronworkflows
+      - workflowtaskresults
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - workflows
+    verbs:
+      - create
