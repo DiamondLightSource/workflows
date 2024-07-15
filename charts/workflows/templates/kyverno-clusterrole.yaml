@@ -3,9 +3,20 @@ kind: ClusterRole
 metadata:
   name: kyverno:generate-resources
 rules:
-- apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["create", "update", "delete"]
-- apiGroups: [""]
-  resources: ["rolebindings"]
-  verbs: ["create", "update", "patch"]
+- apiGroups:
+    - ""
+  resources:
+    - serviceaccounts
+  verbs:
+    - create
+    - update
+    - delete
+- apiGroups:
+    - "rbac.authorization.k8s.io"
+  resources:
+    - rolebindings
+  verbs:
+    - create
+    - update
+    - patch
+    - delete
