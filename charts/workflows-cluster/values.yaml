@@ -24,7 +24,11 @@ vcluster:
         replicas: 3
         resources:
           requests:
-            cpu: 100m
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
     statefulSet:
       image:
         repository: ghcr.io/loft-sh/vcluster-oss
