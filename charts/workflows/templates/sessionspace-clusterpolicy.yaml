@@ -6,7 +6,31 @@ spec:
   validationFailureAction: Enforce
   background: false
   generateExisting: true
+  mutateExistingOnPolicyUpdate: true
   rules:
+    - name: add-workflow-label-to-configmap
+      match:
+        resources:
+          kinds:
+            - ConfigMap
+          names:
+            - sessionspaces
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      mutate:
+        targets:
+          - apiVersion: v1
+            kind: ConfigMap
+            name: sessionspaces
+            namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        patchStrategicMerge:
+          metadata:
+            labels:
+              workflows.argoproj.io/configmap-type: Parameter
     - name: copy-artifact-s3-secret
       match:
         resources:

@@ -1,0 +1,31 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: sessionspaces
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+  - try:
+    - apply:
+        resource:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: sessionspaces
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+          data:
+            members: '["member1", "member2"]'
+    - sleep:
+        duration: 5s
+    - assert:
+        resource:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: sessionspaces
+            labels:
+              workflows.argoproj.io/configmap-type: Parameter
