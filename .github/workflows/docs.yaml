@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4.1.7
-        with:
-          lfs: true
 
       - name: Setup Node
         uses: actions/setup-node@v4.0.3
@@ -37,6 +35,8 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4.1.7
+        with:
+          lfs: true
 
       - name: Setup Python
         uses: actions/setup-python@v5.1.1
