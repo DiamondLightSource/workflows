@@ -13,6 +13,8 @@ spec:
             - ConfigMap
           names:
             - sessionspaces
+          operations:
+            - CREATE            
           selector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
@@ -32,6 +34,8 @@ spec:
             - ConfigMap
           names:
             - sessionspaces
+          operations:
+            - CREATE
           selector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
