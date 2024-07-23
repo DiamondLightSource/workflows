@@ -15,7 +15,7 @@ groups:
 
 kyverno:
   enabled: true
-  targetRevision: 3.2.2
+  targetRevision: 3.0.9
   extraValuesFiles: []
   valuesObject:
     admissionController:
