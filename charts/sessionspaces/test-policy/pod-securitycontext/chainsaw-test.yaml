@@ -10,7 +10,7 @@ spec:
           apiVersion: v1
           kind: Namespace
           metadata:
-            name: test-pod-securitycontext
+            name: sessionspace
             labels:
               app.kubernetes.io/managed-by: sessionspaces
     - apply:
@@ -19,9 +19,9 @@ spec:
           kind: ConfigMap
           metadata:
             name: sessionspaces
-            namespace: test-pod-securitycontext
-          labels:
-            app.kubernetes.io/managed-by: sessionspaces
+            namespace: sessionspace
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
           data:
             data_directory: "/allowed/path"
             gid: "1234"
@@ -30,45 +30,39 @@ spec:
           apiVersion: v1
           kind: Pod
           metadata:
-            name: allowed
-            namespace: test-pod-securitycontext
+            name: test-pod
+            namespace: sessionspace
           spec:
             containers:
-            - name: nginx
-              image: nginx:latest
+              - name: test-container
+                image: docker.io/library/busybox:latest
+            initContainers:
+              - name: test-init-container
+                image: docker.io/library/busybox:latest
     - assert:
         resource:
           apiVersion: v1
           kind: Pod
           metadata:
-            namespace: test-pod-securitycontext
+            name: test-pod
+            namespace: sessionspace
           spec:
             securityContext:
               runAsGroup: 1234
               runAsUser: 36055
-    - error:
-        resource:
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: disallowed-privilageescalation
-            namespace: test-pod-securitycontext
-          spec:
             containers:
-            - name: nginx
-              image: nginx:latest
-              securityContext:
-                allowPrivilegeEscalation: true
-    - error:
-        resource:
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: disallowed-writerootfilesystem
-            namespace: test-pod-securitycontext
-          spec:
-            containers:
-            - name: nginx
-              image: nginx:latest
-              securityContext:
-                readOnlyRootFilesystem: false
+              - name: test-container
+                image: docker.io/library/busybox:latest
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 36055
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
+            initContainers:
+              - name: test-init-container
+                image: docker.io/library/busybox:latest
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 36055
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
