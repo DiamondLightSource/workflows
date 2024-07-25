@@ -50,9 +50,8 @@ jobs:
 
       - name: Wait for clusterpolicies
         run: |
-          kubectl wait --for=condition=Ready --timeout=60s clusterpolicy/argo-workflow
-          kubectl wait --for=condition=Ready --timeout=0s clusterpolicy/visit-member
-          kubectl wait --for=condition=Ready --timeout=0s clusterpolicy/sessionspace-pod
+          kubectl wait --for=condition=Ready --timeout=60s clusterpolicy/sessionspace-pod
+          kubectl wait --for=condition=Ready --timeout=60s clusterpolicy/workflows-sessionspace
 
       - name: Run Chainsaw Tests
         run: chainsaw test
