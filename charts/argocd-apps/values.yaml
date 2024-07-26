@@ -40,23 +40,9 @@ kyverno:
           cpu: 1
           memory: 2Gi
     cleanupController:
-      replicas: 2
-      resources:
-        limits:
-          cpu: 2
-          memory: 512Mi
-        requests:
-          cpu: 1
-          memory: 256Mi
+      enabled: false
     reportsController:
-      replicas: 2
-      resources:
-        limits:
-          cpu: 2
-          memory: 512Mi
-        requests:
-          cpu: 1
-          memory: 256Mi
+      enabled: false
 
 sessionspaces:
   enabled: true

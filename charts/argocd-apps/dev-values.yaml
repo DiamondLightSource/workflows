@@ -24,20 +24,6 @@ kyverno:
           cpu: 200m
         requests:
           cpu: 100m
-    cleanupController:
-      replicas: 1
-      resources:
-        limits:
-          cpu: 200m
-        requests:
-          cpu: 100m
-    reportsController:
-      replicas: 1
-      resources:
-        limits:
-          cpu: 200m
-        requests:
-          cpu: 100m
 
 sessionspaces:
   enabled: true
