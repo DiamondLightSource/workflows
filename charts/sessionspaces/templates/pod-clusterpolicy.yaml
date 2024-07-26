@@ -23,26 +23,26 @@ spec:
         patchStrategicMerge:
           spec:
             securityContext:
-              runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+              runAsGroup: "{{ `{{values.data.gid` }} || {{ .Values.policy.runAsGroup }} | {{ `parse_json(@).to_number(@)}}` }}"
               runAsUser: {{ .Values.policy.runAsUser }}
             containers:
               - (name): "*"
                 securityContext:
-                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+                  runAsGroup: "{{ `{{values.data.gid` }} || {{ .Values.policy.runAsGroup }} | {{ `parse_json(@).to_number(@)}}` }}"
                   runAsUser: {{ .Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
             initContainers:
               - (name): "*"
                 securityContext:
-                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+                  runAsGroup: "{{ `{{values.data.gid` }} || {{ .Values.policy.runAsGroup }} | {{ `parse_json(@).to_number(@)}}` }}"
                   runAsUser: {{ .Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
             ephemeralContainers:
               - (name): "*"
                 securityContext:
-                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
+                  runAsGroup: "{{ `{{values.data.gid` }} || {{ .Values.policy.runAsGroup }} | {{ `parse_json(@).to_number(@)}}` }}"
                   runAsUser: {{ .Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
