@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: hostpath
+  name: pod-hostpath-without-directory
 spec:
   steps:
   - try:
@@ -10,7 +10,7 @@ spec:
           apiVersion: v1
           kind: Namespace
           metadata:
-            name: test-hostpath
+            name: pod-hostpath-without-directory
             labels:
               app.kubernetes.io/managed-by: sessionspaces
     - apply:
@@ -19,11 +19,10 @@ spec:
           kind: ConfigMap
           metadata:
             name: sessionspaces
-            namespace: test-hostpath
+            namespace: pod-hostpath-without-directory
             labels:
               app.kubernetes.io/managed-by: sessionspaces
           data:
-            data_directory: "/allowed/path"
             gid: "1234"
     - create:
         resource:
@@ -31,22 +30,18 @@ spec:
           kind: Pod
           metadata:
             name: allowed
-            namespace: test-hostpath
+            namespace: pod-hostpath-without-directory
           spec:
             containers:
             - name: nginx
               image: nginx:latest
-            volumes:
-            - name: test-volume
-              hostPath:
-                path: "/allowed/path"
     - error:
         resource:
           apiVersion: v1
           kind: Pod
           metadata:
-            name: disallowed
-            namespace: test-hostpath
+            name: disallowed-any-path
+            namespace: pod-hostpath-without-directory
           spec:
             containers:
             - name: nginx
@@ -54,4 +49,19 @@ spec:
             volumes:
             - name: test-volume
               hostPath:
-                path: "/disallowed/path"
+                path: "/any/path"
+    - error:
+        resource:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: disallowed-empty-path
+            namespace: pod-hostpath-without-directory
+          spec:
+            containers:
+            - name: nginx
+              image: nginx:latest
+            volumes:
+            - name: test-volume
+              hostPath:
+                path: ""

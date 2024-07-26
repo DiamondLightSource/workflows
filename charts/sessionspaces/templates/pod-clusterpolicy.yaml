@@ -46,7 +46,7 @@ spec:
                   runAsUser: {{ .Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
-    - name: check-hostpath
+    - name: validate-hostpath-mount
       match:
         resources:
           kinds:
@@ -55,14 +55,21 @@ spec:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       context:
-        - name: values
+        - name: sessionspace
           configMap:
             name: sessionspaces
             namespace: "{{ `{{request.object.metadata.namespace}}` }}"
       validate:
-        message: "{{ `The hostPath must point to the session directory ({{values.data.data_directory}})` }}"
-        pattern:
-          spec:
-            volumes:
-            - =(hostPath):
-                path: "{{ `{{values.data.data_directory}}` }}"
+        message: "{{ `The hostPath must point to the session directory ({{sessionspace.data.data_directory}})` }}"
+        anyPattern:
+          - spec:
+              volumes:
+                - X(hostPath): "null"
+          - spec:
+              volumes:
+                - =(hostPath):
+                    path: "{{ `{{sessionspace.data.data_directory || ''}}` }}"
+          - spec:
+              volumes:
+                - =(hostPath):
+                    path: "!"

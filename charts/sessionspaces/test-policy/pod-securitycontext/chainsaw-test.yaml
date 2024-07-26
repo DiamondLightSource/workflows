@@ -23,7 +23,6 @@ spec:
             labels:
               app.kubernetes.io/managed-by: sessionspaces
           data:
-            data_directory: "/allowed/path"
             gid: "1234"
     - create:
         resource:

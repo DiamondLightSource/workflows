@@ -1,0 +1,57 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-hostpath-with-directory
+spec:
+  steps:
+  - try:
+    - apply:
+        resource:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: pod-hostpath-with-directory
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+    - apply:
+        resource:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: sessionspaces
+            namespace: pod-hostpath-with-directory
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+          data:
+            data_directory: "/allowed/path"
+            gid: "1234"
+    - create:
+        resource:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: allowed
+            namespace: pod-hostpath-with-directory
+          spec:
+            containers:
+            - name: nginx
+              image: nginx:latest
+            volumes:
+            - name: test-volume
+              hostPath:
+                path: "/allowed/path"
+    - error:
+        resource:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: disallowed
+            namespace: pod-hostpath-with-directory
+          spec:
+            containers:
+            - name: nginx
+              image: nginx:latest
+            volumes:
+            - name: test-volume
+              hostPath:
+                path: "/disallowed/path"
