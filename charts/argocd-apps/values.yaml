@@ -29,6 +29,8 @@ kyverno:
             cpu: 1
             memory: 4Gi
     backgroundController:
+      extraArgs:
+        genWorkers: 20
       replicas: 2
       resources:
         limits:
