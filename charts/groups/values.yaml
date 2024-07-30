@@ -11,3 +11,11 @@ groups:
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
         path: .
         targetRevision: HEAD
+  - name: mx
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: mx
+        repoURL: https://github.com/DiamondLightSource/mx-workflows
+        path: .
+        targetRevision: HEAD
