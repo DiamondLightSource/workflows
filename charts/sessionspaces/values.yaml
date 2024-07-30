@@ -17,6 +17,7 @@ deployment:
 
 policy:
   runAsUser: 36055
+  runAsGroup: 36055
 
 serviceAccount:
   create: true
