@@ -3,38 +3,31 @@ kind: Test
 metadata:
   name: argo-workflow
 spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
   steps:
-  - try:
-    - apply:
-        resource:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: test-argo-workflow
-            labels:
-              app.kubernetes.io/managed-by: sessionspaces
-    - apply:
-        resource:
-          apiVersion: v1
-          kind: ConfigMap
-          metadata:
-            name: sessionspaces
-            namespace: test-argo-workflow
-            labels:
-              app.kubernetes.io/managed-by: sessionspaces
-          data:
-            members: '["member1", "member2"]'
-    - assert:
-        resource:
-          apiVersion: v1
-          kind: ServiceAccount
-          metadata:
-            name: argo-workflow
-            namespace: test-argo-workflow
-    - assert:
-        resource:
-          apiVersion: rbac.authorization.k8s.io/v1
-          kind: RoleBinding
-          metadata:
-            name: argo-workflow
-            namespace: test-argo-workflow
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                members: '["member1", "member2"]'
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: argo-workflow
+        - assert:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: argo-workflow
