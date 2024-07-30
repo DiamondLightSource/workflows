@@ -3,66 +3,59 @@ kind: Test
 metadata:
   name: pod-securitycontext
 spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
   steps:
-  - try:
-    - apply:
-        resource:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: sessionspace
-            labels:
-              app.kubernetes.io/managed-by: sessionspaces
-    - apply:
-        resource:
-          apiVersion: v1
-          kind: ConfigMap
-          metadata:
-            name: sessionspaces
-            namespace: sessionspace
-            labels:
-              app.kubernetes.io/managed-by: sessionspaces
-          data:
-            data_directory: "/allowed/path"
-            gid: "1234"
-    - create:
-        resource:
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: test-pod
-            namespace: sessionspace
-          spec:
-            containers:
-              - name: test-container
-                image: docker.io/library/busybox:latest
-            initContainers:
-              - name: test-init-container
-                image: docker.io/library/busybox:latest
-    - assert:
-        resource:
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: test-pod
-            namespace: sessionspace
-          spec:
-            securityContext:
-              runAsGroup: 1234
-              runAsUser: 36055
-            containers:
-              - name: test-container
-                image: docker.io/library/busybox:latest
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                data_directory: "/allowed/path"
+                gid: "1234"
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+              spec:
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+              spec:
                 securityContext:
                   runAsGroup: 1234
                   runAsUser: 36055
-                  allowPrivilegeEscalation: false
-                  readOnlyRootFilesystem: true
-            initContainers:
-              - name: test-init-container
-                image: docker.io/library/busybox:latest
-                securityContext:
-                  runAsGroup: 1234
-                  runAsUser: 36055
-                  allowPrivilegeEscalation: false
-                  readOnlyRootFilesystem: true
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 36055
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 36055
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
