@@ -28,5 +28,6 @@ spec:
       description: "Members of the {{ .name }} group"
       policies:
         - "p, proj:{{ .name }}:member, applications, *, {{ .name }}-group/*, allow"
+---
 {{- end }}
 {{- end }}
