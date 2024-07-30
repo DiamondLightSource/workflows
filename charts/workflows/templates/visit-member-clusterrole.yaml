@@ -4,6 +4,14 @@ metadata:
   name: visit-member
 rules:
   - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
       - argoproj.io
     resources:
       - eventsources
