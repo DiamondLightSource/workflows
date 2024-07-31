@@ -137,7 +137,10 @@ mod tests {
 
     #[sqlx::test(
         migrations = "tests/migrations",
-        fixtures(path = "../../tests/fixtures", scripts("bl_sessions", "proposals"))
+        fixtures(
+            "../../tests/fixtures/bl_sessions.sql",
+            "../../tests/fixtures/proposals.sql"
+        )
     )]
     async fn fetch_some(ispyb_pool: MySqlPool) {
         let sessions = BasicInfo::fetch(&ispyb_pool)
