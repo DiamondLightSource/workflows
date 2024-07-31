@@ -5,6 +5,7 @@ metadata:
 spec:
   background: false
   validationFailureAction: Enforce
+  schemaValidation: false
   rules:
     - name: pod-securitycontext
       match:
