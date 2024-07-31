@@ -7,17 +7,20 @@ vcluster:
         deploy:
           enabled: true
           statefulSet:
+            extraArgs:
+              - --quota-backend-bytes=8589934592  # 8Gi
             resources:
               requests:
                 cpu: 2000m
-                memory: 4Gi
+                memory: 8Gi
               limits:
                 cpu: 4000m
-                memory: 8Gi
+                memory: 16Gi
             highAvailability:
               replicas: 3
             persistence:
               volumeClaim:
+                size: 8Gi
                 storageClass: db-nvme-storage
     coredns:
       deployment:
