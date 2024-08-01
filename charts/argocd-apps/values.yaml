@@ -30,7 +30,9 @@ kyverno:
             memory: 4Gi
     backgroundController:
       extraArgs:
-        genWorkers: 20
+        genWorkers: 50
+        clientRateLimitBurst: 500
+        clientRateLimitQPS: 500
       replicas: 2
       resources:
         limits:
