@@ -39,5 +39,6 @@ vcluster connect workflows-cluster -- argo logs -n events @latest
 
 !!! note
 
-    Once we an ingress set up, we should be able to send messages to e.g. ```workflows.diamond.ac.uk/triggering/example```
+    Once we have an ingress set up, we should be able to send messages to
+    e.g. ```workflows.diamond.ac.uk/triggering/example```
     which would also make any port-forwarding obsolete.
