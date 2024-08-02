@@ -37,15 +37,13 @@ spec:
               workflows.argoproj.io/rbac-rule: 'sub in {{ `{{values.data.members}}` }}'
               workflows.argoproj.io/rbac-rule-precedence: "1"
     - name: generate-visit-member-service-account-token
+      skipBackgroundRequests: false
       match:
         resources:
           kinds:
-            - ConfigMap
+            - ServiceAccount
           names:
-            - sessionspaces
-          selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
+            - visit-member
           namespaceSelector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
@@ -54,22 +52,20 @@ spec:
         apiVersion: v1
         kind: Secret
         name: visit-member.service-account-token
-        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        namespace: "{{ `{{request.namespace}}` }}"
         data:
           type: kubernetes.io/service-account-token
           metadata:
             annotations:
               kubernetes.io/service-account.name: visit-member
     - name: generate-visit-member-role-binding
+      skipBackgroundRequests: false
       match:
         resources:
           kinds:
-            - ConfigMap
+            - ServiceAccount
           names:
-            - sessionspaces
-          selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
+            - visit-member
           namespaceSelector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
@@ -78,7 +74,7 @@ spec:
         apiVersion: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: visit-member
-        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        namespace: "{{ `{{request.namespace}}` }}"
         data:
           subjects:
             - kind: ServiceAccount
@@ -92,13 +88,8 @@ spec:
       match:
         resources:
           kinds:
-            - ConfigMap
-          names:
-            - sessionspaces
+            - Namespace
           selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
-          namespaceSelector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       generate:
@@ -106,17 +97,15 @@ spec:
         apiVersion: v1
         kind: ServiceAccount
         name: argo-workflow
-        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        namespace: "{{ `{{request.object.metadata.name}}` }}"
     - name: generate-argo-workflow-role-binding
+      skipBackgroundRequests: false
       match:
         resources:
           kinds:
-            - ConfigMap
+            - ServiceAccount
           names:
-            - sessionspaces
-          selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
+            - argo-workflow
           namespaceSelector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
@@ -125,12 +114,12 @@ spec:
         apiVersion: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: argo-workflow
-        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+        namespace: "{{ `{{request.namespace}}` }}"
         data:
           subjects:
             - kind: ServiceAccount
               name: argo-workflow
-              namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+              namespace: "{{ `{{request.namespace}}` }}"
           roleRef:
             kind: ClusterRole
             name: argo-workflow

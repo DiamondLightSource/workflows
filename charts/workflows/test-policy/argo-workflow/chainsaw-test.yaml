@@ -19,6 +19,8 @@ spec:
                   app.kubernetes.io/managed-by: sessionspaces
               data:
                 members: '["member1", "member2"]'
+        - sleep:
+            duration: 5s
         - assert:
             resource:
               apiVersion: v1
