@@ -26,7 +26,6 @@ spec:
             name: sessionspaces
             namespace: "{{ `{{request.object.metadata.namespace}}` }}"
       generate:
-        synchronize: true
         apiVersion: v1
         kind: ServiceAccount
         name: visit-member
@@ -36,6 +35,11 @@ spec:
             annotations:
               workflows.argoproj.io/rbac-rule: 'sub in {{ `{{values.data.members}}` }}'
               workflows.argoproj.io/rbac-rule-precedence: "1"
+            ownerReferences:
+              - apiVersion: v1
+                kind: ConfigMap
+                name: "{{ `{{request.object.metadata.name}}` }}"
+                uid: "{{ `{{request.object.metadata.uid}}` }}"
     - name: generate-visit-member-service-account-token
       skipBackgroundRequests: false
       match:
@@ -48,7 +52,6 @@ spec:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       generate:
-        synchronize: true
         apiVersion: v1
         kind: Secret
         name: visit-member.service-account-token
@@ -58,6 +61,11 @@ spec:
           metadata:
             annotations:
               kubernetes.io/service-account.name: visit-member
+            ownerReferences:
+              - apiVersion: v1
+                kind: ServiceAccount
+                name: "{{ `{{request.object.metadata.name}}` }}"
+                uid: "{{ `{{request.object.metadata.uid}}` }}"
     - name: generate-visit-member-role-binding
       skipBackgroundRequests: false
       match:
@@ -70,12 +78,17 @@ spec:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       generate:
-        synchronize: true
         apiVersion: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: visit-member
         namespace: "{{ `{{request.namespace}}` }}"
         data:
+          metadata:
+            ownerReferences:
+              - apiVersion: v1
+                kind: ServiceAccount
+                name: "{{ `{{request.object.metadata.name}}` }}"
+                uid: "{{ `{{request.object.metadata.uid}}` }}"
           subjects:
             - kind: ServiceAccount
               name: visit-member
@@ -93,7 +106,6 @@ spec:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       generate:
-        synchronize: true
         apiVersion: v1
         kind: ServiceAccount
         name: argo-workflow
@@ -110,12 +122,17 @@ spec:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       generate:
-        synchronize: true
         apiVersion: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: argo-workflow
         namespace: "{{ `{{request.namespace}}` }}"
         data:
+          metadata:
+            ownerReferences:
+              - apiVersion: v1
+                kind: ServiceAccount
+                name: "{{ `{{request.object.metadata.name}}` }}"
+                uid: "{{ `{{request.object.metadata.uid}}` }}"
           subjects:
             - kind: ServiceAccount
               name: argo-workflow
