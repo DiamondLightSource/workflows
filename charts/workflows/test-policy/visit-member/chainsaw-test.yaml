@@ -29,6 +29,12 @@ spec:
                 name: visit-member
         - assert:
             resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: visit-member.service-account-token
+        - assert:
+            resource:
               apiVersion: rbac.authorization.k8s.io/v1
               kind: RoleBinding
               metadata:
