@@ -15,7 +15,7 @@ kube = { version = "0.93.1" }
 ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
-mockito = { version = "1.4.0" }
+mockito = { version = "1.5.0" }
 serde_json = { version = "1.0.122" }
 sqlx = { version = "0.8.0", features = [
     "runtime-tokio",
