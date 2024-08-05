@@ -130,7 +130,7 @@ spec:
       image: gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1
 ```
 
-defining a ClusterWorkflowTemplate resource with a given name (```ptypy-cpu-job```) and a list of tasks. Here, we
+defining a `ClusterWorkflowTemplate` resource with a given name (`ptypy-cpu-job`) and a list of tasks. Here, we
 provide a single task named ```ptypy-run``` based on the container image we have built in the step above.
 We can also specify which task serves as the entry point and will run first (in the case of a multi-task workflow).
 
