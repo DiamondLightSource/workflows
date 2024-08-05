@@ -9,7 +9,7 @@
 ## Containerising the Application
 
 The first step is to build a [container](https://dev-portal.diamond.ac.uk/guide/kubernetes/tutorials/containers/)
-for PtyPy, for example the following multi-stage Dockerfile
+for PtyPy, for example the following multi-stage Dockerfile in the box below
 
 ??? example "Dockerfile"
     ```dockerfile
@@ -88,13 +88,28 @@ for PtyPy, for example the following multi-stage Dockerfile
     # Run PtyPy run script as entrypoint
     ENTRYPOINT ["ptypy.run"]
     ```
-can be used to build a container image with openmpi as the MPI backend and CuPy as the backend for PtyPy
+
+### Building a container
+
+To build a container image `ptypy-container` with openmpi as the MPI backend and CuPy as the backend for PtyPy, 
+we can use the following podman command
 
 ```bash
-podman build . -t gcr.io/diamond-privreg/ptypy/test_openmpi_cupy:0.1 --target=runtime --build-arg MPI=openmpi --build-arg PLATFORM=cupy
+podman build . -t ptypy-container --target=runtime --build-arg MPI=openmpi --build-arg PLATFORM=cupy
 ```
 
-and then be pushed to Diamond's the private container registry
+### Publishing a container
+
+If we wish to publish our container, we could do so by pushing it to
+Diamond's container registry on the Google cloud,
+see [here](https://dev-portal.diamond.ac.uk/guide/kubernetes/tutorials/containers/) details on how to set this up.
+Now we can change the tag of our image
+
+```bash
+podman tag ptypy-container gcr.io/diamond-privreg/ptypy/test_openmpi_cupy:0.1
+```
+
+and push
 
 ```bash
 podman push gcr.io/diamond-privreg/ptypy/test_openmpi_cupy:0.1
@@ -104,8 +119,9 @@ podman push gcr.io/diamond-privreg/ptypy/test_openmpi_cupy:0.1
 
 The next step is to create a ```ClusterWorkFlowTemplate``` and push it to the corresponding GitHub
 repository for science workflows, in this case [imaging-workflows](https://github.com/DiamondLightSource/imaging-workflows).
-The Argo workflow engine can be configured to automatically look for existing templates in those
-repositories and make them available via the [dashboard](https://workflows.diamond.ac.uk) or the graph (once available).
+We run continuos deployment with ArgoCD which will automatically look for existing templates in those
+repositories and make them available to the Argo workflows controller such that the template are visible
+via the [dashboard](https://workflows.diamond.ac.uk) or the graph (once available).
 
 !!! note "Workflow template repositories"
     If there is currently no workflow repository for your science area, send a message to a
@@ -271,9 +287,9 @@ For GPU jobs, we need to add entries for  ```nvidia.com/gpu``` in both the resou
 For security reasons, workflow pods are only allowed to run with non-root users,
 this means that the application running inside the container won't have write access
 to anything except mounted directories.
-Since many applications will need to write to some locations such as ```/tmp```,
-it makes sense to add a volume claim for a temporary directory to our template
-and mount it into our container like so
+Some applications will need to write to locations such as ```/tmp```.
+In those cases, it makes sense to add a volume claim for a temporary directory
+to our template and mount it into our container like so
 
 ```yaml
   spec:
