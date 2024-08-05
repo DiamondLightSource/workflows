@@ -36,11 +36,11 @@ kyverno:
       replicas: 2
       resources:
         limits:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 32Gi
         requests:
-          cpu: 1
-          memory: 2Gi
+          cpu: 2
+          memory: 16Gi
     cleanupController:
       enabled: false
     reportsController:
