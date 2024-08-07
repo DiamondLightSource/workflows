@@ -30,28 +30,20 @@ jobs:
           helm repo update
           helm dep build charts/workflows
 
-      - name: Install SealedSecret CRDs
+      - name: Install Kyvenro and wait for CRDs
         run: |
-          kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.0/controller.yaml
+          helm install kyverno kyverno/kyverno --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false
+          helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' | kubectl wait --for=condition=Established --timeout=60s -f -
 
-      - name: Install Kyvenro
-        run: helm install kyverno kyverno/kyverno -n kyverno --create-namespace
-
-      - name: Wait for CRDs
+      - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
-          kubectl wait --for=condition=Established --timeout=120s crd/sealedsecrets.bitnami.com
-          kubectl wait --for=condition=Established --timeout=120s crd/clusterpolicies.kyverno.io
-          kubectl wait --for=condition=Established --timeout=0s crd/policies.kyverno.io
+          helm template sessionspaces charts/sessionspaces | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
+          helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
+          cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy")' | kubectl wait --for=condition=Ready --timeout=60s -f -
 
-      - name: Deploy Policies
+      - name: Wait for Kyverno
         run: |
-          helm install sessionspaces charts/sessionspaces --namespace sessionspaces --create-namespace --set deployment.create=false
-          helm install workflows charts/workflows --namespace workflows --create-namespace --set argo-workflows.enabled=false --set postgresql-ha.enabled=false
-
-      - name: Wait for clusterpolicies
-        run: |
-          kubectl wait --for=condition=Ready --timeout=60s clusterpolicy/sessionspace-pod
-          kubectl wait --for=condition=Ready --timeout=60s clusterpolicy/workflows-sessionspace
+          helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "Deployment")' | kubectl wait --for=condition=Available --timeout=60s -f -
 
       - name: Run Chainsaw Tests
         run: chainsaw test
