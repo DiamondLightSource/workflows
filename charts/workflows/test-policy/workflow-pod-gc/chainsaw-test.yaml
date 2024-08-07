@@ -1,0 +1,45 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: workflow-gc
+spec:
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-gc-workflow
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-gc-workflow
+              spec:
+                podGC:
+                  strategy: OnPodCompletion
+                  deleteDelayDuration: 60s
+    - try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: gc-workflow
+              spec:
+                podGC:
+                  strategy: OnWorkflowCompletion
+                  deleteDelayDuration: 30s
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: gc-workflow
+              spec:
+                podGC:
+                  strategy: OnWorkflowCompletion
+                  deleteDelayDuration: 30s
