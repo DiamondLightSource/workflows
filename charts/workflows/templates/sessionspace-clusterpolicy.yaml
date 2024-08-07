@@ -45,6 +45,17 @@ spec:
                         name: "!artifact-s3"
                 =(volumeMounts):
                   - name: "!artifact-s3"
+    - name: apply-default-pod-gc
+      match:
+        resources:
+          kinds:
+            - argoproj.io/*/Workflow
+      mutate:
+        patchStrategicMerge:
+          spec:
+            +(podGC):
+              +(strategy): OnPodCompletion
+              +(deleteDelayDuration): 60s
     - name: copy-artifact-s3-secret
       match:
         resources:

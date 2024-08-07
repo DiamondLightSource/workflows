@@ -30,10 +30,18 @@ jobs:
           helm repo update
           helm dep build charts/workflows
 
-      - name: Install Kyvenro and wait for CRDs
+      - name: Install Kyvenro
         run: |
           helm install kyverno kyverno/kyverno --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false
-          helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' | kubectl wait --for=condition=Established --timeout=60s -f -
+          helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' > /tmp/crds.yaml
+
+      - name: Install Workflows CRDs
+        run: |
+          helm template workflows charts/workflows --namespace workflows --create-namespace | yq e 'select(.kind == "CustomResourceDefinition")' | tee -a /tmp/crds.yaml | kubectl apply -f -
+
+      - name: Wait for CRDs
+        run: |
+         cat /tmp/crds.yaml | kubectl wait --for=condition=Established --timeout=60s -f -
 
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
