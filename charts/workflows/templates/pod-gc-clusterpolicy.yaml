@@ -1,0 +1,18 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ .Release.Name }}-pod-gc
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: apply-default-pod-gc
+      match:
+        resources:
+          kinds:
+            - argoproj.io/*/Workflow
+      mutate:
+        patchStrategicMerge:
+          spec:
+            +(podGC):
+              +(strategy): OnPodCompletion
+              +(deleteDelayDuration): 60s
