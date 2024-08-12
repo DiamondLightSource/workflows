@@ -1,0 +1,22 @@
+{
+  "name": "workflow-UI",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "node",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "tamasfe.even-better-toml",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.4.5": {
+      "username": "none",
+      "upgradePackages": false
+    }
+  },
+  "workspaceFolder": "/workspace"
+}
