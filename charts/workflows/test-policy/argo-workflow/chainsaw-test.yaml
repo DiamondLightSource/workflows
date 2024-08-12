@@ -20,7 +20,7 @@ spec:
               data:
                 members: '["member1", "member2"]'
         - sleep:
-            duration: 5s
+            duration: 10s
         - assert:
             resource:
               apiVersion: v1
