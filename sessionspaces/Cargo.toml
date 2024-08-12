@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.86" }
 clap = { version = "4.5.15", features = ["derive", "env"] }
-derive_more = { version = "1.0.0" }
+derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
 itertools = { version = "0.13.0" }
