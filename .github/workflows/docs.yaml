@@ -50,7 +50,7 @@ jobs:
         run: mkdocs build
 
       - name: Upload Docs Artifact
-        uses: actions/upload-artifact@v4.3.5
+        uses: actions/upload-artifact@v4.3.6
         with:
           name: docs
           path: site
