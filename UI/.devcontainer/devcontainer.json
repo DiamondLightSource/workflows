@@ -1,7 +1,6 @@
 {
   "name": "workflow-UI",
-  "dockerComposeFile": "docker-compose.yaml",
-  "service": "node",
+  "image": "docker.io/library/node:22.4.1-bookworm",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -18,5 +17,8 @@
       "upgradePackages": false
     }
   },
-  "workspaceFolder": "/workspace"
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=../..,target=/workspace,type=bind,consistency=cached"
+  ]
 }
