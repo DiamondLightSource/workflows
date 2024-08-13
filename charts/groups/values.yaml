@@ -19,3 +19,11 @@ groups:
         repoURL: https://github.com/DiamondLightSource/mx-workflows
         path: .
         targetRevision: HEAD
+  - name: magnetic-materials
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: magnetic-materials
+        repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
+        path: .
+        targetRevision: HEAD
