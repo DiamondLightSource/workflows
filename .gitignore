@@ -8,3 +8,5 @@ config_argus
 kubeconfig.yaml
 # Rust
 sessionspaces/target
+# node modules
+node_modules

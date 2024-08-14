@@ -1,24 +1,19 @@
 {
-  "name": "workflow-UI",
-  "image": "docker.io/library/node:22.4.1-bookworm",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-kubernetes-tools.vscode-kubernetes-tools",
-        "tamasfe.even-better-toml",
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint"
-      ]
-    }
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/common-utils:2.4.5": {
-      "username": "none",
-      "upgradePackages": false
-    }
-  },
-  "workspaceFolder": "/workspace",
-  "mounts": [
-    "source=../..,target=/workspace,type=bind,consistency=cached"
-  ]
+    "name": "workflow-UI",
+    "image": "docker.io/library/node:22.4.1-bookworm",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+                "tamasfe.even-better-toml",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+    "runArgs": [
+        "--security-opt=label=type:container_runtime_t"
+    ],
+    "workspaceMount": "source=../,target=/workspace,type=bind",
+    "workspaceFolder": "/workspace"
 }

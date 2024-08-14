@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
-import { resolve } from "path";
 import react from "@vitejs/plugin-react";
+import { resolve } from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,15 +8,15 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "lib/main.ts"),
-      name: "WorkflowLibrary",
-      fileName: "workflow-library",
+      name: "workflows-lib",
+      fileName: "workflows-lib",
     },
     rollupOptions: {
-      external: ["react", "react-dom", "@mui/material"],
+      external: ["react", "react-dom"],
       output: {
         globals: {
           react: "React",
-          "react-dom": "ReactDOM",
+          "react-dom": "ReactDom",
         },
       },
     },
