@@ -12,11 +12,12 @@ export default defineConfig({
       fileName: "relay-workflows-lib",
     },
     rollupOptions: {
-      external: ["react", "react-dom"],
+      external: ["react", "react-dom", "react-relay"],
       output: {
         globals: {
           react: "React",
           "react-dom": "ReactDom",
+          "react-relay": "ReactRelay",
         },
       },
     },
