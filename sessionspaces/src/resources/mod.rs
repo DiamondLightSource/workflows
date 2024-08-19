@@ -1,4 +1,4 @@
-/// The config map for kyverno policy
+/// The ConfigMap describing the session
 mod config_map;
 /// The Namespace for a beamline session
 mod namespace;
