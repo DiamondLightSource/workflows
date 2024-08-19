@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.86" }
-clap = { version = "4.5.15", features = ["derive", "env"] }
+clap = { version = "4.5.16", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
@@ -16,7 +16,7 @@ ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
 mockito = { version = "1.5.0" }
-serde_json = { version = "1.0.124" }
+serde_json = { version = "1.0.125" }
 sqlx = { version = "0.8.0", features = [
     "runtime-tokio",
     "tls-rustls",
@@ -25,7 +25,7 @@ sqlx = { version = "0.8.0", features = [
 ] }
 strum = { version = "0.26.3", features = ["derive"] }
 time = { version = "0.3.36" }
-tokio = { version = "1.39.2", features = ["macros", "time"] }
+tokio = { version = "1.39.3", features = ["macros", "time"] }
 tower = { version = "0.4.13", features = ["limit", "util"] }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
