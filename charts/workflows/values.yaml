@@ -35,6 +35,7 @@ argo-workflows:
   server:
     replicas: 3
     authModes: ["client"]
+  createAggregateRoles: false
 
 postgresql-ha:
   enabled: true
