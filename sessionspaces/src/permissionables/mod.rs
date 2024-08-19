@@ -10,7 +10,7 @@ mod posix_attributes;
 mod proposal_subjects;
 
 use self::{basic_info::BasicInfo, direct_subjects::DirectSubjects};
-use crate::instruments::Instrument;
+use crate::instruments::Instrument::{self, *};
 use instrument_subjects::InstrumentSubjects;
 use ldap3::Ldap;
 use posix_attributes::SessionPosixAttributes;
@@ -19,6 +19,7 @@ use sqlx::MySqlPool;
 use std::{
     collections::{BTreeMap, BTreeSet},
     fmt::Display,
+    path::PathBuf,
 };
 use time::PrimitiveDateTime;
 use tracing::instrument;
@@ -61,6 +62,30 @@ impl Display for Session {
             self.start_date,
             self.end_date
         )
+    }
+}
+
+impl Session {
+    /// Computes the directory associated with a given [`Session`]
+    pub fn directory(&self) -> Option<PathBuf> {
+        match self.instrument {
+            B07 | B07_1 | B16 | B18 | B21 | B22 | B23 | B24 | B24_1 | E01 | E02 | E03 | I03
+            | I04 | I04_1 | I05 | I05_1 | I06 | I06_1 | I06_2 | I07 | I08 | I08_1 | I09 | I09_1
+            | I09_2 | I10 | I10_1 | I11 | I11_1 | I12 | I13 | I13_1 | I14 | I15 | I15_1 | I16
+            | I18 | I19 | I19_1 | I19_2 | I20 | I20_1 | I21 | I22 | I23 | I24 | K11 | M01 | M02
+            | M03 | M04 | M05 | M06 | M07 | M08 | M10 | M11 | M12 | M13 | M14 | P02 | P29 | P32
+            | P33 | P38 | P45 | P99 | S01 | S02 | S03 | S04 => Some(PathBuf::from_iter([
+                "/dls",
+                &self.instrument.to_string(),
+                "data",
+                &self.start_date.year().to_string(),
+                &format!(
+                    "{}{}-{}",
+                    self.proposal_code, self.proposal_number, self.visit
+                ),
+            ])),
+            _ => None,
+        }
     }
 }
 
