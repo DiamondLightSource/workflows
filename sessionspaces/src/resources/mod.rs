@@ -1,5 +1,5 @@
 /// The config map for kyverno policy
-mod config_maps;
+mod config_map;
 /// The Namespace for a beamline session
 mod namespace;
 
@@ -9,6 +9,6 @@ const MANAGED_BY_LABEL: &str = "app.kubernetes.io/managed-by";
 const MANAGED_BY: &str = "sessionspaces";
 
 pub use self::{
-    config_maps::create_configmap,
+    config_map::create_configmap,
     namespace::{create_namespace, delete_namespace},
 };
