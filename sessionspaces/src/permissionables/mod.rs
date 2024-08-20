@@ -38,7 +38,7 @@ pub struct Session {
     /// A set of session members
     pub members: BTreeSet<String>,
     /// The posix GID of the session group
-    pub gid: Option<String>,
+    pub gid: Option<u32>,
     /// The session start date and time
     pub start_date: PrimitiveDateTime,
     /// The session end date and time

@@ -35,7 +35,7 @@ pub async fn create_configmap(
         ("end_date".to_string(), session.end_date.to_string()),
     ]);
     if let Some(gid) = session.gid {
-        configmap_data.insert("gid".to_string(), gid);
+        configmap_data.insert("gid".to_string(), gid.to_string());
     }
     if let Some(mount_path) = mount_path {
         configmap_data.insert(

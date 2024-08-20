@@ -1,4 +1,5 @@
 use derive_more::{Deref, DerefMut};
+use if_chain::if_chain;
 use ldap3::{Ldap, LdapError, Scope, SearchEntry};
 use std::collections::BTreeMap;
 
@@ -10,7 +11,7 @@ pub struct SessionPosixAttributes(BTreeMap<String, PosixAttributes>);
 #[derive(Debug)]
 pub struct PosixAttributes {
     /// The posix Group ID of the session group
-    pub gid: String,
+    pub gid: u32,
 }
 
 impl SessionPosixAttributes {
@@ -29,16 +30,15 @@ impl SessionPosixAttributes {
         let mut posix_attributes = Self::default();
         for result_entry in rs {
             let mut search_entry = SearchEntry::construct(result_entry);
-            if let Some(Ok([gid])) = search_entry
-                .attrs
-                .remove("gidNumber")
-                .map(<[_; 1]>::try_from)
-            {
-                if let Some(Ok([session_name])) =
-                    search_entry.attrs.remove("cn").map(<[_; 1]>::try_from)
-                {
-                    posix_attributes
-                        .insert(session_name.replace('_', "-"), PosixAttributes { gid });
+            if_chain! {
+                if let Some(gids) = search_entry.attrs.remove("gidNumber");
+                if let Ok([gid]) = <[_;1]>::try_from(gids);
+                if let Ok(gid) = gid.parse();
+                then {
+                    if let Some(Ok([session_name])) = search_entry.attrs.remove("cn").map(<[_;1]>::try_from) {
+                        posix_attributes
+                            .insert(session_name.replace('_', "-"), PosixAttributes { gid });
+                    }
                 }
             }
         }
