@@ -18,24 +18,26 @@ spec:
                 labels:
                   app.kubernetes.io/managed-by: sessionspaces
               data:
-                members: '["member1", "member2"]'
+                members: "[\"enu43627\", \"iat69393\", \"mgr27357\"]"
         - sleep:
-            duration: 10s
-        - assert:
-            resource:
-              apiVersion: v1
-              kind: ServiceAccount
-              metadata:
-                name: visit-member
-        - assert:
-            resource:
-              apiVersion: v1
-              kind: Secret
-              metadata:
-                name: visit-member.service-account-token
+            duration: 5s
         - assert:
             resource:
               apiVersion: rbac.authorization.k8s.io/v1
               kind: RoleBinding
               metadata:
                 name: visit-member
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: ClusterRole
+                name: visit-member
+              subjects:
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:enu43627"
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:iat69393"
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:mgr27357"
