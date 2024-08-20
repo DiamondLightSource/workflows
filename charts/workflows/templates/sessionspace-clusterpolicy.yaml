@@ -48,7 +48,7 @@ spec:
         clone:
           namespace: workflows
           name: artifact-s3
-    - name: generate-visit-member-service-account
+    - name: generate-visit-member-role-binding
       match:
         resources:
           kinds:
@@ -62,78 +62,22 @@ spec:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
       context:
-        - name: values
+        - name: sessionspace
           configMap:
             name: sessionspaces
             namespace: "{{ `{{request.object.metadata.namespace}}` }}"
-      generate:
-        apiVersion: v1
-        kind: ServiceAccount
-        name: visit-member
-        namespace: "{{ `{{request.object.metadata.namespace}}` }}"
-        data:
-          metadata:
-            annotations:
-              workflows.argoproj.io/rbac-rule: 'sub in {{ `{{values.data.members}}` }}'
-              workflows.argoproj.io/rbac-rule-precedence: "1"
-            ownerReferences:
-              - apiVersion: v1
-                kind: ConfigMap
-                name: "{{ `{{request.object.metadata.name}}` }}"
-                uid: "{{ `{{request.object.metadata.uid}}` }}"
-    - name: generate-visit-member-service-account-token
-      skipBackgroundRequests: false
-      match:
-        resources:
-          kinds:
-            - ServiceAccount
-          names:
-            - visit-member
-          namespaceSelector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
-      generate:
-        apiVersion: v1
-        kind: Secret
-        name: visit-member.service-account-token
-        namespace: "{{ `{{request.namespace}}` }}"
-        data:
-          type: kubernetes.io/service-account-token
-          metadata:
-            annotations:
-              kubernetes.io/service-account.name: visit-member
-            ownerReferences:
-              - apiVersion: v1
-                kind: ServiceAccount
-                name: "{{ `{{request.object.metadata.name}}` }}"
-                uid: "{{ `{{request.object.metadata.uid}}` }}"
-    - name: generate-visit-member-role-binding
-      skipBackgroundRequests: false
-      match:
-        resources:
-          kinds:
-            - ServiceAccount
-          names:
-            - visit-member
-          namespaceSelector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
       generate:
         apiVersion: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: visit-member
         namespace: "{{ `{{request.namespace}}` }}"
         data:
-          metadata:
-            ownerReferences:
-              - apiVersion: v1
-                kind: ServiceAccount
-                name: "{{ `{{request.object.metadata.name}}` }}"
-                uid: "{{ `{{request.object.metadata.uid}}` }}"
-          subjects:
-            - kind: ServiceAccount
-              name: visit-member
-              namespace: "{{ `{{request.object.metadata.namespace}}` }}"
+          subjects: |-
+            {{
+            `{{
+              sessionspace.data.members | parse_json(@)[].{"apiGroup": 'rbac.authorization.k8s.io', "kind": 'User', "name": join('', ['oidc:', @])}
+            }}`
+            }}
           roleRef:
             kind: ClusterRole
             name: visit-member
