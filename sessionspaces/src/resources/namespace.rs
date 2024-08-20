@@ -61,36 +61,36 @@ pub async fn create_namespace(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use kube::Client;
-    use kube::Config;
-    use mockito::Server;
+    use super::create_namespace;
+    use k8s_openapi::api::core::v1::Namespace;
+    use kube::{api::ObjectMeta, Client, Config};
+    use wiremock::{
+        matchers::{body_partial_json, method, path, query_param},
+        Mock, MockServer, ResponseTemplate,
+    };
 
     #[tokio::test]
     async fn create_new_namespace() {
-        let mut server = Server::new_async().await;
-        let mock_patch_test_namespace = server
-            .mock(
-                "PATCH",
-                "/api/v1/namespaces/test?&fieldManager=sessionspaces",
-            )
-            .with_status(201)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                    "apiVersion": "v1",
-                    "kind": "Namespace",
-                    "metadata": {
-                        "name": "test"
-                    }
-                }"#,
-            )
-            .create();
-        let config = Config::new(server.url().parse().unwrap());
+        let server = MockServer::start().await;
+        let namespace = Namespace {
+            metadata: ObjectMeta {
+                name: Some("cm37235-3".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let _mock = Mock::given(method("PATCH"))
+            .and(path("/api/v1/namespaces/cm37235-3"))
+            .and(query_param("fieldManager", "sessionspaces"))
+            .and(body_partial_json(namespace.clone()))
+            .respond_with(ResponseTemplate::new(201).set_body_json(namespace))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let config = Config::new(server.uri().parse().unwrap());
         let k8s_client = Client::try_from(config).unwrap();
-        create_namespace("test".to_string(), k8s_client)
+        create_namespace("cm37235-3".to_string(), k8s_client)
             .await
             .unwrap();
-        mock_patch_test_namespace.assert();
     }
 }

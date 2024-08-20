@@ -16,7 +16,6 @@ kube = { version = "0.93.1" }
 ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
-mockito = { version = "1.5.0" }
 serde_json = { version = "1.0.125" }
 sqlx = { version = "0.8.0", features = [
     "runtime-tokio",
@@ -31,3 +30,6 @@ tower = { version = "0.4.13", features = ["limit", "util"] }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
 url = { version = "2.5.2" }
+
+[dev-dependencies]
+wiremock = "0.6.1"
