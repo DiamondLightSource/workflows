@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { ReactFlow } from "@xyflow/react";
+import { ReactFlow, Node, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import React from "react";
 import { Task } from "../../types";
@@ -27,17 +27,53 @@ const buildTaskTree = (tasks: Task[]): TaskNode[] => {
   return roots;
 };
 
+const generateNodesAndEdges = (
+  taskNodes: TaskNode[]
+): { nodes: Node[]; edges: Edge[] } => {
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+
+  const traverse = (tasks: TaskNode[], parentId?: string) => {
+    tasks.forEach((task) => {
+      nodes.push({
+        id: task.name,
+        type: "default",
+        data: { label: task.name, status: task.status },
+        position: { x: 0, y: 0 },
+      });
+
+      if (parentId) {
+        edges.push({
+          id: `e${parentId}-${task.name}`,
+          source: parentId,
+          target: task.name,
+          type: "smoothstep",
+        });
+      }
+
+      if (task.children && task.children.length > 0) {
+        traverse(task.children, task.name);
+      }
+    });
+  };
+
+  traverse(taskNodes);
+  return { nodes, edges };
+};
+
 interface TasksFlowProps {
   tasks: Task[];
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({ tasks }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const taskTree = buildTaskTree(tasks);
+  const { nodes, edges } = generateNodesAndEdges(taskTree);
 
   return (
-    <Box display="flex" height="50vh" width="100%">
+    <Box display="flex" height="100vh" width="100%">
       <ReactFlow
+        nodes={nodes}
+        edges={edges}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
