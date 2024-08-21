@@ -1,7 +1,6 @@
 use super::{MANAGED_BY, MANAGED_BY_LABEL};
 use crate::permissionables::Session;
-use itertools::Itertools;
-use k8s_openapi::api::{core::v1::ConfigMap, rbac::v1::Subject};
+use k8s_openapi::api::core::v1::ConfigMap;
 use kube::{
     api::{ObjectMeta, Patch, PatchParams},
     Api, Client,
@@ -31,21 +30,6 @@ pub async fn create_configmap(
         (
             "members".to_string(),
             serde_json::to_string(&session.members)?,
-        ),
-        (
-            "member_refs".to_string(),
-            serde_json::to_string(
-                &session
-                    .members
-                    .iter()
-                    .map(|member| Subject {
-                        kind: "User".to_string(),
-                        name: format!("oidc:{member}"),
-                        ..Default::default()
-                    })
-                    .collect_vec(),
-            )
-            .unwrap(),
         ),
         ("start_date".to_string(), session.start_date.to_string()),
         ("end_date".to_string(), session.end_date.to_string()),
@@ -92,7 +76,7 @@ pub async fn create_configmap(
 mod tests {
     use super::create_configmap;
     use crate::{instruments::Instrument, permissionables::Session};
-    use k8s_openapi::api::{core::v1::ConfigMap, rbac::v1::Subject};
+    use k8s_openapi::api::core::v1::ConfigMap;
     use kube::{api::ObjectMeta, Client, Config};
     use std::collections::{BTreeMap, BTreeSet};
     use time::macros::datetime;
@@ -117,27 +101,6 @@ mod tests {
                 (
                     "members".to_string(),
                     serde_json::to_string(&vec![&"enu43627", &"iat69393", &"mrg27357"]).unwrap(),
-                ),
-                (
-                    "member_refs".to_string(),
-                    serde_json::to_string(&vec![
-                        Subject {
-                            kind: "User".to_string(),
-                            name: "oidc:enu43627".to_string(),
-                            ..Default::default()
-                        },
-                        Subject {
-                            kind: "User".to_string(),
-                            name: "oidc:iat69393".to_string(),
-                            ..Default::default()
-                        },
-                        Subject {
-                            kind: "User".to_string(),
-                            name: "oidc:mrg27357".to_string(),
-                            ..Default::default()
-                        },
-                    ])
-                    .unwrap(),
                 ),
                 (
                     "start_date".to_string(),
