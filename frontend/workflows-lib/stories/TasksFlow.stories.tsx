@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { fakeTasks } from "./mockData/Tasks";
+import { fakeTasks } from "./mockData/MockTasks";
 
 import TaskFlow from "../lib/components/workflow/TasksFlow";
 

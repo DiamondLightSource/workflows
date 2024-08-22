@@ -17,7 +17,7 @@ export const fakeTasks = [
     depends: "1",
     workflow_id: "1",
     name: "task-3",
-    status: "pending",
+    status: "running",
   },
   {
     id: "4",
@@ -29,7 +29,7 @@ export const fakeTasks = [
     id: "5",
     workflow_id: "1",
     name: "task-5 EOI909D",
-    status: "pending",
+    status: "completed",
   },
   {
     id: "6",
@@ -51,5 +51,33 @@ export const fakeTasks = [
     workflow_id: "1",
     name: "task-8",
     status: "pending",
+  },
+  {
+    id: "9",
+    depends: "6",
+    workflow_id: "1",
+    name: "task-9",
+    status: "pending",
+  },
+  {
+    id: "10",
+    depends: "9",
+    workflow_id: "1",
+    name: "task-10",
+    status: "pending",
+  },
+  {
+    id: "11",
+    depends: "10",
+    workflow_id: "1",
+    name: "task-11",
+    status: "pending",
+  },
+  {
+    id: "12",
+    depends: "5",
+    workflow_id: "1",
+    name: "task-12",
+    status: "completed",
   },
 ];
