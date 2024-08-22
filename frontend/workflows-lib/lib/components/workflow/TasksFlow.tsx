@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
-import { ReactFlow, Node, Edge } from "@xyflow/react";
+import { ReactFlow, Node, Edge, ReactFlowInstance } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import CustomNode from "./CustomNode";
 import { applyDagreLayout } from "../../uilts/DagreLayout";
 
@@ -89,9 +89,17 @@ const TasksFlow: React.FC<TasksFlowProps> = ({ tasks }) => {
     [nodes, edges]
   );
 
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    reactFlowInstance.current = instance;
+    void instance.fitView();
+  }, []);
+
   return (
     <Box display="flex" height="100vh" width="100%">
       <ReactFlow
+        onInit={onInit}
         nodes={layoutedNodes}
         edges={layoutedEdges}
         nodeTypes={nodeTypes}
