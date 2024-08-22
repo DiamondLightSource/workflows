@@ -4,3 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-graphql = { version = "7.0.7" }
+async-graphql-axum = { version = "7.0.7" }
+axum = { version = "0.7.5" }
+clap = { version = "4.5.16", features = ["derive", "env"] }
+dotenvy = { version = "0.15.7" }
+tokio = { version = "1.39.3", features = ["macros", "net", "rt-multi-thread"] }
