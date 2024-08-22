@@ -4,9 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = { version = "1.0.86" }
 async-graphql = { version = "7.0.7" }
 async-graphql-axum = { version = "7.0.7" }
 axum = { version = "0.7.5" }
 clap = { version = "4.5.16", features = ["derive", "env"] }
 dotenvy = { version = "0.15.7" }
+opentelemetry = { version = "0.22.0" }
+opentelemetry-otlp = { version = "0.15.0", features = ["metrics"] }
+opentelemetry-semantic-conventions = "0.14.0"
+opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
 tokio = { version = "1.39.3", features = ["macros", "net", "rt-multi-thread"] }
+tracing = { version = "0.1.40" }
+tracing-opentelemetry = { version = "0.23.0" }
+tracing-subscriber = { version = "0.3.18" }
+url = "2.5.2"
+
+[build-dependencies]
+built = { version = "0.7.4" }
