@@ -56,7 +56,7 @@ const generateNodesAndEdges = (
           id: `e${parentId}-${task.id}`,
           source: parentId,
           target: task.id,
-          type: "bezier",
+          animated: true,
         });
       }
 
@@ -104,7 +104,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({ tasks }) => {
         panOnDrag={false}
         preventScrolling={false}
         style={{ width: "100%", height: "100%" }}
-      ></ReactFlow>
+      />
     </Box>
   );
 };

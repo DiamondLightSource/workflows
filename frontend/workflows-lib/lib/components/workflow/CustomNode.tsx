@@ -1,7 +1,8 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Paper, Typography, useTheme } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { getStatusIcon } from "../common/StatusIcons";
+
 interface CustomNodeProps {
   data: {
     label: string;
@@ -9,46 +10,40 @@ interface CustomNodeProps {
   };
 }
 
-const truncateLabel = (text: string) => {
-  const maxLength = 16;
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return `${text.slice(0, 3)}...${text.slice(-3)}`;
-};
-
 const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
-  const truncatedLabel = truncateLabel(data.label);
+  const theme = useTheme();
+
   return (
-    <Box
-      style={{
-        padding: 8,
-        border: "1px solid #ddd",
-        borderRadius: 8,
-        minWidth: 160,
+    <Paper
+      elevation={8}
+      sx={{
+        padding: theme.spacing(1.5),
+        minWidth: 140,
+        maxWidth: 160,
       }}
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: "#555" }}
+        style={{ background: theme.palette.grey[700] }}
       />
       <Box
         display="flex"
-        justifyContent="space-around"
+        justifyContent="space-between"
         alignItems="center"
-        padding={0.5}
-        minWidth={110}
+        minWidth={120}
       >
-        <Typography variant="body1">{truncatedLabel}</Typography>
+        <Typography variant="subtitle1" noWrap sx={{ fontWeight: 500 }}>
+          {data.label}
+        </Typography>
         {getStatusIcon(data.status)}
       </Box>
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: "#555" }}
+        style={{ background: theme.palette.grey[700] }}
       />
-    </Box>
+    </Paper>
   );
 };
 
