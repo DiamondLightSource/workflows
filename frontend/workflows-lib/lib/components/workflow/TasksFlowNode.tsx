@@ -3,14 +3,14 @@ import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { getStatusIcon } from "../common/StatusIcons";
 
-interface CustomNodeProps {
+interface TaskFlowNodeProps {
   data: {
     label: string;
     status: string;
   };
 }
 
-const TaskFlowNode: React.FC<CustomNodeProps> = ({ data }) => {
+const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data }) => {
   const theme = useTheme();
 
   return (
