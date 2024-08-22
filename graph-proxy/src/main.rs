@@ -5,6 +5,8 @@
 
 /// GraphQL resolvers
 mod graphql;
+/// OpenTelemetry setup and configuration
+mod telemetry;
 
 use async_graphql::{http::GraphiQLSource, ObjectType, SDLExportOptions, Schema, SubscriptionType};
 use async_graphql_axum::GraphQL;
@@ -17,7 +19,10 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     path::PathBuf,
 };
+use telemetry::setup_telemetry;
 use tokio::net::TcpListener;
+use tracing::Level;
+use url::Url;
 
 /// A proxy providing Argo Workflows data
 #[derive(Debug, Parser)]
@@ -37,6 +42,15 @@ struct ServeArgs {
     /// The port to bind this service to
     #[arg(short, long, env = "PORT", default_value_t = 80)]
     port: u16,
+    /// The endpoint to send OTLP metrics to
+    #[arg(short, long, env = "METRICS_ENDPOINT")]
+    metrics_endpoint: Option<Url>,
+    /// The endpoint to send OTLP traces to
+    #[arg(short, long, env = "TRACING_ENDPOINT")]
+    tracing_endpoint: Option<Url>,
+    /// The minimum telemetry level
+    #[arg(short, long, env="TELEMETRY_LEVEL", default_value_t=Level::INFO)]
+    telemetry_level: Level,
 }
 
 /// Arguments for producing the GraphQL schema
@@ -54,6 +68,12 @@ async fn main() {
 
     match args {
         Cli::Serve(args) => {
+            setup_telemetry(
+                args.metrics_endpoint,
+                args.tracing_endpoint,
+                args.telemetry_level,
+            )
+            .unwrap();
             let schema = root_schema_builder().finish();
             let router = setup_router(schema);
             serve(router, args.host, args.port).await.unwrap();
