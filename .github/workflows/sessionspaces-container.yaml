@@ -1,4 +1,4 @@
-name: Container-sessionspaces
+name: Sessionspaces Container
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4.1.7
 
       - name: Generate Image Name
-        run: echo IMAGE_REPOSITORY=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '[_]' '[\-]') >> $GITHUB_ENV
+        run: echo IMAGE_REPOSITORY=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '[_]' '[\-]')-sessionspaces >> $GITHUB_ENV
 
       - name: Log in to GitHub Docker Registry
         if: github.event_name != 'pull_request'
