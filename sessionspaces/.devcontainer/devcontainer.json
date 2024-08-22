@@ -1,5 +1,5 @@
 {
-  "name": "workflows",
+  "name": "workflows-sessionspaces",
   "dockerComposeFile": "./docker-compose.yml",
   "service": "sessionspaces",
   "customizations": {
