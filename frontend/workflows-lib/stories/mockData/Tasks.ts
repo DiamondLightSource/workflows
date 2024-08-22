@@ -9,7 +9,7 @@ export const fakeTasks = [
     id: "2",
     depends: "1",
     workflow_id: "1",
-    name: "task-2 DKJFOKJLSKDMFODSJFLKSDJFLKSD",
+    name: "task-2 DKJFOKJLSKDMFO",
     status: "completed",
   },
   {
@@ -33,13 +33,14 @@ export const fakeTasks = [
   },
   {
     id: "6",
-    depends: "2",
+    depends: "3",
     workflow_id: "1",
     name: "task-6 KNMNE9",
     status: "running",
   },
   {
     id: "7",
+    depends: "3",
     workflow_id: "1",
     name: "task-7 KLDJF034 DFJSOID 039402KDJO",
     status: "running",

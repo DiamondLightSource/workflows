@@ -2,6 +2,8 @@ import { Box } from "@mui/material";
 import { ReactFlow, Node, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import React, { useMemo } from "react";
+import CustomNode from "./CustomNode";
+import { applyDagreLayout } from "../../uilts/DagreLayout";
 
 interface Task {
   id: string;
@@ -44,7 +46,7 @@ const generateNodesAndEdges = (
     tasks.forEach((task) => {
       nodes.push({
         id: task.id,
-        type: "default",
+        type: "custom",
         data: { label: task.name, status: task.status },
         position: { x: 0, y: 0 },
       });
@@ -54,7 +56,7 @@ const generateNodesAndEdges = (
           id: `e${parentId}-${task.id}`,
           source: parentId,
           target: task.id,
-          type: "smoothstep",
+          type: "bezier",
         });
       }
 
@@ -68,6 +70,10 @@ const generateNodesAndEdges = (
   return { nodes, edges };
 };
 
+const nodeTypes = {
+  custom: CustomNode,
+};
+
 interface TasksFlowProps {
   tasks: Task[];
 }
@@ -78,12 +84,17 @@ const TasksFlow: React.FC<TasksFlowProps> = ({ tasks }) => {
     () => generateNodesAndEdges(taskTree),
     [taskTree]
   );
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
+    () => applyDagreLayout(nodes, edges),
+    [nodes, edges]
+  );
 
   return (
     <Box display="flex" height="100vh" width="100%">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={layoutedNodes}
+        edges={layoutedEdges}
+        nodeTypes={nodeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
