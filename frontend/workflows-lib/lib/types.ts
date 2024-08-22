@@ -4,3 +4,7 @@ export interface Task {
   status: string;
   depends?: string;
 }
+
+export interface TaskNode extends Task {
+  children?: TaskNode[];
+}
