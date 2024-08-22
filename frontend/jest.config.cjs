@@ -7,7 +7,9 @@ module.exports = {
     "**/?(*.)+(spec|test).[jt]s?(x)",
   ],
   moduleNameMapper: {
-    "^@workflows-lib/(.*)$": "workflows-lib/src/$1",
-    "^@relay-workflows-lib/(.*)$": "relay-workflows-lib/src/$1",
+    "^@workflows-lib/(.*)$": "workflows-lib/lib/$1",
+    "^@relay-workflows-lib/(.*)$": "relay-workflows-lib/lib/$1",
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
+  setupFilesAfterEnv: ["./jest.setup.js"]
 };
