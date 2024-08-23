@@ -47,4 +47,4 @@ jobs:
         run: yarn --frozen-lockfile
 
       - name: Test
-        run: yarn test --passWithNoTests # Currently there are no tests
+        run: yarn test
