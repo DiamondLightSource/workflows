@@ -8,11 +8,10 @@ mod graphql;
 /// OpenTelemetry setup and configuration
 mod telemetry;
 
-use async_graphql::{http::GraphiQLSource, ObjectType, SDLExportOptions, Schema, SubscriptionType};
-use async_graphql_axum::GraphQL;
+use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{response::Html, routing::get, Router};
 use clap::Parser;
-use graphql::root_schema_builder;
+use graphql::{graphql_handler, root_schema_builder, RootSchema};
 use std::{
     fs::File,
     io::Write,
@@ -26,6 +25,7 @@ use url::Url;
 
 /// A proxy providing Argo Workflows data
 #[derive(Debug, Parser)]
+#[allow(clippy::large_enum_variant)]
 enum Cli {
     /// Starts a webserver serving the GraphQL API
     Serve(ServeArgs),
@@ -36,6 +36,9 @@ enum Cli {
 /// Arguments for serving the GraphQL API
 #[derive(Debug, Parser)]
 struct ServeArgs {
+    /// The base URL of the Argo Server from which data is to be retrieved
+    #[arg(short, long, env = "ARGO_SERVER_URL")]
+    argo_server_url: Url,
     /// The host IP to bind the service to
     #[arg(short, long, env="HOST", default_value_t=IpAddr::V4(Ipv4Addr::UNSPECIFIED))]
     host: IpAddr,
@@ -61,6 +64,10 @@ struct SchemaArgs {
     path: Option<PathBuf>,
 }
 
+/// The URL of an Argo Server
+#[derive(Debug, Clone, derive_more::Deref)]
+pub struct ArgoServerUrl(Url);
+
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
@@ -74,7 +81,9 @@ async fn main() {
                 args.telemetry_level,
             )
             .unwrap();
-            let schema = root_schema_builder().finish();
+            let schema = root_schema_builder()
+                .data(ArgoServerUrl(args.argo_server_url))
+                .finish();
             let router = setup_router(schema);
             serve(router, args.host, args.port).await.unwrap();
         }
@@ -92,13 +101,7 @@ async fn main() {
 }
 
 /// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
-fn setup_router(
-    schema: Schema<
-        impl ObjectType + 'static,
-        impl ObjectType + 'static,
-        impl SubscriptionType + 'static,
-    >,
-) -> Router {
+fn setup_router(schema: RootSchema) -> Router {
     #[allow(clippy::missing_docs_in_private_items)]
     const GRAPHQL_ENDPOINT: &str = "/";
 
@@ -107,7 +110,8 @@ fn setup_router(
         get(Html(
             GraphiQLSource::build().endpoint(GRAPHQL_ENDPOINT).finish(),
         ))
-        .post_service(GraphQL::new(schema)),
+        .post(graphql_handler)
+        .with_state(schema),
     )
 }
 
