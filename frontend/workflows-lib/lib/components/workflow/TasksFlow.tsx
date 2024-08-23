@@ -6,9 +6,8 @@ import CustomNode from "./CustomNode";
 import { applyDagreLayout } from "../../uilts/DagreLayout";
 
 interface Task {
-  id: string;
   name: string;
-  workflow_id: string;
+  workflow: string;
   status: string;
   depends?: string;
 }
@@ -22,14 +21,14 @@ const buildTaskTree = (tasks: Task[]): TaskNode[] => {
   const roots: TaskNode[] = [];
 
   tasks.forEach((task) => {
-    taskMap[task.id] = { ...task, children: [] };
+    taskMap[task.name] = { ...task, children: [] };
   });
 
   tasks.forEach((task) => {
     if (task.depends) {
-      taskMap[task.depends].children?.push(taskMap[task.id]);
+      taskMap[task.depends].children?.push(taskMap[task.name]);
     } else {
-      roots.push(taskMap[task.id]);
+      roots.push(taskMap[task.name]);
     }
   });
 
@@ -45,7 +44,7 @@ const generateNodesAndEdges = (
   const traverse = (tasks: TaskNode[], parentId?: string) => {
     tasks.forEach((task) => {
       nodes.push({
-        id: task.id,
+        id: task.name,
         type: "custom",
         data: { label: task.name, status: task.status },
         position: { x: 0, y: 0 },
@@ -53,15 +52,15 @@ const generateNodesAndEdges = (
 
       if (parentId) {
         edges.push({
-          id: `e${parentId}-${task.id}`,
+          id: `e${parentId}-${task.name}`,
           source: parentId,
-          target: task.id,
+          target: task.name,
           animated: true,
         });
       }
 
       if (task.children && task.children.length > 0) {
-        traverse(task.children, task.id);
+        traverse(task.children, task.name);
       }
     });
   };
