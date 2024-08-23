@@ -9,6 +9,8 @@ jobs:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
+    env:
+      ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
         uses: actions/checkout@v4.1.7
@@ -21,6 +23,11 @@ jobs:
 
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.3
+
+      - name: Create argo workflows openapi lib file
+        run: |
+          mkdir graph-proxy/argo-workflows-openapi/src
+          printf "\n" > graph-proxy/argo-workflows-openapi/src/lib.rs
 
       - name: Check Formatting
         uses: actions-rs/cargo@v1.0.3
@@ -47,6 +54,8 @@ jobs:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
+    env:
+      ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
         uses: actions/checkout@v4.1.7

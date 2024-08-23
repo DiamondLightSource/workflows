@@ -1,0 +1,21 @@
+[package]
+name = "argo-workflows-openapi"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+chrono = { version = "0.4.38", features = ["serde"] }
+serde = { version = "1.0.208", features = ["derive"] }
+serde_json = { version = "1.0.125" }
+
+[build-dependencies]
+quote = { version = "1.0.37" }
+reqwest = { version = "0.12.7", features = ["blocking"] }
+rustfmt-wrapper = { version = "0.2.1" }
+schemars = { version = "0.8.21" }
+serde_json = { version = "1.0.125" }
+syn = { version = "2.0.75" }
+typify = { version = "0.1.0" }

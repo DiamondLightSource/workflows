@@ -4,6 +4,9 @@
     "context": "..",
     "dockerfile": "Dockerfile"
   },
+  "containerEnv": {
+    "ARGO_SERVER_SCHEMA_URL": "https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json"
+  },
   "customizations": {
     "vscode": {
       "settings": {
