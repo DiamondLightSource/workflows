@@ -1,11 +1,16 @@
 FROM docker.io/library/rust:1.80.1-bullseye AS build
 
+ARG ARGO_SERVER_SCHEMA_URL
+
 WORKDIR /app
 
-COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.lock argo-workflows-openapi
+RUN rustup component add rustfmt
+
+COPY argo-workflows-openapi argo-workflows-openapi
 COPY Cargo.toml Cargo.lock ./
 
-RUN mkdir src && echo "fn main() {}" > src/main.rs \
+RUN mkdir src \
+    && echo "fn main() {}" > src/main.rs \
     && cargo build --release
 
 COPY . .
