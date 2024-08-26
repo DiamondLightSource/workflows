@@ -16,8 +16,8 @@ kube = { version = "0.93.1" }
 ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
-serde_json = { version = "1.0.125" }
-sqlx = { version = "0.8.0", features = [
+serde_json = { version = "1.0.127" }
+sqlx = { version = "0.8.1", features = [
     "runtime-tokio",
     "tls-rustls",
     "mysql",
