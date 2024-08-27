@@ -1,4 +1,4 @@
-import { buildTaskTree } from "../../lib/uilts/TasksFlowUtils";
+import { buildTaskTree } from "../../lib/components/workflow/TasksFlowUtils";
 import { TaskNode } from "../../lib/types";
 
 describe("buildTaskTree", () => {

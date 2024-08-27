@@ -1,4 +1,4 @@
-import { generateNodesAndEdges } from "../../lib/uilts/TasksFlowUtils";
+import { generateNodesAndEdges } from "../../lib/components/workflow/TasksFlowUtils";
 
 describe("generateNodesAndEdges", () => {
   it("should generate nodes and edges from a task tree", () => {

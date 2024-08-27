@@ -4,11 +4,11 @@ import {
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
-} from "../../lib/uilts/TasksFlowUtils";
+} from "../../lib/components/workflow/TasksFlowUtils";
 import { ReactFlow } from "@xyflow/react";
 import "@testing-library/jest-dom";
 
-jest.mock("../../lib/uilts/TasksFlowUtils", () => ({
+jest.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
   applyDagreLayout: jest.fn(),
   buildTaskTree: jest.fn(),
   generateNodesAndEdges: jest.fn(),
@@ -18,7 +18,7 @@ jest.mock("@xyflow/react", () => ({
   ReactFlow: jest.fn(() => <div>ReactFlow Mock</div>),
 }));
 
-jest.mock("../../lib/components/workflow/CustomNode", () =>
+jest.mock("../../lib/components/workflow/TaskFlowNode", () =>
   jest.fn(() => <div>CustomNode Mock</div>)
 );
 

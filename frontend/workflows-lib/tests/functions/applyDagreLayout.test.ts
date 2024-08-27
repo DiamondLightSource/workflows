@@ -1,4 +1,4 @@
-import { applyDagreLayout } from "../../lib/uilts/TasksFlowUtils";
+import { applyDagreLayout } from "../../lib/components/workflow/TasksFlowUtils";
 import { Node, Edge } from "@xyflow/react";
 
 jest.mock("@dagrejs/dagre", () => ({

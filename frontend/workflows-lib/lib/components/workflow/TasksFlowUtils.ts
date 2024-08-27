@@ -1,33 +1,33 @@
 import dagre from "@dagrejs/dagre";
 import { Node, Edge } from "@xyflow/react";
-import { Task, TaskNode } from "../types";
+import { Task, TaskNode } from "../../types";
 
 export function applyDagreLayout(
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } {
-  const g = new dagre.graphlib.Graph();
+  const graph = new dagre.graphlib.Graph();
 
-  g.setGraph({
+  graph.setGraph({
     rankdir: "LR",
     nodesep: 50,
     ranksep: 150,
   });
 
-  g.setDefaultEdgeLabel(() => ({}));
+  graph.setDefaultEdgeLabel(() => ({}));
 
   nodes.forEach((node) => {
-    g.setNode(node.id, { width: 100, height: 120 });
+    graph.setNode(node.id, { width: 100, height: 120 });
   });
 
   edges.forEach((edge) => {
-    g.setEdge(edge.source, edge.target);
+    graph.setEdge(edge.source, edge.target);
   });
 
-  dagre.layout(g);
+  dagre.layout(graph);
 
   nodes.forEach((node) => {
-    const nodeData = g.node(node.id);
+    const nodeData = graph.node(node.id);
     node.position = { x: nodeData.x || 0, y: nodeData.y || 0 };
   });
 

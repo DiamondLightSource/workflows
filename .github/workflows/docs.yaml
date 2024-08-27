@@ -1,11 +1,11 @@
-name: Docs Site
+name: Docs and Storybook site
 
 on:
   push:
   pull_request:
 
 jobs:
-  lint:
+  lint_docs:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
@@ -28,7 +28,7 @@ jobs:
           markdownlint-cli2
           **/*.{md,markdown}
 
-  build:
+  build_docs:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
@@ -55,15 +55,65 @@ jobs:
           name: docs
           path: site
 
-  publish_pages:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs:
-      - lint
-      - build
+  build_storybook:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4.1.7
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      - name: Install Dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build Storybook
+        working-directory: frontend/workflows-lib
+        run: yarn build-storybook -o storybook-static
+
+      - name: Upload Storybook Artifact
+        uses: actions/upload-artifact@v4.3.6
+        with:
+          name: storybook
+          path: frontend/workflows-lib/storybook-static
+
+      - name: Download Docs Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: docs
+          path: docs
+
+      - name: Download Storybook Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: storybook
+          path: storybook
+
+      - name: Fix File Permissions for Pages
+        run: chmod -R +rX docs storybook
+
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          pattern: docs storybook
+
+  merge_artifact:
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - lint_docs
+      - build_docs
+      - build_storybook
+    runs-on: ubuntu-latest
+    # permissions:
+    #   pages: write
+    #   id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -77,15 +127,25 @@ jobs:
           name: docs
           path: docs
 
-      - name: Fix File Permissions for Pages
-        run: chmod -R +rX docs
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3.0.1
+      - name: Download Storybook Artifact
+        uses: actions/download-artifact@v4.1.8
         with:
-          path: docs
+          name: storybook
+          path: storybook
 
-      - name: Publish Docs to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4.0.5
+      - name: Fix File Permissions for Pages
+        run: chmod -R +rX docs storybook
 
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          pattern: docs storybook
+
+      # - name: Upload Pages Artifact
+      #   uses: actions/upload-pages-artifact@v3.0.1
+      #   with:
+      #     path: merged-artifacts
+
+      # - name: Publish Docs to GitHub Pages
+      #   id: deployment
+      #   uses: actions/deploy-pages@v4.0.5
