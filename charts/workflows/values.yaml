@@ -97,7 +97,7 @@ oauth2-proxy:
       injectRequestHeaders:
         - name: Authorization
           values:
-            - claim: id_token
+            - claim: access_token
               prefix: "Bearer "
           preserveRequestValue: true
       injectResponseHeaders:
