@@ -60,7 +60,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  const traverse = (tasks: TaskNode[], parentId?: string) => {
+  const traverse = (tasks: TaskNode[], parent?: string) => {
     tasks.forEach((task) => {
       nodes.push({
         id: task.name,
@@ -69,10 +69,10 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
         position: { x: 0, y: 0 },
       });
 
-      if (parentId) {
+      if (parent) {
         edges.push({
-          id: `e${parentId}-${task.name}`,
-          source: parentId,
+          id: `e${parent}-${task.name}`,
+          source: parent,
           target: task.name,
           animated: true,
         });

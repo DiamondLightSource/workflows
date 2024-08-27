@@ -35,8 +35,8 @@ describe("TasksFlow Component", () => {
   ];
 
   const mockTaskTree = {};
-  const mockNodes: object = [];
-  const mockEdges: object = [];
+  const mockNodes = [{}];
+  const mockEdges = [{}];
   const mockLayoutedNodes = [{}];
   const mockLayoutedEdges = [{}];
 

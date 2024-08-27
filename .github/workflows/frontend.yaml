@@ -47,4 +47,4 @@ jobs:
         run: yarn --frozen-lockfile
 
       - name: Test
-        run: yarn test
+        run: yarn test --verbose
