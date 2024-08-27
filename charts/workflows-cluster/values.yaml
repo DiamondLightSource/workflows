@@ -113,7 +113,6 @@ authenticationConfiguration:
         url: https://authn.diamond.ac.uk/realms/master
         audiences:
           - workflows-cluster
-          - workflows-argo-server
         audienceMatchPolicy: MatchAny
       claimMappings:
         username:
