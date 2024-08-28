@@ -83,7 +83,7 @@ oauth2-proxy:
       ]
       skip_auth_routes = [
         "OPTIONS=^/$",
-        "GET=^/api/"
+        "GET=^/api/",
         "GET=^/assets/"
       ]
   alphaConfig:
