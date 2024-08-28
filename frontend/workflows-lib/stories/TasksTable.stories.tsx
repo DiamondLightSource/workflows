@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import TaskFlow from "../lib/components/workflow/TasksFlow";
+import TasksTable from "../lib/components/workflow/TasksTable";
 
 const fakeTasks = [
   {
@@ -38,7 +38,7 @@ const fakeTasks = [
   {
     depends: "task-3",
     workflow: "1",
-    name: "task-7 KLDJF034 DFJSOID 039402KDJO",
+    name: "task-7 KLDJF034 DFJSOID 039402KDJODKLFJLDJFLKSDJFLKJSD",
     status: "running",
   },
   {
@@ -73,15 +73,15 @@ const fakeTasks = [
   },
 ];
 
-const meta: Meta<typeof TaskFlow> = {
+const meta: Meta<typeof TasksTable> = {
   title: "Tasks",
-  component: TaskFlow,
+  component: TasksTable,
 };
 
-type Story = StoryObj<typeof TaskFlow>;
+type Story = StoryObj<typeof TasksTable>;
 
 export default meta;
-export const Graph: Story = {
+export const Table: Story = {
   args: {
     tasks: fakeTasks,
   },
