@@ -86,6 +86,7 @@ oauth2-proxy:
         "GET=^/api/"
         "GET=^/assets/"
       ]
+      skip_provider_button = true
   alphaConfig:
     enabled: true
     configFile: |-
