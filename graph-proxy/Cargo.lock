@@ -892,6 +892,7 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
+ "reqwest",
  "tokio",
  "tracing",
  "tracing-opentelemetry",
