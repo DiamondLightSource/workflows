@@ -35,6 +35,13 @@ argo-workflows:
   server:
     replicas: 3
     authModes: ["client"]
+    extraEnv:
+      - name: FIRST_TIME_USER_MODAL
+        value: "false"
+      - name: FEEDBACK_MODAL
+        value: "false"
+      - name: NEW_VERSION_MODAL
+        value: "false"
   createAggregateRoles: false
 
 postgresql-ha:
