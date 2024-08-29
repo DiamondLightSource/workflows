@@ -24,10 +24,9 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.3
 
-      - name: Create argo workflows openapi lib file
+      - name: Create argo workflows openapi types file
         run: |
-          mkdir graph-proxy/argo-workflows-openapi/src
-          printf "\n" > graph-proxy/argo-workflows-openapi/src/lib.rs
+          printf "\n" > graph-proxy/argo-workflows-openapi/src/types.rs
 
       - name: Check Formatting
         uses: actions-rs/cargo@v1.0.3

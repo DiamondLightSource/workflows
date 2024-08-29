@@ -1,6 +1,6 @@
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
-    IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
+    APIResult, IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
 use async_graphql::{Context, Object, SimpleObject, Union};
 use axum_extra::headers::{authorization::Bearer, Authorization};
@@ -218,8 +218,9 @@ impl WorkflowsQuery {
         let workflow = request
             .send()
             .await?
-            .json::<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>()
-            .await?;
+            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+            .await?
+            .into_result()?;
         Ok(workflow.try_into()?)
     }
 }

@@ -24,6 +24,6 @@ fn main() {
     let contents = rustfmt_wrapper::rustfmt(tokens.to_string()).unwrap();
 
     create_dir_all(Path::new("src")).unwrap();
-    let mut file = File::create("src/lib.rs").unwrap();
+    let mut file = File::create("src/types.rs").unwrap();
     file.write_all(contents.as_bytes()).unwrap();
 }
