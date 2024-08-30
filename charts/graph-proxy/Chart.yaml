@@ -1,0 +1,13 @@
+apiVersion: v2
+name: graph-proxy
+description: A lightweight proxy providing a GraphQL interface to the Argo Workflows Server
+type: application
+
+version: 0.1.0
+
+appVersion: 0.1.0-rc16
+
+dependencies:
+  - name: common
+    version: 2.22.0
+    repository: oci://docker.io/bitnamicharts

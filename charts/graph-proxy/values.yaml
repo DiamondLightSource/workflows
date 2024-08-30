@@ -1,0 +1,14 @@
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-graph-proxy
+  pullPolicy: Always
+
+argoServerUrl: http://workflows-argo-server
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+nameOverride: ""
+fullnameOverride: ""
