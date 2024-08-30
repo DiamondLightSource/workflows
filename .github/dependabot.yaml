@@ -32,6 +32,10 @@ updates:
         patterns:
           - kube
           - k8s-openapi
+      opentelemetry:
+        patterns:
+          - opentelemetry*
+          - tracing-opentelemetry
       patch:
         update-types:
           - patch
