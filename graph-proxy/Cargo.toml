@@ -17,7 +17,7 @@ dotenvy = { version = "0.15.7" }
 opentelemetry = { version = "0.22.0" }
 opentelemetry-otlp = { version = "0.15.0", features = ["metrics"] }
 opentelemetry-semantic-conventions = "0.14.0"
-opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.24.1", features = ["rt-tokio"] }
 reqwest = { version = "0.12.7", features = ["json"] }
 thiserror = { version = "1.0.63" }
 tokio = { version = "1.40.0", features = ["macros", "net", "rt-multi-thread"] }
