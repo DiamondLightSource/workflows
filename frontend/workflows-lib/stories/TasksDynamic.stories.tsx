@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj, StoryFn } from "@storybook/react";
 import TasksDynamic from "../lib/components/workflow/TasksDynamic";
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 
 const fakeTasks = [
   {
@@ -23,11 +25,6 @@ const fakeTasks = [
     workflow: "1",
     name: "task-4 ERFBAK3KJ34",
     status: "running",
-  },
-  {
-    workflow: "1",
-    name: "task-5 EOI909D",
-    status: "completed",
   },
   {
     depends: "task-3",
@@ -59,28 +56,36 @@ const fakeTasks = [
     name: "task-10",
     status: "pending",
   },
-  {
-    depends: "task-10",
-    workflow: "1",
-    name: "task-11",
-    status: "pending",
-  },
-  {
-    depends: "task-5 EOI909D",
-    workflow: "1",
-    name: "task-12",
-    status: "completed",
-  },
 ];
+
+const ResizableDecorator = (Story: StoryFn) => (
+  <ResizableBox
+    width={1200}
+    height={600}
+    resizeHandles={["se"]}
+    style={{
+      border: "2px dashed #ccc",
+      padding: "10px",
+      overflow: "auto",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <Story />
+  </ResizableBox>
+);
 
 const meta: Meta<typeof TasksDynamic> = {
   title: "Tasks",
   component: TasksDynamic,
+  decorators: [ResizableDecorator],
 };
 
 type Story = StoryObj<typeof TasksDynamic>;
 
 export default meta;
+
 export const Dynamic: Story = {
   args: {
     tasks: fakeTasks,

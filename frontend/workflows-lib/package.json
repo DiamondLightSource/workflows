@@ -35,6 +35,8 @@
     "@storybook/react-vite": "^8.2.9",
     "@storybook/test": "^8.2.9",
     "@testing-library/jest-dom": "^6.4.8",
+    "@types/react-resizable": "^3.0.8",
+    "react-resizable": "^3.0.5",
     "storybook": "^8.2.9"
   },
   "eslintConfig": {
