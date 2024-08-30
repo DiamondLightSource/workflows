@@ -20,7 +20,7 @@ opentelemetry-semantic-conventions = "0.14.0"
 opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
 reqwest = { version = "0.12.7", features = ["json"] }
 thiserror = { version = "1.0.63" }
-tokio = { version = "1.39.3", features = ["macros", "net", "rt-multi-thread"] }
+tokio = { version = "1.40.0", features = ["macros", "net", "rt-multi-thread"] }
 tracing = { version = "0.1.40" }
 tracing-opentelemetry = { version = "0.23.0" }
 tracing-subscriber = { version = "0.3.18" }
