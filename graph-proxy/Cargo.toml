@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.86" }
 argo-workflows-openapi = { path = "./argo-workflows-openapi" }
-async-graphql = { version = "7.0.7", features = ["chrono"] }
-async-graphql-axum = { version = "7.0.7" }
+async-graphql = { version = "7.0.9", features = ["chrono"] }
+async-graphql-axum = { version = "7.0.9" }
 axum = { version = "0.7.5" }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 chrono = { version = "0.4.38" }
