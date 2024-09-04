@@ -75,7 +75,7 @@ const TasksDynamic: React.FC<TasksDynamicProps> = ({ tasks }) => {
   }, [laidoutNodes, laidoutEdges]);
 
   return (
-    <Box ref={containerRef} display="flex" height="100vh" width="100%">
+    <Box ref={containerRef} display="flex" height="100%" width="100%">
       {isOverflow ? (
         <TasksTable tasks={tasks} />
       ) : (
