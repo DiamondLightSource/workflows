@@ -17,7 +17,7 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Setup Chainsaw
-        uses: kyverno/action-install-chainsaw@v0.2.8
+        uses: kyverno/action-install-chainsaw@v0.2.9
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.10.0
