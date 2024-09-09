@@ -25,10 +25,33 @@ spec:
       valuesObject:
         {{ .Values.workflows.valuesObject | toYaml | nindent 8 }}
       {{- end }}
+  ignoreDifferences:
+    - kind: Secret
+      name: pgpool-passwords
+      namespace: workflows
+      jqPathExpressions:
+        - .data."admin-password"
+    - kind: Secret
+      name: postgres-application-passwords
+      namespace: workflows
+      jqPathExpressions:
+        - .data.passwords
+    - kind: Secret
+      name: postgres-initdb-script
+      namespace: workflows
+      jqPathExpressions:
+        - .data."init.sql"
+    - kind: Secret
+      name: postgres-passwords
+      namespace: workflows
+      jqPathExpressions:
+        - .data.password
+        - .data."repmgr-password"
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
 {{- end }}
