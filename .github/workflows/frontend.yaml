@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: yarn --frozen-lockfile
 
+      - name: Compile Relay
+        run: yarn relay
+        working-directory: frontend/relay-workflows-lib
+
       - name: Lint TypeScript code
         run: yarn lint
 
