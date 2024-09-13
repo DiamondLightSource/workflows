@@ -6,25 +6,49 @@ import {
   Store,
   FetchFunction,
 } from "relay-runtime";
+import keycloak from "./keycloak";
 
-const HTTP_ENDPOINT = "http://localhost:36253";
+const HTTP_ENDPOINT = "https://graph.diamond.ac.uk";
 
-const fetchFn: FetchFunction = async (
-  request: { text: any },
-  variables: any
-) => {
-  return fetch(HTTP_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: request.text,
-      variables,
-    }),
-  }).then((response) => {
-    return response.json();
-  });
+const fetchFn: FetchFunction = async (request, variables) => {
+  try {
+    const authenticated = await keycloak.init({
+      onLoad: "login-required",
+    });
+
+    if (!authenticated) {
+      throw new Error("Keycloak authentication failed");
+    }
+
+    if (keycloak.isTokenExpired()) {
+      await keycloak.updateToken(30);
+    }
+
+    const token = keycloak.token;
+
+    if (!token) {
+      throw new Error("Failed to retrieve token");
+    }
+
+    const response = await fetch(HTTP_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: request.text,
+        variables,
+      }),
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in Keycloak authentication:", error);
+    alert("Authentication failed. Please log in again.");
+    keycloak.login();
+    throw error;
+  }
 };
 
 function createRelayEnvironment() {

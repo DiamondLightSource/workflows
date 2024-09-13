@@ -10,16 +10,20 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "react-relay": "^18.0.0"
+    "workflows-lib": "*"
   },
   "peerDependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "keycloak-js": "^25.0.5",
+    "react-relay": "^18.0.0"
   },
   "devDependencies": {
     "@types/react-relay": "^16.0.6",
     "@types/relay-runtime": "^17.0.4",
+    "babel-plugin-relay": "^18.0.0",
     "relay-compiler": "^18.0.0",
-    "relay-runtime": "^18.0.0"
+    "relay-runtime": "^18.0.0",
+    "vite-plugin-relay": "^2.1.0"
   }
 }
