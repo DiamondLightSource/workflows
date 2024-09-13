@@ -1,0 +1,123 @@
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+
+"""
+The root query of the service
+"""
+type Query {
+  """
+  Get a single [`Workflow`] by proposal, visit, and name
+  """
+  workflow(
+    proposalCode: String!
+    proposalNumber: Int!
+    visit: Int!
+    name: String!
+  ): Workflow!
+}
+
+"""
+A Workflow consisting of one or more [`Task`]s
+"""
+type Workflow {
+  """
+  The name given to the workflow, unique within a given visit
+  """
+  name: String!
+  """
+  The time at which the workflow began running
+  """
+  status: WorkflowStatus!
+}
+
+"""
+The controller has encountered an error whilst scheduling the workflow
+"""
+type WorkflowErroredStatus {
+  """
+  Time at which this workflow started
+  """
+  startTime: DateTime!
+  """
+  Time at which this workflow completed
+  """
+  endTime: DateTime!
+  """
+  A human readable message indicating details about why the workflow is in this condition
+  """
+  message: String
+}
+
+"""
+A task in the workflow has completed with a non-zero exit code
+"""
+type WorkflowFailedStatus {
+  """
+  Time at which this workflow started
+  """
+  startTime: DateTime!
+  """
+  Time at which this workflow completed
+  """
+  endTime: DateTime!
+  """
+  A human readable message indicating details about why the workflow is in this condition
+  """
+  message: String
+}
+
+"""
+No tasks within the workflow have been scheduled
+"""
+type WorkflowPendingStatus {
+  """
+  A human readable message indicating details about why the workflow is in this condition
+  """
+  message: String
+}
+
+"""
+At least one of the tasks has been scheduled, but they have not yet all complete
+"""
+type WorkflowRunningStatus {
+  """
+  Time at which this workflow started
+  """
+  startTime: DateTime!
+  """
+  A human readable message indicating details about why the workflow is in this condition
+  """
+  message: String
+}
+
+"""
+The status of a workflow
+"""
+union WorkflowStatus =
+  | WorkflowPendingStatus
+  | WorkflowRunningStatus
+  | WorkflowSucceededStatus
+  | WorkflowFailedStatus
+  | WorkflowErroredStatus
+
+"""
+All tasks in the workflow have succeeded
+"""
+type WorkflowSucceededStatus {
+  """
+  Time at which this workflow started
+  """
+  startTime: DateTime!
+  """
+  Time at which this workflow completed
+  """
+  endTime: DateTime!
+  """
+  A human readable message indicating details about why the workflow is in this condition
+  """
+  message: String
+}

@@ -13,3 +13,6 @@ dist-ssr
 *.local
 
 *storybook.log
+
+# relay
+__generated__
