@@ -21,6 +21,42 @@ type Query {
 }
 
 """
+A Task created by a workflow
+"""
+type Task {
+  """
+  Unique name of the task
+  """
+  id: String!
+  """
+  Display name of the task
+  """
+  name: String!
+  """
+  Current status of a task
+  """
+  status: TaskStatus!
+  """
+  Parent of a task
+  """
+  depends: [String!]!
+  """
+  Children of a task
+  """
+  dependencies: [String!]!
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  SKIPPED
+  FAILED
+  ERROR
+  OMITTED
+}
+
+"""
 A Workflow consisting of one or more [`Task`]s
 """
 type Workflow {
@@ -50,6 +86,10 @@ type WorkflowErroredStatus {
   A human readable message indicating details about why the workflow is in this condition
   """
   message: String
+  """
+  Tasks created by the workflow
+  """
+  tasks: [Task!]!
 }
 
 """
@@ -68,6 +108,10 @@ type WorkflowFailedStatus {
   A human readable message indicating details about why the workflow is in this condition
   """
   message: String
+  """
+  Tasks created by the workflow
+  """
+  tasks: [Task!]!
 }
 
 """
@@ -92,6 +136,10 @@ type WorkflowRunningStatus {
   A human readable message indicating details about why the workflow is in this condition
   """
   message: String
+  """
+  Tasks created by the workflow
+  """
+  tasks: [Task!]!
 }
 
 """
@@ -120,4 +168,8 @@ type WorkflowSucceededStatus {
   A human readable message indicating details about why the workflow is in this condition
   """
   message: String
+  """
+  Tasks created by the workflow
+  """
+  tasks: [Task!]!
 }

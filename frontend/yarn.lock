@@ -998,7 +998,7 @@
   resolved "https://registry.yarnpkg.com/@babel/regjsgen/-/regjsgen-0.8.0.tgz#f0ba69b075e1f05fb2825b7fad991e7adbb18310"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.17.8", "@babel/runtime@^7.18.3", "@babel/runtime@^7.23.9", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.17.8", "@babel/runtime@^7.18.3", "@babel/runtime@^7.23.9", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.25.0"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.25.0.tgz#3af9a91c1b739c569d5d80cc917280919c544ecb"
   integrity sha512-7dRy4DwXwtzBrPbZflqxnvfxLF8kdZXPkhymtDeFoFqE6ldzjQFgYTtYIFARcLEYDrqfBfYcZt1WqFxRoyC9Rw==
@@ -3125,10 +3125,10 @@ babel-plugin-polyfill-regenerator@^0.6.1:
   dependencies:
     "@babel/helper-define-polyfill-provider" "^0.6.2"
 
-babel-plugin-relay@^17.0.0:
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-relay/-/babel-plugin-relay-17.0.0.tgz#ca2b81b898d3ef7e9b2414bdd5b3fe48e68446f8"
-  integrity sha512-aBIEDp6jFOAO+CD+GGKv4/WOQ7cnS6hZysJI0dFbLRQXZ6XQar0lytxQ4zuqPU0RpGnUeN5htK3NTewu2TZ53A==
+babel-plugin-relay@^18.0.0:
+  version "18.0.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-relay/-/babel-plugin-relay-18.0.0.tgz#f610bd93d3bed71145fab50df9fa78e859e0516b"
+  integrity sha512-MImO+Uea2nGDxFTlHXLj3+YnmFpDneZRi/p7u3De1Nwq+Rn3uEFhqTbkiiC1LC4GbHRFhwWyKl2RhLsfBVdY7w==
   dependencies:
     babel-plugin-macros "^2.0.0"
     cosmiconfig "^5.0.5"
@@ -6999,26 +6999,17 @@ rehype-slug@^6.0.0:
     hast-util-to-string "^3.0.0"
     unist-util-visit "^5.0.0"
 
-relay-compiler@^17.0.0:
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/relay-compiler/-/relay-compiler-17.0.0.tgz#5013e83267f45d78e24232ae7da90ed5ad3c1116"
-  integrity sha512-U2e/R0o40HJOQ13pwkvToqWqk6J3ASMyHmcxixVMZKfcwcpsTTOiKob215ZRh+4bqPwkNy97+V9CuzJ5hJmGtw==
+relay-compiler@^18.0.0:
+  version "18.0.0"
+  resolved "https://registry.yarnpkg.com/relay-compiler/-/relay-compiler-18.0.0.tgz#3b278d906695ccefbeed965c6923496572473d21"
+  integrity sha512-sl9g6c/qMJrAc8usIeRp6L86D8kKSJGd+xTgMlZh0zXPO6kB1hGYGjjy1W0rOg+NE/yqNeREJxwvz5VxSGU92g==
 
-relay-runtime@18.0.0:
+relay-runtime@18.0.0, relay-runtime@^18.0.0:
   version "18.0.0"
   resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-18.0.0.tgz#527eb9de7e4c804163500235d941fac1561e7c6b"
   integrity sha512-LmW6T0Wdm3VQgTB0OcCl6VJX8lx7x9faTIwUqzTYh0olYFQ3FfA2LEuUW/LcjRX13hWQUiWQE/i3hqTyjc9jAw==
   dependencies:
     "@babel/runtime" "^7.25.0"
-    fbjs "^3.0.2"
-    invariant "^2.2.4"
-
-relay-runtime@^17.0.0:
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-17.0.0.tgz#771084ea3b44f2f1eb578da861511a5558c4e07b"
-  integrity sha512-7b2R3G3DP7VHq7/1ltwQfYn3KkTHIB2NNt3KijIZoNQ73avwpOXBEL0MelSXwq8L+K8lcgAW5VAT7o0LUhnJPQ==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
     fbjs "^3.0.2"
     invariant "^2.2.4"
 
@@ -8013,10 +8004,10 @@ vite-plugin-relay@^2.1.0:
   dependencies:
     "@babel/core" "^7.23.5"
 
-vite@^5.4.0:
-  version "5.4.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-5.4.1.tgz#2aa72370de824d23f53658affd807e4c9905b058"
-  integrity sha512-1oE6yuNXssjrZdblI9AfBbHCC41nnyoVoEZxQnID6yvQZAFBzxxkqoFLtHUMkYunL8hwOLEjgTuxpkRxvba3kA==
+vite@^5.4.6:
+  version "5.4.7"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-5.4.7.tgz#d226f57c08b61379e955f3836253ed3efb2dcf00"
+  integrity sha512-5l2zxqMEPVENgvzTuBpHer2awaetimj2BGkhBPdnwKbPNOlHsODU+oiazEZzLK7KhAnOrO+XGYJYn4ZlUhDtDQ==
   dependencies:
     esbuild "^0.21.3"
     postcss "^8.4.43"
