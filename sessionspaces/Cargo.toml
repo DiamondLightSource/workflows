@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.86" }
-clap = { version = "4.5.16", features = ["derive", "env"] }
+anyhow = { version = "1.0.89" }
+clap = { version = "4.5.17", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
@@ -16,8 +16,8 @@ kube = { version = "0.93.1" }
 ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
-serde_json = { version = "1.0.127" }
-sqlx = { version = "0.8.1", features = [
+serde_json = { version = "1.0.128" }
+sqlx = { version = "0.8.2", features = [
     "runtime-tokio",
     "tls-rustls",
     "mysql",
@@ -32,4 +32,4 @@ tracing-subscriber = { version = "0.3.18" }
 url = { version = "2.5.2" }
 
 [dev-dependencies]
-wiremock = "0.6.1"
+wiremock = "0.6.2"
