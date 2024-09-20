@@ -1,11 +1,12 @@
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
-    APIResult, IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
+    APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
+    IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
-use async_graphql::{Context, Object, SimpleObject, Union};
+use async_graphql::{Context, Enum, Object, SimpleObject, Union};
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
-use std::ops::Deref;
+use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 
 /// An error encountered when parsing the Argo Server API Workflow response
@@ -18,6 +19,10 @@ enum WorkflowParsingError {
     MissingStartTime,
     #[error("status.end_time was expected but was not present")]
     MissingEndTime,
+    #[error("value.phase was not a recognised value")]
+    UnrecognisedTaskPhase,
+    #[error("value.display_name was not a recognised value")]
+    UnrecognisedTaskDisplayName,
 }
 
 /// A Workflow consisting of one or more [`Task`]s
@@ -89,6 +94,8 @@ struct WorkflowRunningStatus {
     start_time: DateTime<Utc>,
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
+    /// Tasks created by the workflow
+    tasks: Vec<Task>,
 }
 
 impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowRunningStatus {
@@ -100,6 +107,7 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowRunningStatus
                 .started_at
                 .ok_or(WorkflowParsingError::MissingStartTime)?,
             message: value.message,
+            tasks: TaskMap(value.nodes).try_into()?,
         })
     }
 }
@@ -113,6 +121,8 @@ struct WorkflowSucceededStatus {
     end_time: DateTime<Utc>,
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
+    /// Tasks created by the workflow
+    tasks: Vec<Task>,
 }
 
 impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowSucceededStatus {
@@ -127,6 +137,7 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowSucceededStat
                 .finished_at
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
+            tasks: TaskMap(value.nodes).try_into()?,
         })
     }
 }
@@ -140,6 +151,8 @@ struct WorkflowFailedStatus {
     end_time: DateTime<Utc>,
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
+    /// Tasks created by the workflow
+    tasks: Vec<Task>,
 }
 
 impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowFailedStatus {
@@ -154,6 +167,7 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowFailedStatus 
                 .finished_at
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
+            tasks: TaskMap(value.nodes).try_into()?,
         })
     }
 }
@@ -167,6 +181,8 @@ struct WorkflowErroredStatus {
     end_time: DateTime<Utc>,
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
+    /// Tasks created by the workflow
+    tasks: Vec<Task>,
 }
 
 impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowErroredStatus {
@@ -181,7 +197,115 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowErroredStatus
                 .finished_at
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
+            tasks: TaskMap(value.nodes).try_into()?,
         })
+    }
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+#[derive(Debug, Enum, PartialEq, Eq, Clone, Copy)]
+enum TaskStatus {
+    Pending,
+    Running,
+    Succeeded,
+    Skipped,
+    Failed,
+    Error,
+    Omitted,
+}
+
+impl TryFrom<String> for TaskStatus {
+    type Error = WorkflowParsingError;
+
+    fn try_from(status: String) -> Result<Self, <Self as TryFrom<String>>::Error> {
+        match status.as_str() {
+            "Pending" => Ok(TaskStatus::Pending),
+            "Running" => Ok(TaskStatus::Running),
+            "Succeeded" => Ok(TaskStatus::Succeeded),
+            "Skipped" => Ok(TaskStatus::Skipped),
+            "Failed" => Ok(TaskStatus::Failed),
+            "Error" => Ok(TaskStatus::Error),
+            "Omitted" => Ok(TaskStatus::Omitted),
+            _ => Err(WorkflowParsingError::UnrecognisedTaskPhase),
+        }
+    }
+}
+
+/// A Task created by a workflow
+#[derive(Debug, SimpleObject)]
+struct Task {
+    /// Unique name of the task
+    id: String,
+    /// Display name of the task
+    name: String,
+    /// Current status of a task
+    status: TaskStatus,
+    /// Parent of a task
+    depends: Vec<String>,
+    /// Children of a task
+    dependencies: Vec<String>,
+}
+
+impl Task {
+    /// Create a task from node status and its dependencies
+    fn new(
+        node_status: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1NodeStatus,
+        depends: Vec<String>,
+    ) -> Result<Self, WorkflowParsingError> {
+        Ok(Self {
+            id: node_status.id,
+            name: node_status
+                .display_name
+                .ok_or(WorkflowParsingError::UnrecognisedTaskDisplayName)?
+                .to_string(),
+            status: TaskStatus::try_from(
+                node_status
+                    .phase
+                    .ok_or(WorkflowParsingError::UnrecognisedTaskPhase)?
+                    .to_string(),
+            )?,
+            depends,
+            dependencies: node_status.children,
+        })
+    }
+}
+
+/// A wrapper for list of tasks
+struct TaskMap(HashMap<String, IoArgoprojWorkflowV1alpha1NodeStatus>);
+
+impl TaskMap {
+    /// Generates a relationship map between parent and children
+    fn generate_relationship_map(&self) -> HashMap<String, Vec<String>> {
+        let mut parent_map: HashMap<String, Vec<String>> = HashMap::new();
+
+        for (node_name, node_status) in &self.0 {
+            for child in &node_status.children {
+                parent_map
+                    .entry(child.clone())
+                    .or_default()
+                    .push(node_name.clone());
+            }
+        }
+        parent_map
+    }
+}
+
+impl TryFrom<TaskMap> for Vec<Task> {
+    type Error = WorkflowParsingError;
+
+    fn try_from(value: TaskMap) -> Result<Self, Self::Error> {
+        let mut relationship_map = value.generate_relationship_map();
+
+        let tasks = value
+            .0
+            .into_iter()
+            .map(|(node_name, node_status)| {
+                let depends = relationship_map.remove(&node_name).unwrap_or_default();
+                Task::new(node_status, depends)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(tasks)
     }
 }
 
