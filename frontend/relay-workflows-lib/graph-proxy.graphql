@@ -1,3 +1,4 @@
+
 """
 Implement the DateTime<Utc> scalar
 
@@ -5,119 +6,165 @@ The input/output is a string in RFC3339 format.
 """
 scalar DateTime
 
+
+
+
 """
 The root query of the service
 """
 type Query {
-  """
-  Get a single [`Workflow`] by proposal, visit, and name
-  """
-  workflow(
-    proposalCode: String!
-    proposalNumber: Int!
-    visit: Int!
-    name: String!
-  ): Workflow!
+	"""
+	Get a single [`Workflow`] by proposal, visit, and name
+	"""
+	workflow(proposalCode: String!, proposalNumber: Int!, visit: Int!, name: String!): Workflow!
+}
+
+
+"""
+A Task created by a workflow
+"""
+type Task {
+	"""
+	Unique name of the task
+	"""
+	id: String!
+	"""
+	Display name of the task
+	"""
+	name: String!
+	"""
+	Current status of a task
+	"""
+	status: TaskStatus!
+	"""
+	Parent of a task
+	"""
+	depends: [String!]!
+	"""
+	Children of a task
+	"""
+	dependencies: [String!]!
+}
+
+enum TaskStatus {
+	PENDING
+	RUNNING
+	SUCCEEDED
+	SKIPPED
+	FAILED
+	ERROR
+	OMITTED
 }
 
 """
 A Workflow consisting of one or more [`Task`]s
 """
 type Workflow {
-  """
-  The name given to the workflow, unique within a given visit
-  """
-  name: String!
-  """
-  The time at which the workflow began running
-  """
-  status: WorkflowStatus!
+	"""
+	The name given to the workflow, unique within a given visit
+	"""
+	name: String!
+	"""
+	The time at which the workflow began running
+	"""
+	status: WorkflowStatus!
 }
 
 """
 The controller has encountered an error whilst scheduling the workflow
 """
 type WorkflowErroredStatus {
-  """
-  Time at which this workflow started
-  """
-  startTime: DateTime!
-  """
-  Time at which this workflow completed
-  """
-  endTime: DateTime!
-  """
-  A human readable message indicating details about why the workflow is in this condition
-  """
-  message: String
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	Time at which this workflow completed
+	"""
+	endTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	"""
+	Tasks created by the workflow
+	"""
+	tasks: [Task!]!
 }
 
 """
 A task in the workflow has completed with a non-zero exit code
 """
 type WorkflowFailedStatus {
-  """
-  Time at which this workflow started
-  """
-  startTime: DateTime!
-  """
-  Time at which this workflow completed
-  """
-  endTime: DateTime!
-  """
-  A human readable message indicating details about why the workflow is in this condition
-  """
-  message: String
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	Time at which this workflow completed
+	"""
+	endTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	"""
+	Tasks created by the workflow
+	"""
+	tasks: [Task!]!
 }
 
 """
 No tasks within the workflow have been scheduled
 """
 type WorkflowPendingStatus {
-  """
-  A human readable message indicating details about why the workflow is in this condition
-  """
-  message: String
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
 }
 
 """
 At least one of the tasks has been scheduled, but they have not yet all complete
 """
 type WorkflowRunningStatus {
-  """
-  Time at which this workflow started
-  """
-  startTime: DateTime!
-  """
-  A human readable message indicating details about why the workflow is in this condition
-  """
-  message: String
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	"""
+	Tasks created by the workflow
+	"""
+	tasks: [Task!]!
 }
 
 """
 The status of a workflow
 """
-union WorkflowStatus =
-  | WorkflowPendingStatus
-  | WorkflowRunningStatus
-  | WorkflowSucceededStatus
-  | WorkflowFailedStatus
-  | WorkflowErroredStatus
+union WorkflowStatus = WorkflowPendingStatus | WorkflowRunningStatus | WorkflowSucceededStatus | WorkflowFailedStatus | WorkflowErroredStatus
 
 """
 All tasks in the workflow have succeeded
 """
 type WorkflowSucceededStatus {
-  """
-  Time at which this workflow started
-  """
-  startTime: DateTime!
-  """
-  Time at which this workflow completed
-  """
-  endTime: DateTime!
-  """
-  A human readable message indicating details about why the workflow is in this condition
-  """
-  message: String
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	Time at which this workflow completed
+	"""
+	endTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	"""
+	Tasks created by the workflow
+	"""
+	tasks: [Task!]!
 }

@@ -46,7 +46,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   } catch (error) {
     console.error("Error in Keycloak authentication:", error);
     alert("Authentication failed. Please log in again.");
-    keycloak.login();
+    // keycloak.login();
     throw error;
   }
 };

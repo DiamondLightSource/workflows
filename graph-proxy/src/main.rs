@@ -12,6 +12,7 @@ use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{response::Html, routing::get, Router};
 use clap::Parser;
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
+use reqwest::{header, Method};
 use std::{
     fs::File,
     io::Write,
@@ -22,6 +23,7 @@ use telemetry::setup_telemetry;
 use tokio::net::TcpListener;
 use tracing::Level;
 use url::Url;
+use tower_http::cors::{Any, CorsLayer};
 
 /// A proxy providing Argo Workflows data
 #[derive(Debug, Parser)]
@@ -105,6 +107,11 @@ fn setup_router(schema: RootSchema) -> Router {
     #[allow(clippy::missing_docs_in_private_items)]
     const GRAPHQL_ENDPOINT: &str = "/";
 
+    let cors = CorsLayer::new()
+        .allow_origin(Any)  // Allows all origins
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS]) // Allow necessary HTTP methods
+        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]);  // Allow required headers
+
     Router::new().route(
         GRAPHQL_ENDPOINT,
         get(Html(
@@ -113,6 +120,7 @@ fn setup_router(schema: RootSchema) -> Router {
         .post(graphql_handler)
         .with_state(schema),
     )
+    .layer(cors)
 }
 
 /// Serves the endpoints on the specified host and port forever
