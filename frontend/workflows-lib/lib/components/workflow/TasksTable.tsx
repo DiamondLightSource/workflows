@@ -1,7 +1,7 @@
 import React from "react";
 import { Grid, Paper, Typography, useTheme } from "@mui/material";
 import { Task } from "../../types";
-import { getStatusIcon } from "../common/StatusIcons";
+import { getTaskStatusIcon } from "../common/StatusIcons";
 
 interface TaskTableProps {
   tasks: Task[];
@@ -27,7 +27,7 @@ const TasksTable: React.FC<TaskTableProps> = ({ tasks }) => {
             <Typography variant="subtitle1" noWrap sx={{ fontWeight: 500 }}>
               {task.name}
             </Typography>
-            {getStatusIcon(task.status)}
+            {getTaskStatusIcon(task.status)}
           </Paper>
         </Grid>
       ))}
