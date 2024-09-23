@@ -8,10 +8,10 @@ anyhow = { version = "1.0.89" }
 argo-workflows-openapi = { path = "./argo-workflows-openapi" }
 async-graphql = { version = "7.0.9", features = ["chrono"] }
 async-graphql-axum = { version = "7.0.9" }
-axum = { version = "0.7.5" }
-axum-extra = { version = "0.9.3", features = ["typed-header"] }
+axum = { version = "0.7.6" }
+axum-extra = { version = "0.9.4", features = ["typed-header"] }
 chrono = { version = "0.4.38" }
-clap = { version = "4.5.17", features = ["derive", "env"] }
+clap = { version = "4.5.18", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref"] }
 dotenvy = { version = "0.15.7" }
 opentelemetry = { version = "0.22.0" }
@@ -19,7 +19,7 @@ opentelemetry-otlp = { version = "0.15.0", features = ["metrics"] }
 opentelemetry-semantic-conventions = "0.14.0"
 opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
 reqwest = { version = "0.12.7", features = ["json"] }
-thiserror = { version = "1.0.63" }
+thiserror = { version = "1.0.64" }
 tokio = { version = "1.40.0", features = ["macros", "net", "rt-multi-thread"] }
 tracing = { version = "0.1.40" }
 tracing-opentelemetry = { version = "0.23.0" }
