@@ -7,6 +7,7 @@ import {
 } from "../../lib/components/workflow/TasksFlowUtils";
 import { ReactFlow } from "@xyflow/react";
 import "@testing-library/jest-dom";
+import { TaskStatus } from "../../lib/types";
 
 jest.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
   applyDagreLayout: jest.fn(),
@@ -24,14 +25,14 @@ jest.mock("../../lib/components/workflow/TasksFlowNode", () =>
 
 describe("TasksFlow Component", () => {
   const mockTasks = [
-    { name: "task-1", workflow: "w1", status: "pending" },
+    { id: "task-1", name: "task-1", status: "Pending" as TaskStatus },
     {
+      id: "task-2",
       name: "task-2",
-      workflow: "w1",
-      status: "completed",
-      depends: "task-1",
+      status: "Succeeded" as TaskStatus,
+      depends: ["task-1"],
     },
-    { name: "task-3", workflow: "w1", status: "in-progress" },
+    { id: "task-3", name: "task-3", status: "Running" as TaskStatus },
   ];
 
   const mockTaskTree = {};

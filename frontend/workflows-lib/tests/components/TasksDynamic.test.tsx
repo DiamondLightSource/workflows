@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import TasksDynamic from "../../lib/components/workflow/TasksDynamic";
 import { ReactFlowInstance } from "@xyflow/react";
 import { Node, Edge } from "@xyflow/react";
-import { Task } from "../../lib/types";
+import { Task, TaskStatus } from "../../lib/types";
 import "@testing-library/jest-dom";
 
 jest.mock("@xyflow/react", () => ({
@@ -33,14 +33,14 @@ jest.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
 
 describe("TasksDynamic", () => {
   const mockTasks = [
-    { name: "task-1", workflow: "w1", status: "pending" },
+    { id: "task-1", name: "task-1", status: "Pending" as TaskStatus },
     {
+      id: "task-2",
       name: "task-2",
-      workflow: "w1",
-      status: "completed",
-      depends: "task-1",
+      status: "Succeeded" as TaskStatus,
+      depends: ["task-1"],
     },
-    { name: "task-3", workflow: "w1", status: "in-progress" },
+    { id: "task-3", name: "task-3", status: "Running" as TaskStatus },
   ];
 
   it("should render Graph when there is no overflow", () => {

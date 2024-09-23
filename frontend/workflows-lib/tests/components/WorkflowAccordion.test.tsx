@@ -1,6 +1,6 @@
 import { render, fireEvent } from "@testing-library/react";
 import WorkflowAccordion from "../../lib/components/workflow/WorkflowAccordian";
-import { WorkflowStatus } from "../../lib/types";
+import { TaskStatus, WorkflowStatus } from "../../lib/types";
 import "@testing-library/jest-dom";
 
 jest.mock("../../lib/components/workflow/TasksDynamic", () => () => (
@@ -14,7 +14,9 @@ describe("WorkflowAccordion Component", () => {
   const mockWorkflow = {
     name: "Test Workflow",
     status: "Running" as WorkflowStatus,
-    tasks: [{ workflow: "1", name: "Task 1", status: "completed" }],
+    tasks: [
+      { id: "Task-1", name: "Task 1", status: "Succeeded" as TaskStatus },
+    ],
   };
 
   it("should render the workflow name and status icon", () => {

@@ -1,8 +1,17 @@
+export type TaskStatus =
+  | "Pending"
+  | "Running"
+  | "Succeeded"
+  | "Skipped"
+  | "Failed"
+  | "Error"
+  | "Omitted";
+
 export interface Task {
+  id: string;
   name: string;
-  workflow: string;
-  status: string;
-  depends?: string;
+  status: TaskStatus;
+  depends?: string[];
 }
 
 export interface TaskNode extends Task {

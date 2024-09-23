@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import WorkflowStack from "../../lib/components/workflow/WorkflowStack";
 import WorkflowAccordion from "../../lib/components/workflow/WorkflowAccordian";
-import { WorkflowStatus } from "../../lib/types";
+import { TaskStatus, WorkflowStatus } from "../../lib/types";
 import "@testing-library/jest-dom";
 
 jest.mock("../../lib/components/workflow/WorkflowAccordian", () => ({
@@ -14,12 +14,14 @@ describe("WorkflowStack Component", () => {
     {
       name: "Workflow 1",
       status: "Running" as WorkflowStatus,
-      tasks: [{ workflow: "1", name: "Task 1", status: "completed" }],
+      tasks: [
+        { id: "task-1", name: "Task 1", status: "Succeeded" as TaskStatus },
+      ],
     },
     {
       name: "Workflow 2",
       status: "Failed" as WorkflowStatus,
-      tasks: [{ workflow: "2", name: "Task 2", status: "failed" }],
+      tasks: [{ id: "task-2", name: "Task 2", status: "Failed" as TaskStatus }],
     },
   ];
 
