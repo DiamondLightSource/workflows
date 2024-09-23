@@ -39,14 +39,16 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
   const roots: TaskNode[] = [];
 
   tasks.forEach((task) => {
-    taskMap[task.name] = { ...task, children: [] };
+    taskMap[task.id] = { ...task, children: [] };
   });
 
   tasks.forEach((task) => {
     if (task.depends) {
-      taskMap[task.depends].children?.push(taskMap[task.name]);
+      task.depends.forEach((depId) => {
+        taskMap[depId].children?.push(taskMap[task.id]);
+      });
     } else {
-      roots.push(taskMap[task.name]);
+      roots.push(taskMap[task.id]);
     }
   });
 
@@ -60,26 +62,26 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  const traverse = (tasks: TaskNode[], parent?: string) => {
+  const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     tasks.forEach((task) => {
       nodes.push({
-        id: task.name,
+        id: task.id,
         type: "custom",
         data: { label: task.name, status: task.status },
         position: { x: 0, y: 0 },
       });
 
-      if (parent) {
+      parents.forEach((parent) => {
         edges.push({
-          id: `e${parent}-${task.name}`,
+          id: `e${parent}-${task.id}`,
           source: parent,
-          target: task.name,
+          target: task.id,
           animated: true,
         });
-      }
+      });
 
       if (task.children && task.children.length > 0) {
-        traverse(task.children, task.name);
+        traverse(task.children, [task.id]);
       }
     });
   };

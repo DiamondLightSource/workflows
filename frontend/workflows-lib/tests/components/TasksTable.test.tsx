@@ -2,6 +2,7 @@ import { render } from "@testing-library/react";
 import TasksTable from "../../lib/components/workflow/TasksFlow";
 import { getStatusIcon } from "../../lib/components/common/StatusIcons";
 import "@testing-library/jest-dom";
+import { TaskStatus } from "../../lib/types";
 
 jest.mock("../../lib/components/common/StatusIcons", () => ({
   getStatusIcon: jest.fn(),
@@ -9,9 +10,14 @@ jest.mock("../../lib/components/common/StatusIcons", () => ({
 
 describe("TaskTable Component", () => {
   const mockTasks = [
-    { name: "task-1", workflow: "w1", status: "pending" },
-    { name: "task-2", workflow: "w2", status: "in-progress" },
-    { name: "task-3", workflow: "w2", status: "completed" },
+    { id: "task-1", name: "task-1", status: "Pending" as TaskStatus },
+    {
+      id: "task-2",
+      name: "task-2",
+      status: "Succeeded" as TaskStatus,
+      depends: ["task-1"],
+    },
+    { id: "task-3", name: "task-3", status: "Running" as TaskStatus },
   ];
 
   beforeEach(() => {
@@ -34,9 +40,8 @@ describe("TaskTable Component", () => {
 
   it("should call getStatusIcon for each task", () => {
     render(<TasksTable tasks={mockTasks} />);
-
-    expect(getStatusIcon).toHaveBeenCalledWith("pending");
-    expect(getStatusIcon).toHaveBeenCalledWith("completed");
-    expect(getStatusIcon).toHaveBeenCalledWith("in-progress");
+    expect(getStatusIcon).toHaveBeenCalledWith("Pending");
+    expect(getStatusIcon).toHaveBeenCalledWith("Succeeded");
+    expect(getStatusIcon).toHaveBeenCalledWith("Running");
   });
 });

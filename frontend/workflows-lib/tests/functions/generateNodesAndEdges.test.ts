@@ -1,30 +1,31 @@
 import { generateNodesAndEdges } from "../../lib/components/workflow/TasksFlowUtils";
+import { TaskStatus } from "../../lib/types";
 
 describe("generateNodesAndEdges", () => {
   it("should generate nodes and edges from a task tree", () => {
     const taskTree = [
       {
+        id: "task-1",
         name: "task-1",
-        workflow: "w1",
-        status: "pending",
+        status: "Pending" as TaskStatus,
         children: [
           {
+            id: "task-2",
             name: "task-2",
-            workflow: "w1",
-            status: "completed",
-            depends: "task-1",
+            status: "Succeeded" as TaskStatus,
+            depends: ["task-1"],
             children: [
               {
+                id: "task-4",
                 name: "task-4",
-                workflow: "w1",
-                status: "completed",
-                depends: "task-2",
+                status: "Succeeded" as TaskStatus,
+                depends: ["task-2"],
                 children: [
                   {
+                    id: "task-5",
                     name: "task-5",
-                    workflow: "w1",
-                    status: "completed",
-                    depends: "task-4",
+                    status: "Succeeded" as TaskStatus,
+                    depends: ["task-4"],
                     children: [],
                   },
                 ],
@@ -33,7 +34,12 @@ describe("generateNodesAndEdges", () => {
           },
         ],
       },
-      { name: "task-3", workflow: "w1", status: "in-progress", children: [] },
+      {
+        id: "task-3",
+        name: "task-3",
+        status: "Running" as TaskStatus,
+        children: [],
+      },
     ];
 
     const { nodes, edges } = generateNodesAndEdges(taskTree);
@@ -42,31 +48,31 @@ describe("generateNodesAndEdges", () => {
       {
         id: "task-1",
         type: "custom",
-        data: { label: "task-1", status: "pending" },
+        data: { label: "task-1", status: "Pending" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-2",
         type: "custom",
-        data: { label: "task-2", status: "completed" },
+        data: { label: "task-2", status: "Succeeded" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-4",
         type: "custom",
-        data: { label: "task-4", status: "completed" },
+        data: { label: "task-4", status: "Succeeded" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-5",
         type: "custom",
-        data: { label: "task-5", status: "completed" },
+        data: { label: "task-5", status: "Succeeded" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-3",
         type: "custom",
-        data: { label: "task-3", status: "in-progress" },
+        data: { label: "task-3", status: "Running" },
         position: { x: 0, y: 0 },
       },
     ]);
