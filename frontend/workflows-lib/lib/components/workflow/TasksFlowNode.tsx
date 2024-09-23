@@ -1,12 +1,13 @@
 import { Box, Paper, Typography, useTheme } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { getStatusIcon } from "../common/StatusIcons";
+import { getTaskStatusIcon } from "../common/StatusIcons";
+import { TaskStatus } from "../../types";
 
 interface TaskFlowNodeProps {
   data: {
     label: string;
-    status: string;
+    status: TaskStatus;
   };
 }
 
@@ -36,7 +37,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data }) => {
         <Typography variant="subtitle1" noWrap sx={{ fontWeight: 500 }}>
           {data.label}
         </Typography>
-        {getStatusIcon(data.status)}
+        {getTaskStatusIcon(data.status)}
       </Box>
       <Handle
         type="source"
