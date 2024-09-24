@@ -347,4 +347,50 @@ impl WorkflowsQuery {
             .into_result()?;
         Ok(workflow.try_into()?)
     }
+
+    #[instrument(skip(self, ctx))]
+    async fn workflows(
+        &self,
+        ctx: &Context<'_>,
+        proposal_code: String,
+        proposal_number: u32,
+        visit: u32,
+    ) -> anyhow::Result<Vec<Workflow>> {
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, visit);
+        let mut url = server_url.clone();
+        url.path_segments_mut()
+            .unwrap()
+            .extend(["api", "v1", "workflows", &namespace]);
+        url.query_pairs_mut().append_pair("listOptions.limit", "15");
+        debug!("Retrieving workflows from {url}");
+        let client = reqwest::Client::new();
+        let request = if let Some(auth_token) = auth_token {
+            client.get(url).bearer_auth(auth_token.token())
+        } else {
+            client.get(url)
+        };
+
+        let workflow_names: Vec<String> = request
+            .send()
+            .await?
+            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowList>>()
+            .await?
+            .into_result()?
+            .items
+            .into_iter()
+            .filter_map(|workflow| workflow.metadata.name)
+            .collect();
+
+        let mut workflows = Vec::new();
+        for name in workflow_names {
+            let workflow = self
+                .workflow(ctx, proposal_code.clone(), proposal_number, visit, name)
+                .await?;
+            workflows.push(workflow);
+        }
+
+        Ok(workflows)
+    }
 }
