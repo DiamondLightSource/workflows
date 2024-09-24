@@ -91,6 +91,9 @@ oauth2-proxy:
       skip_auth_routes = [
         "OPTIONS=^/$",
         "GET=^/api/",
+        "DELETE=^/api/",
+        "PUT=^/api/",
+        "POST=^/api/",
         "GET=^/assets/"
       ]
       skip_provider_button = true
