@@ -1,12 +1,12 @@
 dependencies:
 - name: argo-workflows
   repository: https://argoproj.github.io/argo-helm
-  version: 0.41.14
+  version: 0.42.3
 - name: postgresql-ha
   repository: https://charts.bitnami.com/bitnami
   version: 14.0.12
 - name: oauth2-proxy
   repository: https://oauth2-proxy.github.io/manifests
   version: 7.7.9
-digest: sha256:107e319503329c4f0fc3ac7d7a3bbd983aff1cb67ed2492c3d55b34902c51a62
-generated: "2024-08-15T16:52:36.76480826+01:00"
+digest: sha256:ff2138c64fb3b6c2738bc28f811c426592a5d216eecea905dbd41ecf09c1e273
+generated: "2024-09-24T10:54:39.324742149+01:00"
