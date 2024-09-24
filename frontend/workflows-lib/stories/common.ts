@@ -57,7 +57,7 @@ export const fakeTasksA = [
 
 export const fakeTasksB = [
   {
-    id: ["task-1"],
+    id: "task-1",
     name: "task-1",
     status: "Succeeeded" as TaskStatus,
   },
