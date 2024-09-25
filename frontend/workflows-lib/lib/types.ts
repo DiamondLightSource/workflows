@@ -1,11 +1,11 @@
 export type TaskStatus =
-  | "Pending"
-  | "Running"
-  | "Succeeded"
-  | "Skipped"
-  | "Failed"
-  | "Error"
-  | "Omitted";
+  | "PENDING"
+  | "RUNNING"
+  | "SUCCEEDED"
+  | "SKIPPED"
+  | "FAILED"
+  | "ERROR"
+  | "OMITTED";
 
 export interface Task {
   id: string;

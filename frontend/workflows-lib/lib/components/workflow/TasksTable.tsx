@@ -12,7 +12,7 @@ const TasksTable: React.FC<TaskTableProps> = ({ tasks }) => {
   return (
     <Grid container spacing={1.5} padding={2} sx={{ overflow: "auto" }}>
       {tasks.map((task) => (
-        <Grid item key={task.name} xs="auto">
+        <Grid item key={task.id} xs="auto">
           <Paper
             elevation={8}
             sx={{
