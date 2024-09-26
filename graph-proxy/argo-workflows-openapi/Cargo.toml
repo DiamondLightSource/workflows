@@ -13,7 +13,10 @@ serde_json = { version = "1.0.125" }
 
 [build-dependencies]
 quote = { version = "1.0.37" }
-reqwest = { version = "0.12.7", features = ["blocking"] }
+reqwest = { version = "0.12.7", default-features = false, features = [
+    "rustls-tls",
+    "blocking",
+] }
 rustfmt-wrapper = { version = "0.2.1" }
 schemars = { version = "0.8.21" }
 serde_json = { version = "1.0.125" }
