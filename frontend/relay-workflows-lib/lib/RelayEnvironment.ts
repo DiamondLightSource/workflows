@@ -8,47 +8,62 @@ import {
 } from "relay-runtime";
 import keycloak from "./keycloak";
 
-const HTTP_ENDPOINT = "https://graph.diamond.ac.uk";
+// const HTTP_ENDPOINT = "https://graph.diamond.ac.uk";
+const HTTP_ENDPOINT = "http://localhost:35895/";
 
 const fetchFn: FetchFunction = async (request, variables) => {
-  try {
-    const authenticated = await keycloak.init({
-      onLoad: "login-required",
-    });
+  const token = "sdfsd";
+  const response = await fetch(HTTP_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: request.text,
+      variables,
+    }),
+  });
 
-    if (!authenticated) {
-      throw new Error("Keycloak authentication failed");
-    }
+  return await response.json();
+  // try {
+  //   const authenticated = await keycloak.init({
+  //     onLoad: "login-required",
+  //   });
 
-    if (keycloak.isTokenExpired()) {
-      await keycloak.updateToken(30);
-    }
+  //   if (!authenticated) {
+  //     throw new Error("Keycloak authentication failed");
+  //   }
 
-    const token = keycloak.token;
+  //   if (keycloak.isTokenExpired()) {
+  //     await keycloak.updateToken(30);
+  //   }
 
-    if (!token) {
-      throw new Error("Failed to retrieve token");
-    }
+  //   const token = keycloak.token;
 
-    const response = await fetch(HTTP_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: request.text,
-        variables,
-      }),
-    });
+  //   if (!token) {
+  //     throw new Error("Failed to retrieve token");
+  //   }
 
-    return await response.json();
-  } catch (error) {
-    console.error("Error in Keycloak authentication:", error);
-    alert("Authentication failed. Please log in again.");
-    keycloak.login();
-    throw error;
-  }
+  //   const response = await fetch(HTTP_ENDPOINT, {
+  //     method: "POST",
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       query: request.text,
+  //       variables,
+  //     }),
+  //   });
+
+  //   return await response.json();
+  // } catch (error) {
+  //   console.error("Error in Keycloak authentication:", error);
+  //   alert("Authentication failed. Please log in again.");
+  //   keycloak.login();
+  //   throw error;
+  // }
 };
 
 function createRelayEnvironment() {

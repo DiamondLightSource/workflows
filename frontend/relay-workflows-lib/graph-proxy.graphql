@@ -18,6 +18,13 @@ type Query {
     visit: Int!
     name: String!
   ): Workflow!
+  workflows(
+    proposalCode: String!
+    proposalNumber: Int!
+    visit: Int!
+    continue: String
+    limit: Int
+  ): WorkflowList!
 }
 
 """
@@ -112,6 +119,14 @@ type WorkflowFailedStatus {
   Tasks created by the workflow
   """
   tasks: [Task!]!
+}
+
+"""
+A List of workflows
+"""
+type WorkflowList {
+  continue: String
+  workflows: [Workflow!]!
 }
 
 """
