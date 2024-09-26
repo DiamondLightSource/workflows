@@ -359,36 +359,63 @@ impl WorkflowsQuery {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         let namespace = format!("{}{}-{}", proposal_code, proposal_number, visit);
+        let client = reqwest::Client::new();
+        let request = |url: reqwest::Url| {
+            if let Some(auth_token) = auth_token {
+                client.get(url).bearer_auth(auth_token.token())
+            } else {
+                client.get(url)
+            }
+        };
         let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &namespace]);
-        url.query_pairs_mut().append_pair("listOptions.limit", "15");
-        debug!("Retrieving workflows from {url}");
-        let client = reqwest::Client::new();
-        let request = if let Some(auth_token) = auth_token {
-            client.get(url).bearer_auth(auth_token.token())
-        } else {
-            client.get(url)
-        };
-
-        let workflow_names: Vec<String> = request
+        debug!("Retrieving workflows name from {url}");
+        let workflows_response = request(url)
             .send()
             .await?
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowList>>()
             .await?
-            .into_result()?
-            .items
-            .into_iter()
-            .filter_map(|workflow| workflow.metadata.name)
-            .collect();
-
+            .into_result()?;
+        let mut join_set = tokio::task::JoinSet::new();
         let mut workflows = Vec::new();
-        for name in workflow_names {
-            let workflow = self
-                .workflow(ctx, proposal_code.clone(), proposal_number, visit, name)
-                .await?;
-            workflows.push(workflow);
+        if ctx.look_ahead().field("status").field("tasks").exists() {
+            for workflow in workflows_response.items.into_iter().filter_map(|workflow| {
+                let workflow_name = workflow.metadata.name?;
+                let mut workflow_url = server_url.clone();
+                workflow_url.path_segments_mut().unwrap().extend([
+                    "api",
+                    "v1",
+                    "workflows",
+                    &namespace,
+                    &workflow_name,
+                ]);
+                debug!("Retrieving workflow from {workflow_url}");
+                let request = request(workflow_url);
+                Some((workflow_name, request))
+            }) {
+                join_set.spawn(async move {
+                    let request = workflow.1;
+                    let workflow = request
+                    .send()
+                    .await?
+                    .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+                    .await?
+                    .into_result()?;
+                    Ok::<Workflow, anyhow::Error>(workflow.try_into()?)
+                });
+            }
+
+            while let Some(result) = join_set.join_next().await {
+                workflows.push(result??);
+            }
+        } else {
+            workflows = workflows_response
+                .items
+                .into_iter()
+                .map(|workflow| workflow.try_into())
+                .collect::<Result<Vec<_>, _>>()?;
         }
 
         Ok(workflows)
