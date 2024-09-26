@@ -43,7 +43,7 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
   });
 
   tasks.forEach((task) => {
-    if (task.depends) {
+    if (task.depends && task.depends.length > 0) {
       task.depends.forEach((depId) => {
         taskMap[depId].children?.push(taskMap[task.id]);
       });
@@ -60,7 +60,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   edges: Edge[];
 } {
   const nodes: Node[] = [];
-  const edges: Edge[] = [];
+  const edgeSet = new Set<Edge>();
 
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     tasks.forEach((task) => {
@@ -72,7 +72,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
       });
 
       parents.forEach((parent) => {
-        edges.push({
+        edgeSet.add({
           id: `e${parent}-${task.id}`,
           source: parent,
           target: task.id,
@@ -87,5 +87,6 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   };
 
   traverse(taskNodes);
+  const edges = Array.from(edgeSet);
   return { nodes, edges };
 }

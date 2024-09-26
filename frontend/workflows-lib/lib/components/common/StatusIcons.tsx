@@ -10,37 +10,37 @@ import { TaskStatus, WorkflowStatus } from "../../types";
 
 export function getTaskStatusIcon(status: TaskStatus, size: number = 25) {
   const TaskStatusIconMap: { [key in TaskStatus]: JSX.Element } = {
-    Pending: (
+    PENDING: (
       <Tooltip title="Pending">
         <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
       </Tooltip>
     ),
-    Running: (
+    RUNNING: (
       <Tooltip title="Running">
         <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
       </Tooltip>
     ),
-    Succeeded: (
+    SUCCEEDED: (
       <Tooltip title="Succeeded">
         <TaskAltTwoToneIcon color="success" sx={{ fontSize: size }} />
       </Tooltip>
     ),
-    Skipped: (
+    SKIPPED: (
       <Tooltip title="Skipped">
         <SkipNextTwoToneIcon color="warning" sx={{ fontSize: size }} />
       </Tooltip>
     ),
-    Failed: (
+    FAILED: (
       <Tooltip title="Failed">
         <CancelTwoToneIcon color="error" sx={{ fontSize: size }} />
       </Tooltip>
     ),
-    Error: (
+    ERROR: (
       <Tooltip title="Error">
         <ErrorTwoToneIcon color="error" sx={{ fontSize: size }} />
       </Tooltip>
     ),
-    Omitted: (
+    OMITTED: (
       <Tooltip title="Omitted">
         <ReportProblemTwoToneIcon color="warning" sx={{ fontSize: size }} />
       </Tooltip>
