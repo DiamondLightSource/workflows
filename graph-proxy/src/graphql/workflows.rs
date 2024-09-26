@@ -3,7 +3,7 @@ use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
     IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
-use async_graphql::{Context, Enum, Object, SimpleObject, Union};
+use async_graphql::{types::connection::*, Context, Enum, Object, SimpleObject, Union};
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
 use std::{collections::HashMap, ops::Deref};
@@ -355,7 +355,9 @@ impl WorkflowsQuery {
         proposal_code: String,
         proposal_number: u32,
         visit: u32,
-    ) -> anyhow::Result<Vec<Workflow>> {
+        cursor: Option<String>,
+        #[graphql(validator(minimum=1, maximum=10))] limit: Option<u32>,
+    ) -> anyhow::Result<Connection<OpaqueCursor<String>, Workflow, EmptyFields, EmptyFields>> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         let namespace = format!("{}{}-{}", proposal_code, proposal_number, visit);
@@ -371,6 +373,18 @@ impl WorkflowsQuery {
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &namespace]);
+        let limit = limit.unwrap_or(10);
+        url.query_pairs_mut()
+            .append_pair("listOptions.limit", &limit.to_string());
+        let current_cursor = if let Some(cursor) = cursor {
+            let cursor_value = OpaqueCursor::<String>::decode_cursor(&cursor)
+                .map_err(|_| anyhow::Error::msg("Cursor not valid"))?;
+            url.query_pairs_mut()
+                .append_pair("listOptions.continue", &cursor_value.0);
+            Some(cursor_value.0)
+        } else {
+            None
+        };
         debug!("Retrieving workflows name from {url}");
         let workflows_response = request(url)
             .send()
@@ -380,7 +394,21 @@ impl WorkflowsQuery {
             .into_result()?;
         let mut join_set = tokio::task::JoinSet::new();
         let mut workflows = Vec::new();
-        if ctx.look_ahead().field("status").field("tasks").exists() {
+        let next_cursor = workflows_response.metadata.continue_;
+        if ctx
+            .look_ahead()
+            .field("nodes")
+            .field("status")
+            .field("tasks")
+            .exists()
+            || ctx
+                .look_ahead()
+                .field("edges")
+                .field("node")
+                .field("status")
+                .field("tasks")
+                .exists()
+        {
             for workflow in workflows_response.items.into_iter().filter_map(|workflow| {
                 let workflow_name = workflow.metadata.name?;
                 let mut workflow_url = server_url.clone();
@@ -417,7 +445,17 @@ impl WorkflowsQuery {
                 .map(|workflow| workflow.try_into())
                 .collect::<Result<Vec<_>, _>>()?;
         }
+        let current_index = current_cursor
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(0);
 
-        Ok(workflows)
+        let mut connection = Connection::new(false, next_cursor.is_some());
+        connection
+            .edges
+            .extend(workflows.into_iter().enumerate().map(|(idx, workflow)| {
+                let cursor = OpaqueCursor((current_index + idx + 1).to_string());
+                Edge::new(cursor, workflow)
+            }));
+        Ok(connection)
     }
 }
