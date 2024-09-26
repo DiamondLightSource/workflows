@@ -1,0 +1,51 @@
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-graph-proxy
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+argoServerUrl: http://workflows.diamond.ac.uk
+prefixPath: /graphql
+
+deployment:
+  replicas: 3
+  annotations: []
+  podAnnotations: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+telemetry:
+  level: Info
+  metricsEndpoint: ""
+  tracingEndpoint: ""
+
+service:
+  create: true
+  annotations: []
+  type: ClusterIP
+  port: 80
+
+ingress:
+  create: true
+  className: nginx
+  tls: []
+  hosts:
+    - host: workflows.diamond.ac.uk
+      paths:
+        - path: /graphql
+          pathType: Exact
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: []
