@@ -63,3 +63,9 @@ workflows:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+graphProxy:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
