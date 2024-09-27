@@ -25,11 +25,53 @@ jobs:
         run: >
           cargo run
           schema
-          --path graph-proxy.graphql
+          --path workflows.graphql
         working-directory: graph-proxy
 
       - name: Upload Schema Artifact
         uses: actions/upload-artifact@v4.4.0
         with:
-          name: graph-proxy.graphql
-          path: ./graph-proxy/graph-proxy.graphql
+          name: graphql-schema
+          path: ./graph-proxy/workflows.graphql
+
+  validate_federation:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    needs: generate_schema
+    steps:
+      - name: Checkout Graph Federation source
+        uses: actions/checkout@v4.1.7
+        with:
+          repository: DiamondLightSource/graph-federation
+
+      - name: Download Schema Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: graphql-schema
+          path: schema
+
+      - name: Add Subgraph workflows to Supergraph config
+        run: >
+          yq -i
+          '
+          .subgraphs.workflows={
+            "routing_url":"https://workflows.diamond.ac.uk/graphql",
+            "schema":{
+              "file":"schema/workflows.graphql"
+            }
+          }
+          '
+          supergraph-config.yaml
+
+      - name: Install Rover CLI
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/latest | sh
+          echo "$HOME/.rover/bin" >> $GITHUB_PATH
+
+      - name: Compose Supergraph Schema
+        run: >
+          rover supergraph compose
+          --config supergraph-config.yaml
+          --elv2-license=accept
+          > supergraph.graphql
