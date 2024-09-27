@@ -866,6 +866,7 @@ dependencies = [
  "clap",
  "derive_more",
  "dotenvy",
+ "lazy_static",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
