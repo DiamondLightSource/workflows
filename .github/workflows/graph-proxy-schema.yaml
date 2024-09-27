@@ -34,16 +34,31 @@ jobs:
           name: graphql-schema
           path: ./graph-proxy/workflows.graphql
 
-  validate_federation:
+  federate:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     needs: generate_schema
     steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: 1010045
+          private-key: ${{ secrets.GRAPH_FEDERATOR }}
+          repositories: graph-federation
+
+      - name: Create GitHub App Committer String
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
       - name: Checkout Graph Federation source
         uses: actions/checkout@v4.1.7
         with:
           repository: DiamondLightSource/graph-federation
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Download Schema Artifact
         uses: actions/download-artifact@v4.1.8
@@ -75,3 +90,27 @@ jobs:
           --config supergraph-config.yaml
           --elv2-license=accept
           > supergraph.graphql
+
+      - name: Configure Git
+        run: |
+          git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
+          git config user.email "${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+
+      - name: Create commit
+        run: |
+          git checkout -b workflows-${{ github.ref_name }}
+          git add supergraph-config.yaml schema/workflows.graphql
+          if ! git diff --staged --quiet --exit-code supergraph-config.yaml schema/workflows.graphql; then
+            git commit -m "Update workflows schema to ${{ github.ref_name }}"
+          fi
+
+      - name: Create PR
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        run: |
+          git push origin workflows-${{ github.ref_name }}
+          gh auth login --with-token <<< ${{ steps.app-token.outputs.token }}
+          gh pr create \
+            --title "chore: Update Workflows subgraph to ${{ github.ref_name }}" \
+            --body "" \
+            --head workflows-${{ github.ref_name }} \
+            --base main
