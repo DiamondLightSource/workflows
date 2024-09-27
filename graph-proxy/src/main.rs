@@ -45,6 +45,9 @@ struct ServeArgs {
     /// The port to bind this service to
     #[arg(short, long, env = "PORT", default_value_t = 80)]
     port: u16,
+    /// The endpoint at which the GraphQL API should be served
+    #[arg(long, env = "PREFIX_PATH", default_value = "/")]
+    prefix_path: String,
     /// The endpoint to send OTLP metrics to
     #[arg(short, long, env = "METRICS_ENDPOINT")]
     metrics_endpoint: Option<Url>,
@@ -84,7 +87,7 @@ async fn main() {
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
                 .finish();
-            let router = setup_router(schema);
+            let router = setup_router(schema, &args.prefix_path);
             serve(router, args.host, args.port).await.unwrap();
         }
         Cli::Schema(args) => {
@@ -101,17 +104,13 @@ async fn main() {
 }
 
 /// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
-fn setup_router(schema: RootSchema) -> Router {
+fn setup_router(schema: RootSchema, prefix_path: &str) -> Router {
     #[allow(clippy::missing_docs_in_private_items)]
-    const GRAPHQL_ENDPOINT: &str = "/";
-
     Router::new().route(
-        GRAPHQL_ENDPOINT,
-        get(Html(
-            GraphiQLSource::build().endpoint(GRAPHQL_ENDPOINT).finish(),
-        ))
-        .post(graphql_handler)
-        .with_state(schema),
+        prefix_path,
+        get(Html(GraphiQLSource::build().endpoint(prefix_path).finish()))
+            .post(graphql_handler)
+            .with_state(schema),
     )
 }
 
