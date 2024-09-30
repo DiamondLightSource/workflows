@@ -28,5 +28,4 @@ export type WorkflowStatus =
 export interface Workflow {
   name: string;
   status: WorkflowStatus;
-  tasks: Task[];
 }

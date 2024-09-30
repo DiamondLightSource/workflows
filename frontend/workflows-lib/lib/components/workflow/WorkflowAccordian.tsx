@@ -1,12 +1,12 @@
 import React from "react";
 import { Typography, Accordion, AccordionSummary, styled } from "@mui/material";
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
-import TasksDynamic from "./TasksDynamic";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
 import { Workflow } from "../../types";
 
 interface WorkflowProps {
   workflow: Workflow;
+  children: React.ReactNode;
 }
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
@@ -15,7 +15,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   height: "80vh",
 }));
 
-const WorkflowAccordion: React.FC<WorkflowProps> = ({ workflow }) => {
+const WorkflowAccordion: React.FC<WorkflowProps> = ({ workflow, children }) => {
   return (
     <Accordion key={workflow.name}>
       <AccordionSummary
@@ -28,9 +28,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({ workflow }) => {
       >
         <Typography>{workflow.name}</Typography>
       </AccordionSummary>
-      <AccordionDetails>
-        <TasksDynamic tasks={workflow.tasks} />
-      </AccordionDetails>
+      <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
   );
 };
