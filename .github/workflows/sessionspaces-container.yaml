@@ -23,7 +23,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
 
       - name: Generate Image Name
         run: echo IMAGE_REPOSITORY=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '[_]' '[\-]')-sessionspaces >> $GITHUB_ENV
@@ -51,7 +51,7 @@ jobs:
           driver-opts: network=host
 
       - name: Build Image
-        uses: docker/build-push-action@v6.7.0
+        uses: docker/build-push-action@v6.8.0
         with:
           context: ./sessionspaces
           build-args: DATABASE_URL=mysql://root:rootpassword@localhost:3306/ispyb_build

@@ -13,7 +13,7 @@ jobs:
       ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1.0.7
@@ -57,7 +57,7 @@ jobs:
       ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1.0.7
