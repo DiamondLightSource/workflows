@@ -1,11 +1,8 @@
 import { render, fireEvent } from "@testing-library/react";
-import WorkflowAccordion from "../../lib/components/workflow/WorkflowAccordian";
+import { WorkflowAccordion } from "../../lib/main";
 import { TaskStatus, WorkflowStatus } from "../../lib/types";
 import "@testing-library/jest-dom";
 
-jest.mock("../../lib/components/workflow/TasksDynamic", () => () => (
-  <div>Mocked TasksDynamic</div>
-));
 jest.mock("../../lib/components/common/StatusIcons", () => ({
   getWorkflowStatusIcon: jest.fn(() => <div>Mocked WorkflowStatusIcon</div>),
 }));
@@ -19,17 +16,26 @@ describe("WorkflowAccordion Component", () => {
     ],
   };
 
+  const MockChildComponent = <div>Mocked ChildComponent</div>;
   it("should render the workflow name and status icon", () => {
-    const { getByText } = render(<WorkflowAccordion workflow={mockWorkflow} />);
+    const { getByText } = render(
+      <WorkflowAccordion workflow={mockWorkflow}>
+        {MockChildComponent}
+      </WorkflowAccordion>
+    );
     expect(getByText("Test Workflow")).toBeInTheDocument();
     expect(getByText("Mocked WorkflowStatusIcon")).toBeInTheDocument();
   });
 
-  it("should expand the accordion and render TasksDynamic when clicked", () => {
-    const { getByText } = render(<WorkflowAccordion workflow={mockWorkflow} />);
+  it("should expand the accordion and render children when clicked", () => {
+    const { getByText } = render(
+      <WorkflowAccordion workflow={mockWorkflow}>
+        {MockChildComponent}
+      </WorkflowAccordion>
+    );
     const accordionSummary = getByText("Test Workflow");
-    expect(getByText("Mocked TasksDynamic")).not.toBeVisible();
+    expect(getByText("Mocked ChildComponent")).not.toBeVisible();
     fireEvent.click(accordionSummary);
-    expect(getByText("Mocked TasksDynamic")).toBeVisible();
+    expect(getByText("Mocked ChildComponent")).toBeVisible();
   });
 });
