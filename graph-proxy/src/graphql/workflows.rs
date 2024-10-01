@@ -35,17 +35,33 @@ struct Workflow {
     name: String,
     /// The time at which the workflow began running
     status: WorkflowStatus,
+    /// The namespace in which the workflow exists
+    namespace: String,
 }
 
 impl TryFrom<IoArgoprojWorkflowV1alpha1Workflow> for Workflow {
     type Error = WorkflowParsingError;
 
     fn try_from(value: IoArgoprojWorkflowV1alpha1Workflow) -> Result<Self, Self::Error> {
+        let metadata = WorkflowMetaData {
+            workflow_name: value.metadata.name.clone().unwrap(),
+            namespace: value.metadata.namespace.clone().unwrap(),
+        };
         Ok(Self {
             name: value.metadata.name.unwrap(),
-            status: value.status.unwrap().try_into()?,
+            status: WorkflowStatus::new(value.status.unwrap(), metadata)?,
+            namespace: value.metadata.namespace.unwrap(),
         })
     }
+}
+
+/// Metadata of a workflow
+#[derive(Debug)]
+struct WorkflowMetaData {
+    /// Workflow name
+    workflow_name: String,
+    /// Namespace in which workflow exists
+    namespace: String,
 }
 
 /// The status of a workflow
@@ -59,20 +75,63 @@ enum WorkflowStatus {
     Errored(WorkflowErroredStatus),
 }
 
-impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowStatus {
-    type Error = WorkflowParsingError;
-
-    fn try_from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Result<Self, Self::Error> {
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowStatus {
+    fn new(
+        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
+        metadata: WorkflowMetaData,
+    ) -> Result<Self, WorkflowParsingError> {
         match value.phase.as_deref() {
             Some("Pending") => Ok(Self::Pending(WorkflowPendingStatus::from(value))),
-            Some("Running") => Ok(Self::Running(WorkflowRunningStatus::try_from(value)?)),
-            Some("Succeeded") => Ok(Self::Succeeded(WorkflowSucceededStatus::try_from(value)?)),
-            Some("Failed") => Ok(Self::Failed(WorkflowFailedStatus::try_from(value)?)),
-            Some("Error") => Ok(Self::Errored(WorkflowErroredStatus::try_from(value)?)),
+            Some("Running") => Ok(Self::Running(WorkflowRunningStatus::new(value, metadata)?)),
+            Some("Succeeded") => Ok(Self::Succeeded(WorkflowSucceededStatus::new(
+                value, metadata,
+            )?)),
+            Some("Failed") => Ok(Self::Failed(WorkflowFailedStatus::new(value, metadata)?)),
+            Some("Error") => Ok(Self::Errored(WorkflowErroredStatus::new(value, metadata)?)),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
             None => Err(WorkflowParsingError::UnrecognisedPhase),
         }
     }
+}
+
+lazy_static! {
+    static ref CLIENT: reqwest::Client = reqwest::Client::new();
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+macro_rules! fetch_tasks {
+    ($status:expr, $ctx:expr) => {{
+        if $status.tasks.is_none() {
+            let server_url = $ctx.data_unchecked::<ArgoServerUrl>().deref();
+            let auth_token = $ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+            let mut url = server_url.clone();
+            url.path_segments_mut().unwrap().extend([
+                "api",
+                "v1",
+                "workflows",
+                &$status.metadata.namespace,
+                &$status.metadata.workflow_name,
+            ]);
+            let request = if let Some(auth_token) = auth_token {
+                CLIENT.get(url).bearer_auth(auth_token.token())
+            } else {
+                CLIENT.get(url)
+            };
+            let nodes = request
+                .send()
+                .await?
+                .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+                .await?
+                .into_result()?
+                .status
+                .unwrap()
+                .nodes;
+            let tasks: Option<Vec<Task>> = TaskMap(nodes).try_into()?;
+            return Ok(tasks);
+        }
+        Ok($status.tasks.clone())
+    }};
 }
 
 /// No tasks within the workflow have been scheduled
@@ -92,31 +151,48 @@ impl From<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowPendingStatus {
 
 /// At least one of the tasks has been scheduled, but they have not yet all complete
 #[derive(Debug, SimpleObject)]
+#[graphql(complex)]
 struct WorkflowRunningStatus {
     /// Time at which this workflow started
     start_time: DateTime<Utc>,
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
     /// Tasks created by the workflow
-    tasks: Vec<Task>,
+    #[graphql(skip)]
+    tasks: Option<Vec<Task>>,
+    /// Metadata of a workflow
+    #[graphql(skip)]
+    metadata: WorkflowMetaData,
 }
 
-impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowRunningStatus {
-    type Error = WorkflowParsingError;
-
-    fn try_from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Result<Self, Self::Error> {
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowRunningStatus {
+    fn new(
+        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
+        metadata: WorkflowMetaData,
+    ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
                 .started_at
                 .ok_or(WorkflowParsingError::MissingStartTime)?,
             message: value.message,
             tasks: TaskMap(value.nodes).try_into()?,
+            metadata,
         })
+    }
+}
+
+#[ComplexObject]
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowRunningStatus {
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Option<Vec<Task>>> {
+        fetch_tasks!(&self, ctx)
     }
 }
 
 /// All tasks in the workflow have succeeded
 #[derive(Debug, SimpleObject)]
+#[graphql(complex)]
 struct WorkflowSucceededStatus {
     /// Time at which this workflow started
     start_time: DateTime<Utc>,
@@ -125,13 +201,19 @@ struct WorkflowSucceededStatus {
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
     /// Tasks created by the workflow
-    tasks: Vec<Task>,
+    #[graphql(skip)]
+    tasks: Option<Vec<Task>>,
+    /// Metadata of a workflow
+    #[graphql(skip)]
+    metadata: WorkflowMetaData,
 }
 
-impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowSucceededStatus {
-    type Error = WorkflowParsingError;
-
-    fn try_from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Result<Self, Self::Error> {
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowSucceededStatus {
+    fn new(
+        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
+        metadata: WorkflowMetaData,
+    ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
                 .started_at
@@ -141,12 +223,22 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowSucceededStat
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
             tasks: TaskMap(value.nodes).try_into()?,
+            metadata,
         })
+    }
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+#[ComplexObject]
+impl WorkflowSucceededStatus {
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Option<Vec<Task>>> {
+        fetch_tasks!(&self, ctx)
     }
 }
 
 /// A task in the workflow has completed with a non-zero exit code
 #[derive(Debug, SimpleObject)]
+#[graphql(complex)]
 struct WorkflowFailedStatus {
     /// Time at which this workflow started
     start_time: DateTime<Utc>,
@@ -155,13 +247,19 @@ struct WorkflowFailedStatus {
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
     /// Tasks created by the workflow
-    tasks: Vec<Task>,
+    #[graphql(skip)]
+    tasks: Option<Vec<Task>>,
+    /// Metadata of a workflow
+    #[graphql(skip)]
+    metadata: WorkflowMetaData,
 }
 
-impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowFailedStatus {
-    type Error = WorkflowParsingError;
-
-    fn try_from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Result<Self, Self::Error> {
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowFailedStatus {
+    fn new(
+        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
+        metadata: WorkflowMetaData,
+    ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
                 .started_at
@@ -171,12 +269,22 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowFailedStatus 
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
             tasks: TaskMap(value.nodes).try_into()?,
+            metadata,
         })
+    }
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+#[ComplexObject]
+impl WorkflowFailedStatus {
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Option<Vec<Task>>> {
+        fetch_tasks!(&self, ctx)
     }
 }
 
 /// The controller has encountered an error whilst scheduling the workflow
 #[derive(Debug, SimpleObject)]
+#[graphql(complex)]
 struct WorkflowErroredStatus {
     /// Time at which this workflow started
     start_time: DateTime<Utc>,
@@ -185,13 +293,19 @@ struct WorkflowErroredStatus {
     /// A human readable message indicating details about why the workflow is in this condition
     message: Option<String>,
     /// Tasks created by the workflow
-    tasks: Vec<Task>,
+    #[graphql(skip)]
+    tasks: Option<Vec<Task>>,
+    /// Metadata of a workflow
+    #[graphql(skip)]
+    metadata: WorkflowMetaData,
 }
 
-impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowErroredStatus {
-    type Error = WorkflowParsingError;
-
-    fn try_from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Result<Self, Self::Error> {
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowErroredStatus {
+    fn new(
+        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
+        metadata: WorkflowMetaData,
+    ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
                 .started_at
@@ -201,7 +315,16 @@ impl TryFrom<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowErroredStatus
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
             tasks: TaskMap(value.nodes).try_into()?,
+            metadata,
         })
+    }
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+#[ComplexObject]
+impl WorkflowErroredStatus {
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Option<Vec<Task>>> {
+        fetch_tasks!(&self, ctx)
     }
 }
 
@@ -235,7 +358,7 @@ impl TryFrom<String> for TaskStatus {
 }
 
 /// A Task created by a workflow
-#[derive(Debug, SimpleObject)]
+#[derive(Debug, SimpleObject, Clone)]
 struct Task {
     /// Unique name of the task
     id: String,
@@ -293,311 +416,24 @@ impl TaskMap {
     }
 }
 
-impl TryFrom<TaskMap> for Vec<Task> {
+impl TryFrom<TaskMap> for Option<Vec<Task>> {
     type Error = WorkflowParsingError;
 
     fn try_from(value: TaskMap) -> Result<Self, Self::Error> {
         let mut relationship_map = value.generate_relationship_map();
-
-        let tasks = value
-            .0
-            .into_iter()
-            .map(|(node_name, node_status)| {
-                let depends = relationship_map.remove(&node_name).unwrap_or_default();
-                Task::new(node_status, depends)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        Ok(tasks)
-    }
-}
-
-/// A Workflow consisting of one or more [`Task`]s
-#[derive(Debug, SimpleObject)]
-struct LazyWorkflow {
-    /// The name given to the workflow, unique within a given visit
-    name: String,
-    /// The time at which the workflow began running
-    status: LazyWorkflowStatus,
-}
-
-/// Metadata of a workflow
-#[derive(Debug)]
-struct WorkflowMetaData {
-    /// Workflow name
-    workflow_name: String,
-    /// Namespace in which workflow exists
-    namespace: String,
-}
-
-impl TryFrom<IoArgoprojWorkflowV1alpha1Workflow> for LazyWorkflow {
-    type Error = WorkflowParsingError;
-
-    fn try_from(value: IoArgoprojWorkflowV1alpha1Workflow) -> Result<Self, Self::Error> {
-        let metadata = WorkflowMetaData {
-            workflow_name: value.metadata.name.clone().unwrap(),
-            namespace: value.metadata.namespace.unwrap(),
-        };
-        Ok(Self {
-            name: value.metadata.name.unwrap(),
-            status: LazyWorkflowStatus::try_from((value.status.unwrap(), metadata))?,
-        })
-    }
-}
-lazy_static! {
-    static ref CLIENT: reqwest::Client = reqwest::Client::new();
-}
-#[allow(clippy::missing_docs_in_private_items)]
-macro_rules! fetch_tasks {
-    ($namespace:expr, $workflow_name:expr, $ctx:expr) => {{
-        let server_url = $ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let auth_token = $ctx.data_unchecked::<Option<Authorization<Bearer>>>();
-        let mut url = server_url.clone();
-        url.path_segments_mut().unwrap().extend([
-            "api",
-            "v1",
-            "workflows",
-            $namespace,
-            $workflow_name,
-        ]);
-        let request = if let Some(auth_token) = auth_token {
-            CLIENT.get(url).bearer_auth(auth_token.token())
+        if value.0.is_empty() {
+            Ok(None)
         } else {
-            CLIENT.get(url)
-        };
-        let nodes = request
-            .send()
-            .await?
-            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
-            .await?
-            .into_result()?
-            .status
-            .unwrap()
-            .nodes;
-        let task = TaskMap(nodes).try_into()?;
-        Ok(task)
-    }};
-}
-
-/// The status of a workflow
-#[derive(Debug, Union)]
-#[allow(clippy::missing_docs_in_private_items)]
-enum LazyWorkflowStatus {
-    Pending(LazyWorkflowPendingStatus),
-    Running(LazyWorkflowRunningStatus),
-    Succeeded(LazyWorkflowSucceededStatus),
-    Failed(LazyWorkflowFailedStatus),
-    Errored(LazyWorkflowErroredStatus),
-}
-
-impl TryFrom<(IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData)> for LazyWorkflowStatus {
-    type Error = WorkflowParsingError;
-
-    fn try_from(
-        (value, metadata): (IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData),
-    ) -> Result<Self, Self::Error> {
-        match value.phase.as_deref() {
-            Some("Pending") => Ok(Self::Pending(LazyWorkflowPendingStatus::from(value))),
-            Some("Running") => Ok(Self::Running(LazyWorkflowRunningStatus::try_from((
-                value, metadata,
-            ))?)),
-            Some("Succeeded") => Ok(Self::Succeeded(LazyWorkflowSucceededStatus::try_from((
-                value, metadata,
-            ))?)),
-            Some("Failed") => Ok(Self::Failed(LazyWorkflowFailedStatus::try_from((
-                value, metadata,
-            ))?)),
-            Some("Error") => Ok(Self::Errored(LazyWorkflowErroredStatus::try_from((
-                value, metadata,
-            ))?)),
-            Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
-            None => Err(WorkflowParsingError::UnrecognisedPhase),
+            let tasks = value
+                .0
+                .into_iter()
+                .map(|(node_name, node_status)| {
+                    let depends = relationship_map.remove(&node_name).unwrap_or_default();
+                    Task::new(node_status, depends)
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Some(tasks))
         }
-    }
-}
-
-/// No tasks within the workflow have been scheduled
-#[derive(Debug, SimpleObject)]
-struct LazyWorkflowPendingStatus {
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-}
-
-impl From<IoArgoprojWorkflowV1alpha1WorkflowStatus> for LazyWorkflowPendingStatus {
-    fn from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Self {
-        Self {
-            message: value.message,
-        }
-    }
-}
-
-/// At least one of the tasks has been scheduled, but they have not yet all complete
-#[derive(Debug, SimpleObject)]
-struct LazyWorkflowRunningStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// workflow metadata
-    #[graphql(skip)]
-    metadata: WorkflowMetaData,
-}
-
-impl TryFrom<(IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData)>
-    for LazyWorkflowRunningStatus
-{
-    type Error = WorkflowParsingError;
-
-    fn try_from(
-        (value, metadata): (IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData),
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            message: value.message,
-            metadata,
-        })
-    }
-}
-
-#[ComplexObject]
-#[allow(clippy::missing_docs_in_private_items)]
-impl LazyWorkflowRunningStatus {
-    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
-        fetch_tasks!(&self.metadata.namespace, &self.metadata.workflow_name, ctx)
-    }
-}
-
-/// All tasks in the workflow have succeeded
-#[derive(Debug, SimpleObject)]
-#[graphql(complex)]
-struct LazyWorkflowSucceededStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// workflow metadata
-    #[graphql(skip)]
-    metadata: WorkflowMetaData,
-}
-
-impl TryFrom<(IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData)>
-    for LazyWorkflowSucceededStatus
-{
-    type Error = WorkflowParsingError;
-
-    fn try_from(
-        (value, metadata): (IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData),
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
-                .finished_at
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            metadata,
-        })
-    }
-}
-
-#[ComplexObject]
-#[allow(clippy::missing_docs_in_private_items)]
-impl LazyWorkflowSucceededStatus {
-    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
-        fetch_tasks!(&self.metadata.namespace, &self.metadata.workflow_name, ctx)
-    }
-}
-
-/// A task in the workflow has completed with a non-zero exit code
-#[derive(Debug, SimpleObject)]
-#[graphql(complex)]
-struct LazyWorkflowFailedStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// workflow metadata
-    #[graphql(skip)]
-    metadata: WorkflowMetaData,
-}
-
-impl TryFrom<(IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData)>
-    for LazyWorkflowFailedStatus
-{
-    type Error = WorkflowParsingError;
-
-    fn try_from(
-        (value, metadata): (IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData),
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
-                .finished_at
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            metadata,
-        })
-    }
-}
-
-#[ComplexObject]
-#[allow(clippy::missing_docs_in_private_items)]
-impl LazyWorkflowFailedStatus {
-    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
-        fetch_tasks!(&self.metadata.namespace, &self.metadata.workflow_name, ctx)
-    }
-}
-
-/// The controller has encountered an error whilst scheduling the workflow
-#[derive(Debug, SimpleObject)]
-#[graphql(complex)]
-struct LazyWorkflowErroredStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// workflow metadata
-    #[graphql(skip)]
-    metadata: WorkflowMetaData,
-}
-
-impl TryFrom<(IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData)>
-    for LazyWorkflowErroredStatus
-{
-    type Error = WorkflowParsingError;
-
-    fn try_from(
-        (value, metadata): (IoArgoprojWorkflowV1alpha1WorkflowStatus, WorkflowMetaData),
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
-                .finished_at
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            metadata,
-        })
-    }
-}
-
-#[ComplexObject]
-#[allow(clippy::missing_docs_in_private_items)]
-impl LazyWorkflowErroredStatus {
-    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
-        fetch_tasks!(&self.metadata.namespace, &self.metadata.workflow_name, ctx)
     }
 }
 
@@ -649,8 +485,7 @@ impl WorkflowsQuery {
         visit: u32,
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
-    ) -> anyhow::Result<Connection<OpaqueCursor<String>, LazyWorkflow, EmptyFields, EmptyFields>>
-    {
+    ) -> anyhow::Result<Connection<OpaqueCursor<String>, Workflow, EmptyFields, EmptyFields>> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         let namespace = format!("{}{}-{}", proposal_code, proposal_number, visit);
