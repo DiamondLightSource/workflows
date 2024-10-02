@@ -25,10 +25,13 @@ It contains various details of the session, including:
 
 # Service Accounts
 
-Two [Service Accounts](https://kubernetes.io/docs/concepts/security/service-accounts/) are created in each namespace - the `visit-member` Service Account which allows Argo Workflows users to manage workflows, and the `argo-workflow` Service Account which is used to run workflow pods. This is in addition to the existing 'default' account which is given no permissions.
+An `argo-workflow` [Service Account](https://kubernetes.io/docs/concepts/security/service-accounts/) is created in each session namespace, this is used to run workflow pods with the minimum permissions necessary. This is in addition to the existing `default` account which is given no permissions.
+
+# Role Bindings
+
+A `visit-member` [Role Binding](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) is created in each session namespace allowing users who are associated with the visit to manage workflows.
 
 # Secret
 
 A [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) named `artifact-s3` is cloned into each namespace.
 This allows workflows and users access to the Artifact store, where workflow logs and output [Artifacts](https://argo-workflows.readthedocs.io/en/stable/walk-through/artifacts/) are stored.
-
