@@ -9,6 +9,7 @@ use async_graphql::{
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
 use lazy_static::lazy_static;
+use std::sync::{Arc, Weak};
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 
@@ -31,37 +32,42 @@ enum WorkflowParsingError {
 /// A Workflow consisting of one or more [`Task`]s
 #[derive(Debug, SimpleObject)]
 struct Workflow {
-    /// The name given to the workflow, unique within a given visit
-    name: String,
+    /// Reference to Workflow metadata
+    #[graphql(flatten)]
+    metadata: Arc<Metadata>,
     /// The time at which the workflow began running
     status: WorkflowStatus,
-    /// The namespace in which the workflow exists
-    namespace: String,
 }
 
-impl TryFrom<IoArgoprojWorkflowV1alpha1Workflow> for Workflow {
-    type Error = WorkflowParsingError;
+#[derive(Debug, SimpleObject)]
+struct Metadata {
+    /// The name given to the workflow, unique within a given visit
+    name: String,
+    /// Project Proposal Code
+    proposal_code: String,
+    /// Project Proposal Number
+    proposal_number: u32,
+    /// Session visit Number
+    visit: u32,
+}
 
-    fn try_from(value: IoArgoprojWorkflowV1alpha1Workflow) -> Result<Self, Self::Error> {
-        let metadata = WorkflowMetaData {
-            workflow_name: value.metadata.name.clone().unwrap(),
-            namespace: value.metadata.namespace.clone().unwrap(),
-        };
-        Ok(Self {
-            name: value.metadata.name.unwrap(),
-            status: WorkflowStatus::new(value.status.unwrap(), metadata)?,
-            namespace: value.metadata.namespace.unwrap(),
-        })
+#[allow(clippy::missing_docs_in_private_items)]
+impl Workflow {
+    fn new(
+        value: IoArgoprojWorkflowV1alpha1Workflow,
+        proposal_code: String,
+        proposal_number: u32,
+        visit: u32,
+    ) -> Result<Self, WorkflowParsingError> {
+        let metadata = Arc::new(Metadata {
+            name: value.metadata.name.clone().unwrap(),
+            proposal_code,
+            proposal_number,
+            visit,
+        });
+        let status = WorkflowStatus::new(value.status.clone().unwrap(), Arc::downgrade(&metadata))?;
+        Ok(Self { metadata, status })
     }
-}
-
-/// Metadata of a workflow
-#[derive(Debug)]
-struct WorkflowMetaData {
-    /// Workflow name
-    workflow_name: String,
-    /// Namespace in which workflow exists
-    namespace: String,
 }
 
 /// The status of a workflow
@@ -79,7 +85,7 @@ enum WorkflowStatus {
 impl WorkflowStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: WorkflowMetaData,
+        metadata: Weak<Metadata>,
     ) -> Result<Self, WorkflowParsingError> {
         match value.phase.as_deref() {
             Some("Pending") => Ok(Self::Pending(WorkflowPendingStatus::from(value))),
@@ -106,12 +112,17 @@ macro_rules! fetch_tasks {
             let server_url = $ctx.data_unchecked::<ArgoServerUrl>().deref();
             let auth_token = $ctx.data_unchecked::<Option<Authorization<Bearer>>>();
             let mut url = server_url.clone();
+            let metadata = &$status.metadata.upgrade().unwrap();
+            let namespace = format!(
+                "{}{}-{}",
+                metadata.proposal_code, metadata.proposal_number, metadata.visit
+            );
             url.path_segments_mut().unwrap().extend([
                 "api",
                 "v1",
                 "workflows",
-                &$status.metadata.namespace,
-                &$status.metadata.workflow_name,
+                &namespace,
+                &metadata.name,
             ]);
             let request = if let Some(auth_token) = auth_token {
                 CLIENT.get(url).bearer_auth(auth_token.token())
@@ -160,16 +171,16 @@ struct WorkflowRunningStatus {
     /// Tasks created by the workflow
     #[graphql(skip)]
     tasks: Option<Vec<Task>>,
-    /// Metadata of a workflow
+    /// Workflow metadata
     #[graphql(skip)]
-    metadata: WorkflowMetaData,
+    metadata: Weak<Metadata>,
 }
 
 #[allow(clippy::missing_docs_in_private_items)]
 impl WorkflowRunningStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: WorkflowMetaData,
+        metadata: Weak<Metadata>,
     ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
@@ -203,16 +214,16 @@ struct WorkflowSucceededStatus {
     /// Tasks created by the workflow
     #[graphql(skip)]
     tasks: Option<Vec<Task>>,
-    /// Metadata of a workflow
+    /// Workflow metadata
     #[graphql(skip)]
-    metadata: WorkflowMetaData,
+    metadata: Weak<Metadata>,
 }
 
 #[allow(clippy::missing_docs_in_private_items)]
 impl WorkflowSucceededStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: WorkflowMetaData,
+        metadata: Weak<Metadata>,
     ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
@@ -249,16 +260,16 @@ struct WorkflowFailedStatus {
     /// Tasks created by the workflow
     #[graphql(skip)]
     tasks: Option<Vec<Task>>,
-    /// Metadata of a workflow
+    /// Workflow metadata
     #[graphql(skip)]
-    metadata: WorkflowMetaData,
+    metadata: Weak<Metadata>,
 }
 
 #[allow(clippy::missing_docs_in_private_items)]
 impl WorkflowFailedStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: WorkflowMetaData,
+        metadata: Weak<Metadata>,
     ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
@@ -295,16 +306,16 @@ struct WorkflowErroredStatus {
     /// Tasks created by the workflow
     #[graphql(skip)]
     tasks: Option<Vec<Task>>,
-    /// Metadata of a workflow
+    /// Workflow metadata
     #[graphql(skip)]
-    metadata: WorkflowMetaData,
+    metadata: Weak<Metadata>,
 }
 
 #[allow(clippy::missing_docs_in_private_items)]
 impl WorkflowErroredStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: WorkflowMetaData,
+        metadata: Weak<Metadata>,
     ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
@@ -473,7 +484,12 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(workflow.try_into()?)
+        Ok(Workflow::new(
+            workflow,
+            proposal_code,
+            proposal_number,
+            visit,
+        )?)
     }
 
     #[instrument(skip(self, ctx))]
@@ -524,7 +540,7 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| workflow.try_into())
+            .map(|workflow| Workflow::new(workflow, proposal_code.clone(), proposal_number, visit))
             .collect::<Result<Vec<_>, _>>()?;
         let current_index = current_cursor
             .and_then(|value| value.parse::<usize>().ok())
