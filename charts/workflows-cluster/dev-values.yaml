@@ -135,9 +135,8 @@ vcluster:
                 project: default
                 source:
                   helm:
-                    parameters:
-                    - name: "dev.enabled"
-                      value: "true"
+                    valueFiles:
+                      - dev-values.yaml
                   path: charts/argocd-apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
                   targetRevision: HEAD
