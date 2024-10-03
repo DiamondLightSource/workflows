@@ -1,9 +1,9 @@
 events:
   enabled: true
-  extraValuesFiles:
+  extraValueFiles:
     - dev-values.yaml
 
-groupProjects:
+groups:
   enabled: true
 
 kyverno:
@@ -31,7 +31,7 @@ kyverno:
 
 sessionspaces:
   enabled: true
-  extraValuesFiles:
+  extraValueFiles:
     - dev-values.yaml
 
 sealedsecrets:
@@ -49,3 +49,6 @@ workflows:
   enabled: true
   extraValueFiles:
     - dev-values.yaml
+
+graphProxy:
+  enabled: true

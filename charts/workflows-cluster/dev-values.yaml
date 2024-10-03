@@ -52,10 +52,10 @@ vcluster:
               controller:
                 resources:
                   limits:
-                    cpu: 200m
+                    cpu: 1000m
                     memory: 512Mi
                   requests:
-                    cpu: 100m
+                    cpu: 500m
                     memory: 256Mi
               dex:
                 resources:
@@ -92,18 +92,18 @@ vcluster:
               repoServer:
                 resources:
                   limits:
-                    cpu: 500m
+                    cpu: 1000m
                     memory: 512Mi
                   requests:
-                    cpu: 250m
+                    cpu: 500m
                     memory: 256Mi
               applicationSet:
                 resources:
                   limits:
-                    cpu: 500m
+                    cpu: 200m
                     memory: 512Mi
                   requests:
-                    cpu: 250m
+                    cpu: 100m
                     memory: 256Mi
               notifications:
                 resources:
