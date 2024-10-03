@@ -43,5 +43,5 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  extraValuesFiles:
+  extraValueFiles:
     - dev-values.yaml
