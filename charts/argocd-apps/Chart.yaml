@@ -3,4 +3,4 @@ name: argocd-apps
 description: An argocd app to deploy apps inside the virtual cluster
 type: application
 
-version: 0.3.0
+version: 0.3.1
