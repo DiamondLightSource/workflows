@@ -6,10 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "relay": "relay-compiler"
   },
   "dependencies": {
-    "react-relay": "^17.0.0"
+    "react-relay": "^18.1.0",
+    "workflows-lib": "*"
+  },
+  "devDependencies": {
+    "@types/react-relay": "^16.0.6",
+    "@types/relay-runtime": "^17.0.4",
+    "relay-compiler": "^18.0.0",
+    "relay-runtime": "^18.0.0"
   },
   "peerDependencies": {
     "react": "^18.3.1",

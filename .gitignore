@@ -6,3 +6,6 @@ ca.crt
 config_argus
 # vcluster config
 kubeconfig.yaml
+
+# Relay
+__generated__
