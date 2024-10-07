@@ -5,9 +5,17 @@ on:
   pull_request:
 
 jobs:
+  generate_supergraph:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/generate-schema.yaml
+    secrets:
+      GRAPH_FEDERATOR: ${{ secrets.GRAPH_FEDERATOR }}
+
   lint:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: generate_supergraph
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -23,6 +31,16 @@ jobs:
 
       - name: Install dependencies
         run: yarn --frozen-lockfile
+
+      - name: Download supergraph.graphql Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: supergraph
+          path: frontend/relay-workflows-lib
+
+      - name: Compile Relay
+        run: yarn relay
+        working-directory: frontend/relay-workflows-lib
 
       - name: Lint TypeScript code
         run: yarn lint
