@@ -24,6 +24,8 @@ struct WorkflowTemplate {
     name: String,
     /// The group who maintains the workflow template
     maintainer: String,
+    /// A human readable description of the workflow which is created
+    description: Option<String>,
 }
 
 impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate>
@@ -41,6 +43,10 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
                 .labels
                 .remove("argocd.argoproj.io/instance")
                 .ok_or(WorkflowTemplateParsingError::MissingInstanceLabel)?,
+            description: value
+                .metadata
+                .annotations
+                .remove("workflows.diamond.ac.uk/description"),
         })
     }
 }
