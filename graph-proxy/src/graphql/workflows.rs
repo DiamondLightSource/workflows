@@ -1,3 +1,4 @@
+use super::CLIENT;
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
@@ -9,7 +10,6 @@ use async_graphql::{
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
-use lazy_static::lazy_static;
 use std::{collections::HashMap, ops::Deref, sync::Arc};
 use tracing::{debug, instrument};
 
@@ -99,10 +99,6 @@ impl WorkflowStatus {
             None => Err(WorkflowParsingError::UnrecognisedPhase),
         }
     }
-}
-
-lazy_static! {
-    static ref CLIENT: reqwest::Client = reqwest::Client::new();
 }
 
 /// No tasks within the workflow have been scheduled

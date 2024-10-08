@@ -11,6 +11,7 @@ use axum_extra::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
 };
+use lazy_static::lazy_static;
 
 /// The root schema of the service
 pub type RootSchema = Schema<Query, EmptyMutation, EmptySubscription>;
@@ -35,4 +36,8 @@ pub async fn graphql_handler(
         .execute(request.into_inner().data(auth_token))
         .await
         .into()
+}
+
+lazy_static! {
+    pub(self) static ref CLIENT: reqwest::Client = reqwest::Client::new();
 }
