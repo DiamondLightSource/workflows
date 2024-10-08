@@ -1,6 +1,10 @@
 use crate::ArgoServerUrl;
+use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
-use async_graphql::{Context, Object, SimpleObject};
+use async_graphql::{
+    connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
+    Context, Object, SimpleObject,
+};
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use std::ops::Deref;
 use tracing::{debug, instrument};
@@ -68,13 +72,28 @@ impl WorkflowTemplatesQuery {
     }
 
     #[instrument(skip(self, ctx))]
-    async fn workflow_templates(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<WorkflowTemplate>> {
+    async fn workflow_templates(
+        &self,
+        ctx: &Context<'_>,
+        cursor: Option<String>,
+        #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
+    ) -> anyhow::Result<Connection<OpaqueCursor<usize>, WorkflowTemplate, EmptyFields, EmptyFields>>
+    {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "cluster-workflow-templates"]);
+        let cursor_index = if let Some(cursor) = cursor {
+            let cursor_index = OpaqueCursor::<usize>::decode_cursor(&cursor)
+                .map_err(|err| anyhow!("Invalid Cursor: {err}"))?;
+            url.query_pairs_mut()
+                .append_pair("listOptions.continue", &cursor_index.0.to_string());
+            cursor_index.0
+        } else {
+            0
+        };
         debug!("Retrieving workflow templates from {url}");
         let client = reqwest::Client::new();
         let request = if let Some(auth_token) = auth_token {
@@ -82,7 +101,7 @@ impl WorkflowTemplatesQuery {
         } else {
             client.get(url)
         };
-        let workflow_templates =
+        let workflow_templates_response =
             request
                 .send()
                 .await?
@@ -91,10 +110,21 @@ impl WorkflowTemplatesQuery {
                 >>()
                 .await?
                 .into_result()?;
-        Ok(workflow_templates
+        let workflow_templates = workflow_templates_response
             .items
             .into_iter()
             .map(TryInto::try_into)
-            .collect::<Result<Vec<_>, _>>()?)
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut connection = Connection::new(
+            cursor_index > 0,
+            workflow_templates_response.metadata.continue_.is_some(),
+        );
+        connection.edges.extend(
+            workflow_templates
+                .into_iter()
+                .enumerate()
+                .map(|(idx, template)| Edge::new(OpaqueCursor(cursor_index + idx + 1), template)),
+        );
+        Ok(connection)
     }
 }
