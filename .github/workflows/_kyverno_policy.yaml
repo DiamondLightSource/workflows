@@ -45,7 +45,10 @@ jobs:
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
           helm template sessionspaces charts/sessionspaces | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
-          helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
+          # NOTE: workflows-posix-uid-label policy has been excluded from chainsaw testing
+          # To make testing work with this policy in place, it will be required to emulate the existence
+          # of a POSIX uid label as part of request.userInfo.extra
+          helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding") | select(.metadata.name != "workflows-posix-uid-label")' | tee -a /tmp/policies.yaml | kubectl apply -f -
           cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy")' | kubectl wait --for=condition=Ready --timeout=60s -f -
 
       - name: Wait for Kyverno
