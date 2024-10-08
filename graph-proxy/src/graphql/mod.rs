@@ -1,6 +1,9 @@
+/// GraphQL operations related to workflow templates
+mod workflow_templates;
 /// GraphQL operations related to workflows
 mod workflows;
 
+use self::{workflow_templates::WorkflowTemplatesQuery, workflows::WorkflowsQuery};
 use async_graphql::{EmptyMutation, EmptySubscription, MergedObject, Schema, SchemaBuilder};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::extract::State;
@@ -8,7 +11,6 @@ use axum_extra::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
 };
-use workflows::WorkflowsQuery;
 
 /// The root schema of the service
 pub type RootSchema = Schema<Query, EmptyMutation, EmptySubscription>;
@@ -20,7 +22,7 @@ pub fn root_schema_builder() -> SchemaBuilder<Query, EmptyMutation, EmptySubscri
 
 /// The root query of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Query(WorkflowsQuery);
+pub struct Query(WorkflowsQuery, WorkflowTemplatesQuery);
 
 /// Handles HTTP requests as GraphQL according to the provided [`Schema`]
 pub async fn graphql_handler(
