@@ -3,6 +3,13 @@ destination:
   server: ""
 
 groups:
+  - name: examples
+    enabled: true
+    apps:
+      - name: examples
+        repoURL: https://github.com/DiamondLightSource/workflows
+        path: examples
+        targetRevision: HEAD
   - name: imaging
     enabled: true
     permittedRepos: []
