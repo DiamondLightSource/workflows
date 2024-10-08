@@ -1,3 +1,4 @@
+use super::CLIENT;
 use crate::ArgoServerUrl;
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
@@ -53,11 +54,10 @@ impl WorkflowTemplatesQuery {
             .unwrap()
             .extend(["api", "v1", "cluster-workflow-templates", &name]);
         debug!("Retrieving workflow template from {url}");
-        let client = reqwest::Client::new();
         let request = if let Some(auth_token) = auth_token {
-            client.get(url).bearer_auth(auth_token.token())
+            CLIENT.get(url).bearer_auth(auth_token.token())
         } else {
-            client.get(url)
+            CLIENT.get(url)
         };
         let workflow_templates =
             request
@@ -95,11 +95,10 @@ impl WorkflowTemplatesQuery {
             0
         };
         debug!("Retrieving workflow templates from {url}");
-        let client = reqwest::Client::new();
         let request = if let Some(auth_token) = auth_token {
-            client.get(url).bearer_auth(auth_token.token())
+            CLIENT.get(url).bearer_auth(auth_token.token())
         } else {
-            client.get(url)
+            CLIENT.get(url)
         };
         let workflow_templates_response =
             request
