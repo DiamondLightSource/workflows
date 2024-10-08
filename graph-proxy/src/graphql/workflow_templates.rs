@@ -12,13 +12,18 @@ use tracing::{debug, instrument};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::missing_docs_in_private_items)]
-enum WorkflowTemplateParsingError {}
+enum WorkflowTemplateParsingError {
+    #[error(r#"metadata.labels."argocd.argoproj.io/instance" was expectd but was not present"#)]
+    MissingInstanceLabel,
+}
 
 /// A Template which specifies how to produce a [`Workflow`]
 #[derive(Debug, SimpleObject)]
 struct WorkflowTemplate {
     /// The name given to the workflow template, globally unique
     name: String,
+    /// The group who maintains the workflow template
+    maintainer: String,
 }
 
 impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate>
@@ -27,10 +32,15 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
     type Error = WorkflowTemplateParsingError;
 
     fn try_from(
-        value: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate,
+        mut value: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: value.metadata.name.unwrap(),
+            maintainer: value
+                .metadata
+                .labels
+                .remove("argocd.argoproj.io/instance")
+                .ok_or(WorkflowTemplateParsingError::MissingInstanceLabel)?,
         })
     }
 }
