@@ -15,10 +15,10 @@ clap = { version = "4.5.19", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref"] }
 dotenvy = { version = "0.15.7" }
 lazy_static = { version = "1.5.0" }
-opentelemetry = { version = "0.22.0" }
-opentelemetry-otlp = { version = "0.15.0", features = ["metrics"] }
-opentelemetry-semantic-conventions = "0.14.0"
-opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
+opentelemetry = { version = "0.26.0" }
+opentelemetry-otlp = { version = "0.26.0", features = ["metrics"] }
+opentelemetry-semantic-conventions = "0.26.0"
+opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio"] }
 reqwest = { version = "0.12.8", default-features = false, features = [
     "rustls-tls",
     "json",
@@ -26,7 +26,7 @@ reqwest = { version = "0.12.8", default-features = false, features = [
 thiserror = { version = "1.0.64" }
 tokio = { version = "1.40.0", features = ["macros", "net", "rt-multi-thread"] }
 tracing = { version = "0.1.40" }
-tracing-opentelemetry = { version = "0.23.0" }
+tracing-opentelemetry = { version = "0.26.0" }
 tracing-subscriber = { version = "0.3.18" }
 url = { version = "2.5.2" }
 
