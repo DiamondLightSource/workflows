@@ -8,6 +8,10 @@ metadata:
       Runs a numpy script in a python container.
       The script finds the normal of the dot product of two random matrices.
       Matrix sizes are specified by the input parameter "size".
+    workflows.diamond.ac.uk/parameter-schema.numpy-test.size: |
+      { "type": "integer", "default": 2000 }
+    workflows.diamond.ac.uk/parameter-schema.numpy-test.memory: |
+      { "type": "string", "pattern": "^[0-9]+[GMK]i$", "default": "20Gi" }
 spec:
   entrypoint: numpy-test
   templates:
