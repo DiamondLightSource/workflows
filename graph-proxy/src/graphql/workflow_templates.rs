@@ -9,7 +9,7 @@ use async_graphql::{
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use schemars::schema::{InstanceType, Metadata, SchemaObject, SingleOrVec, StringValidation};
 use serde_json::Value;
-use std::ops::Deref;
+use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 
 #[derive(Debug, thiserror::Error)]
@@ -17,6 +17,13 @@ use tracing::{debug, instrument};
 enum WorkflowTemplateParsingError {
     #[error(r#"metadata.labels."argocd.argoproj.io/instance" was expected but was not present"#)]
     MissingInstanceLabel,
+    #[error(r#"{0} was expected but was not present"#)]
+    MissingParameterSchemaAnnotation(String),
+    #[error(r#"{annotation}" could not be parsed: {err}"#)]
+    UnparsableParameterSchema {
+        annotation: String,
+        err: serde_json::Error,
+    },
 }
 
 /// A Template which specifies how to produce a [`Workflow`]
@@ -51,26 +58,59 @@ impl ArgumentSchema {
     fn add_parameter(
         &mut self,
         parameter: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Parameter,
+        annotations: &mut HashMap<String, String>,
         template: Option<String>,
-    ) {
+    ) -> Result<(), WorkflowTemplateParsingError> {
         let name = match template {
             Some(template_name) => format!("{}/{}", template_name, parameter.name),
             None => parameter.name,
         };
-        let schema = match parameter.enum_.as_slice() {
-            [] => Self::create_string_schema(parameter.value),
-            options => Self::create_enum_schema(options, parameter.value),
-        };
+        let schema = match Self::get_annotation_schema(name.clone(), annotations) {
+            Ok(schema) => Ok(schema),
+            Err(WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(_)) => {
+                match parameter.enum_.as_slice() {
+                    [] => Ok(Self::infer_string_schema(
+                        parameter.description,
+                        parameter.value,
+                    )),
+                    options => Ok(Self::infer_enum_schema(
+                        parameter.description,
+                        options,
+                        parameter.value,
+                    )),
+                }
+            }
+            Err(err) => Err(err),
+        }?;
         let validator = self.0.object();
         validator.properties.insert(name.clone(), schema.into());
         validator.required.insert(name);
+        Ok(())
     }
 
-    /// Adds a top level parameter of [`InstanceType::String`] to the schema, with an optional default value
-    fn create_string_schema(default: Option<String>) -> SchemaObject {
+    /// Retrieves an parses a schema from an annotation of the form "workflows.diamond.ac.uk/parameter-schema.{name}"
+    fn get_annotation_schema(
+        name: String,
+        annotations: &mut HashMap<String, String>,
+    ) -> Result<SchemaObject, WorkflowTemplateParsingError> {
+        let annotation = format!(
+            "workflows.diamond.ac.uk/parameter-schema.{}",
+            name.replace('/', ".")
+        );
+        let schema = annotations.remove(&annotation).ok_or(
+            WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(annotation.clone()),
+        )?;
+        serde_json::from_str::<SchemaObject>(&schema).map_err(|err| {
+            WorkflowTemplateParsingError::UnparsableParameterSchema { annotation, err }
+        })
+    }
+
+    /// Creates a Schema for a parameter of [`InstanceType::String`], with an optional default value
+    fn infer_string_schema(description: Option<String>, default: Option<String>) -> SchemaObject {
         SchemaObject {
             instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
             metadata: Some(Box::new(Metadata {
+                description,
                 default: default.map(Value::String),
                 ..Default::default()
             })),
@@ -79,11 +119,16 @@ impl ArgumentSchema {
         }
     }
 
-    /// Adds a top level parameter of [`InstanceType::String`] to the schema, with a set of predefined options and an optional default value
-    fn create_enum_schema(options: &[String], default: Option<String>) -> SchemaObject {
+    /// Creates a Schema for a parameter of [`InstanceType::String`], with a set of predefined options and an optional default value
+    fn infer_enum_schema(
+        description: Option<String>,
+        options: &[String],
+        default: Option<String>,
+    ) -> SchemaObject {
         SchemaObject {
             instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
             metadata: Some(Box::new(Metadata {
+                description,
                 default: default.map(Value::String),
                 ..Default::default()
             })),
@@ -91,14 +136,16 @@ impl ArgumentSchema {
             ..Default::default()
         }
     }
-}
 
-impl From<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec> for ArgumentSchema {
-    fn from(spec: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec) -> Self {
+    /// Create a [`ArgumentSchema`] from a Workflow Specification and associated annotations
+    fn new(
+        spec: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec,
+        annotations: &mut HashMap<String, String>,
+    ) -> Result<Self, WorkflowTemplateParsingError> {
         let mut arguments_schema = ArgumentSchema::default();
         if let Some(arguments) = spec.arguments {
             for parameter in arguments.parameters {
-                arguments_schema.add_parameter(parameter, None);
+                arguments_schema.add_parameter(parameter, annotations, None)?;
             }
         }
         if let Some(entrypoint) = &spec.entrypoint {
@@ -110,13 +157,16 @@ impl From<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec> for Ar
             }) {
                 if let Some(inputs) = template.inputs {
                     for parameter in inputs.parameters {
-                        arguments_schema
-                            .add_parameter(parameter, Some(template.name.clone().unwrap()));
+                        arguments_schema.add_parameter(
+                            parameter,
+                            annotations,
+                            Some(template.name.clone().unwrap()),
+                        )?;
                     }
                 }
             }
         }
-        arguments_schema
+        Ok(arguments_schema)
     }
 }
 
@@ -143,7 +193,10 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
                 .metadata
                 .annotations
                 .remove("workflows.argoproj.io/description"),
-            arguments_schema: ArgumentSchema::from(workflow_template.spec),
+            arguments_schema: ArgumentSchema::new(
+                workflow_template.spec,
+                &mut workflow_template.metadata.annotations,
+            )?,
         })
     }
 }
