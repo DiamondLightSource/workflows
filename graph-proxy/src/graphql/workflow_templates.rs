@@ -13,7 +13,7 @@ use tracing::{debug, instrument};
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::missing_docs_in_private_items)]
 enum WorkflowTemplateParsingError {
-    #[error(r#"metadata.labels."argocd.argoproj.io/instance" was expectd but was not present"#)]
+    #[error(r#"metadata.labels."argocd.argoproj.io/instance" was expected but was not present"#)]
     MissingInstanceLabel,
 }
 
