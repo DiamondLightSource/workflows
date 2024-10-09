@@ -3,7 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: numpy-benchmark
   annotations:
-    workflows.diamond.ac.uk/description: |
+    workflows.argoproj.io/description: |
       Runs a numpy script in a python container.
       The script finds the normal of the dot product of two random matrices.
       Matrix sizes are specified by the input parameter "size".
