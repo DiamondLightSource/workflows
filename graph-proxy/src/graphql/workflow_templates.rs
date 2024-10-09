@@ -7,6 +7,8 @@ use async_graphql::{
     Context, Object, SimpleObject,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
+use schemars::schema::{InstanceType, Metadata, SchemaObject, SingleOrVec, StringValidation};
+use serde_json::Value;
 use std::ops::Deref;
 use tracing::{debug, instrument};
 
@@ -28,6 +30,94 @@ struct WorkflowTemplate {
     title: Option<String>,
     /// A human readable description of the workflow which is created
     description: Option<String>,
+    #[graphql(flatten)]
+    #[allow(clippy::missing_docs_in_private_items)]
+    arguments_schema: ArgumentSchema,
+}
+
+#[derive(Debug, Default)]
+struct ArgumentSchema(SchemaObject);
+
+#[Object]
+impl ArgumentSchema {
+    /// A JSON Schema describing the arguments required by the template
+    async fn arguments(&self) -> serde_json::Result<String> {
+        serde_json::to_string(&self.0)
+    }
+}
+
+impl ArgumentSchema {
+    /// Adds a top level parameter to the schema
+    fn add_parameter(
+        &mut self,
+        parameter: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Parameter,
+        template: Option<String>,
+    ) {
+        let name = match template {
+            Some(template_name) => format!("{}/{}", template_name, parameter.name),
+            None => parameter.name,
+        };
+        let schema = match parameter.enum_.as_slice() {
+            [] => Self::create_string_schema(parameter.value),
+            options => Self::create_enum_schema(options, parameter.value),
+        };
+        let validator = self.0.object();
+        validator.properties.insert(name.clone(), schema.into());
+        validator.required.insert(name);
+    }
+
+    /// Adds a top level parameter of [`InstanceType::String`] to the schema, with an optional default value
+    fn create_string_schema(default: Option<String>) -> SchemaObject {
+        SchemaObject {
+            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
+            metadata: Some(Box::new(Metadata {
+                default: default.map(Value::String),
+                ..Default::default()
+            })),
+            string: Some(Box::new(StringValidation::default())),
+            ..Default::default()
+        }
+    }
+
+    /// Adds a top level parameter of [`InstanceType::String`] to the schema, with a set of predefined options and an optional default value
+    fn create_enum_schema(options: &[String], default: Option<String>) -> SchemaObject {
+        SchemaObject {
+            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
+            metadata: Some(Box::new(Metadata {
+                default: default.map(Value::String),
+                ..Default::default()
+            })),
+            enum_values: Some(options.iter().cloned().map(Value::String).collect()),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec> for ArgumentSchema {
+    fn from(spec: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec) -> Self {
+        let mut arguments_schema = ArgumentSchema::default();
+        if let Some(arguments) = spec.arguments {
+            for parameter in arguments.parameters {
+                arguments_schema.add_parameter(parameter, None);
+            }
+        }
+        if let Some(entrypoint) = &spec.entrypoint {
+            if let Some(template) = spec.templates.into_iter().find(|template| {
+                template
+                    .name
+                    .as_ref()
+                    .is_some_and(|name| name == entrypoint)
+            }) {
+                if let Some(inputs) = template.inputs {
+                    for parameter in inputs.parameters {
+                        arguments_schema
+                            .add_parameter(parameter, Some(template.name.clone().unwrap()));
+                    }
+                }
+            }
+        }
+        arguments_schema
+    }
 }
 
 impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate>
@@ -36,23 +126,24 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
     type Error = WorkflowTemplateParsingError;
 
     fn try_from(
-        mut value: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate,
+        mut workflow_template: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
-            name: value.metadata.name.unwrap(),
-            maintainer: value
+            name: workflow_template.metadata.name.unwrap(),
+            maintainer: workflow_template
                 .metadata
                 .labels
                 .remove("argocd.argoproj.io/instance")
                 .ok_or(WorkflowTemplateParsingError::MissingInstanceLabel)?,
-            title: value
+            title: workflow_template
                 .metadata
                 .annotations
                 .remove("workflows.argoproj.io/title"),
-            description: value
+            description: workflow_template
                 .metadata
                 .annotations
                 .remove("workflows.argoproj.io/description"),
+            arguments_schema: ArgumentSchema::from(workflow_template.spec),
         })
     }
 }
