@@ -46,7 +46,7 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
             description: value
                 .metadata
                 .annotations
-                .remove("workflows.diamond.ac.uk/description"),
+                .remove("workflows.argoproj.io/description"),
         })
     }
 }
