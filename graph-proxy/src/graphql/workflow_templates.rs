@@ -4,10 +4,11 @@ use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Object, SimpleObject,
+    scalar, Context, Object, SimpleObject,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use schemars::schema::{InstanceType, Metadata, SchemaObject, SingleOrVec, StringValidation};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
@@ -37,21 +38,15 @@ struct WorkflowTemplate {
     title: Option<String>,
     /// A human readable description of the workflow which is created
     description: Option<String>,
-    #[graphql(flatten)]
-    #[allow(clippy::missing_docs_in_private_items)]
-    arguments_schema: ArgumentSchema,
+    /// A JSON Schema describing the arguments of a Workflow Template
+    arguments: ArgumentSchema,
 }
 
-#[derive(Debug, Default)]
+/// A JSON Schema describing the arguments of a Workflow Template
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct ArgumentSchema(SchemaObject);
 
-#[Object]
-impl ArgumentSchema {
-    /// A JSON Schema describing the arguments required by the template
-    async fn arguments(&self) -> serde_json::Result<String> {
-        serde_json::to_string(&self.0)
-    }
-}
+scalar!(ArgumentSchema);
 
 impl ArgumentSchema {
     /// Adds a top level parameter to the schema
@@ -193,7 +188,7 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
                 .metadata
                 .annotations
                 .remove("workflows.argoproj.io/description"),
-            arguments_schema: ArgumentSchema::new(
+            arguments: ArgumentSchema::new(
                 workflow_template.spec,
                 &mut workflow_template.metadata.annotations,
             )?,
