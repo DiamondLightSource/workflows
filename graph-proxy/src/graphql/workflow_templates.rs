@@ -8,7 +8,7 @@ use async_graphql::{
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use schemars::schema::{InstanceType, Metadata, SchemaObject, SingleOrVec, StringValidation};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
@@ -25,6 +25,8 @@ enum WorkflowTemplateParsingError {
         name: String,
         err: serde_json::Error,
     },
+    #[error(r#"metadata.labels."workflows.diamond.ac.uk/ui-schema" could not be parsed: {0}"#)]
+    UnparsableUiSchema(serde_json::Error),
 }
 
 /// A Template which specifies how to produce a [`Workflow`]
@@ -40,6 +42,8 @@ struct WorkflowTemplate {
     description: Option<String>,
     /// A JSON Schema describing the arguments of a Workflow Template
     arguments: ArgumentSchema,
+    /// A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
+    ui_schema: Option<UiSchema>,
 }
 
 /// A JSON Schema describing the arguments of a Workflow Template
@@ -160,6 +164,61 @@ impl ArgumentSchema {
     }
 }
 
+/// A JSON Forms UI Schema
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type")]
+#[allow(clippy::missing_docs_in_private_items)]
+enum UiSchema {
+    Control {
+        scope: String,
+        label: String,
+    },
+    HorizontalLayout {
+        elements: Vec<UiSchema>,
+    },
+    VerticalLayout {
+        elements: Vec<UiSchema>,
+    },
+    Group {
+        label: String,
+        elements: Vec<UiSchema>,
+    },
+    Categorization {
+        elements: Vec<UiSchemaCategory>,
+    },
+}
+
+impl UiSchema {
+    /// Retrieves the UI Schema from the annotations on a [`WorkflowTemplate`], returns an error if parsing fails
+    fn new(
+        annotations: &mut HashMap<String, String>,
+    ) -> Result<Option<Self>, WorkflowTemplateParsingError> {
+        annotations
+            .remove("workflows.diamond.ac.uk/ui-schema")
+            .map(|annotation| serde_json::from_str(&annotation))
+            .transpose()
+            .map_err(WorkflowTemplateParsingError::UnparsableUiSchema)
+    }
+}
+
+scalar!(UiSchema);
+
+#[derive(Debug, Serialize, Deserialize)]
+#[allow(clippy::missing_docs_in_private_items)]
+struct UiSchemaCategory {
+    #[serde(serialize_with = "UiSchemaCategory::r#type")]
+    r#type: (),
+    label: String,
+    elements: Vec<UiSchema>,
+}
+
+impl UiSchemaCategory {
+    #[allow(clippy::missing_docs_in_private_items)]
+    fn r#type<S: Serializer>(_: &(), s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str("category")
+    }
+}
+
 impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate>
     for WorkflowTemplate
 {
@@ -187,6 +246,7 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
                 workflow_template.spec,
                 &mut workflow_template.metadata.annotations,
             )?,
+            ui_schema: UiSchema::new(&mut workflow_template.metadata.annotations)?,
         })
     }
 }
