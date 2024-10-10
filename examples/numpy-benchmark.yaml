@@ -19,6 +19,22 @@ metadata:
         "pattern": "^[0-9]+[GMK]i$",
         "default": "20Gi"
       }
+    workflows.diamond.ac.uk/ui-schema: |
+      {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "scope": "#/properties/numpy-benchmark.memory",
+            "label": "Memory"
+          },
+          {
+            "type": "Control",
+            "scope": "#/properties/numpy-benchmark.size",
+            "label": "Matrix Size"
+          }
+        ]
+      }
 spec:
   entrypoint: numpy-test
   templates:
