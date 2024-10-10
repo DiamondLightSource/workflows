@@ -1,0 +1,74 @@
+name: Generate Supergraph Schema
+
+on:
+  workflow_call:
+    secrets:
+      GRAPH_FEDERATOR:
+        required: true
+
+jobs:
+  compose_supergraph:
+    runs-on: ubuntu-latest
+    env:
+      ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.1.7
+
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.0
+
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2.7.3
+
+      - name: Generate Schema
+        run: >
+          cargo run
+          schema
+          --path workflows.graphql
+        working-directory: graph-proxy
+
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: 1010045
+          private-key: ${{ secrets.GRAPH_FEDERATOR }}
+          repositories: graph-federation
+
+      - name: Checkout Graph Federation source
+        uses: actions/checkout@v4.1.7
+        with:
+          repository: DiamondLightSource/graph-federation
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Add Subgraph workflows to Supergraph config
+        run: >
+          yq -i
+          '
+          .subgraphs.workflows={
+            "routing_url":"https://workflows.diamond.ac.uk/graphql",
+            "schema":{
+              "file":"schema/workflows.graphql"
+            }
+          }
+          '
+          supergraph-config.yaml
+
+      - name: Install Rover CLI
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/latest | sh
+          echo "$HOME/.rover/bin" >> $GITHUB_PATH
+
+      - name: Compose Supergraph Schema
+        run: >
+          rover supergraph compose
+          --config supergraph-config.yaml
+          --elv2-license=accept
+          > supergraph.graphql
+
+      - name: Upload Supergraph Artifact
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: supergraph
+          path: ./supergraph.graphql
