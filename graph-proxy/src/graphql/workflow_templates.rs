@@ -20,9 +20,9 @@ enum WorkflowTemplateParsingError {
     MissingInstanceLabel,
     #[error(r#"{0} was expected but was not present"#)]
     MissingParameterSchemaAnnotation(String),
-    #[error(r#"{annotation}" could not be parsed: {err}"#)]
+    #[error(r#"{name}" could not be parsed: {err}"#)]
     UnparsableParameterSchema {
-        annotation: String,
+        name: String,
         err: serde_json::Error,
     },
 }
@@ -57,7 +57,7 @@ impl ArgumentSchema {
         template: Option<String>,
     ) -> Result<(), WorkflowTemplateParsingError> {
         let name = match template {
-            Some(template_name) => format!("{}/{}", template_name, parameter.name),
+            Some(template_name) => format!("{}.{}", template_name, parameter.name),
             None => parameter.name,
         };
         let schema = match Self::get_annotation_schema(name.clone(), annotations) {
@@ -88,16 +88,11 @@ impl ArgumentSchema {
         name: String,
         annotations: &mut HashMap<String, String>,
     ) -> Result<SchemaObject, WorkflowTemplateParsingError> {
-        let annotation = format!(
-            "workflows.diamond.ac.uk/parameter-schema.{}",
-            name.replace('/', ".")
-        );
-        let schema = annotations.remove(&annotation).ok_or(
-            WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(annotation.clone()),
-        )?;
-        serde_json::from_str::<SchemaObject>(&schema).map_err(|err| {
-            WorkflowTemplateParsingError::UnparsableParameterSchema { annotation, err }
-        })
+        let schema = annotations
+            .remove(&name)
+            .ok_or(WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(name.clone()))?;
+        serde_json::from_str::<SchemaObject>(&schema)
+            .map_err(|err| WorkflowTemplateParsingError::UnparsableParameterSchema { name, err })
     }
 
     /// Creates a Schema for a parameter of [`InstanceType::String`], with an optional default value
