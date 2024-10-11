@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    scalar, Context, Object, SimpleObject,
+    Context, Json, Object, SimpleObject,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use schemars::schema::{InstanceType, Metadata, SchemaObject, SingleOrVec, StringValidation};
@@ -41,16 +41,14 @@ struct WorkflowTemplate {
     /// A human readable description of the workflow which is created
     description: Option<String>,
     /// A JSON Schema describing the arguments of a Workflow Template
-    arguments: ArgumentSchema,
+    arguments: Json<ArgumentSchema>,
     /// A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
-    ui_schema: Option<UiSchema>,
+    ui_schema: Option<Json<UiSchema>>,
 }
 
 /// A JSON Schema describing the arguments of a Workflow Template
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct ArgumentSchema(SchemaObject);
-
-scalar!(ArgumentSchema);
 
 impl ArgumentSchema {
     /// Adds a top level parameter to the schema
@@ -205,8 +203,6 @@ impl UiSchema {
     }
 }
 
-scalar!(UiSchema);
-
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(clippy::missing_docs_in_private_items)]
 struct UiSchemaCategory {
@@ -246,11 +242,11 @@ impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTe
                 .metadata
                 .annotations
                 .remove("workflows.argoproj.io/description"),
-            arguments: ArgumentSchema::new(
+            arguments: Json(ArgumentSchema::new(
                 workflow_template.spec,
                 &mut workflow_template.metadata.annotations,
-            )?,
-            ui_schema: UiSchema::new(&mut workflow_template.metadata.annotations)?,
+            )?),
+            ui_schema: UiSchema::new(&mut workflow_template.metadata.annotations)?.map(Json),
         })
     }
 }
