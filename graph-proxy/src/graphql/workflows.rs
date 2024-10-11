@@ -36,7 +36,7 @@ struct Workflow {
     #[graphql(flatten)]
     metadata: Arc<Metadata>,
     /// The time at which the workflow began running
-    status: WorkflowStatus,
+    status: Option<WorkflowStatus>,
 }
 
 #[derive(Debug, SimpleObject)]
@@ -78,17 +78,23 @@ impl WorkflowStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
         metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
+    ) -> Result<Option<Self>, WorkflowParsingError> {
         match value.phase.as_deref() {
-            Some("Pending") => Ok(Self::Pending(WorkflowPendingStatus::from(value))),
-            Some("Running") => Ok(Self::Running(WorkflowRunningStatus::new(value, metadata)?)),
-            Some("Succeeded") => Ok(Self::Succeeded(WorkflowSucceededStatus::new(
+            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus::from(value)))),
+            Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus::new(
                 value, metadata,
-            )?)),
-            Some("Failed") => Ok(Self::Failed(WorkflowFailedStatus::new(value, metadata)?)),
-            Some("Error") => Ok(Self::Errored(WorkflowErroredStatus::new(value, metadata)?)),
+            )?))),
+            Some("Succeeded") => Ok(Some(Self::Succeeded(WorkflowSucceededStatus::new(
+                value, metadata,
+            )?))),
+            Some("Failed") => Ok(Some(Self::Failed(WorkflowFailedStatus::new(
+                value, metadata,
+            )?))),
+            Some("Error") => Ok(Some(Self::Errored(WorkflowErroredStatus::new(
+                value, metadata,
+            )?))),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
-            None => Err(WorkflowParsingError::UnrecognisedPhase),
+            None => Ok(None),
         }
     }
 }
