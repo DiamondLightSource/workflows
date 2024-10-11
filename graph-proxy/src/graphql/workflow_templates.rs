@@ -139,6 +139,8 @@ impl ArgumentSchema {
         annotations: &mut HashMap<String, String>,
     ) -> Result<Self, WorkflowTemplateParsingError> {
         let mut arguments_schema = ArgumentSchema::default();
+        arguments_schema.0.instance_type =
+            Some(SingleOrVec::Single(Box::new(InstanceType::Object)));
         if let Some(arguments) = spec.arguments {
             for parameter in arguments.parameters {
                 arguments_schema.add_parameter(parameter, annotations, None)?;
