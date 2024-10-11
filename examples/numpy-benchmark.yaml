@@ -25,12 +25,12 @@ metadata:
         "elements": [
           {
             "type": "Control",
-            "scope": "#/properties/numpy-benchmark.memory",
+            "scope": "#/properties/numpy-test.memory",
             "label": "Memory"
           },
           {
             "type": "Control",
-            "scope": "#/properties/numpy-benchmark.size",
+            "scope": "#/properties/numpy-test.size",
             "label": "Matrix Size"
           }
         ]
