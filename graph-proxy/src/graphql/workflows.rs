@@ -16,7 +16,7 @@ use tracing::{debug, instrument};
 /// An error encountered when parsing the Argo Server API Workflow response
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::missing_docs_in_private_items)]
-enum WorkflowParsingError {
+pub(super) enum WorkflowParsingError {
     #[error("status.phase was not a recognised value")]
     UnrecognisedPhase,
     #[error("status.start_time was expected but was not present")]
@@ -31,7 +31,7 @@ enum WorkflowParsingError {
 
 /// A Workflow consisting of one or more [`Task`]s
 #[derive(Debug, SimpleObject)]
-struct Workflow {
+pub(super) struct Workflow {
     /// Metadata containing name, proposal code, proposal number and visit of a workflow
     #[graphql(flatten)]
     metadata: Arc<Metadata>,
@@ -49,7 +49,7 @@ struct Metadata {
 
 #[allow(clippy::missing_docs_in_private_items)]
 impl Workflow {
-    fn new(
+    pub(super) fn new(
         value: IoArgoprojWorkflowV1alpha1Workflow,
         visit: Visit,
     ) -> Result<Self, WorkflowParsingError> {
