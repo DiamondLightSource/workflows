@@ -1,4 +1,4 @@
-use super::CLIENT;
+use super::{workflows::Workflow, VisitInput, CLIENT};
 use crate::ArgoServerUrl;
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
@@ -335,4 +335,81 @@ impl WorkflowTemplatesQuery {
         );
         Ok(connection)
     }
+}
+
+/// Mutations related to [`WorkflowTemplate`]s
+#[derive(Debug, Clone, Default)]
+pub struct WorkflowTemplatesMutation;
+
+#[Object]
+impl WorkflowTemplatesMutation {
+    #[instrument(skip(self, ctx))]
+    async fn submit_workflow_template(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: VisitInput,
+        parameters: Json<HashMap<String, Value>>,
+    ) -> anyhow::Result<Workflow> {
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let mut url = server_url.clone();
+        let namespace = visit.to_string();
+        url.path_segments_mut()
+            .unwrap()
+            .extend(["api", "v1", "workflows", &namespace, "submit"]);
+        debug!("Submitting workflow template at {url}");
+        let request = if let Some(auth_token) = auth_token {
+            CLIENT.post(url).bearer_auth(auth_token.token())
+        } else {
+            CLIENT.post(url)
+        }
+        .json(
+            &argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSubmitRequest {
+                namespace: Some(namespace),
+                resource_kind: Some("ClusterWorkflowTemplate".to_string()),
+                resource_name: Some(name),
+                submit_options: Some(
+                    argo_workflows_openapi::IoArgoprojWorkflowV1alpha1SubmitOpts {
+                        annotations: None,
+                        dry_run: None,
+                        entry_point: None,
+                        generate_name: None,
+                        labels: None,
+                        name: None,
+                        owner_reference: None,
+                        parameters: parameters
+                            .0
+                            .into_iter()
+                            .filter_map(|(name, value)| to_argo_parameter(name, value).transpose())
+                            .collect::<Result<Vec<_>, _>>()?,
+                        pod_priority_class_name: None,
+                        priority: None,
+                        server_dry_run: None,
+                        service_account: None,
+                    },
+                ),
+            },
+        );
+        let workflow = request
+            .send()
+            .await?
+            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+            .await?
+            .into_result()?;
+        Ok(Workflow::new(workflow, visit.into())?)
+    }
+}
+
+/// Convert a paramter into the format expected by the Argo Workflows API
+fn to_argo_parameter(name: String, value: Value) -> Result<Option<String>, serde_json::Error> {
+    Ok(match value {
+        Value::Null => Ok(None),
+        Value::Bool(bool) => Ok(Some(bool.to_string())),
+        Value::Number(number) => Ok(Some(number.to_string())),
+        Value::String(string) => Ok(Some(string)),
+        Value::Array(vec) => serde_json::to_string(&vec).map(Some),
+        Value::Object(map) => serde_json::to_string(&map).map(Some),
+    }?
+    .map(|parameter| format!("{name}={parameter}")))
 }
