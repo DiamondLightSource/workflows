@@ -20,9 +20,9 @@ enum WorkflowTemplateParsingError {
     MissingInstanceLabel,
     #[error(r#"{0} was expected but was not present"#)]
     MissingParameterSchemaAnnotation(String),
-    #[error(r#"{name}" could not be parsed: {err}"#)]
+    #[error(r#"{annotation}" could not be parsed: {err}"#)]
     UnparsableParameterSchema {
-        name: String,
+        annotation: String,
         err: serde_json::Error,
     },
     #[error(r#"metadata.labels."workflows.diamond.ac.uk/ui-schema" could not be parsed: {0}"#)]
@@ -92,11 +92,13 @@ impl ArgumentSchema {
         name: String,
         annotations: &mut HashMap<String, String>,
     ) -> Result<SchemaObject, WorkflowTemplateParsingError> {
-        let schema = annotations
-            .remove(&name)
-            .ok_or(WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(name.clone()))?;
-        serde_json::from_str::<SchemaObject>(&schema)
-            .map_err(|err| WorkflowTemplateParsingError::UnparsableParameterSchema { name, err })
+        let annotation = format!("workflows.diamond.ac.uk/parameter-schema.{name}");
+        let schema = annotations.remove(&annotation).ok_or(
+            WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(annotation.clone()),
+        )?;
+        serde_json::from_str::<SchemaObject>(&schema).map_err(|err| {
+            WorkflowTemplateParsingError::UnparsableParameterSchema { annotation, err }
+        })
     }
 
     /// Creates a Schema for a parameter of [`InstanceType::String`], with an optional default value
