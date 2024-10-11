@@ -56,13 +56,8 @@ impl ArgumentSchema {
         &mut self,
         parameter: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Parameter,
         annotations: &mut HashMap<String, String>,
-        template: Option<String>,
     ) -> Result<(), WorkflowTemplateParsingError> {
-        let name = match template {
-            Some(template_name) => format!("{}.{}", template_name, parameter.name),
-            None => parameter.name,
-        };
-        let schema = match Self::get_annotation_schema(name.clone(), annotations) {
+        let schema = match Self::get_annotation_schema(parameter.name.clone(), annotations) {
             Ok(schema) => Ok(schema),
             Err(WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(_)) => {
                 match parameter.enum_.as_slice() {
@@ -80,8 +75,10 @@ impl ArgumentSchema {
             Err(err) => Err(err),
         }?;
         let validator = self.0.object();
-        validator.properties.insert(name.clone(), schema.into());
-        validator.required.insert(name);
+        validator
+            .properties
+            .insert(parameter.name.clone(), schema.into());
+        validator.required.insert(parameter.name);
         Ok(())
     }
 
@@ -141,7 +138,7 @@ impl ArgumentSchema {
             Some(SingleOrVec::Single(Box::new(InstanceType::Object)));
         if let Some(arguments) = spec.arguments {
             for parameter in arguments.parameters {
-                arguments_schema.add_parameter(parameter, annotations, None)?;
+                arguments_schema.add_parameter(parameter, annotations)?;
             }
         }
         if let Some(entrypoint) = &spec.entrypoint {
@@ -153,11 +150,7 @@ impl ArgumentSchema {
             }) {
                 if let Some(inputs) = template.inputs {
                     for parameter in inputs.parameters {
-                        arguments_schema.add_parameter(
-                            parameter,
-                            annotations,
-                            Some(template.name.clone().unwrap()),
-                        )?;
+                        arguments_schema.add_parameter(parameter, annotations)?;
                     }
                 }
             }
