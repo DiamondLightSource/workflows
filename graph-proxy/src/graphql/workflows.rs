@@ -1,4 +1,4 @@
-use super::CLIENT;
+use super::{Visit, VisitInput, CLIENT};
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
@@ -43,26 +43,18 @@ struct Workflow {
 struct Metadata {
     /// The name given to the workflow, unique within a given visit
     name: String,
-    /// Project Proposal Code
-    proposal_code: String,
-    /// Project Proposal Number
-    proposal_number: u32,
-    /// Session visit Number
-    visit: u32,
+    /// The visit the Workflow was run against
+    visit: Visit,
 }
 
 #[allow(clippy::missing_docs_in_private_items)]
 impl Workflow {
     fn new(
         value: IoArgoprojWorkflowV1alpha1Workflow,
-        proposal_code: String,
-        proposal_number: u32,
-        visit: u32,
+        visit: Visit,
     ) -> Result<Self, WorkflowParsingError> {
         let metadata = Arc::new(Metadata {
             name: value.metadata.name.clone().unwrap(),
-            proposal_code,
-            proposal_number,
             visit,
         });
         let status = WorkflowStatus::new(value.status.clone().unwrap(), metadata.clone())?;
@@ -329,15 +321,11 @@ impl Tasks {
                 let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
                 let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
                 let mut url = server_url.clone();
-                let namespace = format!(
-                    "{}{}-{}",
-                    metadata.proposal_code, metadata.proposal_number, metadata.visit
-                );
                 url.path_segments_mut().unwrap().extend([
                     "api",
                     "v1",
                     "workflows",
-                    &namespace,
+                    &metadata.visit.to_string(),
                     &metadata.name,
                 ]);
                 let request = if let Some(auth_token) = auth_token {
@@ -411,18 +399,19 @@ impl WorkflowsQuery {
     async fn workflow(
         &self,
         ctx: &Context<'_>,
-        proposal_code: String,
-        proposal_number: u32,
-        visit: u32,
+        visit: VisitInput,
         name: String,
     ) -> anyhow::Result<Workflow> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
-        let namespace = format!("{}{}-{}", proposal_code, proposal_number, visit);
         let mut url = server_url.clone();
-        url.path_segments_mut()
-            .unwrap()
-            .extend(["api", "v1", "workflows", &namespace, &name]);
+        url.path_segments_mut().unwrap().extend([
+            "api",
+            "v1",
+            "workflows",
+            &visit.to_string(),
+            &name,
+        ]);
         debug!("Retrieving workflow from {url}");
         let request = if let Some(auth_token) = auth_token {
             CLIENT.get(url).bearer_auth(auth_token.token())
@@ -435,31 +424,23 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(
-            workflow,
-            proposal_code,
-            proposal_number,
-            visit,
-        )?)
+        Ok(Workflow::new(workflow, visit.into())?)
     }
 
     #[instrument(skip(self, ctx))]
     async fn workflows(
         &self,
         ctx: &Context<'_>,
-        proposal_code: String,
-        proposal_number: u32,
-        visit: u32,
+        visit: VisitInput,
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
-        let namespace = format!("{}{}-{}", proposal_code, proposal_number, visit);
         let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
-            .extend(["api", "v1", "workflows", &namespace]);
+            .extend(["api", "v1", "workflows", &visit.to_string()]);
         let limit = limit.unwrap_or(10);
         url.query_pairs_mut()
             .append_pair("listOptions.limit", &limit.to_string());
@@ -487,7 +468,7 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| Workflow::new(workflow, proposal_code.clone(), proposal_number, visit))
+            .map(|workflow| Workflow::new(workflow, visit.clone().into()))
             .collect::<Result<Vec<_>, _>>()?;
         let mut connection =
             Connection::new(false, workflows_response.metadata.continue_.is_some());
