@@ -17,6 +17,9 @@ jobs:
 
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.3
+        with:
+          workspaces: graph-proxy
+          shared-key: graph-proxy
 
       - name: Generate Schema
         working-directory: graph-proxy

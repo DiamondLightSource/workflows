@@ -13,38 +13,34 @@ jobs:
         uses: actions/checkout@v4.2.0
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1.0.7
-        with:
-          toolchain: stable
-          default: true
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.0
 
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.3
+        with:
+          workspaces: graph-proxy
+          shared-key: graph-proxy
 
       - name: Create argo workflows openapi types file
         run: |
           printf "\n" > graph-proxy/argo-workflows-openapi/src/types.rs
 
       - name: Check Formatting
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: fmt
-          args: >
-            --manifest-path graph-proxy/Cargo.toml
-            --all
-            --check
+        working-directory: graph-proxy
+        run: >
+          cargo fmt
+          --all
+          --check
 
       - name: Lint with Clippy
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: clippy
-          args: >
-            --manifest-path graph-proxy/Cargo.toml
-            --all-targets
-            --all-features
-            --no-deps
-            --
-            --deny warnings
+        working-directory: graph-proxy
+        run: >
+          cargo clippy
+          --all-targets
+          --all-features
+          --no-deps
+          --
+          --deny warnings
 
   test:
     runs-on: ubuntu-latest
@@ -55,19 +51,17 @@ jobs:
         uses: actions/checkout@v4.2.0
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1.0.7
-        with:
-          toolchain: stable
-          default: true
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.0
 
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.3
-
-      - name: Test
-        uses: actions-rs/cargo@v1.0.3
         with:
-          command: test
-          args: >
-            --manifest-path graph-proxy/Cargo.toml
-            --all-targets
-            --all-features
+          workspaces: graph-proxy
+          shared-key: graph-proxy
+
+      - name: Run Tests
+        working-directory: graph-proxy
+        run: >
+          cargo test
+          --all-targets
+          --all-features
