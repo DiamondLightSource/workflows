@@ -19,13 +19,13 @@ jobs:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.10.0
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.5
         with:
           workspaces: sessionspaces
           shared-key: sessionspaces
@@ -62,13 +62,13 @@ jobs:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.10.0
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.5
         with:
           workspaces: sessionspaces
           shared-key: sessionspaces
