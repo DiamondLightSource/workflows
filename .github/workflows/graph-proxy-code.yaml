@@ -13,7 +13,7 @@ jobs:
       ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1.0.7
@@ -22,7 +22,7 @@ jobs:
           default: true
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.5
 
       - name: Create argo workflows openapi types file
         run: |
@@ -57,7 +57,7 @@ jobs:
       ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1.0.7
@@ -66,7 +66,7 @@ jobs:
           default: true
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.5
 
       - name: Test
         uses: actions-rs/cargo@v1.0.3

@@ -22,7 +22,7 @@ jobs:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1.0.7
@@ -31,7 +31,7 @@ jobs:
           default: true
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.5
 
       - name: Check Formatting
         uses: actions-rs/cargo@v1.0.3
@@ -71,7 +71,7 @@ jobs:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1.0.7
@@ -80,7 +80,7 @@ jobs:
           default: true
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.5
 
       - name: Test
         uses: actions-rs/cargo@v1.0.3
