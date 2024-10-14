@@ -1,13 +1,10 @@
 name: Github Pages
 
 on:
-  push:
-  pull_request:
+  workflow_call:
 
 jobs:
   lint_docs:
-    # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
@@ -29,8 +26,6 @@ jobs:
           **/*.{md,markdown}
 
   build_docs:
-    # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
@@ -56,12 +51,7 @@ jobs:
           path: site
 
   build_storybook:
-    # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4.2.0
@@ -72,6 +62,7 @@ jobs:
           node-version: "22.x"
 
       - name: Install Dependencies
+        working-directory: frontend
         run: yarn install --frozen-lockfile
 
       - name: Build Storybook

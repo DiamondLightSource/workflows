@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  helm_lint:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_helm_lint.yaml
+
+  kyverno_policy:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_kyverno_policy.yaml
+
+  sessionspaces_code:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_sessionspaces_code.yaml
+
+  sessionspaces_container:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: sessionspaces_code
+    uses: ./.github/workflows/_sessionspaces_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
+  graph_proxy_code:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_graph_proxy_code.yaml
+
+  graph_proxy_schema:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: graph_proxy_code
+    uses: ./.github/workflows/_graph_proxy_schema.yaml
+
+  graph_proxy_container:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: graph_proxy_code
+    uses: ./.github/workflows/_sessionspaces_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
+  supergraph_composition:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: graph_proxy_schema
+    uses: ./.github/workflows/_supergraph_composition.yaml
+
+  supergraph_update:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: supergraph_composition
+    uses: ./.github/workflows/_supergraph_update.yaml
+    secrets:
+      GRAPH_FEDERATOR: ${{ secrets.GRAPH_FEDERATOR }}
+    
+  frontend_code:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: supergraph_composition
+    uses: ./.github/workflows/_frontend_code.yaml
+
+  github_pages:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_github_pages.yaml
+    permissions:
+      pages: write
+      id-token: write

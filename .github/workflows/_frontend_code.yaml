@@ -1,0 +1,53 @@
+name: Frontend Code
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.2.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: "22.x"
+
+      - name: Install Dependencies
+        working-directory: frontend
+        run: yarn --frozen-lockfile
+
+      - name: Download Supergraph Schema Artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: supergraph
+          path: frontend/relay-workflows-lib
+
+      - name: Compile Relay
+        working-directory: frontend/relay-workflows-lib
+        run: yarn relay
+
+      - name: Lint TypeScript Code
+        working-directory: frontend
+        run: yarn lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.2.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: "22.x"
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: yarn --frozen-lockfile
+
+      - name: Test
+        working-directory: frontend
+        run: yarn test --verbose
