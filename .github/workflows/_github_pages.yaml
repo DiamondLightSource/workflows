@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Setup Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 18
 
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           lfs: true
 
@@ -45,7 +45,7 @@ jobs:
         run: mkdocs build
 
       - name: Upload Docs Artifact
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: docs
           path: site
@@ -54,10 +54,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Setup Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: "22.x"
 
@@ -70,7 +70,7 @@ jobs:
         run: yarn build-storybook --output-dir storybook-static
 
       - name: Upload Storybook Artifact
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: storybook
           path: frontend/workflows-lib/storybook-static
@@ -108,7 +108,7 @@ jobs:
         run: chmod -R +rX docs storybook
 
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4.4.0
+        uses: actions/upload-artifact/merge@v4.4.3
         with:
           separate-directories: true 
 
