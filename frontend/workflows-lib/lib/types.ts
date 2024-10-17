@@ -30,3 +30,9 @@ export interface Workflow {
   name: string;
   status: WorkflowStatus;
 }
+
+export interface Visit {
+  proposalCode: string;
+  proposalNumber: number;
+  visitNumber: number;
+}
