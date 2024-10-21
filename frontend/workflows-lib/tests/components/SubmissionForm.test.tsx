@@ -51,7 +51,7 @@ describe("SubmissionForm Component", () => {
     expect(getByText("Numpy Benchmark")).toBeInTheDocument();
   });
 
-  it("should render the title", () => {
+  it("should render the description", () => {
     const { getByText } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
@@ -99,7 +99,7 @@ describe("SubmissionForm Component", () => {
   });
 
   it("should produce visit and parameters on submit", () => {
-    const callback = jest.fn();
+    const callback = vi.fn();
     const { getByTestId } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
@@ -126,9 +126,11 @@ describe("SubmissionForm Component", () => {
 });
 
 describe("SubmissionForm Layout", () => {
-  beforeEach(() => jest.spyOn(jsonforms, "JsonForms"));
+  beforeEach(() => {
+    vi.spyOn(jsonforms, "JsonForms");
+  });
 
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => vi.clearAllMocks());
 
   it("should render parameter with default ui schema", () => {
     render(
