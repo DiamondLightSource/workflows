@@ -20,9 +20,9 @@ interface TemplateSubmissionFormProps {
   title: String;
   description?: String;
   parametersSchema: JsonSchema;
-  parametersUISchema: UISchemaElement;
+  parametersUISchema?: UISchemaElement;
   visit?: Visit;
-  onSubmit: (visit: Visit, parameters: object) => void;
+  onSubmit?: (visit: Visit, parameters: object) => void;
 }
 
 const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
@@ -38,19 +38,20 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   const theme = useTheme();
   const validator = createAjv({ useDefaults: true });
   const [parameters, setParameters] = useState({});
-  const [errors, setErrors] = useState<ErrorObject[]>();
+  const [errors, setErrors] = useState<ErrorObject[]>([]);
   const [visitText, setVisitText] = useState(
     visit
       ? `${visit.proposalCode}${visit.proposalNumber}-${visit.visitNumber}`
       : ""
   );
 
-  const ready = errors?.length === 0 && visitRegex.exec(visitText) !== null;
+  const ready = errors.length === 0 && visitRegex.exec(visitText) !== null;
+  console.log(errors);
 
   const onClickSubmit = () => {
     const parsedVisit = visitRegex.exec(visitText);
     if (parsedVisit === null) return;
-    onSubmit(
+    onSubmit?.(
       {
         proposalCode: parsedVisit[1],
         proposalNumber: Number(parsedVisit[2]),
@@ -78,8 +79,9 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
         ajv={validator}
         onChange={({ data, errors }) => {
           setParameters(data);
-          setErrors(errors);
+          setErrors(errors ? errors : []);
         }}
+        data-testid="paramters-form"
       />
       <Divider />
       <Stack
@@ -94,8 +96,15 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
           onChange={(event: ChangeEvent<HTMLInputElement>) =>
             setVisitText(event.target.value)
           }
+          data-testid="visit-field"
         />
-        <Button variant="contained" disabled={!ready} onClick={onClickSubmit}>
+        <Button
+          variant="contained"
+          disabled={!ready}
+          onClick={onClickSubmit}
+          data-testid="submit-button"
+        >
+          {" "}
           Submit
         </Button>
       </Stack>
