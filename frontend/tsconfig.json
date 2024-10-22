@@ -1,6 +1,7 @@
 {
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "esModuleInterop": true
-  }
+  "files": [],
+  "references": [
+    { "path": "./workflows-lib" },
+    { "path": "./relay-workflows-lib" }
+  ]
 }
