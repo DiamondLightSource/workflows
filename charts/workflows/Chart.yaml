@@ -3,7 +3,7 @@ name: workflows
 description: Data Analysis workflow orchestration
 type: application
 
-version: 0.10.1
+version: 0.10.2
 
 dependencies:
   - name: argo-workflows
