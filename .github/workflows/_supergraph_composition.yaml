@@ -12,6 +12,12 @@ jobs:
         with:
           repository: DiamondLightSource/graph-federation
 
+      - name: Download Subgraph schema
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: graph-proxy
+          path: schema/
+
       - name: Add Subgraph workflows to Supergraph config
         run: >
           yq -i
