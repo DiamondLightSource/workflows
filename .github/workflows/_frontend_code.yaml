@@ -29,6 +29,10 @@ jobs:
         working-directory: frontend/relay-workflows-lib
         run: yarn relay
 
+      - name: Build Typescript
+        working-directory: frontend/
+        run: yarn tsc
+
       - name: Lint TypeScript Code
         working-directory: frontend
         run: yarn lint
