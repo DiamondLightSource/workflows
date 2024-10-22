@@ -32,4 +32,4 @@ jobs:
         uses: actions/upload-artifact@v4.4.3
         with:
           name: graph-proxy
-          path: workflows.graphql
+          path: graph-proxy/workflows.graphql
