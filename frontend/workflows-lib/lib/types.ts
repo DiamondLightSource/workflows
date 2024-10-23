@@ -19,6 +19,7 @@ export interface TaskNode extends Task {
 }
 
 export type WorkflowStatus =
+  | "Unknown"
   | "Pending"
   | "Running"
   | "Succeeded"
