@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "rm -rf dist",
-    "build": "tsc -b && vite build",
+    "build": "tsc --build && vite build",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
@@ -19,9 +19,14 @@
     "@dagrejs/dagre": "^1.1.4",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@jsonforms/core": "^3.4.0",
+    "@jsonforms/material-renderers": "^3.4.0",
+    "@jsonforms/react": "^3.4.0",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.16.7",
+    "@mui/x-date-pickers": "^7.20.0",
     "@xyflow/react": "^12.1.1",
+    "ajv": "^8.17.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -34,7 +39,6 @@
     "@storybook/react": "^8.2.9",
     "@storybook/react-vite": "^8.2.9",
     "@storybook/test": "^8.2.9",
-    "@testing-library/jest-dom": "^6.4.8",
     "@types/react-resizable": "^3.0.8",
     "react-resizable": "^3.0.5",
     "storybook": "^8.2.9"

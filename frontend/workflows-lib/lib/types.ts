@@ -19,6 +19,7 @@ export interface TaskNode extends Task {
 }
 
 export type WorkflowStatus =
+  | "Unknown"
   | "Pending"
   | "Running"
   | "Succeeded"
@@ -28,4 +29,10 @@ export type WorkflowStatus =
 export interface Workflow {
   name: string;
   status: WorkflowStatus;
+}
+
+export interface Visit {
+  proposalCode: string;
+  proposalNumber: number;
+  visitNumber: number;
 }

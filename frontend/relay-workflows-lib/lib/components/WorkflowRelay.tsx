@@ -24,7 +24,9 @@ const WorkflowRelay = (props: {
     WorkflowFailedStatus: "Failed",
     WorkflowErroredStatus: "Errored",
   };
-  const statusText = statusTextMap[data.status.__typename];
+  const statusText = data.status
+    ? statusTextMap[data.status.__typename]
+    : "Unknown";
   return (
     <WorkflowAccordion
       workflow={{

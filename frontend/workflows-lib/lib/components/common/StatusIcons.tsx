@@ -5,6 +5,7 @@ import ErrorTwoToneIcon from "@mui/icons-material/ErrorTwoTone";
 import ReportProblemTwoToneIcon from "@mui/icons-material/ReportProblemTwoTone";
 import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
 import SkipNextTwoToneIcon from "@mui/icons-material/SkipNextTwoTone";
+import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import { Tooltip } from "@mui/material";
 import { TaskStatus, WorkflowStatus } from "../../types";
 
@@ -55,6 +56,11 @@ export function getWorkflowStatusIcon(
   size: number = 25
 ) {
   const workflowStatusIconMap: { [key in WorkflowStatus]: JSX.Element } = {
+    Unknown: (
+      <Tooltip title="Unknown">
+        <QuestionMarkIcon color="warning" sx={{ fontSize: size }} />
+      </Tooltip>
+    ),
     Pending: (
       <Tooltip title="Pending">
         <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
