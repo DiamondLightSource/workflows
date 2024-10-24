@@ -15,6 +15,7 @@ groups:
     apps:
       - name: imaging-ptypy
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        targetRevision: ptypy-api-schema
         path: ptypy
         sourceType: helm
       - name: imaging-httomo
