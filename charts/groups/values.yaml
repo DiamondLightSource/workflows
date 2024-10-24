@@ -9,28 +9,29 @@ groups:
       - name: examples
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples
-        targetRevision: HEAD
   - name: imaging
     enabled: true
     permittedRepos: []
     apps:
-      - name: imaging
+      - name: imaging-ptypy
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
-        path: .
-        targetRevision: HEAD
+        path: ptypy
+        sourceType: helm
+      - name: imaging-httomo
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: httomo
+      - name: imaging-e02
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: e02
   - name: mx
     enabled: true
     permittedRepos: []
     apps:
       - name: mx
         repoURL: https://github.com/DiamondLightSource/mx-workflows
-        path: .
-        targetRevision: HEAD
   - name: magnetic-materials
     enabled: true
     permittedRepos: []
     apps:
       - name: magnetic-materials
         repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
-        path: .
-        targetRevision: HEAD

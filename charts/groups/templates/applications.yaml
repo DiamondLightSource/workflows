@@ -2,6 +2,7 @@
 {{- if .enabled }}
 {{ $group := . }}
 {{- range .apps }}
+{{ $sourcetype := default "directory" .sourceType }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -14,10 +15,12 @@ spec:
   project: {{ $group.name }}
   source:
     repoURL: {{ .repoURL }}
-    path: {{ .path }}
-    targetRevision: {{ .targetRevision }}
+    path: {{ default "." .path }}
+    targetRevision: {{ default "HEAD" .targetRevision }}
+    {{- if eq $sourcetype "directory"  }} 
     directory:
       recurse: true
+    {{- end }}
   syncPolicy:
     automated:
       prune: true
