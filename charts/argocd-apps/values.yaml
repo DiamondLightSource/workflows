@@ -9,7 +9,7 @@ events:
 
 groups:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: refactor-groups-params
   extraValuesFiles: []
   valuesObject: {}
 
