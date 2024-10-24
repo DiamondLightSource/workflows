@@ -1,13 +1,15 @@
 import { render, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { WorkflowAccordion } from "../../lib/main";
 import { TaskStatus, WorkflowStatus } from "../../lib/types";
-import "@testing-library/jest-dom";
-
-jest.mock("../../lib/components/common/StatusIcons", () => ({
-  getWorkflowStatusIcon: jest.fn(() => <div>Mocked WorkflowStatusIcon</div>),
-}));
 
 describe("WorkflowAccordion Component", () => {
+  beforeAll(() => {
+    vi.mock("../../lib/components/common/StatusIcons", () => ({
+      getWorkflowStatusIcon: vi.fn(() => <div>Mocked WorkflowStatusIcon</div>),
+    }));
+  });
+
   const mockWorkflow = {
     name: "Test Workflow",
     status: "Running" as WorkflowStatus,

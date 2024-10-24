@@ -1,12 +1,8 @@
 import { render } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import TasksTable from "../../lib/components/workflow/TasksFlow";
 import { getTaskStatusIcon } from "../../lib/components/common/StatusIcons";
-import "@testing-library/jest-dom";
 import { TaskStatus } from "../../lib/types";
-
-jest.mock("../../lib/components/common/StatusIcons", () => ({
-  getTaskStatusIcon: jest.fn(),
-}));
 
 describe("TaskTable Component", () => {
   const mockTasks = [
@@ -21,14 +17,21 @@ describe("TaskTable Component", () => {
   ];
 
   beforeEach(() => {
-    (getTaskStatusIcon as jest.Mock)
-      .mockReturnValueOnce(<span>Pending Icon</span>)
-      .mockReturnValueOnce(<span>Completed Icon</span>)
-      .mockReturnValueOnce(<span>In-Progress Icon</span>);
+    vi.mock(
+      "../../lib/components/common/StatusIcons",
+      async (importOriginal) => ({
+        ...(await importOriginal()),
+        getTaskStatusIcon: vi
+          .fn()
+          .mockReturnValueOnce(<span>Pending Icon</span>)
+          .mockReturnValueOnce(<span>Completed Icon</span>)
+          .mockReturnValueOnce(<span>In-Progress Icon</span>),
+      })
+    );
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("should render without crashing", () => {

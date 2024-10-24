@@ -54,4 +54,4 @@ jobs:
 
       - name: Test
         working-directory: frontend
-        run: yarn test --verbose
+        run: yarn test
