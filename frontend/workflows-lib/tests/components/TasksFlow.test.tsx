@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import TasksFlow from "../../lib/components/workflow/TasksFlow";
 import {
   applyDagreLayout,
@@ -6,25 +7,20 @@ import {
   generateNodesAndEdges,
 } from "../../lib/components/workflow/TasksFlowUtils";
 import { ReactFlow } from "@xyflow/react";
-import "@testing-library/jest-dom";
 import { TaskStatus } from "../../lib/types";
 
-jest.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
-  applyDagreLayout: jest.fn(),
-  buildTaskTree: jest.fn(),
-  generateNodesAndEdges: jest.fn(),
-}));
-
-jest.mock("@xyflow/react", () => ({
-  ReactFlow: jest.fn(() => <div>ReactFlow Mock</div>),
-}));
-
-jest.mock("../../lib/components/workflow/TasksFlowNode", () =>
-  jest.fn(() => <div>CustomNode Mock</div>)
-);
-
 describe("TasksFlow Component", () => {
-  const mockTasks = [
+  beforeEach(() => {
+    vi.mock(
+      "../../lib/components/workflow/TasksFlowNode",
+      async (importOriginal) => ({
+        ...(await importOriginal()),
+        TaskFlowNode: vi.fn().mockReturnValue(<div>CustomNode Mock</div>),
+      })
+    );
+  });
+
+  const mockTasks = vi.hoisted(() => [
     { id: "task-1", name: "task-1", status: "Pending" as TaskStatus },
     {
       id: "task-2",
@@ -33,28 +29,41 @@ describe("TasksFlow Component", () => {
       depends: ["task-1"],
     },
     { id: "task-3", name: "task-3", status: "Running" as TaskStatus },
-  ];
+  ]);
 
-  const mockTaskTree = {};
-  const mockNodes = [{}];
-  const mockEdges = [{}];
-  const mockLayoutedNodes = [{}];
-  const mockLayoutedEdges = [{}];
+  const mockTaskTree = vi.hoisted(() => ({}));
+  const mockNodes = vi.hoisted(() => [{}]);
+  const mockEdges = vi.hoisted(() => [{}]);
+  const mockLayoutedNodes = vi.hoisted(() => [{}]);
+  const mockLayoutedEdges = vi.hoisted(() => [{}]);
 
   beforeEach(() => {
-    (buildTaskTree as jest.Mock).mockReturnValue(mockTaskTree);
-    (generateNodesAndEdges as jest.Mock).mockReturnValue({
-      nodes: mockNodes,
-      edges: mockEdges,
-    });
-    (applyDagreLayout as jest.Mock).mockReturnValue({
-      nodes: mockLayoutedNodes,
-      edges: mockLayoutedEdges,
-    });
+    vi.mock(
+      "../../lib/components/workflow/TasksFlowUtils",
+      async (importOriginal) => ({
+        ...(await importOriginal()),
+        buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
+        generateNodesAndEdges: vi.fn().mockReturnValue({
+          nodes: mockNodes,
+          edges: mockEdges,
+        }),
+        applyDagreLayout: vi.fn().mockReturnValue({
+          nodes: mockLayoutedNodes,
+          edges: mockLayoutedEdges,
+        }),
+      })
+    );
+  });
+
+  beforeEach(() => {
+    vi.mock("@xyflow/react", async (importOriginal) => ({
+      ...(await importOriginal()),
+      ReactFlow: vi.fn().mockReturnValue(<div>ReactFlow Mock</div>),
+    }));
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("should render without crashing", () => {

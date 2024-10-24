@@ -1,18 +1,18 @@
 import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import TasksDynamic from "../../lib/components/workflow/TasksDynamic";
 import { ReactFlowInstance } from "@xyflow/react";
 import { Node, Edge } from "@xyflow/react";
 import { Task, TaskStatus } from "../../lib/types";
-import "@testing-library/jest-dom";
 
-jest.mock("@xyflow/react", () => ({
+vi.mock("@xyflow/react", () => ({
   ReactFlow: ({
     onInit,
   }: {
     onInit: (instance: ReactFlowInstance) => void;
   }) => {
     const mockInstance = {
-      fitView: jest.fn(),
+      fitView: vi.fn(),
     } as unknown as ReactFlowInstance;
     onInit(mockInstance);
     return <div data-testid="reactflow-mock" />;
@@ -20,12 +20,12 @@ jest.mock("@xyflow/react", () => ({
   getNodesBounds: () => ({ width: 100, height: 100 }),
 }));
 
-jest.mock("../../lib/components/workflow/TasksTable", () => ({
+vi.mock("../../lib/components/workflow/TasksTable", () => ({
   __esModule: true,
   default: () => <div data-testid="taskstable-mock" />,
 }));
 
-jest.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
+vi.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
   applyDagreLayout: (nodes: Node, edges: Edge) => ({ nodes, edges }),
   buildTaskTree: (tasks: Task[]) => tasks,
   generateNodesAndEdges: () => ({}),
@@ -44,7 +44,7 @@ describe("TasksDynamic", () => {
   ];
 
   it("should render Graph when there is no overflow", () => {
-    jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
       width: 200,
       height: 200,
       x: 0,
@@ -64,7 +64,7 @@ describe("TasksDynamic", () => {
   });
 
   it("should render TasksTable when there is overflow", () => {
-    jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
       width: 50,
       height: 50,
       x: 0,
@@ -84,7 +84,7 @@ describe("TasksDynamic", () => {
   });
 
   it("should clean up event listeners on unmount", () => {
-    const removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
+    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
 
     const { unmount } = render(<TasksDynamic tasks={mockTasks} />);
     unmount();
