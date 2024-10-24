@@ -8,9 +8,10 @@ import SkipNextTwoToneIcon from "@mui/icons-material/SkipNextTwoTone";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import { Tooltip } from "@mui/material";
 import { TaskStatus, WorkflowStatus } from "../../types";
+import React from "react";
 
 export function getTaskStatusIcon(status: TaskStatus, size: number = 25) {
-  const TaskStatusIconMap: { [key in TaskStatus]: JSX.Element } = {
+  const TaskStatusIconMap: { [key in TaskStatus]: React.JSX.Element } = {
     PENDING: (
       <Tooltip title="Pending">
         <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
@@ -55,38 +56,39 @@ export function getWorkflowStatusIcon(
   status: WorkflowStatus,
   size: number = 25
 ) {
-  const workflowStatusIconMap: { [key in WorkflowStatus]: JSX.Element } = {
-    Unknown: (
-      <Tooltip title="Unknown">
-        <QuestionMarkIcon color="warning" sx={{ fontSize: size }} />
-      </Tooltip>
-    ),
-    Pending: (
-      <Tooltip title="Pending">
-        <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
-      </Tooltip>
-    ),
-    Running: (
-      <Tooltip title="Running">
-        <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
-      </Tooltip>
-    ),
-    Succeeded: (
-      <Tooltip title="Succeeded">
-        <TaskAltTwoToneIcon color="success" sx={{ fontSize: size }} />
-      </Tooltip>
-    ),
-    Failed: (
-      <Tooltip title="Failed">
-        <CancelTwoToneIcon color="error" sx={{ fontSize: size }} />
-      </Tooltip>
-    ),
-    Errored: (
-      <Tooltip title="Errored">
-        <ReportProblemTwoToneIcon color="error" sx={{ fontSize: size }} />
-      </Tooltip>
-    ),
-  };
+  const workflowStatusIconMap: { [key in WorkflowStatus]: React.JSX.Element } =
+    {
+      Unknown: (
+        <Tooltip title="Unknown">
+          <QuestionMarkIcon color="warning" sx={{ fontSize: size }} />
+        </Tooltip>
+      ),
+      Pending: (
+        <Tooltip title="Pending">
+          <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
+        </Tooltip>
+      ),
+      Running: (
+        <Tooltip title="Running">
+          <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
+        </Tooltip>
+      ),
+      Succeeded: (
+        <Tooltip title="Succeeded">
+          <TaskAltTwoToneIcon color="success" sx={{ fontSize: size }} />
+        </Tooltip>
+      ),
+      Failed: (
+        <Tooltip title="Failed">
+          <CancelTwoToneIcon color="error" sx={{ fontSize: size }} />
+        </Tooltip>
+      ),
+      Errored: (
+        <Tooltip title="Errored">
+          <ReportProblemTwoToneIcon color="error" sx={{ fontSize: size }} />
+        </Tooltip>
+      ),
+    };
 
   return workflowStatusIconMap[status];
 }
