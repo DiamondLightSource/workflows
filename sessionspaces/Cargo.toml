@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.90" }
+anyhow = { version = "1.0.91" }
 clap = { version = "4.5.20", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
