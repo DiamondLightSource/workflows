@@ -166,7 +166,7 @@ impl ArgumentSchema {
 enum UiSchema {
     Control {
         scope: String,
-        label: String,
+        label: Option<String>,
     },
     HorizontalLayout {
         elements: Vec<UiSchema>,
