@@ -8,7 +8,7 @@ ldapUrl: ldap://ldapmaster.diamond.ac.uk
 requestRate: 1
 
 image:
-  repository: ghcr.io/diamondlightsource/workflows
+  repository: ghcr.io/diamondlightsource/workflows-sessionspaces
   pullPolicy: Always
   tag: ""
 
