@@ -12,6 +12,8 @@ use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{response::Html, routing::get, Router};
 use clap::Parser;
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
+use regex::Regex;
+use reqwest::Method;
 use std::{
     fs::File,
     io::Write,
@@ -20,7 +22,8 @@ use std::{
 };
 use telemetry::setup_telemetry;
 use tokio::net::TcpListener;
-use tracing::Level;
+use tower_http::cors::{AllowOrigin, CorsLayer};
+use tracing::{info, Level};
 use url::Url;
 
 /// A proxy providing Argo Workflows data
@@ -57,6 +60,9 @@ struct ServeArgs {
     /// The minimum telemetry level
     #[arg(short, long, env="TELEMETRY_LEVEL", default_value_t=Level::INFO)]
     telemetry_level: Level,
+    /// Regexes of Cross Origin Resource Sharing (CORS) Origins to allow
+    #[arg(long, env="CORS_ALLOW", value_delimiter=' ', num_args=1..)]
+    cors_allow: Option<Vec<Regex>>,
 }
 
 /// Arguments for producing the GraphQL schema
@@ -87,7 +93,7 @@ async fn main() {
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
                 .finish();
-            let router = setup_router(schema, &args.prefix_path);
+            let router = setup_router(schema, &args.prefix_path, args.cors_allow).unwrap();
             serve(router, args.host, args.port).await.unwrap();
         }
         Cli::Schema(args) => {
@@ -104,14 +110,35 @@ async fn main() {
 }
 
 /// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
-fn setup_router(schema: RootSchema, prefix_path: &str) -> Router {
-    #[allow(clippy::missing_docs_in_private_items)]
-    Router::new().route(
-        prefix_path,
-        get(Html(GraphiQLSource::build().endpoint(prefix_path).finish()))
-            .post(graphql_handler)
-            .with_state(schema),
-    )
+fn setup_router(
+    schema: RootSchema,
+    prefix_path: &str,
+    cors_allow: Option<Vec<Regex>>,
+) -> anyhow::Result<Router> {
+    let cors_origin = if let Some(cors_allow) = cors_allow {
+        info!("Allowing CORS Origin(s) matching: {:?}", cors_allow);
+        AllowOrigin::predicate(move |origin, _| {
+            origin.to_str().is_ok_and(|origin| {
+                cors_allow
+                    .iter()
+                    .any(|cors_allow| cors_allow.is_match(origin))
+            })
+        })
+    } else {
+        AllowOrigin::default()
+    };
+    Ok(Router::new()
+        .route(
+            prefix_path,
+            get(Html(GraphiQLSource::build().endpoint(prefix_path).finish()))
+                .post(graphql_handler)
+                .with_state(schema),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_methods([Method::GET, Method::POST])
+                .allow_origin(cors_origin),
+        ))
 }
 
 /// Serves the endpoints on the specified host and port forever
