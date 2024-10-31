@@ -55,15 +55,17 @@ jobs:
           git config user.email "${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
 
       - name: Create commit
+        id: commit
         run: |
           git checkout -b workflows-${{ github.ref_name }}
           git add supergraph-config.yaml schema/workflows.graphql
           if ! git diff --staged --quiet --exit-code supergraph-config.yaml schema/workflows.graphql; then
             git commit -m "Update workflows schema to ${{ github.ref_name }}"
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Create PR
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && steps.commit.outputs.changed == 'true'
         run: |
           git push origin workflows-${{ github.ref_name }}
           gh auth login --with-token <<< ${{ steps.app-token.outputs.token }}
