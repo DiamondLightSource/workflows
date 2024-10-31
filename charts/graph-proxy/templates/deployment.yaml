@@ -50,6 +50,10 @@ spec:
             - name: TRACING_ENDPOINT
               value: {{ . }}
             {{- end }}
+            {{- with .Values.cors.matchOrigins }}
+            - name: CORS_ALLOW
+              value: {{ . | join " " }}
+            {{- end }}
           ports:
             - name: graphql
               containerPort: 80

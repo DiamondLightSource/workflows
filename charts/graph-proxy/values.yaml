@@ -29,6 +29,11 @@ telemetry:
   metricsEndpoint: ""
   tracingEndpoint: ""
 
+cors:
+  matchOrigins:
+    - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?
+    - ^https?:\/\/localhost(:\d+)?\/?
+
 service:
   create: true
   annotations: []
