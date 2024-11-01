@@ -13,7 +13,18 @@ image:
   tag: ""
 
 deployment:
-  create: true
+  annotations: []
+  podAnnotations: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
 
 policy:
   runAsUser: 36055

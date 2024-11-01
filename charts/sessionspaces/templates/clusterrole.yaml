@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "sessionspaces.serviceAccountName" . }}
+  name: {{ include "common.names.fullname" $ }}
 rules:
 - apiGroups: [""]
   resources: ["namespaces"]
