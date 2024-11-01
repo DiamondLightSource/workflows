@@ -43,7 +43,7 @@ impl WorkflowTemplate {
     /// The group who maintains the workflow template
     async fn maintainer(&self) -> Result<&String, WorkflowTemplateParsingError> {
         self.metadata
-            .annotations
+            .labels
             .get("argocd.argoproj.io/instance")
             .ok_or(WorkflowTemplateParsingError::MissingInstanceLabel)
     }
