@@ -27,6 +27,7 @@ jobs:
           helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
           helm repo update
           helm dep build charts/workflows
+          helm dep build charts/sessionspaces
 
       - name: Install Kyvenro
         run: |
