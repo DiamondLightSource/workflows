@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Json, Object, SimpleObject,
+    Context, Json, Object,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use schemars::schema::{InstanceType, Metadata, SchemaObject, SingleOrVec, StringValidation};
@@ -30,20 +30,48 @@ enum WorkflowTemplateParsingError {
 }
 
 /// A Template which specifies how to produce a [`Workflow`]
-#[derive(Debug, SimpleObject)]
-struct WorkflowTemplate {
+#[derive(Debug, derive_more::Deref, derive_more::From)]
+struct WorkflowTemplate(argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate);
+
+#[Object]
+impl WorkflowTemplate {
     /// The name given to the workflow template, globally unique
-    name: String,
+    async fn name(&self) -> &String {
+        self.metadata.name.as_ref().unwrap()
+    }
+
     /// The group who maintains the workflow template
-    maintainer: String,
+    async fn maintainer(&self) -> Result<&String, WorkflowTemplateParsingError> {
+        self.metadata
+            .annotations
+            .get("argocd.argoproj.io/instance")
+            .ok_or(WorkflowTemplateParsingError::MissingInstanceLabel)
+    }
+
     /// A human readable title for the workflow template
-    title: Option<String>,
+    async fn title(&self) -> Option<&String> {
+        self.metadata.annotations.get("workflows.argoproj.io/title")
+    }
+
     /// A human readable description of the workflow which is created
-    description: Option<String>,
+    async fn description(&self) -> Option<&String> {
+        self.metadata
+            .annotations
+            .get("workflows.argoproj.io/description")
+    }
+
     /// A JSON Schema describing the arguments of a Workflow Template
-    arguments: Json<ArgumentSchema>,
+    async fn arguments(&self) -> Result<Json<ArgumentSchema>, WorkflowTemplateParsingError> {
+        Ok(Json(ArgumentSchema::new(
+            &self.spec,
+            &self.metadata.annotations,
+        )?))
+    }
+
     /// A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
-    ui_schema: Option<Json<UiSchema>>,
+    async fn ui_schema(&self) -> Result<Option<Json<UiSchema>>, WorkflowTemplateParsingError> {
+        Ok(UiSchema::new(&self.metadata.annotations)?.map(Json))
+    }
 }
 
 /// A JSON Schema describing the arguments of a Workflow Template
@@ -54,21 +82,21 @@ impl ArgumentSchema {
     /// Adds a top level parameter to the schema
     fn add_parameter(
         &mut self,
-        parameter: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Parameter,
-        annotations: &mut HashMap<String, String>,
+        parameter: &argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Parameter,
+        annotations: &HashMap<String, String>,
     ) -> Result<(), WorkflowTemplateParsingError> {
         let schema = match Self::get_annotation_schema(parameter.name.clone(), annotations) {
             Ok(schema) => Ok(schema),
             Err(WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(_)) => {
                 match parameter.enum_.as_slice() {
                     [] => Ok(Self::infer_string_schema(
-                        parameter.description,
-                        parameter.value,
+                        parameter.description.as_ref(),
+                        parameter.value.as_ref(),
                     )),
                     options => Ok(Self::infer_enum_schema(
-                        parameter.description,
+                        parameter.description.as_ref(),
                         options,
-                        parameter.value,
+                        parameter.value.as_ref(),
                     )),
                 }
             }
@@ -78,31 +106,31 @@ impl ArgumentSchema {
         validator
             .properties
             .insert(parameter.name.clone(), schema.into());
-        validator.required.insert(parameter.name);
+        validator.required.insert(parameter.name.clone());
         Ok(())
     }
 
     /// Retrieves an parses a schema from an annotation of the form "workflows.diamond.ac.uk/parameter-schema.{name}"
     fn get_annotation_schema(
         name: String,
-        annotations: &mut HashMap<String, String>,
+        annotations: &HashMap<String, String>,
     ) -> Result<SchemaObject, WorkflowTemplateParsingError> {
         let annotation = format!("workflows.diamond.ac.uk/parameter-schema.{name}");
-        let schema = annotations.remove(&annotation).ok_or(
+        let schema = annotations.get(&annotation).ok_or(
             WorkflowTemplateParsingError::MissingParameterSchemaAnnotation(annotation.clone()),
         )?;
-        serde_json::from_str::<SchemaObject>(&schema).map_err(|err| {
+        serde_json::from_str::<SchemaObject>(schema).map_err(|err| {
             WorkflowTemplateParsingError::UnparsableParameterSchema { annotation, err }
         })
     }
 
     /// Creates a Schema for a parameter of [`InstanceType::String`], with an optional default value
-    fn infer_string_schema(description: Option<String>, default: Option<String>) -> SchemaObject {
+    fn infer_string_schema(description: Option<&String>, default: Option<&String>) -> SchemaObject {
         SchemaObject {
             instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
             metadata: Some(Box::new(Metadata {
-                description,
-                default: default.map(Value::String),
+                description: description.cloned(),
+                default: default.cloned().map(Value::String),
                 ..Default::default()
             })),
             string: Some(Box::new(StringValidation::default())),
@@ -112,15 +140,15 @@ impl ArgumentSchema {
 
     /// Creates a Schema for a parameter of [`InstanceType::String`], with a set of predefined options and an optional default value
     fn infer_enum_schema(
-        description: Option<String>,
+        description: Option<&String>,
         options: &[String],
-        default: Option<String>,
+        default: Option<&String>,
     ) -> SchemaObject {
         SchemaObject {
             instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
             metadata: Some(Box::new(Metadata {
-                description,
-                default: default.map(Value::String),
+                description: description.cloned(),
+                default: default.cloned().map(Value::String),
                 ..Default::default()
             })),
             enum_values: Some(options.iter().cloned().map(Value::String).collect()),
@@ -130,26 +158,26 @@ impl ArgumentSchema {
 
     /// Create a [`ArgumentSchema`] from a Workflow Specification and associated annotations
     fn new(
-        spec: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec,
-        annotations: &mut HashMap<String, String>,
+        spec: &argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowSpec,
+        annotations: &HashMap<String, String>,
     ) -> Result<Self, WorkflowTemplateParsingError> {
         let mut arguments_schema = ArgumentSchema::default();
         arguments_schema.0.instance_type =
             Some(SingleOrVec::Single(Box::new(InstanceType::Object)));
-        if let Some(arguments) = spec.arguments {
-            for parameter in arguments.parameters {
-                arguments_schema.add_parameter(parameter, annotations)?;
+        if let Some(arguments) = &spec.arguments {
+            for parameter in arguments.parameters.clone() {
+                arguments_schema.add_parameter(&parameter, annotations)?;
             }
         }
         if let Some(entrypoint) = &spec.entrypoint {
-            if let Some(template) = spec.templates.into_iter().find(|template| {
+            if let Some(template) = spec.templates.iter().find(|template| {
                 template
                     .name
                     .as_ref()
                     .is_some_and(|name| name == entrypoint)
             }) {
-                if let Some(inputs) = template.inputs {
-                    for parameter in inputs.parameters {
+                if let Some(inputs) = &template.inputs {
+                    for parameter in &inputs.parameters {
                         arguments_schema.add_parameter(parameter, annotations)?;
                     }
                 }
@@ -186,11 +214,11 @@ enum UiSchema {
 impl UiSchema {
     /// Retrieves the UI Schema from the annotations on a [`WorkflowTemplate`], returns an error if parsing fails
     fn new(
-        annotations: &mut HashMap<String, String>,
+        annotations: &HashMap<String, String>,
     ) -> Result<Option<Self>, WorkflowTemplateParsingError> {
         annotations
-            .remove("workflows.diamond.ac.uk/ui-schema")
-            .map(|annotation| serde_json::from_str(&annotation))
+            .get("workflows.diamond.ac.uk/ui-schema")
+            .map(|annotation| serde_json::from_str(annotation))
             .transpose()
             .map_err(WorkflowTemplateParsingError::UnparsableUiSchema)
     }
@@ -209,38 +237,6 @@ impl UiSchemaCategory {
     #[allow(clippy::missing_docs_in_private_items)]
     fn r#type<S: Serializer>(_: &(), s: S) -> Result<S::Ok, S::Error> {
         s.serialize_str("category")
-    }
-}
-
-impl TryFrom<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate>
-    for WorkflowTemplate
-{
-    type Error = WorkflowTemplateParsingError;
-
-    fn try_from(
-        mut workflow_template: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: workflow_template.metadata.name.unwrap(),
-            maintainer: workflow_template
-                .metadata
-                .labels
-                .remove("argocd.argoproj.io/instance")
-                .ok_or(WorkflowTemplateParsingError::MissingInstanceLabel)?,
-            title: workflow_template
-                .metadata
-                .annotations
-                .remove("workflows.argoproj.io/title"),
-            description: workflow_template
-                .metadata
-                .annotations
-                .remove("workflows.argoproj.io/description"),
-            arguments: Json(ArgumentSchema::new(
-                workflow_template.spec,
-                &mut workflow_template.metadata.annotations,
-            )?),
-            ui_schema: UiSchema::new(&mut workflow_template.metadata.annotations)?.map(Json),
-        })
     }
 }
 
@@ -277,7 +273,7 @@ impl WorkflowTemplatesQuery {
                 >>()
                 .await?
                 .into_result()?;
-        Ok(workflow_templates.try_into()?)
+        Ok(workflow_templates.into())
     }
 
     #[instrument(skip(self, ctx))]
