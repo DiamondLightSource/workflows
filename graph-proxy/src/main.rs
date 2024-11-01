@@ -137,6 +137,7 @@ fn setup_router(
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET, Method::POST])
+                .allow_headers(tower_http::cors::Any)
                 .allow_origin(cors_origin),
         ))
 }
