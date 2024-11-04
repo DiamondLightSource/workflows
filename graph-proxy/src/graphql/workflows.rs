@@ -398,16 +398,15 @@ impl WorkflowsQuery {
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
-        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
-        let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &visit.to_string()]);
         let limit = limit.unwrap_or(10);
         url.query_pairs_mut()
             .append_pair("listOptions.limit", &limit.to_string());
-        let current_index = if let Some(cursor) = cursor {
+        let cursor_index = if let Some(cursor) = cursor {
             let cursor_value = OpaqueCursor::<usize>::decode_cursor(&cursor)
                 .map_err(|_| anyhow::Error::msg("Cursor not valid"))?;
             url.query_pairs_mut()
@@ -433,12 +432,14 @@ impl WorkflowsQuery {
             .into_iter()
             .map(|workflow| Workflow::new(workflow, visit.clone().into()))
             .collect::<Result<Vec<_>, _>>()?;
-        let mut connection =
-            Connection::new(false, workflows_response.metadata.continue_.is_some());
+        let mut connection = Connection::new(
+            cursor_index > 0,
+            workflows_response.metadata.continue_.is_some(),
+        );
         connection
             .edges
             .extend(workflows.into_iter().enumerate().map(|(idx, workflow)| {
-                let cursor = OpaqueCursor(current_index + idx + 1);
+                let cursor = OpaqueCursor(cursor_index + idx + 1);
                 Edge::new(cursor, workflow)
             }));
         Ok(connection)
