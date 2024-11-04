@@ -84,15 +84,15 @@ impl WorkflowStatus {
             Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus::new(
                 value, metadata,
             )?))),
-            Some("Succeeded") => Ok(Some(Self::Succeeded(WorkflowSucceededStatus::new(
-                value, metadata,
-            )?))),
-            Some("Failed") => Ok(Some(Self::Failed(WorkflowFailedStatus::new(
-                value, metadata,
-            )?))),
-            Some("Error") => Ok(Some(Self::Errored(WorkflowErroredStatus::new(
-                value, metadata,
-            )?))),
+            Some("Succeeded") => Ok(Some(Self::Succeeded(
+                WorkflowCompleteStatus::new(value, metadata)?.into(),
+            ))),
+            Some("Failed") => Ok(Some(Self::Failed(
+                WorkflowCompleteStatus::new(value, metadata)?.into(),
+            ))),
+            Some("Error") => Ok(Some(Self::Errored(
+                WorkflowCompleteStatus::new(value, metadata)?.into(),
+            ))),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
             None => Ok(None),
         }
@@ -142,76 +142,33 @@ impl WorkflowRunningStatus {
     }
 }
 
-/// All tasks in the workflow have succeeded
-#[derive(Debug, SimpleObject)]
+/// All tasks in the workflow have succeded
+#[derive(Debug, SimpleObject, derive_more::From)]
 struct WorkflowSucceededStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// Tasks created by the workflow
     #[graphql(flatten)]
-    tasks: Tasks,
+    #[allow(clippy::missing_docs_in_private_items)]
+    status: WorkflowCompleteStatus,
 }
 
-impl WorkflowSucceededStatus {
-    /// Creates a new `WorkflowSucceededStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
-    fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
-                .finished_at
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
-        })
-    }
-}
-
-/// A task in the workflow has completed with a non-zero exit code
-#[derive(Debug, SimpleObject)]
-// #[graphql(complex)]
+/// All tasks in the workflow have failed
+#[derive(Debug, SimpleObject, derive_more::From)]
 struct WorkflowFailedStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// Tasks created by the workflow
     #[graphql(flatten)]
-    tasks: Tasks,
+    #[allow(clippy::missing_docs_in_private_items)]
+    status: WorkflowCompleteStatus,
 }
 
-impl WorkflowFailedStatus {
-    /// Creates a new `WorkflowFailedStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
-    fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
-                .finished_at
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
-        })
-    }
-}
-
-/// The controller has encountered an error whilst scheduling the workflow
-#[derive(Debug, SimpleObject)]
+/// All tasks in the workflow have errored
+#[derive(Debug, SimpleObject, derive_more::From)]
 struct WorkflowErroredStatus {
+    #[graphql(flatten)]
+    #[allow(clippy::missing_docs_in_private_items)]
+    status: WorkflowCompleteStatus,
+}
+
+/// All tasks in the workflow have completed (succeeded, failed, or errored)
+#[derive(Debug, SimpleObject)]
+struct WorkflowCompleteStatus {
     /// Time at which this workflow started
     start_time: DateTime<Utc>,
     /// Time at which this workflow completed
@@ -223,8 +180,8 @@ struct WorkflowErroredStatus {
     tasks: Tasks,
 }
 
-impl WorkflowErroredStatus {
-    /// Creates a new `WorkflowErroredStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
+impl WorkflowCompleteStatus {
+    /// Creates a new [`WorkflowCompleteStatus`] from [`IoArgoprojWorkflowV1alpha1WorkflowStatus`] and associated metadata.
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
         metadata: Arc<Metadata>,
