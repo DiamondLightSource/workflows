@@ -41,3 +41,12 @@ updates:
       patch:
         update-types:
           - patch
+  - package-ecosystem: npm
+    directory: frontend
+    schedule:
+      interval: weekly
+    groups:
+      minor:
+        update-types:
+          - patch
+          - minor
