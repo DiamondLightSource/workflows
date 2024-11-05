@@ -43,7 +43,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
     visit
       ? `${visit.proposalCode}${visit.proposalNumber.toFixed(
           0
-        )}-${visit.visitNumber.toFixed(0)}`
+        )}-${visit.number.toFixed(0)}`
       : ""
   );
 
@@ -56,7 +56,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
       {
         proposalCode: parsedVisit[1],
         proposalNumber: Number(parsedVisit[2]),
-        visitNumber: Number(parsedVisit[3]),
+        number: Number(parsedVisit[3]),
       },
       parameters
     );
