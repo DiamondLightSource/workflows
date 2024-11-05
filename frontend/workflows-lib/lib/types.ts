@@ -34,5 +34,5 @@ export interface Workflow {
 export interface Visit {
   proposalCode: string;
   proposalNumber: number;
-  visitNumber: number;
+  number: number;
 }

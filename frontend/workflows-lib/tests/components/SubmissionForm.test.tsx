@@ -115,7 +115,7 @@ describe("SubmissionForm Component", () => {
       {
         proposalCode: "mg",
         proposalNumber: 36964,
-        visitNumber: 1,
+        number: 1,
       },
       {
         memory: "20Gi",
