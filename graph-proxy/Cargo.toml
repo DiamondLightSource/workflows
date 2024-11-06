@@ -21,7 +21,12 @@ axum = { version = "0.7.9" }
 axum-extra = { version = "0.9.6", features = ["typed-header"] }
 chrono = { workspace = true }
 clap = { version = "4.5.21", features = ["derive", "env"] }
-derive_more = { version = "1.0.0", features = ["deref", "from"] }
+derive_more = { version = "1.0.0", features = [
+  "deref",
+  "deref_mut",
+  "from",
+  "into",
+] }
 dotenvy = { version = "0.15.7" }
 lazy_static = { version = "1.5.0" }
 opentelemetry = { version = "0.22.0" }
@@ -30,10 +35,9 @@ opentelemetry-semantic-conventions = "0.14.0"
 opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
 regex = "1.11.1"
 reqwest = { version = "0.12.9", default-features = false, features = [
-    "rustls-tls",
-    "json",
+  "rustls-tls",
+  "json",
 ] }
-schemars = "0.8.21"
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { version = "2.0.3" }

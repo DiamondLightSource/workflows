@@ -1,3 +1,7 @@
+/// Workflow Template Paramer Schema
+mod parameter_schema;
+/// Workflow Template JSON Forms UI Schema
+mod ui_schema;
 /// GraphQL operations related to workflow templates
 mod workflow_templates;
 /// GraphQL operations related to workflows
