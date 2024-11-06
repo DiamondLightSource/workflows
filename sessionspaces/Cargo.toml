@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.92" }
+anyhow = { version = "1.0.93" }
 clap = { version = "4.5.20", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
@@ -29,7 +29,7 @@ tokio = { version = "1.41.0", features = ["macros", "time"] }
 tower = { version = "0.4.13", features = ["limit", "util"] }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
-url = { version = "2.5.2" }
+url = { version = "2.5.3" }
 
 [dev-dependencies]
 wiremock = "0.6.2"
