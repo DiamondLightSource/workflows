@@ -1,20 +1,20 @@
-{{- if .Values.ingress.create }}
+{{- if $.Values.ingress.create }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "common.names.fullname" . }}
+  name: {{ include "common.names.fullname" $ }}
   namespace: {{ .Release.Namespace }}
-  {{- with .Values.ingress.annotations }}
+  {{- with $.Values.ingress.annotations }}
   annotations:
     {{ . | toYaml | nindent 4 }}
   {{- end }}
   labels:
-    {{ include "common.labels.standard" . | nindent 4 }}
+    {{ include "common.labels.standard" $ | nindent 4 }}
 spec:
-  {{- with .Values.ingress.className }}
+  {{- with $.Values.ingress.className }}
   ingressClassName: {{ . }}
   {{- end }}
-  {{- with .Values.ingress.tls }}
+  {{- with $.Values.ingress.tls }}
   tls:
     {{- range . }}
     - hosts:
@@ -24,7 +24,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range $.Values.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:

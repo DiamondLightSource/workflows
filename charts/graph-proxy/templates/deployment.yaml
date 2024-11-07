@@ -1,56 +1,56 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "common.names.fullname" . }}
+  name: {{ include "common.names.fullname" $ }}
   namespace: {{ .Release.Namespace }}
-  {{- with .Values.deployment.annotations }}
+  {{- with $.Values.deployment.annotations }}
   annotations:
     {{- . | toYaml | nindent 4 }}
   {{- end }}
   labels:
-    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- include "common.labels.standard" $ | nindent 4 }}
 spec:
-  replicas: {{ .Values.deployment.replicas }}
+  replicas: {{ $.Values.deployment.replicas }}
   selector:
     matchLabels:
-      {{- include "common.labels.matchLabels" . | nindent 6 }}
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.deployment.podAnnotations }}
+      {{- with $.Values.deployment.podAnnotations }}
       annotations:
         {{- . | toYaml | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "common.labels.matchLabels" . | nindent 8 }}
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
     spec:
-      {{- if .Values.serviceAccount.create }}
-      serviceAccountName: {{ default (include "common.names.fullname" .) .Values.serviceAccount.name }}
+      {{- if $.Values.serviceAccount.create }}
+      serviceAccountName: {{ default (include "common.names.fullname" $) $.Values.serviceAccount.name }}
       {{- else }}
-      serviceAccountName: {{ default "default" .Values.serviceAccount.name }}
+      serviceAccountName: {{ default "default" $.Values.serviceAccount.name }}
       {{- end }}
-      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list .Values.image) "context" $ ) }}
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
       containers:
         - name: graph-proxy
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart ) }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values.global "chart" $.Chart ) }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
             - serve
           env:
             - name: ARGO_SERVER_URL
-              value: {{ .Values.argoServerUrl }}
+              value: {{ $.Values.argoServerUrl }}
             - name: PREFIX_PATH
-              value: {{ .Values.prefixPath }}
+              value: {{ $.Values.prefixPath }}
             - name: TELEMETRY_LEVEL
-              value: {{ .Values.telemetry.level }}
-            {{- with .Values.telemetry.metricsEndpoint }}
+              value: {{ $.Values.telemetry.level }}
+            {{- with $.Values.telemetry.metricsEndpoint }}
             - name: METRICS_ENDPOINT
               value: {{ . }}
             {{- end }}
-            {{- with .Values.telemetry.tracingEndpoint }}
+            {{- with $.Values.telemetry.tracingEndpoint }}
             - name: TRACING_ENDPOINT
               value: {{ . }}
             {{- end }}
-            {{- with .Values.cors.matchOrigins }}
+            {{- with $.Values.cors.matchOrigins }}
             - name: CORS_ALLOW
               value: {{ . | join " " }}
             {{- end }}
@@ -59,16 +59,16 @@ spec:
               containerPort: 80
               protocol: TCP
           resources:
-            {{- .Values.deployment.resources | toYaml | nindent 12 }}
-          {{- with .Values.deployment.nodeSelector }}
+            {{- $.Values.deployment.resources | toYaml | nindent 12 }}
+          {{- with $.Values.deployment.nodeSelector }}
           nodeSelector:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
-          {{- with .Values.deployment.affinity }}
+          {{- with $.Values.deployment.affinity }}
           affinity:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
-          {{- with .Values.deployment.tolerations }}
+          {{- with $.Values.deployment.tolerations }}
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
