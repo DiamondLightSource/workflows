@@ -25,26 +25,26 @@ spec:
           spec:
             securityContext:
               runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-              runAsUser: {{ .Values.policy.runAsUser }}
+              runAsUser: {{ $.Values.policy.runAsUser }}
             containers:
               - (name): "*"
                 securityContext:
                   runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-                  runAsUser: {{ .Values.policy.runAsUser }}
+                  runAsUser: {{ $.Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
             initContainers:
               - (name): "*"
                 securityContext:
                   runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-                  runAsUser: {{ .Values.policy.runAsUser }}
+                  runAsUser: {{ $.Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
             ephemeralContainers:
               - (name): "*"
                 securityContext:
                   runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-                  runAsUser: {{ .Values.policy.runAsUser }}
+                  runAsUser: {{ $.Values.policy.runAsUser }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
     - name: check-hostpath
