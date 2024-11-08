@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "common.names.fullname" $ }}
   namespace: {{ .Release.Namespace }}
-  {{- with .Values.deployment.annotations }}
+  {{- with $.Values.deployment.annotations }}
   annotations:
     {{- . | toYaml | nindent 4 }}
   {{- end }}
@@ -16,48 +16,48 @@ spec:
       {{- include "common.labels.matchLabels" $ | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.deployment.podAnnotations }}
+      {{- with $.Values.deployment.podAnnotations }}
       annotations:
         {{- . | toYaml | nindent 8 }}
       {{- end }}
       labels:
         {{- include "common.labels.matchLabels" $ | nindent 8 }}
     spec:
-      {{- if .Values.serviceAccount.create }}
-      serviceAccountName: {{ default ( include "common.names.fullname" $ ) .Values.serviceAccount.name }}
+      {{- if $.Values.serviceAccount.create }}
+      serviceAccountName: {{ default ( include "common.names.fullname" $ ) $.Values.serviceAccount.name }}
       {{- else }}
-      serviceAccountName: {{ default "default" .Values.serviceAccount.name }}
+      serviceAccountName: {{ default "default" $.Values.serviceAccount.name }}
       {{- end }}
-      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list .Values.image) "context" $ ) }}
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
       containers:
         - name: sessionspaces
-          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart )}}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values.global "chart" $.Chart )}}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
           env:
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.database.password.secretName }}
-                  key: {{ .Values.database.password.secretKey }}
+                  name: {{ $.Values.database.password.secretName }}
+                  key: {{ $.Values.database.password.secretKey }}
             - name: DATABASE_URL
               value: {{ include "sessionspaces.databaseURL" $ }}
             - name: LDAP_URL
-              value: {{ .Values.ldapUrl }}
-            {{- if .Values.requestRate }}
+              value: {{ $.Values.ldapUrl }}
+            {{- if $.Values.requestRate }}
             - name: REQUEST_RATE
-              value: "{{ .Values.requestRate }}"
+              value: "{{ $.Values.requestRate }}"
             {{- end }}
           resources:
-            {{- .Values.deployment.resources | toYaml | nindent 12 }}
-          {{- with .Values.deployment.nodeSelector }}
+            {{- $.Values.deployment.resources | toYaml | nindent 12 }}
+          {{- with $.Values.deployment.nodeSelector }}
           nodeSelector:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
-          {{- with .Values.deployment.affinity }}
+          {{- with $.Values.deployment.affinity }}
           affinity:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
-          {{- with .Values.deployment.tolerations }}
+          {{- with $.Values.deployment.tolerations }}
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
