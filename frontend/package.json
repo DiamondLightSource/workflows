@@ -3,7 +3,8 @@
   "type": "module",
   "workspaces": [
     "workflows-lib",
-    "relay-workflows-lib"
+    "relay-workflows-lib",
+    "dashboard"
   ],
   "scripts": {
     "lint": "eslint",

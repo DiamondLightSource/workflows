@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./workflows-lib" },
-    { "path": "./relay-workflows-lib" }
+    { "path": "./relay-workflows-lib" },
+    { "path": "./dashboard" }
   ]
 }
