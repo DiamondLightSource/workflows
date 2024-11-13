@@ -5,7 +5,8 @@
     "ghcr.io/devcontainers/features/common-utils:2.4.2": {
       "username": "none",
       "upgradePackages": false
-    }
+    },
+    "ghcr.io/devcontainers/features/git-lfs:1.2.3": {}
   },
   "customizations": {
     "vscode": {
