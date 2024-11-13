@@ -13,9 +13,9 @@
   "dependencies": {
     "keycloak-js": "^26.0.5",
     "react-relay": "18.1.0",
-    "workflows-lib": "*",
-    "relay-workflows-lib": "*"
-
+    "react-router-dom": "^6.28.0",
+    "relay-workflows-lib": "*",
+    "workflows-lib": "*"
   },
   "devDependencies": {
     "@types/react-relay": "16.0.6",
