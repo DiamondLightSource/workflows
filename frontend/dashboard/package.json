@@ -11,32 +11,20 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "@jsonforms/material-renderers": "^3.4.1",
-    "@jsonforms/react": "^3.4.1",
     "keycloak-js": "^26.0.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "react-relay": "18.1.0",
     "workflows-lib": "*",
     "relay-workflows-lib": "*"
 
   },
   "devDependencies": {
-    "@eslint/js": "^9.13.0",
-    "@jsonforms/core": "^3.4.1",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
     "@types/react-relay": "16.0.6",
-    "@types/relay-runtime": "18.1.1",
     "babel-plugin-relay": "18.1.0",
-    "eslint": "^9.13.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.14",
-    "globals": "^15.11.0",
     "relay-compiler": "18.1.0",
-    "typescript": "~5.6.2",
-    "typescript-eslint": "^8.11.0",
-    "vite": "^5.4.10",
     "vite-plugin-relay": "2.1.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }
