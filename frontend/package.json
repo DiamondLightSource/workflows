@@ -19,7 +19,7 @@
     "@jsonforms/material-renderers": "^3.4.0",
     "@jsonforms/react": "^3.4.0",
     "@mui/icons-material": "^5.16.7",
-    "@mui/material": "^5.16.7",
+    "@mui/material": "^6.1.7",
     "@mui/x-date-pickers": "^7.22.2",
     "@xyflow/react": "^12.3.4",
     "ajv": "^8.17.1",

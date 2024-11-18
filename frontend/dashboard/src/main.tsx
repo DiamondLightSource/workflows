@@ -6,19 +6,24 @@ import {
   createBrowserRouter,
   RouterProvider
 } from "react-router-dom";
-import App from "./App.tsx";
+import Dashboard from "./components/dashboard.tsx";
 import WorkflowsList from "./routes/workflows.tsx";
+import TemplatesList from "./routes/templates.tsx";
 import ErrorPage from "./errorpage.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Dashboard />,
     errorElement: <ErrorPage />
   },
   {
     path: "workflows",
     element: <WorkflowsList />
+  },
+  {
+    path: "templates",
+    element: <TemplatesList />
   }
 ]);
 
