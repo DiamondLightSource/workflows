@@ -1,16 +1,16 @@
 import { Container, Typography } from "@mui/material";
 
-function WorkflowsList() {
+function TemplatesList() {
 
   return (
     <>
       <Container maxWidth="sm">
         <Typography variant='h3' align='center' gutterBottom>
-          List of Workflows
+          List of Templates
         </Typography> 
       </Container> 
     </>
   )
 }
 
-export default WorkflowsList
+export default TemplatesList
