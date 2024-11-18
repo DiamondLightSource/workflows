@@ -14,7 +14,7 @@ COPY . .
 RUN touch src/main.rs \
     && cargo build --release
 
-FROM gcr.io/distroless/cc-debian12@sha256:6f05aba4de16e89f8d879bf2a1364de3e41aba04f1dcbba8c75494f6134b4b13 AS deploy
+FROM gcr.io/distroless/cc-debian12@sha256:2fb69596e692931f909c4c69ab09e50608959eaf8898c44fa64db741a23588b0 AS deploy
 
 COPY --from=build /app/target/release/sessionspaces /sessionspaces
 
