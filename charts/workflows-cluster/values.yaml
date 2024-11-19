@@ -107,6 +107,16 @@ vcluster:
       ingresses:
         enabled: true
 
+ingress:
+  enabled: true
+  host: kubernetes.workflows.diamond.ac.uk
+  pathType: Prefix
+  spec:
+    tls:
+      - secretName: '{{ include "common.names.fullname" $ }}-ingress-tls'
+        hosts:
+          - kubernetes.workflows.diamond.ac.uk
+
 authenticationConfiguration:
   jwt:
     - issuer:
