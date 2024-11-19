@@ -3,9 +3,9 @@ name: workflows-cluster
 description: A virtual cluster for Data Analysis workflows
 type: application
 
-version: 0.8.3
+version: 0.8.4
 
 dependencies:
   - name: vcluster
     repository: https://charts.loft.sh
-    version: 0.20.0
+    version: 0.20.5
