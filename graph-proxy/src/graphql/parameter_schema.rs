@@ -16,7 +16,7 @@ pub(super) enum ParameterSchemaError {
 }
 
 /// A JSON Schema, contents are expected to match Draft 2020-12
-#[derive(Debug, Clone, From, Into, Deref, DerefMut, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, From, Into, Deref, DerefMut, Serialize, Deserialize)]
 pub(super) struct Schema(Value);
 
 /// A JSON Schema describing the arguments of a Workflow Template
@@ -165,5 +165,361 @@ impl ArgumentSchema {
             }
         }
         Ok(arguments_schema)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ArgumentSchema, Schema};
+    use argo_workflows_openapi::{
+        IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
+        IoArgoprojWorkflowV1alpha1WorkflowSpec,
+    };
+    use serde_json::json;
+    use std::collections::HashMap;
+
+    #[test]
+    fn empty() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {},
+            "required": []
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn string_inferred() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .description(Some("A metasyntactic variable".to_string()))
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "string",
+                    "description": "A metasyntactic variable",
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn string_inferred_with_default() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .default(Some("bar".to_string()))
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "string",
+                    "default": "bar"
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn string_inferred_with_value_default() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .value(Some("bar".to_string()))
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "string",
+                    "default": "bar"
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn enum_inferred() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .description(Some("A metasyntactic variable".to_string()))
+                        .enum_(["bar".to_string(), "baz".to_string()])
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "string",
+                    "description": "A metasyntactic variable",
+                    "enum": [
+                        "bar",
+                        "baz"
+                    ]
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn enum_inferred_with_default() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .default(Some("bar".to_string()))
+                        .enum_(["bar".to_string(), "baz".to_string()])
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "string",
+                    "default": "bar",
+                    "enum": [
+                        "bar",
+                        "baz"
+                    ]
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn enum_inferred_with_value_default() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .value(Some("bar".to_string()))
+                        .enum_(["bar".to_string(), "baz".to_string()])
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "string",
+                    "default": "bar",
+                    "enum": [
+                        "bar",
+                        "baz"
+                    ]
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn annotation_used() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters(vec![IoArgoprojWorkflowV1alpha1Parameter::builder()
+                        .name("foo")
+                        .try_into()
+                        .unwrap()])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/parameter-schema.foo".to_string(),
+            json!({
+                "type": "integer",
+                "default": 9001
+            })
+            .to_string(),
+        )]);
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "integer",
+                    "default": 9001
+                }
+            },
+            "required": [
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn schemas_stitched() {
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters(vec![
+                        IoArgoprojWorkflowV1alpha1Parameter::builder()
+                            .name("foo")
+                            .try_into()
+                            .unwrap(),
+                        IoArgoprojWorkflowV1alpha1Parameter::builder()
+                            .name("bar")
+                            .try_into()
+                            .unwrap(),
+                        IoArgoprojWorkflowV1alpha1Parameter::builder()
+                            .name("baz")
+                            .enum_(["fizz".to_string(), "buzz".to_string()])
+                            .try_into()
+                            .unwrap(),
+                    ])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/parameter-schema.foo".to_string(),
+            json!({
+                "type": "integer",
+                "default": 9001
+            })
+            .to_string(),
+        )]);
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "foo": {
+                    "type": "integer",
+                    "default": 9001
+                },
+                "bar": {
+                    "type": "string",
+                },
+                "baz": {
+                    "type": "string",
+                    "enum": [
+                        "fizz",
+                        "buzz"
+                    ]
+                }
+            },
+            "required": [
+                "bar",
+                "baz",
+                "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
     }
 }
