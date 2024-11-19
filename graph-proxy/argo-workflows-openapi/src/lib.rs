@@ -1,3 +1,4 @@
+#[allow(clippy::all)]
 mod types;
 
 use serde::Deserialize;
