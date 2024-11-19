@@ -94,6 +94,11 @@ oauth2-proxy:
         "DELETE=^/api/",
         "PUT=^/api/",
         "POST=^/api/",
+        "GET=^/artifact-files/",
+        "GET=^/artifacts-by-uid/",
+        "GET=^/artifacts/",
+        "GET=^/input-artifacts-by-uid/",
+        "GET=^/input-artifacts/",
         "GET=^/assets/"
       ]
       skip_provider_button = true
