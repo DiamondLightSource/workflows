@@ -10,7 +10,7 @@ pub(super) enum UiSchemaError {
 }
 
 /// A JSON Forms UI Schema
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(clippy::missing_docs_in_private_items)]
 pub(super) enum UiSchema {
@@ -47,7 +47,7 @@ impl UiSchema {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[allow(clippy::missing_docs_in_private_items)]
 pub(super) struct UiSchemaCategory {
     #[serde(serialize_with = "UiSchemaCategory::r#type")]
@@ -60,5 +60,52 @@ impl UiSchemaCategory {
     #[allow(clippy::missing_docs_in_private_items)]
     fn r#type<S: Serializer>(_: &(), s: S) -> Result<S::Ok, S::Error> {
         s.serialize_str("category")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::UiSchema;
+    use serde_json::json;
+    use std::collections::HashMap;
+
+    #[test]
+    fn annotation_used() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                "type": "HorizontalLayout",
+                "elements": [
+                    {
+                        "type": "Control",
+                        "scope": "#/properties/foo",
+                        "label": "Foo"
+                    },
+                    {
+                        "type": "Control",
+                        "scope": "#/properties/bar"
+                    }
+                ]
+            })
+            .to_string(),
+        )]);
+        let expected = Some(UiSchema::HorizontalLayout {
+            elements: vec![
+                UiSchema::Control {
+                    scope: "#/properties/foo".to_string(),
+                    label: Some("Foo".to_string()),
+                },
+                UiSchema::Control {
+                    scope: "#/properties/bar".to_string(),
+                    label: None,
+                },
+            ],
+        });
+        assert_eq!(expected, UiSchema::new(&annotations).unwrap());
+    }
+
+    #[test]
+    fn no_annotation_is_none() {
+        assert_eq!(None, UiSchema::new(&HashMap::new()).unwrap());
     }
 }
