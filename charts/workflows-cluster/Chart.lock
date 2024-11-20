@@ -1,6 +1,9 @@
 dependencies:
+- name: common
+  repository: oci://docker.io/bitnamicharts
+  version: 2.23.0
 - name: vcluster
   repository: https://charts.loft.sh
   version: 0.20.5
-digest: sha256:8d0e59378280df17c85cf1f5fda1cc9562a3c2a05e7f51106f6828cfd0ec2870
-generated: "2024-11-19T16:20:18.816889683Z"
+digest: sha256:588561c241cb38517be72b6afb65dade039a8a1e4c8435035304250168f93d8f
+generated: "2024-11-20T15:41:43.045982166Z"

@@ -6,6 +6,9 @@ type: application
 version: 0.8.4
 
 dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts
   - name: vcluster
     repository: https://charts.loft.sh
     version: 0.20.5

@@ -45,7 +45,7 @@ vcluster:
         addVolumes:
           - name: authn-config
             configMap:
-              name: "workflows-cluster-authn-config"  # TODO: Replace with templated value "{{ .Release.Name }}-authn-config"
+              name: "workflows-cluster-authn-config"  # TODO: Replace with templated value "{{ include "common.names.fullname" $ }}-authn-config"
         addVolumeMounts:
           - name: authn-config
             mountPath: /etc/authn-config
