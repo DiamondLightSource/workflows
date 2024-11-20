@@ -37,8 +37,8 @@ spec:
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ $.Values.database.password.secretName }}
-                  key: {{ $.Values.database.password.secretKey }}
+                  name: {{ default (printf "%s-ispyb" (include "common.names.fullname" $)) $.Values.database.password.secretName }}
+                  key: {{ default "password" $.Values.database.password.secretKey }}
             - name: DATABASE_URL
               value: {{ include "sessionspaces.databaseURL" $ }}
             - name: LDAP_URL

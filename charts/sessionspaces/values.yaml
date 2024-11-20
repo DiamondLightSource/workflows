@@ -2,8 +2,8 @@ database:
   host: mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb
   user: ispyb_ro
   password:
-    secretName: ispyb
-    secretKey: password
+    secretName: ""
+    secretKey: ""
 ldapUrl: ldap://ldapmaster.diamond.ac.uk
 requestRate: 1
 
