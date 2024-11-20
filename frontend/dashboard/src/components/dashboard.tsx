@@ -75,18 +75,18 @@ function Dashboard() {
       <Typography variant='h3' align='center' gutterBottom>
         Workflows at Diamond
       </Typography>
-      <Grid container spacing={{ xs: 2, sm: 2, md: 3}} columns={{ xs: 2, sm: 4, md: 6 }}>
+      <Grid container alignItems="stretch" spacing={{ xs: 2, sm: 2, md: 3}} columns={{ xs: 2, sm: 4, md: 6 }}>
           <Grid key={"workflows"} size={{ xs:2, sm: 2, md: 3 }}>
-            <Card>{workflowsCard}</Card>
+            <Card style={{height: "100%"}}>{workflowsCard}</Card>
           </Grid>
           <Grid key={"templates"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card>{templatesCard}</Card>
+            <Card style={{height: "100%"}}>{templatesCard}</Card>
           </Grid>
           <Grid key={"documentation"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card>{documentationCard}</Card>
+            <Card style={{height: "100%"}}>{documentationCard}</Card>
           </Grid>
-          <Grid key={"argo"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card>{argoCard}</Card>
+          <Grid key={"argo"} size={{ xs: 2, sm: 2, md: 3 }} >
+            <Card style={{height: "100%"}}>{argoCard}</Card>
           </Grid>
       </Grid>
     </Container>
