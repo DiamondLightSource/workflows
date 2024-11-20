@@ -1,6 +1,12 @@
 destination:
   server: https://kubernetes.default.svc
 
+argocd:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
 events:
   enabled: false
   targetRevision: HEAD
