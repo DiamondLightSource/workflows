@@ -81,7 +81,7 @@ vcluster:
               apiVersion: argoproj.io/v1alpha1
               kind: Application
               metadata:
-                name: argocd-apps
+                name: apps
                 namespace: argocd
                 annotations:
                   argocd.argoproj.io/sync-wave: "0"
@@ -95,7 +95,7 @@ vcluster:
                     valuesObject:
                       dev:
                         enabled: false
-                  path: charts/argocd-apps
+                  path: charts/apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
                   targetRevision: HEAD
                 syncPolicy:
