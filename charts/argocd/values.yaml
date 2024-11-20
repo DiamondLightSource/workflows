@@ -1,2 +1,5 @@
 argo-cd:
   enabled: true
+
+ingress:
+  enabled: true

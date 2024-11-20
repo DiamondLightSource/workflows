@@ -1,0 +1,28 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: argo-cd.workflows.diamond.ac.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "common.names.dependency.fullname" (dict "chartName" "vcluster" "chartValues" (index .Values "argo-cd") "context" $) }}-server
+                port:
+                  name: https
+  tls:
+    - secretName: {{ include "common.names.dependency.fullname" (dict "chartName" "vcluster" "chartValues" (index .Values "argo-cd") "context" $) }}-ingress-tls
+      hosts:
+        - argo-cd.workflows.diamond.ac.uk
+{{- end }}
