@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-authn-config
+  name: {{ include "common.names.fullname" $ }}-authn-config
   namespace: {{ .Release.Namespace }}
 data:
   authn-config.yaml: |
