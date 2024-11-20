@@ -76,11 +76,15 @@ oauth2-proxy:
   replicaCount: 3
   ingress:
     enabled: true
-    hostname: workflows.diamond.ac.uk
     pathType: Prefix
     hosts:
       - workflows.diamond.ac.uk
+      - argo-workflows.workflows.diamond.ac.uk
     path: /
+    tls:
+      - secretName: '{{ include "common.names.fullname" $ }}-ingress-tls'
+        hosts:
+          - argo-workflows.workflows.diamond.ac.uk
     annotations:
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
   config:
