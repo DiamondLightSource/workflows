@@ -1,7 +1,7 @@
 {
   "src": "./src",
   "language": "typescript",
-  "schema": "./src/workflows.graphql",
+  "schema": "./supergraph.graphql",
   "exclude": [
     "**/node_modules/**",
     "**/__mocks__/**",
