@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  {{- with $.Values.deployment.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  replicas: {{ $.Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.deployment.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
+    spec:
+      {{- if $.Values.serviceAccount.create }}
+      serviceAccountName: {{ default (include "common.names.fullname" $) $.Values.serviceAccount.name }}
+      {{- else }}
+      serviceAccountName: {{ default "default" $.Values.serviceAccount.name }}
+      {{- end }}
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      containers:
+        - name: dashboard
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values.global "chart" $.Chart ) }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: dashboard
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- $.Values.deployment.resources | toYaml | nindent 12 }}
+          {{- with $.Values.deployment.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.deployment.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.deployment.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          startupProbe:
+            httpGet:
+             path: /healthcheck
+             port: 80
+            failureThreshold: 3
+            periodSeconds: 5

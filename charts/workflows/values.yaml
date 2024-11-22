@@ -78,7 +78,6 @@ oauth2-proxy:
     enabled: true
     pathType: Prefix
     hosts:
-      - workflows.diamond.ac.uk
       - argo-workflows.workflows.diamond.ac.uk
     path: /
     tls:

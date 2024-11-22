@@ -1,0 +1,43 @@
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-dashboard
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+deployment:
+  replicas: 1
+  annotations: []
+  podAnnotations: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+service:
+  create: true
+  annotations: []
+  type: ClusterIP
+  port: 80
+
+ingress:
+  create: true
+  className: nginx
+  tls: []
+  hosts:
+    - host: workflows.diamond.ac.uk
+      paths:
+        - path: /
+          pathType: Prefix
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: []

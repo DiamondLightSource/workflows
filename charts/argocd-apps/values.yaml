@@ -69,3 +69,9 @@ graphProxy:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+dashboard:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
