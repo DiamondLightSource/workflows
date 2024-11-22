@@ -52,3 +52,6 @@ workflows:
 
 graphProxy:
   enabled: true
+
+dashboard:
+  enabled: true
