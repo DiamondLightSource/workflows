@@ -29,7 +29,7 @@ tokio = { version = "1.41.1", features = ["macros", "time"] }
 tower = { version = "0.4.13", features = ["limit", "util"] }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
-url = { version = "2.5.3" }
+url = { version = "2.5.4" }
 
 [dev-dependencies]
 wiremock = "0.6.2"
