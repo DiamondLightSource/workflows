@@ -11,16 +11,16 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "keycloak-js": "^26.0.5",
-    "react-relay": "18.1.0",
+    "keycloak-js": "^26.0.6",
+    "react-relay": "18.2.0",
     "react-router-dom": "^6.28.0",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
   "devDependencies": {
     "@types/react-relay": "16.0.6",
-    "babel-plugin-relay": "18.1.0",
-    "relay-compiler": "18.1.0",
+    "babel-plugin-relay": "18.2.0",
+    "relay-compiler": "18.2.0",
     "vite-plugin-relay": "2.1.0"
   },
   "peerDependencies": {
