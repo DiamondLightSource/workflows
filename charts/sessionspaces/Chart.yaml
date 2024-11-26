@@ -2,8 +2,8 @@ apiVersion: v2
 name: sessionspaces
 description: Namespace controller for creating session namespaces
 type: application
-version: 0.3.2
-appVersion: 0.1.0-rc22
+version: 0.3.3
+appVersion: 0.1.0-rc24
 dependencies:
   - name: common
     version: 2.23.0
