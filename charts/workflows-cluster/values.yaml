@@ -68,7 +68,7 @@ vcluster:
               namespace: argocd
             chart:
               name: argo-cd
-              version: 7.3.0
+              version: 7.7.5
               repo: https://argoproj.github.io/argo-helm
           - release:
               name: verflixt
