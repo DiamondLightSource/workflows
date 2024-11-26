@@ -55,7 +55,7 @@ const documentationCard = (
 
 const argoCard = (
   <React.Fragment>
-    <CardActionArea href='https:///workflows.diamond.ac.uk' target='_blank'>
+    <CardActionArea href='https:///argo-workflows.workflows.diamond.ac.uk' target='_blank'>
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           Argo Web UI
