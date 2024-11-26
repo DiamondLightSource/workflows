@@ -6,10 +6,11 @@ import { Container,
          CardActionArea
 } from '@mui/material';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const workflowsCard = (
   <React.Fragment>
-    <CardActionArea href="/workflows">
+    <CardActionArea component={Link} to="/workflows">
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           Workflows
@@ -25,7 +26,7 @@ const workflowsCard = (
 
 const templatesCard = (
   <React.Fragment>
-    <CardActionArea href='/templates'>
+    <CardActionArea component={Link} to='/templates'>
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           Templates
