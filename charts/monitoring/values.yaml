@@ -1,0 +1,24 @@
+grafana:
+  rbac:
+    create: false
+    pspEnabled: false
+    pspUseAppArmor: false
+  serviceAccount:
+    create: true
+  ingress:
+    enabled: true
+    path: "/"
+    hosts:
+      - grafana.workflows.diamond.ac.uk
+    tls:
+      - hosts:
+          - grafana.workflows.diamond.ac.uk
+        secretName: letsencrypt-grafana-workflows-diamond-ac-uk
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
+          isDefault: true
