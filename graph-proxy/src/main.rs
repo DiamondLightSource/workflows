@@ -23,7 +23,7 @@ use std::{
 use telemetry::setup_telemetry;
 use tokio::net::TcpListener;
 use tower_http::cors::{AllowOrigin, CorsLayer};
-use tracing::{info, Level};
+use tracing::{info, instrument, Level};
 use url::Url;
 
 /// A proxy providing Argo Workflows data
@@ -85,11 +85,12 @@ async fn main() {
     match args {
         Cli::Serve(args) => {
             setup_telemetry(
-                args.metrics_endpoint,
-                args.tracing_endpoint,
+                args.metrics_endpoint.clone(),
+                args.tracing_endpoint.clone(),
                 args.telemetry_level,
             )
             .unwrap();
+            info!(?args, "Starting GraphQL Server");
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
                 .finish();
@@ -97,11 +98,14 @@ async fn main() {
             serve(router, args.host, args.port).await.unwrap();
         }
         Cli::Schema(args) => {
+            setup_telemetry(None, None, Level::INFO).unwrap();
+            info!(?args, "Generating GraphQL schema");
             let schema = root_schema_builder().finish();
             let schema_string = schema.sdl_with_options(SDLExportOptions::new().federation());
             if let Some(path) = args.path {
-                let mut file = File::create(path).unwrap();
+                let mut file = File::create(&path).unwrap();
                 file.write_all(schema_string.as_bytes()).unwrap();
+                info!("Schema written to {:#?}", path);
             } else {
                 println!("{}", schema_string);
             }
@@ -110,11 +114,13 @@ async fn main() {
 }
 
 /// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
+#[instrument(skip(schema))]
 fn setup_router(
     schema: RootSchema,
     prefix_path: &str,
     cors_allow: Option<Vec<Regex>>,
 ) -> anyhow::Result<Router> {
+    info!("Setting up the router");
     let cors_origin = if let Some(cors_allow) = cors_allow {
         info!("Allowing CORS Origin(s) matching: {:?}", cors_allow);
         AllowOrigin::predicate(move |origin, _| {
@@ -125,6 +131,7 @@ fn setup_router(
             })
         })
     } else {
+        info!("CORS rules disabled. Allowing default origin.");
         AllowOrigin::default()
     };
     Ok(Router::new()
@@ -146,6 +153,7 @@ fn setup_router(
 async fn serve(router: Router, host: IpAddr, port: u16) -> std::io::Result<()> {
     let socket_addr = SocketAddr::new(host, port);
     let listener = TcpListener::bind(socket_addr).await?;
+    info!("Server is running at http://{}", socket_addr);
     axum::serve(listener, router.into_make_service()).await?;
     Ok(())
 }
