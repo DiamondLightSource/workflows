@@ -1,8 +1,8 @@
 use super::{Visit, VisitInput, CLIENT};
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
-    APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
-    IoArgoprojWorkflowV1alpha1WorkflowStatus,
+    APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
+    IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
@@ -12,6 +12,7 @@ use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
 use std::{collections::HashMap, ops::Deref, sync::Arc};
 use tracing::{debug, instrument};
+use url::Url;
 
 /// An error encountered when parsing the Argo Server API Workflow response
 #[derive(Debug, thiserror::Error)]
@@ -224,6 +225,37 @@ impl TryFrom<String> for TaskStatus {
             "Error" => Ok(TaskStatus::Error),
             "Omitted" => Ok(TaskStatus::Omitted),
             _ => Err(WorkflowParsingError::UnrecognisedTaskPhase),
+        }
+    }
+}
+
+/// A task artifact
+struct Artifact {
+    /// The name of the artifact
+    name: String,
+    /// The download URL for the artifact
+    url: Url,
+}
+
+impl Artifact {
+    /// Create a new `Artifact` from `IoArgoprojWorkflowV1alpha1Artifact` and associated metadata
+    fn new(
+        artifact: &IoArgoprojWorkflowV1alpha1Artifact,
+        visit: &str,
+        name: &str,
+        mut server_url: Url,
+    ) -> Artifact {
+        let artifact_name = &artifact.name[..];
+        server_url.path_segments_mut().unwrap().extend([
+            "artifacts",
+            visit,
+            name,
+            name,
+            artifact_name,
+        ]);
+        Artifact {
+            name: artifact_name.to_string(),
+            url: server_url,
         }
     }
 }
