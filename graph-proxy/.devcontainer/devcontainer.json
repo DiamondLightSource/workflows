@@ -5,8 +5,8 @@
     "dockerfile": "Dockerfile"
   },
   "containerEnv": {
-    "ARGO_SERVER_URL": "https://workflows.diamond.ac.uk",
-    "ARGO_SERVER_SCHEMA_URL": "https://workflows.diamond.ac.uk/assets/openapi-spec/swagger.json"
+    "ARGO_SERVER_URL": "https://argo-workflows.workflows.diamond.ac.uk/",
+    "ARGO_SERVER_SCHEMA_URL": "https://argo-workflows.workflows.diamond.ac.uk/assets/openapi-spec/swagger.json"
   },
   "customizations": {
     "vscode": {
