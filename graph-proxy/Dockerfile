@@ -13,6 +13,7 @@ COPY Cargo.toml Cargo.lock ./
 
 RUN mkdir src \
   && echo "fn main() {}" > src/main.rs \
+  && touch --date @0 src/main.rs \
   && cargo build --release
 
 COPY . .
