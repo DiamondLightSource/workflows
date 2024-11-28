@@ -53,12 +53,14 @@ impl Workflow {
     pub(super) fn new(
         value: IoArgoprojWorkflowV1alpha1Workflow,
         visit: Visit,
+        server_url: Url,
     ) -> Result<Self, WorkflowParsingError> {
         let metadata = Arc::new(Metadata {
             name: value.metadata.name.clone().unwrap(),
             visit,
         });
-        let status = WorkflowStatus::new(value.status.clone().unwrap(), metadata.clone())?;
+        let status =
+            WorkflowStatus::new(value.status.clone().unwrap(), metadata.clone(), server_url)?;
         Ok(Self { metadata, status })
     }
 }
@@ -79,20 +81,21 @@ impl WorkflowStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
         metadata: Arc<Metadata>,
+        server_url: Url,
     ) -> Result<Option<Self>, WorkflowParsingError> {
         match value.phase.as_deref() {
             Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus::from(value)))),
             Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus::new(
-                value, metadata,
+                value, metadata, server_url,
             )?))),
             Some("Succeeded") => Ok(Some(Self::Succeeded(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus::new(value, metadata, server_url)?.into(),
             ))),
             Some("Failed") => Ok(Some(Self::Failed(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus::new(value, metadata, server_url)?.into(),
             ))),
             Some("Error") => Ok(Some(Self::Errored(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus::new(value, metadata, server_url)?.into(),
             ))),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
             None => Ok(None),
@@ -132,13 +135,14 @@ impl WorkflowRunningStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
         metadata: Arc<Metadata>,
+        server_url: Url,
     ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
                 .started_at
                 .ok_or(WorkflowParsingError::MissingStartTime)?,
             message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
+            tasks: TaskMap(value.nodes).into_tasks(metadata, server_url)?,
         })
     }
 }
@@ -186,6 +190,7 @@ impl WorkflowCompleteStatus {
     fn new(
         value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
         metadata: Arc<Metadata>,
+        server_url: Url,
     ) -> Result<Self, WorkflowParsingError> {
         Ok(Self {
             start_time: *value
@@ -195,7 +200,7 @@ impl WorkflowCompleteStatus {
                 .finished_at
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
             message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
+            tasks: TaskMap(value.nodes).into_tasks(metadata, server_url)?,
         })
     }
 }
@@ -230,6 +235,7 @@ impl TryFrom<String> for TaskStatus {
 }
 
 /// A task artifact
+#[derive(Debug, Clone, SimpleObject)]
 struct Artifact {
     /// The name of the artifact
     name: String,
@@ -273,6 +279,8 @@ struct Task {
     depends: Vec<String>,
     /// Children of a task
     dependencies: Vec<String>,
+    /// Output artifacts of the task
+    artifacts: Vec<Artifact>,
 }
 
 impl Task {
@@ -280,7 +288,24 @@ impl Task {
     fn new(
         node_status: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1NodeStatus,
         depends: Vec<String>,
+        metadata: Arc<Metadata>,
+        server_url: Url,
     ) -> Result<Self, WorkflowParsingError> {
+        let artifacts = match node_status.outputs {
+            Some(outputs) => outputs
+                .artifacts
+                .iter()
+                .map(|argo_artifact| {
+                    Artifact::new(
+                        argo_artifact,
+                        &metadata.visit.to_string(),
+                        &metadata.name,
+                        server_url.clone(),
+                    )
+                })
+                .collect(),
+            None => vec![],
+        };
         Ok(Self {
             id: node_status.id,
             name: node_status
@@ -295,6 +320,7 @@ impl Task {
             )?,
             depends,
             dependencies: node_status.children,
+            artifacts,
         })
     }
 }
@@ -337,10 +363,12 @@ impl Tasks {
                     .status
                     .unwrap() //  Safe as the status field is always present
                     .nodes;
-                Ok(match TaskMap(nodes).into_tasks(metadata.clone())? {
-                    Tasks::Fetched(fetched_tasks) => fetched_tasks,
-                    Tasks::UnFetched(_) => vec![],
-                })
+                Ok(
+                    match TaskMap(nodes).into_tasks(metadata.clone(), server_url.clone())? {
+                        Tasks::Fetched(fetched_tasks) => fetched_tasks,
+                        Tasks::UnFetched(_) => vec![],
+                    },
+                )
             }
         }
     }
@@ -366,7 +394,11 @@ impl TaskMap {
     }
 
     /// Converts [`TaskMap`] into [`Tasks`]`
-    fn into_tasks(self, metadata: Arc<Metadata>) -> Result<Tasks, WorkflowParsingError> {
+    fn into_tasks(
+        self,
+        metadata: Arc<Metadata>,
+        server_url: Url,
+    ) -> Result<Tasks, WorkflowParsingError> {
         let mut relationship_map = TaskMap::generate_relationship_map(&self);
         if self.0.is_empty() {
             return Ok(Tasks::UnFetched(metadata));
@@ -376,7 +408,7 @@ impl TaskMap {
             .into_iter()
             .map(|(node_name, node_status)| {
                 let depends = relationship_map.remove(&node_name).unwrap_or_default();
-                Task::new(node_status, depends)
+                Task::new(node_status, depends, metadata.clone(), server_url.clone())
             })
             .collect::<Result<Vec<_>, _>>()?;
         Ok(Tasks::Fetched(tasks))
@@ -419,7 +451,7 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(workflow, visit.into())?)
+        Ok(Workflow::new(workflow, visit.into(), server_url.clone())?)
     }
 
     #[instrument(skip(self, ctx))]
@@ -462,7 +494,13 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| Workflow::new(workflow, visit.clone().into()))
+            .map(|workflow| {
+                Workflow::new(
+                    workflow,
+                    visit.clone().into(),
+                    ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned(),
+                )
+            })
             .collect::<Result<Vec<_>, _>>()?;
         let mut connection = Connection::new(
             cursor_index > 0,
