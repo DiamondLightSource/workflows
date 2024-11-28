@@ -13,8 +13,10 @@ jobs:
           - 3306:3306
         env:
           MARIADB_ROOT_PASSWORD: rootpassword
-        options: >
+        options: >-
           --health-cmd "/usr/local/bin/healthcheck.sh --defaults-file=/ispyb/.my.cnf --connect"
+          --health-interval 1s
+          --health-retries 60
     env:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
@@ -56,8 +58,10 @@ jobs:
           - 3306:3306
         env:
           MARIADB_ROOT_PASSWORD: rootpassword
-        options: >
+        options: >-
           --health-cmd "/usr/local/bin/healthcheck.sh --defaults-file=/ispyb/.my.cnf --connect"
+          --health-interval 1s
+          --health-retries 60
     env:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
