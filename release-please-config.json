@@ -1,0 +1,61 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "tag-separator": "@",
+  "separate-pull-requests": true,
+  "extra-files": [
+    "README.md",
+    "mkdocs.yml"
+  ],
+  "packages": {
+    "backend/graph-proxy": {
+      "release-type": "rust"
+    },
+    "backend/sessionspaces": {
+      "release-type": "rust"
+    },
+    "charts/apps": {
+      "release-type": "helm"
+    },
+    "charts/argocd": {
+      "release-type": "helm"
+    },
+    "charts/dashboard": {
+      "release-type": "helm"
+    },
+    "charts/events": {
+      "release-type": "helm"
+    },
+    "charts/graph-proxy": {
+      "release-type": "helm"
+    },
+    "charts/groups": {
+      "release-type": "helm"
+    },
+    "charts/sessionspaces": {
+      "release-type": "helm"
+    },
+    "charts/verflixt": {
+      "release-type": "helm"
+    },
+    "charts/workflows": {
+      "release-type": "helm"
+    },
+    "charts/workflows-cluster": {
+      "release-type": "helm"
+    },
+    "docs": {
+      "release-type": "simple"
+    },
+    "frontend/dashboard": {
+      "release-type": "node"
+    },
+    "frontend/relay-workflows-lib": {
+      "release-type": "node"
+    },
+    "frontend/workflows-lib": {
+      "release-type": "node"
+    }
+  }
+}
