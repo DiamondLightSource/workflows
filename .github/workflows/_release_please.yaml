@@ -1,0 +1,32 @@
+name: Release Please
+
+on:
+  workflow_call:
+    secrets:
+      release_please_token:
+        required: true
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: 1077859
+          private-key: ${{ secrets.release_please_token }}
+
+      - uses: googleapis/release-please-action@v4
+        id: release-please
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          manifest-file: .release-please-manifest.json
+          config-file: release-please-config.json
+
+      - name: Release Outputs
+        run: |
+          echo "Paths Released: ${{ steps.release-please.outputs.paths_released }}"

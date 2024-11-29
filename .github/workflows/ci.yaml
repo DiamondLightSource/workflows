@@ -62,7 +62,7 @@ jobs:
     uses: ./.github/workflows/_supergraph_update.yaml
     secrets:
       GRAPH_FEDERATOR: ${{ secrets.GRAPH_FEDERATOR }}
-    
+
   frontend_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
@@ -85,3 +85,12 @@ jobs:
     permissions:
       pages: write
       id-token: write
+
+  release_please:
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')
+    uses: ./.github/workflows/_release_please.yaml
+    secrets: 
+      release_please_token: ${{ secrets.RELEASE_PLEASE_CLIENT_SECRET }}
+    permissions:
+      contents: write
+      pull-requests: write
