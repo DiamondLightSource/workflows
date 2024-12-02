@@ -2,6 +2,13 @@ name: Release Please
 
 on:
   workflow_call:
+    outputs:
+      sessionspaces-released:
+        value: ${{ jobs.release-please.outputs.sessionspaces-released}}
+      graph-proxy-released:
+        value: ${{ jobs.release-please.outputs.graph-proxy-released}}
+      dashboard-released:
+        value: ${{ jobs.release-please.outputs.dashboard-released}}
     secrets:
       release_please_token:
         required: true
@@ -9,6 +16,10 @@ on:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      sessionspaces-released: ${{ steps.release-please.outputs['sessionspaces--release_created'] }}
+      graph-proxy-released: ${{ steps.release-please.outputs['graph-proxy--release_created'] }}
+      dashboard-released: ${{ steps.release-please.outputs['dashboard--release_created'] }}
     permissions:
       contents: write
       pull-requests: write

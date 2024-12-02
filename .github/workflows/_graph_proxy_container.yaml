@@ -2,6 +2,10 @@ name: Graph Proxy Container
 
 on:
   workflow_call:
+    inputs:
+      push_image:
+        required: true
+        type: boolean
 
 jobs:
   build:
@@ -42,8 +46,8 @@ jobs:
           build-args: ARGO_SERVER_SCHEMA_URL=https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
           context: ./graph-proxy
           target: deploy
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-          load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
+          push: ${{ inputs.push_image }}
+          load: ${{ inputs.push_image != 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

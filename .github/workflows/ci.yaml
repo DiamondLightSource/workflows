@@ -20,11 +20,23 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_sessionspaces_code.yaml
 
-  sessionspaces_container:
+  sessionspaces_container_build:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: sessionspaces_code
     uses: ./.github/workflows/_sessionspaces_container.yaml
+    with:
+      push_image: false
+    permissions:
+      contents: read
+      packages: write
+
+  sessionspaces_container_publish:
+    needs: [sessionspaces_code, release_please]
+    if: needs.release_please.outputs.sessionspaces-released == 'true'
+    uses: ./.github/workflows/_sessionspaces_container.yaml
+    with:
+      push_image: true
     permissions:
       contents: read
       packages: write
@@ -40,11 +52,24 @@ jobs:
     needs: graph_proxy_code
     uses: ./.github/workflows/_graph_proxy_schema.yaml
 
-  graph_proxy_container:
+  graph_proxy_container_build:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: graph_proxy_code
     uses: ./.github/workflows/_graph_proxy_container.yaml
+    with:
+      push_image: false
+    permissions:
+      contents: read
+      packages: write
+
+  graph_proxy_container_publish:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    needs: [graph_proxy_code, release_please]
+    if: needs.release_please.outputs.graph-proxy-released == 'true'
+    uses: ./.github/workflows/_graph_proxy_container.yaml
+    with:
+      push_image: true
     permissions:
       contents: read
       packages: write
@@ -69,11 +94,23 @@ jobs:
     needs: supergraph_composition
     uses: ./.github/workflows/_frontend_code.yaml
 
-  dashboard_container:
+  dashboard_container_build:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: frontend_code
     uses: ./.github/workflows/_dashboard_container.yaml
+    with:
+      push_image: false
+    permissions:
+      contents: read
+      packages: write
+
+  dashboard_container_publish:
+    needs: [frontend_code, release_please]
+    if: needs.release_please.outputs.dashboard-released == 'true'
+    uses: ./.github/workflows/_dashboard_container.yaml
+    with:
+      push_image: true
     permissions:
       contents: read
       packages: write
@@ -96,7 +133,7 @@ jobs:
   release_please:
     if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')
     uses: ./.github/workflows/_release_please.yaml
-    secrets: 
+    secrets:
       release_please_token: ${{ secrets.RELEASE_PLEASE_CLIENT_SECRET }}
     permissions:
       contents: write
