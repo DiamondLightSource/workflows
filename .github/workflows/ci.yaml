@@ -64,7 +64,7 @@ jobs:
           subgraph-schema-filename: workflows.graphql
           github-app-id: 1010045
           github-app-private-key: ${{ secrets.GRAPH_FEDERATOR }}
-          publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+          publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/graph-proxy@') }}
  
   frontend_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
