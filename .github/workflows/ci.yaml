@@ -89,6 +89,13 @@ jobs:
       pages: write
       id-token: write
 
+  commit_lint:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_commit_lint.yaml
+    permissions:
+      contents: read
+      pull-requests: read
+
   release_please:
     if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')
     uses: ./.github/workflows/_release_please.yaml
