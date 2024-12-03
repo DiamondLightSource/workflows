@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
   pullSecrets: []
 
-argoServerUrl: http://workflows.diamond.ac.uk
+argoServerUrl: http://argo-workflows.workflows.diamond.ac.uk
 prefixPath: /graphql
 
 deployment:
