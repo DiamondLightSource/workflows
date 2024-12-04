@@ -12,7 +12,7 @@ The workflow engine can be deployed using Helm:
 helm install workflows-cluster charts/workflows-cluster
 ```
 
-This will install a virtual cluster together with Argo CD, which then installs all other services
+This will install a virtual cluster together with [Argo CD](argo-cd.workflows.diamond.ac.uk), which then installs all other services
 inside the vcluster including the workflow engine itself.
 
 To connect to the virtual cluster and run a command inside the vcluster, use
@@ -46,17 +46,7 @@ mkdocs serve
 
 ## Accessing the Argo CD dashboard
 
-To access the Argo CD dashboard, we need to use port-forwarding to connect to the argocd-server inside the vcluster
-
-```sh
-kubectl -n workflows port-forward svc/argocd-server-x-argocd-x-workflows-cluster 8080:80 &
-```
-
-and then open the dashboard on [localhost:8080](localhost:8080). To obtain the admin password, you can use
-
-```sh
-vcluster connect workflows-cluster -- argocd admin initial-password -n argocd
-```
+The Argo CD dashboard is available at [https://argo-cd.workflows.diamond.ac.uk](https://argo-cd.workflows.diamond.ac.uk).
 
 ## Frontend
 
