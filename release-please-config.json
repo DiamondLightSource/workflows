@@ -1,0 +1,73 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "tag-separator": "@",
+  "separate-pull-requests": true,
+  "extra-files": ["README.md", "mkdocs.yml"],
+  "packages": {
+    "graph-proxy": {
+      "release-type": "rust",
+      "package-name": "graph-proxy"
+    },
+    "sessionspaces": {
+      "release-type": "rust",
+      "package-name": "sessionspaces"
+    },
+    "charts/apps": {
+      "release-type": "helm",
+      "package-name": "helm/apps"
+    },
+    "charts/argocd": {
+      "release-type": "helm",
+      "package-name": "helm/argocd"
+    },
+    "charts/dashboard": {
+      "release-type": "helm",
+      "package-name": "helm/frontend"
+    },
+    "charts/events": {
+      "release-type": "helm",
+      "package-name": "helm/frontend"
+    },
+    "charts/graph-proxy": {
+      "release-type": "helm",
+      "package-name": "helm/graph-proxy"
+    },
+    "charts/groups": {
+      "release-type": "helm",
+      "package-name": "helm/groups"
+    },
+    "charts/sessionspaces": {
+      "release-type": "helm",
+      "package-name": "helm/sessionspaces"
+    },
+    "charts/verflixt": {
+      "release-type": "helm",
+      "package-name": "helm/verflixt"
+    },
+    "charts/workflows": {
+      "release-type": "helm",
+      "package-name": "helm/workflows"
+    },
+    "charts/workflows-cluster": {
+      "release-type": "helm",
+      "package-name": "helm/workflows-cluster"
+    },
+    "docs": {
+      "release-type": "simple"
+    },
+    "frontend/dashboard": {
+      "release-type": "node",
+      "package-name": "frontend/dashboard"
+    },
+    "frontend/relay-workflows-lib": {
+      "release-type": "node",
+      "package-name": "frontend/relay-workflows-lib"
+    },
+    "frontend/workflows-lib": {
+      "release-type": "node",
+      "package-name": "frontend/workflows-lib"
+    }
+  }
+}
