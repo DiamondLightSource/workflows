@@ -11,6 +11,7 @@ serde_json = { version = "1.0.125" }
 name = "graph-proxy"
 version = "0.1.0"
 edition = "2021"
+exclude = ["test-resources/"]
 
 [dependencies]
 anyhow = { version = "1.0.94" }
@@ -47,6 +48,10 @@ tracing = { version = "0.1.41" }
 tracing-opentelemetry = { version = "0.23.0" }
 tracing-subscriber = { version = "0.3.19" }
 url = { version = "2.5.4" }
+
+[dev-dependencies]
+httpmock = "0.7.0"
+indexmap = "2.7.0"
 
 [build-dependencies]
 built = { version = "0.7.5" }

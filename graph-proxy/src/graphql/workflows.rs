@@ -445,3 +445,65 @@ impl WorkflowsQuery {
         Ok(connection)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use async_graphql::{Name, Value};
+    use indexmap::IndexMap;
+    use url::Url;
+
+    use super::*;
+    use crate::graphql::root_schema_builder;
+
+    #[tokio::test]
+    async fn single_workflow_query() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-resources");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}/{}", namespace, workflow_name));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    name
+                }}
+            }}
+        "#,
+            workflow_name, proposal_code, proposal_number, number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert();
+        let mut outer_map = IndexMap::new();
+        let outer_map_key = Name::new("workflow");
+        let mut inner_map = IndexMap::new();
+        let inner_map_key = Name::new("name");
+        let inner_map_value = Value::from(workflow_name);
+        inner_map.insert(inner_map_key, inner_map_value);
+        outer_map.insert(outer_map_key, Value::from(inner_map));
+        let expected_data = Value::from(outer_map);
+        assert_eq!(resp.data, expected_data);
+    }
+}

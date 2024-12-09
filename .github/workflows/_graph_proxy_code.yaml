@@ -63,5 +63,6 @@ jobs:
         working-directory: graph-proxy
         run: >
           cargo test
+          --release
           --all-targets
           --all-features
