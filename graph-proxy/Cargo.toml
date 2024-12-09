@@ -29,10 +29,10 @@ derive_more = { version = "1.0.0", features = [
 ] }
 dotenvy = { version = "0.15.7" }
 lazy_static = { version = "1.5.0" }
-opentelemetry = { version = "0.22.0" }
-opentelemetry-otlp = { version = "0.15.0", features = ["metrics"] }
-opentelemetry-semantic-conventions = "0.14.0"
-opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
+opentelemetry = { version = "0.27.1" }
+opentelemetry-otlp = { version = "0.26.0", features = ["metrics"] }
+opentelemetry-semantic-conventions = "0.27.0"
+opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio"] }
 regex = "1.11.1"
 reqwest = { version = "0.12.9", default-features = false, features = [
   "rustls-tls",
@@ -44,7 +44,7 @@ thiserror = { version = "2.0.3" }
 tokio = { version = "1.41.1", features = ["macros", "net", "rt-multi-thread"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = { version = "0.1.41" }
-tracing-opentelemetry = { version = "0.23.0" }
+tracing-opentelemetry = { version = "0.28.0" }
 tracing-subscriber = { version = "0.3.19" }
 url = { version = "2.5.4" }
 
