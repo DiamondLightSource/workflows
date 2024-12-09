@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = { version = "1.0.93" }
-clap = { version = "4.5.21", features = ["derive", "env"] }
+anyhow = { version = "1.0.94" }
+clap = { version = "4.5.23", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
@@ -24,7 +24,7 @@ sqlx = { version = "0.8.2", features = [
     "time",
 ] }
 strum = { version = "0.26.3", features = ["derive"] }
-time = { version = "0.3.36" }
+time = { version = "0.3.37" }
 tokio = { version = "1.41.1", features = ["macros", "time"] }
 tower = { version = "0.4.13", features = ["limit", "util"] }
 tracing = { version = "0.1.41" }
