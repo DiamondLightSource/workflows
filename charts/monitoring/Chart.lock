@@ -2,11 +2,14 @@ dependencies:
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 8.6.2
-- name: prometheus
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 25.30.1
 - name: thanos
   repository: https://charts.bitnami.com/bitnami
   version: 15.8.1
-digest: sha256:9f206a4b3b983bf0b4704ff439ce7fbbf7d9d47d142806b909edb3b0ee44860b
-generated: "2024-11-26T12:49:16.523569581Z"
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 25.30.1
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  version: 2.27.0
+digest: sha256:fb9c10335a9659648a56af819ca9322127f20d1e4f70c1c2aa6934a1d99c7895
+generated: "2025-01-14T11:27:30.872511638Z"
