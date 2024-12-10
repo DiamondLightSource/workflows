@@ -104,3 +104,167 @@ thanos:
         ephemeral-storage: 8Gi
     networkPolicy:
       enabled: false
+
+prometheus:
+  kube-state-metrics:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+  podSecurityPolicy:
+    enabled: false
+  rbac:
+    create: false
+  alertmanager:
+    serviceAccount:
+      create: true
+      annotations: {}
+    ingress:
+      enabled: true
+      hosts:
+        - host: alertmanager.workflows.diamond.ac.uk
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - alertmanager.workflows.diamond.ac.uk
+          secretName: letsencrypt-alertmanager-workflows-diamond-ac-uk
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    extraArgs:
+      web.external-url: https://alertmanager.workflows.diamond.ac.uk
+    configmapReload:
+      enabled: true
+      resources:
+        limits:
+          cpu: 250m
+          memory: 400Mi
+  configmapReload:
+    prometheus:
+      resources:
+        limits:
+          cpu: 250m
+          memory: 400Mi
+  server:
+    baseURL: https://prometheus.workflows.diamond.ac.uk
+    remoteWrite:
+      - url: "http://{{ .Release.Name }}-thanos-receive.{{ .Release.Namespace }}.svc.cluster.local:19291/api/v1/receive"
+    resources:
+      requests:
+        cpu: '2'
+        memory: 32Gi
+      limits:
+        cpu: '4'
+        memory: 64Gi
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - prometheus
+            topologyKey: kubernetes.io/hostname
+    ingress:
+      enabled: true
+      hosts:
+        - prometheus.workflows.diamond.ac.uk
+      path: /
+      tls:
+        - hosts:
+            - prometheus.workflows.diamond.ac.uk
+          secretName: letsencrypt-prometheus-workflows-diamond-ac-uk
+    persistentVolume:
+      enabled: false
+    replicaCount: 1
+    retention: 7d
+    statefulSet:
+      enabled: true
+    alertmanagers:
+      - kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              own_namespace: true
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: <namespace>
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+            regex: <release-name>
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            regex: alertmanager
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: "9093"
+            action: keep
+    livenessProbe:
+      httpGet:
+        path: /-/healthy
+        port: 9090
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /-/ready
+        port: 9090
+      initialDelaySeconds: 15
+      periodSeconds: 10
+  serviceAccounts:
+    prometheus-node-exporter:
+      annotations: {}
+      create: true
+    pushgateway:
+      annotations: {}
+      create: true
+    server:
+      annotations: {}
+      create: true
+  serverFiles:
+    prometheus.yml:
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets:
+                - localhost:9090
+        - job_name: 'kubernetes-pods'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                own_namespace: true
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+              action: replace
+              regex: (https?)
+              target_label: __scheme__
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+              replacement: __param_$1
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_phase]
+              regex: Pending|Succeeded|Failed|Completed
+              action: drop
