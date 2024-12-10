@@ -22,3 +22,85 @@ grafana:
           type: prometheus
           url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
           isDefault: true
+
+thanos:
+  existingObjstoreSecret: '{{ include "common.names.fullname" . }}-s3'
+  serviceAccount:
+    create: true
+  query:
+    enabled: true
+    ingress:
+      enabled: true
+      pathType: Prefix
+      hostname: thanos-query.workflows.diamond.ac.uk
+      extraTls:
+        - hosts:
+            - thanos-query.workflows.diamond.ac.uk
+          secretName: letsencrypt-thanos-query-workflows-diamond-ac-uk
+    persistence:
+      enabled: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    networkPolicy:
+      enabled: false
+  queryFrontend:
+    ingress:
+      enabled: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    networkPolicy:
+      enabled: false
+  storegateway:
+    enabled: true
+    persistence:
+      enabled: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    networkPolicy:
+      enabled: false
+  receive:
+    enabled: true
+    tsdbRetention: 1d
+    persistence:
+      enabled: false
+    service:
+      type: LoadBalancer
+    ingress:
+      enabled: false
+    resources:
+      requests:
+        cpu: '2'
+        memory: 32Gi
+      limits:
+        cpu: '4'
+        memory: 64Gi
+    networkPolicy:
+      enabled: false
+  compactor:
+    enabled: true
+    replicaCount: 1
+    retentionResolutionRaw: 30d
+    retentionResolution5m: 30d
+    retentionResolution1h: 1y
+    consistencyDelay: 30m
+    autoscaling:
+      enabled: false
+    persistence:
+      enabled: false
+    resources:
+      requests:
+        cpu: '1'
+        memory: 16Gi
+        ephemeral-storage: 4Gi
+      limits:
+        cpu: '2'
+        memory: 16Gi
+        ephemeral-storage: 8Gi
+    networkPolicy:
+      enabled: false

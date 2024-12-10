@@ -7,3 +7,6 @@ dependencies:
   - name: grafana
     repository: https://grafana.github.io/helm-charts
     version: 8.6.2
+  - name: thanos
+    repository: https://charts.bitnami.com/bitnami
+    version: 15.8.1
