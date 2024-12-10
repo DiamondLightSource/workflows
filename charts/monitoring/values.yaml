@@ -22,7 +22,88 @@ grafana:
     datasources.yaml:
       apiVersion: 1
       datasources:
-        - name: Prometheus
-          type: prometheus
-          url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
-          isDefault: true
+      - name: Prometheus
+        type: prometheus
+        url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
+        isDefault: true
+
+thanos:
+  existingServiceAccount: default-full-access-mounted
+  existingObjstoreSecret: '{{ include "common.names.fullname" . }}-sthree-secret'
+
+  query:
+    enabled: true
+    ingress:
+      enabled: true
+      pathType: Prefix
+      hostname: thanos-query.workflows.diamond.ac.uk
+      extraTls:
+        - hosts:
+            - thanos-query.workflows.diamond.ac.uk
+          secretName: letsencrypt-thanos-query-workflows-diamond-ac-uk
+    persistence:
+      enabled: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    networkPolicy:
+      enabled: false
+
+  queryFrontend:
+    ingress:
+      enabled: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    networkPolicy:
+      enabled: false
+
+  storegateway:
+    enabled: true
+    persistence:
+      enabled: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 2Gi
+    networkPolicy:
+      enabled: false
+
+  receive:
+    enabled: true
+    tsdbRetention: 1d
+    persistence:
+      enabled: false
+    service:
+      type: LoadBalancer
+    ingress:
+      enabled: false
+    resources:
+      requests:
+        cpu: '1'
+        memory: 8Gi
+      limits:
+        cpu: '2'
+        memory: 8Gi
+    networkPolicy:
+      enabled: false
+
+  compactor:
+    enabled: true
+    retentionResolutionRaw: 30d
+    retentionResolution5m: 30d
+    retentionResolution1h: 1y
+    consistencyDelay: 30m
+    persistence:
+      enabled: false
+    resources:
+      requests:
+        cpu: '1'
+        memory: 16Gi
+      limits:
+        cpu: '2'
+        memory: 16Gi
+    networkPolicy:
+      enabled: false
