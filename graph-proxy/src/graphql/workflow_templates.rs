@@ -224,7 +224,7 @@ impl WorkflowTemplatesMutation {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(workflow, visit.into())?)
+        Ok(Workflow::new(workflow, visit.into(), server_url.clone())?)
     }
 }
 
