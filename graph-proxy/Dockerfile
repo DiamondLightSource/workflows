@@ -1,4 +1,4 @@
-FROM docker.io/library/rust:1.80.1-bullseye AS build
+FROM docker.io/library/rust:1.83.0-bullseye AS build
 
 ARG ARGO_SERVER_SCHEMA_URL
 
