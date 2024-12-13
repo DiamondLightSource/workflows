@@ -505,6 +505,70 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn single_succeeded_workflow_query() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-resources");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    status {{
+                        ...on WorkflowSucceededStatus {{
+                            startTime
+                            endTime
+                            message
+                            tasks {{
+                                id
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert_async().await;
+        let expected_data = json!({
+            "workflow": {
+                "status": {
+                    "startTime": "2024-11-19T09:45:46+00:00",
+                    "endTime": "2024-11-19T09:46:59+00:00",
+                    "message": null,
+                    "tasks": [{"id": workflow_name}]
+                }
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
     async fn multiple_workflows_query() {
         let visit = Visit {
             proposal_code: "mg".to_string(),
