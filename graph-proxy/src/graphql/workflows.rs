@@ -632,4 +632,106 @@ mod tests {
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
     }
+
+    #[tokio::test]
+    async fn multiple_succeeded_workflows_task_ids_query() {
+        let workflow_names = ["numpy-benchmark-wdkwj", "numpy-benchmark-n6jsg"];
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let limit = 2;
+
+        let mut server = mockito::Server::new_async().await;
+        let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("get-workflows.json");
+        let mut workflow_one_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_one_response_file_path.push("test-resources");
+        workflow_one_response_file_path.push("get-workflow-wdkwj.json");
+        let mut workflow_two_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_two_response_file_path.push("test-resources");
+        workflow_two_response_file_path.push("get-workflow-n6jsg.json");
+
+        let workflows_endpoint = server
+            .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
+            .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
+                "listOptions.limit".to_string(),
+                limit.to_string(),
+            )]))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(multiple_workflows_response_file_path)
+            .create_async()
+            .await;
+
+        let workflow_one_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{}/{}", visit, workflow_names[0])[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(workflow_one_response_file_path)
+            .create_async()
+            .await;
+
+        let workflow_two_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{}/{}", visit, workflow_names[1])[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(workflow_two_response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflows(visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, limit: {}){{
+                    nodes {{
+                        status {{
+                            ...on WorkflowSucceededStatus {{
+                                tasks {{
+                                    id
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        "#,
+            visit.proposal_code, visit.proposal_number, visit.number, limit
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert_async().await;
+        workflow_one_endpoint.assert_async().await;
+        workflow_two_endpoint.assert_async().await;
+
+        let nodes = workflow_names
+            .iter()
+            .map(|name| {
+                json!({
+                    "status": {
+                        "tasks": [{"id": name}],
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
+        let expected_data = json!({
+            "workflows": {
+                "nodes": nodes,
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
 }
