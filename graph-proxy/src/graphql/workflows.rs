@@ -636,4 +636,101 @@ mod tests {
         let expected_data = Value::from(outer_map);
         assert_eq!(resp.data, expected_data);
     }
+
+    #[tokio::test]
+    async fn multiple_succeeded_workflows_task_ids_query() {
+        let workflow_names = ["numpy-benchmark-wdkwj", "numpy-benchmark-n6jsg"];
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("get-workflows.json");
+        let mut workflow_one_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_one_response_file_path.push("test-resources");
+        workflow_one_response_file_path.push("get-workflow-wdkwj.json");
+        let mut workflow_two_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_two_response_file_path.push("test-resources");
+        workflow_two_response_file_path.push("get-workflow-n6jsg.json");
+
+        let workflows_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}", namespace));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(multiple_workflows_response_file_path).unwrap());
+        });
+
+        let workflow_one_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET).path(format!(
+                "/api/v1/workflows/{}/{}",
+                namespace, workflow_names[0]
+            ));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(workflow_one_response_file_path).unwrap());
+        });
+
+        let workflow_two_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET).path(format!(
+                "/api/v1/workflows/{}/{}",
+                namespace, workflow_names[1]
+            ));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(workflow_two_response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflows(visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}){{
+                    nodes {{
+                        status {{
+                            ...on WorkflowSucceededStatus {{
+                                tasks {{
+                                    id
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        "#,
+            proposal_code, proposal_number, number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert();
+        workflow_one_endpoint.assert();
+        workflow_two_endpoint.assert();
+
+        let mut outer_map = IndexMap::new();
+        let mut nodes_map = IndexMap::new();
+        let mut nodes = Vec::new();
+        for workflow_name in workflow_names {
+            let mut status_map = IndexMap::new();
+            let mut succeeded_status_map = IndexMap::new();
+            let mut tasks = Vec::new();
+            let mut single_task = IndexMap::new();
+            single_task.insert(Name::new("id"), Value::from(workflow_name));
+            tasks.push(single_task);
+            succeeded_status_map.insert(Name::new("tasks"), Value::from(tasks));
+            status_map.insert(Name::new("status"), Value::from(succeeded_status_map));
+            nodes.push(Value::from(status_map));
+        }
+        nodes_map.insert(Name::new("nodes"), Value::from(nodes));
+        outer_map.insert(Name::new("workflows"), Value::from(nodes_map));
+        let expected_data = Value::from(outer_map);
+        assert_eq!(resp.data, expected_data);
+    }
 }
