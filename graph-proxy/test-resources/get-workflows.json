@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "resourceVersion": "160444177",
+    "continue": "2"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "numpy-benchmark-wdkwj",
+        "namespace": "mg36964-1",
+        "uid": "bed157b2-ecf2-4423-9945-8ecfa767a151",
+        "creationTimestamp": "2024-11-19T09:45:46Z",
+        "labels": {
+          "submit-from-ui": "true",
+          "workflows.argoproj.io/cluster-workflow-template": "numpy-benchmark",
+          "workflows.argoproj.io/completed": "true",
+          "workflows.argoproj.io/creator": "ed66f621-7b56-4157-a255-a03af5bd8f0e",
+          "workflows.argoproj.io/creator-email": "garry.o-donnell.at.diamond.ac.uk",
+          "workflows.argoproj.io/creator-preferred-username": "enu43627",
+          "workflows.argoproj.io/phase": "Succeeded",
+          "workflows.argoproj.io/workflow-archiving-status": "Persisted"
+        },
+        "annotations": {
+          "workflows.argoproj.io/pod-name-format": "v2"
+        }
+      },
+      "spec": {
+        "arguments": {}
+      },
+      "status": {
+        "phase": "Succeeded",
+        "startedAt": "2024-11-19T09:45:46Z",
+        "finishedAt": "2024-11-19T09:46:59Z",
+        "estimatedDuration": 68,
+        "progress": "1/1",
+        "resourcesDuration": {
+          "cpu": 6,
+          "memory": 158
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "numpy-benchmark-n6jsg",
+        "namespace": "mg36964-1",
+        "uid": "d77cecff-078b-4a55-9f06-4429570e7f4a",
+        "creationTimestamp": "2024-11-13T09:07:42Z",
+        "labels": {
+          "workflows.argoproj.io/cluster-workflow-template": "numpy-benchmark",
+          "workflows.argoproj.io/completed": "true",
+          "workflows.argoproj.io/creator": "9f723dde-8c91-41f5-9e97-3c8cbbd811e5",
+          "workflows.argoproj.io/creator-email": "benedikt.daurer.at.diamond.ac.uk",
+          "workflows.argoproj.io/creator-preferred-username": "iat69393",
+          "workflows.argoproj.io/phase": "Succeeded",
+          "workflows.argoproj.io/workflow-archiving-status": "Persisted"
+        },
+        "annotations": {
+          "workflows.argoproj.io/pod-name-format": "v2"
+        }
+      },
+      "spec": {
+        "arguments": {}
+      },
+      "status": {
+        "phase": "Succeeded",
+        "startedAt": "2024-11-13T09:07:42Z",
+        "finishedAt": "2024-11-13T09:08:50Z",
+        "estimatedDuration": 78,
+        "progress": "1/1",
+        "resourcesDuration": {
+          "cpu": 6,
+          "memory": 257
+        }
+      }
+    }
+  ]
+}
