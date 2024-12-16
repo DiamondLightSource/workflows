@@ -445,3 +445,419 @@ impl WorkflowsQuery {
         Ok(connection)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use async_graphql::{Name, Value};
+    use indexmap::IndexMap;
+    use url::Url;
+
+    use super::*;
+    use crate::graphql::root_schema_builder;
+
+    #[tokio::test]
+    async fn single_workflow_query() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-resources");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}/{}", namespace, workflow_name));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    name
+                }}
+            }}
+        "#,
+            workflow_name, proposal_code, proposal_number, number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert();
+        let mut outer_map = IndexMap::new();
+        let outer_map_key = Name::new("workflow");
+        let mut inner_map = IndexMap::new();
+        let inner_map_key = Name::new("name");
+        let inner_map_value = Value::from(workflow_name);
+        inner_map.insert(inner_map_key, inner_map_value);
+        outer_map.insert(outer_map_key, Value::from(inner_map));
+        let expected_data = Value::from(outer_map);
+        assert_eq!(resp.data, expected_data);
+    }
+
+    #[tokio::test]
+    async fn single_succeeded_workflow_query() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-resources");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}/{}", namespace, workflow_name));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    status {{
+                        ...on WorkflowSucceededStatus {{
+                            startTime
+                            endTime
+                            message
+                            tasks {{
+                                id
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        "#,
+            workflow_name, proposal_code, proposal_number, number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert();
+        let mut outer_map = IndexMap::new();
+        let mut status_map = IndexMap::new();
+        let mut succeeded_status_map = IndexMap::new();
+        let mut tasks = Vec::new();
+        let mut single_task = IndexMap::new();
+        single_task.insert(Name::new("id"), Value::from(workflow_name));
+        tasks.push(Value::from(single_task));
+        succeeded_status_map.insert(
+            Name::new("startTime"),
+            Value::from("2024-11-19T09:45:46+00:00"),
+        );
+        succeeded_status_map.insert(
+            Name::new("endTime"),
+            Value::from("2024-11-19T09:46:59+00:00"),
+        );
+        succeeded_status_map.insert(Name::new("message"), Value::Null);
+        succeeded_status_map.insert(Name::new("tasks"), Value::from(tasks));
+        status_map.insert(Name::new("status"), Value::from(succeeded_status_map));
+        outer_map.insert(Name::new("workflow"), Value::from(status_map));
+        let expected_data = Value::from(outer_map);
+        assert_eq!(resp.data, expected_data);
+    }
+
+    #[tokio::test]
+    async fn multiple_workflows_query() {
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("get-workflows.json");
+
+        let workflows_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}", namespace));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(multiple_workflows_response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflows(visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    nodes {{
+                        name
+                    }}
+                }}
+            }}
+        "#,
+            proposal_code, proposal_number, number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert();
+        let mut outer_map = IndexMap::new();
+        let mut nodes_map = IndexMap::new();
+        let mut nodes = Vec::new();
+
+        for workflow_name in ["numpy-benchmark-wdkwj", "numpy-benchmark-n6jsg"] {
+            let mut map = IndexMap::new();
+            let key = Name::new("name");
+            let value = Value::from(workflow_name);
+            map.insert(key, value);
+            nodes.push(Value::from(map));
+        }
+
+        nodes_map.insert(Name::new("nodes"), Value::from(nodes));
+        outer_map.insert(Name::new("workflows"), Value::from(nodes_map));
+        let expected_data = Value::from(outer_map);
+        assert_eq!(resp.data, expected_data);
+    }
+
+    #[tokio::test]
+    async fn multiple_succeeded_workflows_task_ids_query() {
+        let workflow_names = ["numpy-benchmark-wdkwj", "numpy-benchmark-n6jsg"];
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("get-workflows.json");
+        let mut workflow_one_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_one_response_file_path.push("test-resources");
+        workflow_one_response_file_path.push("get-workflow-wdkwj.json");
+        let mut workflow_two_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_two_response_file_path.push("test-resources");
+        workflow_two_response_file_path.push("get-workflow-n6jsg.json");
+
+        let workflows_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}", namespace));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(multiple_workflows_response_file_path).unwrap());
+        });
+
+        let workflow_one_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET).path(format!(
+                "/api/v1/workflows/{}/{}",
+                namespace, workflow_names[0]
+            ));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(workflow_one_response_file_path).unwrap());
+        });
+
+        let workflow_two_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET).path(format!(
+                "/api/v1/workflows/{}/{}",
+                namespace, workflow_names[1]
+            ));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(workflow_two_response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflows(visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}){{
+                    nodes {{
+                        status {{
+                            ...on WorkflowSucceededStatus {{
+                                tasks {{
+                                    id
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        "#,
+            proposal_code, proposal_number, number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert();
+        workflow_one_endpoint.assert();
+        workflow_two_endpoint.assert();
+
+        let mut outer_map = IndexMap::new();
+        let mut nodes_map = IndexMap::new();
+        let mut nodes = Vec::new();
+        for workflow_name in workflow_names {
+            let mut status_map = IndexMap::new();
+            let mut succeeded_status_map = IndexMap::new();
+            let mut tasks = Vec::new();
+            let mut single_task = IndexMap::new();
+            single_task.insert(Name::new("id"), Value::from(workflow_name));
+            tasks.push(single_task);
+            succeeded_status_map.insert(Name::new("tasks"), Value::from(tasks));
+            status_map.insert(Name::new("status"), Value::from(succeeded_status_map));
+            nodes.push(Value::from(status_map));
+        }
+        nodes_map.insert(Name::new("nodes"), Value::from(nodes));
+        outer_map.insert(Name::new("workflows"), Value::from(nodes_map));
+        let expected_data = Value::from(outer_map);
+        assert_eq!(resp.data, expected_data);
+    }
+
+    #[tokio::test]
+    async fn multiple_workflows_paginated_query() {
+        let proposal_code = "mg";
+        let proposal_number = 36964;
+        let number = 1;
+        let namespace = format!("{}{}-{}", proposal_code, proposal_number, number);
+
+        let server = httpmock::MockServer::start();
+        let mut first_page_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        first_page_response_file_path.push("test-resources");
+        first_page_response_file_path.push("get-workflows.json");
+        let mut second_page_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        second_page_response_file_path.push("test-resources");
+        second_page_response_file_path.push("get-workflows-paginated.json");
+
+        let second_page_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}", namespace))
+                .query_param("listOptions.limit", "2")
+                .query_param("listOptions.continue", "2");
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(second_page_response_file_path).unwrap());
+        });
+        let first_page_endpoint = server.mock(|when, then| {
+            when.method(httpmock::Method::GET)
+                .path(format!("/api/v1/workflows/{}", namespace))
+                .query_param("listOptions.limit", "2");
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(std::fs::read_to_string(first_page_response_file_path).unwrap());
+        });
+
+        let token = None::<Authorization<Bearer>>;
+        let argo_server_url = Url::parse(&server.base_url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(token)
+            .finish();
+        let first_page_query = format!(
+            r#"
+            query {{
+                workflows(visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, limit: 2) {{
+                    nodes {{
+                        name
+                    }}
+                    pageInfo {{
+                        endCursor
+                    }}
+                }}
+            }}
+        "#,
+            proposal_code, proposal_number, number
+        );
+        let resp = schema
+            .execute(first_page_query)
+            .await
+            .into_result()
+            .unwrap();
+
+        let map = match resp.data {
+            Value::Object(workflows_map) => workflows_map,
+            _ => panic!("Expected data to be an object"),
+        };
+        let workflows_map = match map.get("workflows").expect("Missing 'workflows' key") {
+            Value::Object(workflows_map) => workflows_map,
+            _ => panic!("Expected value of 'workflows' key to be an object"),
+        };
+        let page_info = match workflows_map
+            .get("pageInfo")
+            .expect("Missing 'pageInfo' key")
+        {
+            Value::Object(page_info) => page_info,
+            _ => panic!("Expected value of 'pageInfo' key to be an object"),
+        };
+        let cursor = match page_info.get("endCursor").expect("Missing 'endCursor' key") {
+            Value::String(cursor) => cursor,
+            _ => panic!("Expected value of 'cursorVal' key to be a string"),
+        };
+
+        let second_page_query = format!(
+            r#"
+            query {{
+                workflows(visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, limit: 2, cursor: "{}") {{
+                    nodes {{
+                        name
+                    }}
+                    pageInfo {{
+                        endCursor
+                    }}
+                }}
+            }}
+        "#,
+            proposal_code, proposal_number, number, cursor
+        );
+        let resp = schema
+            .execute(second_page_query)
+            .await
+            .into_result()
+            .unwrap();
+
+        first_page_endpoint.assert();
+        second_page_endpoint.assert();
+        let mut expected_nodes = Vec::new();
+        for workflow_name in ["numpy-benchmark-r9csr", "numpy-benchmark-rh7b4"] {
+            let mut map = IndexMap::new();
+            let key = Name::new("name");
+            let value = Value::from(workflow_name);
+            map.insert(key, value);
+            expected_nodes.push(Value::from(map));
+        }
+
+        let map = match resp.data {
+            Value::Object(map) => map,
+            _ => panic!("Expected data to be an object"),
+        };
+        let workflows_map = match map.get("workflows").expect("Missing 'workflows' key") {
+            Value::Object(workflows_map) => workflows_map,
+            _ => panic!("Expected value of 'workflows' key to be an object"),
+        };
+        let nodes = match workflows_map.get("nodes").expect("Missing 'nodes' key") {
+            Value::List(nodes) => nodes,
+            _ => panic!("Expected value of 'nodes' key to be a list"),
+        };
+        assert_eq!(*nodes, expected_nodes);
+    }
+}
