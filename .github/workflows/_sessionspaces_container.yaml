@@ -2,6 +2,10 @@ name: Sessionspaces Container
 
 on:
   workflow_call:
+    inputs:
+      push_image:
+        required: true
+        type: boolean
 
 jobs:
   build:
@@ -55,8 +59,8 @@ jobs:
           context: ./sessionspaces
           build-args: DATABASE_URL=mysql://root:rootpassword@localhost:3306/ispyb_build
           target: deploy
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-          load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
+          push: ${{ inputs.push_image }}
+          load: ${{ inputs.push_image != 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
