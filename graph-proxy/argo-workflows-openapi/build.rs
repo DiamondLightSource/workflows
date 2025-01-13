@@ -1,4 +1,3 @@
-use quote::quote;
 use schemars::schema::{InstanceType, RootSchema, Schema, SchemaObject};
 use std::{
     env,
@@ -35,12 +34,8 @@ fn main() {
 
     let mut type_space = TypeSpace::new(TypeSpaceSettings::default().with_struct_builder(true));
     type_space.add_root_schema(schema).unwrap();
-    let mut tokens = quote! {
-        use serde::{Serialize, Deserialize};
-    };
-    tokens.extend(type_space.to_stream());
 
-    let contents = rustfmt_wrapper::rustfmt(tokens.to_string()).unwrap();
+    let contents = rustfmt_wrapper::rustfmt(type_space.to_stream().to_string()).unwrap();
 
     create_dir_all(Path::new("src")).unwrap();
     let mut file = File::create("src/types.rs").unwrap();

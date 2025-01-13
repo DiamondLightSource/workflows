@@ -117,7 +117,6 @@ name = "argo-workflows-openapi"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "quote",
  "reqwest",
  "rustfmt-wrapper",
  "schemars",
