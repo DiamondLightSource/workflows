@@ -42,7 +42,7 @@ reqwest = { version = "0.12.9", default-features = false, features = [
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { version = "2.0.11" }
-tokio = { version = "1.42.0", features = ["macros", "net", "rt-multi-thread"] }
+tokio = { version = "1.43.0", features = ["macros", "net", "rt-multi-thread"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = { version = "0.1.41" }
 tracing-opentelemetry = { version = "0.23.0" }
