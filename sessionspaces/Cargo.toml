@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.95" }
-clap = { version = "4.5.23", features = ["derive", "env"] }
+clap = { version = "4.5.26", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = ["deref", "deref_mut"] }
 dotenvy = { version = "0.15.7" }
 humantime = { version = "2.1.0" }
@@ -16,7 +16,7 @@ kube = { version = "0.95.0" }
 ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
-serde_json = { version = "1.0.134" }
+serde_json = { version = "1.0.135" }
 sqlx = { version = "0.8.3", features = [
     "runtime-tokio",
     "tls-rustls",
