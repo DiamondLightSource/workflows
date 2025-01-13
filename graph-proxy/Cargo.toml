@@ -5,7 +5,7 @@ default-members = ["."]
 [workspace.dependencies]
 chrono = { version = "0.4.39" }
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.134" }
+serde_json = { version = "1.0.135" }
 
 [package]
 name = "graph-proxy"
@@ -21,7 +21,7 @@ async-graphql-axum = { version = "7.0.13" }
 axum = { version = "0.7.9" }
 axum-extra = { version = "0.9.6", features = ["typed-header"] }
 chrono = { workspace = true }
-clap = { version = "4.5.23", features = ["derive", "env"] }
+clap = { version = "4.5.26", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = [
   "deref",
   "deref_mut",
@@ -41,7 +41,7 @@ reqwest = { version = "0.12.9", default-features = false, features = [
 ] }
 serde = { workspace = true }
 serde_json = { workspace = true }
-thiserror = { version = "2.0.9" }
+thiserror = { version = "2.0.11" }
 tokio = { version = "1.42.0", features = ["macros", "net", "rt-multi-thread"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = { version = "0.1.41" }
