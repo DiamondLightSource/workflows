@@ -967,7 +967,7 @@ dependencies = [
  "pin-project-lite",
  "socket2",
  "tokio",
- "tower",
+ "tower 0.4.13",
  "tower-service",
  "tracing",
 ]
@@ -1229,7 +1229,7 @@ dependencies = [
  "thiserror 1.0.65",
  "tokio",
  "tokio-util",
- "tower",
+ "tower 0.4.13",
  "tower-http",
  "tracing",
 ]
@@ -2130,7 +2130,7 @@ dependencies = [
  "strum",
  "time",
  "tokio",
- "tower",
+ "tower 0.5.0",
  "tracing",
  "tracing-subscriber",
  "url",
@@ -2514,6 +2514,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "sync_wrapper"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
+
+[[package]]
 name = "synstructure"
 version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2737,6 +2743,23 @@ dependencies = [
  "futures-util",
  "pin-project",
  "pin-project-lite",
+ "tokio",
+ "tokio-util",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
+name = "tower"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36b837f86b25d7c0d7988f00a54e74739be6477f2aac6201b8f429a7569991b7"
+dependencies = [
+ "futures-core",
+ "futures-util",
+ "pin-project-lite",
+ "sync_wrapper",
  "tokio",
  "tokio-util",
  "tower-layer",
