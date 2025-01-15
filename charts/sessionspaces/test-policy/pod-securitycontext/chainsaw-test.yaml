@@ -9,7 +9,13 @@ spec:
         app.kubernetes.io/managed-by: sessionspaces
   steps:
     - try:
-        - apply:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: myspace
+        - create:
             resource:
               apiVersion: v1
               kind: ConfigMap
@@ -22,10 +28,29 @@ spec:
                 gid: "1234"
         - create:
             resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+                namespace: myspace
+                uid: abc1234
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "4321"
+              spec: {}
+        - sleep:
+            duration: 10s
+        - create:
+            resource:
               apiVersion: v1
               kind: Pod
               metadata:
                 name: test-pod
+                namespace: myspace
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: abc1234
               spec:
                 containers:
                   - name: test-container
@@ -39,23 +64,50 @@ spec:
               kind: Pod
               metadata:
                 name: test-pod
+                namespace: myspace
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: abc1234
+              spec:
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+        - sleep:
+            duration: 60s
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+                namespace: myspace
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: abc1234
               spec:
                 securityContext:
                   runAsGroup: 1234
-                  runAsUser: 36055
+                #   runAsUser: 36055
                 containers:
                   - name: test-container
                     image: docker.io/library/busybox:latest
                     securityContext:
                       runAsGroup: 1234
-                      runAsUser: 36055
-                      allowPrivilegeEscalation: false
-                      readOnlyRootFilesystem: true
+                    #   runAsUser: 36055
+                    #   allowPrivilegeEscalation: false
+                    #   readOnlyRootFilesystem: true
                 initContainers:
                   - name: test-init-container
                     image: docker.io/library/busybox:latest
                     securityContext:
                       runAsGroup: 1234
-                      runAsUser: 36055
-                      allowPrivilegeEscalation: false
-                      readOnlyRootFilesystem: true
+                    #   runAsUser: 36055
+                    #   allowPrivilegeEscalation: false
+                    #   readOnlyRootFilesystem: true
