@@ -6,3 +6,9 @@ monitoring:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+workflowsCluster:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
