@@ -1,0 +1,6 @@
+apiVersion: v2
+name: argocd-workflows-apps
+description: An argocd app to deploy apps in the namespace
+type: application
+
+version: 0.1.0
