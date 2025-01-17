@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  namespace: myspace
+  ownerReferences:
+    - name: test-workflow
+      kind: Workflow
+      apiVersion: argoproj.io/v1alpha1
+      uid: abc1234
+spec:
+  containers:
+    - name: test-container
+      image: docker.io/library/busybox:latest
+  initContainers:
+    - name: test-init-container
+      image: docker.io/library/busybox:latest

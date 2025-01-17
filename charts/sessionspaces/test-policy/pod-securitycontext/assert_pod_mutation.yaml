@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  namespace: myspace
+  ownerReferences:
+    - name: test-workflow
+      kind: Workflow
+      apiVersion: argoproj.io/v1alpha1
+      uid: abc1234
+spec:
+  securityContext:
+    runAsGroup: 1234
+  #   runAsUser: 36055
+  containers:
+    - name: test-container
+      image: docker.io/library/busybox:latest
+      securityContext:
+        runAsGroup: 1234
+      #   runAsUser: 36055
+      #   allowPrivilegeEscalation: false
+      #   readOnlyRootFilesystem: true
+  initContainers:
+    - name: test-init-container
+      image: docker.io/library/busybox:latest
+      securityContext:
+        runAsGroup: 1234
+      #   runAsUser: 36055
+      #   allowPrivilegeEscalation: false
+      #   readOnlyRootFilesystem: true
