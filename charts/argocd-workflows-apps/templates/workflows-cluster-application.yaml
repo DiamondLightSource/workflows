@@ -1,0 +1,32 @@
+{{- if .Values.workflowsCluster.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: workflows-cluster
+  namespace: workflows
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  destination:
+    namespace: workflows
+    server: {{ .Values.destination.server }}
+  project: workflows
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/workflows-cluster
+    targetRevision: {{ .Values.workflowsCluster.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.workflowsCluster.extraValueFiles }}
+        {{- .Values.workflowsCluster.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.workflowsCluster.valuesObject }}
+      valuesObject:
+        {{ .Values.workflowsCluster.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}
