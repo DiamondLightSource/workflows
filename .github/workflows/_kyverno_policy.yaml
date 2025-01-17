@@ -57,3 +57,7 @@ jobs:
 
       - name: Run Chainsaw Tests
         run: chainsaw test
+
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
