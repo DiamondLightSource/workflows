@@ -1,0 +1,9 @@
+apiVersion: v2
+name: base-apps
+description: "An Argocd app to deploy a monitoring stack and a virtual workfows-cluster which inturn deploys multiple argocd apps inside the workflows-cluster"
+type: application
+version: 0.1.0
+dependencies:
+  - name: common
+    repository: https://charts.bitnami.com/bitnami
+    version: 2.27.0
