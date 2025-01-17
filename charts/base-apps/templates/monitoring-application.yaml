@@ -1,0 +1,30 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "common.names.fullname" . }}-monitoring
+  namespace: {{ .Release.Namespace }}
+spec:
+  destination:
+    namespace: {{ .Release.Namespace }}
+    server: {{ .Values.destination.server }}
+  project: {{ .Release.Namespace }}
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/monitoring
+    targetRevision: {{ .Values.monitoring.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.monitoring.extraValueFiles }}
+        {{- .Values.monitoring.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.monitoring.valuesObject }}
+      valuesObject:
+        {{ .Values.monitoring.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}

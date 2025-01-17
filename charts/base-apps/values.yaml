@@ -1,0 +1,8 @@
+destination:
+  server: https://kubernetes.default.svc
+
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
