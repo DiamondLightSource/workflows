@@ -1,0 +1,8 @@
+destination:
+  server: https://api.argus.diamond.ac.uk:6443
+
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
