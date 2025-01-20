@@ -16,7 +16,7 @@ kube = { version = "0.98.0" }
 ldap3 = { version = "0.11.5", default-features = false, features = [
     "tls-rustls",
 ] }
-serde_json = { version = "1.0.135" }
+serde_json = { version = "1.0.137" }
 sqlx = { version = "0.8.3", features = [
     "runtime-tokio",
     "tls-rustls",
