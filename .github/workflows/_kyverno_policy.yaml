@@ -29,10 +29,13 @@ jobs:
           helm dep build charts/workflows
           helm dep build charts/sessionspaces
 
-      - name: Install Kyvenro
+      - name: Install Kyverno
         run: |
           helm install kyverno kyverno/kyverno --version 3.2.6 --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false
           helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' > /tmp/crds.yaml
+
+      - name: Install Kyverno CLI
+        uses: kyverno/action-install-cli@v0.2.0
 
       - name: Install Workflows CRDs
         run: |
