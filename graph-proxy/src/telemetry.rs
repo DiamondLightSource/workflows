@@ -1,11 +1,17 @@
-use opentelemetry::KeyValue;
-use opentelemetry_otlp::{new_exporter, new_pipeline, WithExportConfig};
-use opentelemetry_sdk::{propagation::TraceContextPropagator, runtime, trace::Config, Resource};
+use opentelemetry::{trace::TracerProvider as _, KeyValue};
+use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
+use opentelemetry_sdk::{
+    metrics::{PeriodicReader, SdkMeterProvider},
+    propagation::TraceContextPropagator,
+    runtime,
+    trace::TracerProvider,
+    Resource,
+};
 use opentelemetry_semantic_conventions::resource::{SERVICE_NAME, SERVICE_VERSION};
-use std::time::Duration;
 use tracing::{level_filters::LevelFilter, Level};
 use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
 /// Provides crate information from the time it was built
@@ -13,12 +19,35 @@ mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
 
+/// Encapsulates a [`TracerProvider`] and [`SdkMeterProvider`] to ensure metrics & trace streams
+/// are shutdown and flushed on drop
+#[allow(clippy::missing_docs_in_private_items)]
+pub struct OtelGuard {
+    tracer_provider: Option<TracerProvider>,
+    meter_provider: Option<SdkMeterProvider>,
+}
+
+impl Drop for OtelGuard {
+    fn drop(&mut self) {
+        if let Some(tracer_provider) = &self.tracer_provider {
+            if let Err(err) = tracer_provider.shutdown() {
+                eprintln!("{err:?}");
+            }
+        }
+        if let Some(meter_provider) = &self.meter_provider {
+            if let Err(err) = meter_provider.shutdown() {
+                eprintln!("{err}:?");
+            }
+        }
+    }
+}
+
 /// Sets up Logging & Tracing using opentelemetry if available
 pub fn setup_telemetry(
     metrics_endpoint: Option<Url>,
     tracing_endpoint: Option<Url>,
     telemetry_level: Level,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<OtelGuard> {
     let level_filter = LevelFilter::from_level(telemetry_level);
     let log_layer = tracing_subscriber::fmt::layer();
 
@@ -27,29 +56,48 @@ pub fn setup_telemetry(
         KeyValue::new(SERVICE_VERSION, built_info::PKG_VERSION),
     ]);
 
-    let metrics_layer = if let Some(metrics_endpoint) = metrics_endpoint {
-        Some(MetricsLayer::new(
-            new_pipeline()
-                .metrics(runtime::Tokio)
-                .with_exporter(new_exporter().tonic().with_endpoint(metrics_endpoint))
-                .with_resource(otel_resources.clone())
-                .with_period(Duration::from_secs(10))
-                .build()?,
-        ))
+    let (meter_provider, metrics_layer) = if let Some(metrics_endpoint) = metrics_endpoint {
+        let meter_provider = SdkMeterProvider::builder()
+            .with_reader(
+                PeriodicReader::builder(
+                    MetricExporter::builder()
+                        .with_tonic()
+                        .with_endpoint(metrics_endpoint)
+                        .build()?,
+                    runtime::Tokio,
+                )
+                .build(),
+            )
+            .with_resource(otel_resources.clone())
+            .build();
+        (
+            Some(meter_provider.clone()),
+            Some(MetricsLayer::new(meter_provider)),
+        )
     } else {
-        None
+        (None, None)
     };
 
-    let tracing_layer = if let Some(tracing_endpoint) = tracing_endpoint {
-        Some(OpenTelemetryLayer::new(
-            new_pipeline()
-                .tracing()
-                .with_exporter(new_exporter().tonic().with_endpoint(tracing_endpoint))
-                .with_trace_config(Config::default().with_resource(otel_resources))
-                .install_batch(runtime::Tokio)?,
-        ))
+    let (tracer_provider, tracing_layer) = if let Some(tracing_endpoint) = tracing_endpoint {
+        let tracer_provider = TracerProvider::builder()
+            .with_batch_exporter(
+                SpanExporter::builder()
+                    .with_tonic()
+                    .with_endpoint(tracing_endpoint)
+                    .build()?,
+                runtime::Tokio,
+            )
+            .with_resource(otel_resources)
+            .build();
+        let tracer = tracer_provider.tracer(built_info::PKG_NAME);
+        (Some(tracer_provider), Some(OpenTelemetryLayer::new(tracer)))
     } else {
-        None
+        (None, None)
+    };
+
+    let otel_guard = OtelGuard {
+        tracer_provider,
+        meter_provider,
     };
 
     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::default());
@@ -59,5 +107,5 @@ pub fn setup_telemetry(
         .with(metrics_layer)
         .with(tracing_layer)
         .try_init()?;
-    Ok(())
+    Ok(otel_guard)
 }

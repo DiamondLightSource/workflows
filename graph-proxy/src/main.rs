@@ -84,7 +84,7 @@ async fn main() {
 
     match args {
         Cli::Serve(args) => {
-            setup_telemetry(
+            let _otlp_guard = setup_telemetry(
                 args.metrics_endpoint.clone(),
                 args.tracing_endpoint.clone(),
                 args.telemetry_level,
