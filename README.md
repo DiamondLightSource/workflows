@@ -12,7 +12,7 @@ The workflow engine can be deployed using Helm:
 helm install workflows-cluster charts/workflows-cluster
 ```
 
-This will install a virtual cluster together with [Argo CD](argo-cd.workflows.diamond.ac.uk), which then installs all other services
+This will install a virtual cluster together with [Argo CD](https://argo-cd.workflows.diamond.ac.uk), which then installs all other services
 inside the vcluster including the workflow engine itself.
 
 To connect to the virtual cluster and run a command inside the vcluster, use
