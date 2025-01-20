@@ -5,7 +5,7 @@ default-members = ["."]
 [workspace.dependencies]
 chrono = { version = "0.4.39" }
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.135" }
+serde_json = { version = "1.0.137" }
 
 [package]
 name = "graph-proxy"
