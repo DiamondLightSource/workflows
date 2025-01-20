@@ -29,10 +29,13 @@ jobs:
           helm dep build charts/workflows
           helm dep build charts/sessionspaces
 
-      - name: Install Kyvenro
+      - name: Install Kyverno
         run: |
           helm install kyverno kyverno/kyverno --version 3.2.6 --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false
           helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' > /tmp/crds.yaml
+
+      - name: Install Kyverno CLI
+        uses: kyverno/action-install-cli@v0.2.0
 
       - name: Install Workflows CRDs
         run: |
@@ -45,7 +48,10 @@ jobs:
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
           helm template sessionspaces charts/sessionspaces | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
-          helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
+          # NOTE: workflows-posix-uid-label policy has been excluded from chainsaw testing
+          # To make testing work with this policy in place, it will be required to emulate the existence
+          # of a POSIX uid label as part of request.userInfo.extra
+          helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding") | select(.metadata.name != "workflows-posix-uid-label")' | tee -a /tmp/policies.yaml | kubectl apply -f -
           cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy")' | kubectl wait --for=condition=Ready --timeout=60s -f -
 
       - name: Wait for Kyverno
@@ -54,3 +60,7 @@ jobs:
 
       - name: Run Chainsaw Tests
         run: chainsaw test
+
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
