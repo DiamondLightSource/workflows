@@ -13,7 +13,7 @@ use async_graphql::{
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use serde_json::Value;
-use std::{collections::HashMap, ops::Deref};
+use std::{collections::HashMap, ops::Deref, sync::Arc};
 use tracing::{debug, instrument};
 
 #[derive(Debug, thiserror::Error)]
@@ -224,7 +224,10 @@ impl WorkflowTemplatesMutation {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(workflow, visit.into())?)
+        Ok(Workflow {
+            manifest: Arc::new(workflow),
+            visit: visit.into(),
+        })
     }
 }
 

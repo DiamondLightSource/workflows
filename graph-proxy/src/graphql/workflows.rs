@@ -2,7 +2,6 @@ use super::{Visit, VisitInput, CLIENT};
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
-    IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
@@ -30,35 +29,29 @@ pub(super) enum WorkflowParsingError {
 }
 
 /// A Workflow consisting of one or more [`Task`]s
-#[derive(Debug, SimpleObject)]
+#[derive(Debug)]
 pub(super) struct Workflow {
-    /// Metadata containing name, proposal code, proposal number and visit of a workflow
-    #[graphql(flatten)]
-    metadata: Arc<Metadata>,
-    /// The time at which the workflow began running
-    status: Option<WorkflowStatus>,
+    /// Manifest associated with the workflow
+    pub(super) manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
+    /// Visit associated with the workflow
+    pub(super) visit: Visit,
 }
 
-#[derive(Debug, SimpleObject)]
-struct Metadata {
-    /// The name given to the workflow, unique within a given visit
-    name: String,
-    /// The visit the Workflow was run against
-    visit: Visit,
-}
-
-#[allow(clippy::missing_docs_in_private_items)]
+#[Object]
 impl Workflow {
-    pub(super) fn new(
-        value: IoArgoprojWorkflowV1alpha1Workflow,
-        visit: Visit,
-    ) -> Result<Self, WorkflowParsingError> {
-        let metadata = Arc::new(Metadata {
-            name: value.metadata.name.clone().unwrap(),
-            visit,
-        });
-        let status = WorkflowStatus::new(value.status.clone().unwrap(), metadata.clone())?;
-        Ok(Self { metadata, status })
+    /// The name given to the workflow, unique within a given visit
+    async fn name(&self) -> &str {
+        self.manifest.metadata.name.as_ref().unwrap()
+    }
+
+    /// The visit the Workflow was run against
+    async fn visit(&self) -> &Visit {
+        &self.visit
+    }
+
+    /// The current status of the workflow
+    async fn status(&self) -> Result<Option<WorkflowStatus>, WorkflowParsingError> {
+        WorkflowStatus::new(Arc::clone(&self.manifest))
     }
 }
 
@@ -74,24 +67,22 @@ enum WorkflowStatus {
 }
 
 impl WorkflowStatus {
-    /// Creates a new `WorkflowStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
+    /// Creates a new [`WorkflowStatus`] from [`IoArgoprojWorkflowV1alpha1Workflow`]
     fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
+        workflow: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
     ) -> Result<Option<Self>, WorkflowParsingError> {
-        match value.phase.as_deref() {
-            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus::from(value)))),
-            Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus::new(
-                value, metadata,
-            )?))),
+        let status = workflow.status.as_ref().unwrap();
+        match status.phase.as_deref() {
+            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus::from(workflow)))),
+            Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus::new(workflow)?))),
             Some("Succeeded") => Ok(Some(Self::Succeeded(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus::new(workflow)?.into(),
             ))),
             Some("Failed") => Ok(Some(Self::Failed(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus::new(workflow)?.into(),
             ))),
             Some("Error") => Ok(Some(Self::Errored(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus::new(workflow)?.into(),
             ))),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
             None => Ok(None),
@@ -106,10 +97,10 @@ struct WorkflowPendingStatus {
     message: Option<String>,
 }
 
-impl From<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowPendingStatus {
-    fn from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Self {
+impl From<Arc<IoArgoprojWorkflowV1alpha1Workflow>> for WorkflowPendingStatus {
+    fn from(value: Arc<IoArgoprojWorkflowV1alpha1Workflow>) -> Self {
         Self {
-            message: value.message,
+            message: value.status.as_ref().unwrap().message.clone(),
         }
     }
 }
@@ -127,17 +118,16 @@ struct WorkflowRunningStatus {
 }
 
 impl WorkflowRunningStatus {
-    /// Creates a new `WorkflowRunningStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
-    fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
+    /// Creates a new [`WorkflowRunningStatus`] from [`IoArgoprojWorkflowV1alpha1Workflow`]
+    fn new(value: Arc<IoArgoprojWorkflowV1alpha1Workflow>) -> Result<Self, WorkflowParsingError> {
+        let status = value.status.as_ref().unwrap();
         Ok(Self {
-            start_time: *value
+            start_time: **status
                 .started_at
+                .as_ref()
                 .ok_or(WorkflowParsingError::MissingStartTime)?,
-            message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
+            message: status.message.clone(),
+            tasks: TaskMap(status.nodes.clone()).into_tasks(value)?,
         })
     }
 }
@@ -181,20 +171,20 @@ struct WorkflowCompleteStatus {
 }
 
 impl WorkflowCompleteStatus {
-    /// Creates a new [`WorkflowCompleteStatus`] from [`IoArgoprojWorkflowV1alpha1WorkflowStatus`] and associated metadata.
-    fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
+    /// Creates a new [`WorkflowCompleteStatus`] from [`IoArgoprojWorkflowV1alpha1Workflow`]
+    fn new(value: Arc<IoArgoprojWorkflowV1alpha1Workflow>) -> Result<Self, WorkflowParsingError> {
+        let status = value.status.as_ref().unwrap();
         Ok(Self {
-            start_time: *value
+            start_time: **status
                 .started_at
+                .as_ref()
                 .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
+            end_time: **status
                 .finished_at
+                .as_ref()
                 .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
+            message: status.message.clone(),
+            tasks: TaskMap(status.nodes.clone()).into_tasks(value)?,
         })
     }
 }
@@ -271,7 +261,7 @@ impl Task {
 #[derive(Debug)]
 enum Tasks {
     Fetched(Vec<Task>),
-    UnFetched(Arc<Metadata>),
+    UnFetched(Arc<IoArgoprojWorkflowV1alpha1Workflow>),
 }
 
 #[Object]
@@ -280,7 +270,7 @@ impl Tasks {
     async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
         match self {
             Tasks::Fetched(tasks) => Ok(tasks.clone()),
-            Tasks::UnFetched(metadata) => {
+            Tasks::UnFetched(manifest) => {
                 let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
                 let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
                 let mut url = server_url.clone();
@@ -288,8 +278,8 @@ impl Tasks {
                     "api",
                     "v1",
                     "workflows",
-                    &metadata.visit.to_string(),
-                    &metadata.name,
+                    manifest.as_ref().metadata.namespace.as_ref().unwrap(),
+                    manifest.as_ref().metadata.name.as_ref().unwrap(),
                 ]);
                 let request = if let Some(auth_token) = auth_token {
                     CLIENT.get(url).bearer_auth(auth_token.token())
@@ -305,7 +295,7 @@ impl Tasks {
                     .status
                     .unwrap() //  Safe as the status field is always present
                     .nodes;
-                Ok(match TaskMap(nodes).into_tasks(metadata.clone())? {
+                Ok(match TaskMap(nodes).into_tasks(Arc::clone(manifest))? {
                     Tasks::Fetched(fetched_tasks) => fetched_tasks,
                     Tasks::UnFetched(_) => vec![],
                 })
@@ -334,10 +324,13 @@ impl TaskMap {
     }
 
     /// Converts [`TaskMap`] into [`Tasks`]`
-    fn into_tasks(self, metadata: Arc<Metadata>) -> Result<Tasks, WorkflowParsingError> {
+    fn into_tasks(
+        self,
+        manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
+    ) -> Result<Tasks, WorkflowParsingError> {
         let mut relationship_map = TaskMap::generate_relationship_map(&self);
         if self.0.is_empty() {
-            return Ok(Tasks::UnFetched(metadata));
+            return Ok(Tasks::UnFetched(manifest));
         }
         let tasks = self
             .0
@@ -387,7 +380,10 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(workflow, visit.into())?)
+        Ok(Workflow {
+            manifest: Arc::new(workflow),
+            visit: visit.into(),
+        })
     }
 
     #[instrument(skip(self, ctx))]
@@ -430,8 +426,11 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| Workflow::new(workflow, visit.clone().into()))
-            .collect::<Result<Vec<_>, _>>()?;
+            .map(|workflow| Workflow {
+                manifest: Arc::new(workflow),
+                visit: visit.clone().into(),
+            })
+            .collect::<Vec<_>>();
         let mut connection = Connection::new(
             cursor_index > 0,
             workflows_response.metadata.continue_.is_some(),
