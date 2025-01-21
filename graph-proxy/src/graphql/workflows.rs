@@ -219,41 +219,47 @@ impl TryFrom<String> for TaskStatus {
 }
 
 /// A Task created by a workflow
-#[derive(Debug, SimpleObject, Clone)]
+#[allow(clippy::missing_docs_in_private_items)]
+#[derive(Debug, Clone)]
 struct Task {
-    /// Unique name of the task
-    id: String,
-    /// Display name of the task
-    name: String,
-    /// Current status of a task
-    status: TaskStatus,
-    /// Parent of a task
+    node_status: IoArgoprojWorkflowV1alpha1NodeStatus,
     depends: Vec<String>,
-    /// Children of a task
-    dependencies: Vec<String>,
 }
 
+#[Object]
 impl Task {
-    /// Create a task from node status and its dependencies
-    fn new(
-        node_status: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1NodeStatus,
-        depends: Vec<String>,
-    ) -> Result<Self, WorkflowParsingError> {
-        Ok(Self {
-            id: node_status.id,
-            name: node_status
-                .display_name
-                .ok_or(WorkflowParsingError::UnrecognisedTaskDisplayName)?
+    /// Unique name of the task
+    async fn id(&self) -> &String {
+        &self.node_status.id
+    }
+
+    /// Display name of the task
+    async fn name(&self) -> Result<&String, WorkflowParsingError> {
+        self.node_status
+            .display_name
+            .as_ref()
+            .ok_or(WorkflowParsingError::UnrecognisedTaskDisplayName)
+    }
+
+    /// Current status of a task
+    async fn status(&self) -> Result<TaskStatus, WorkflowParsingError> {
+        TaskStatus::try_from(
+            self.node_status
+                .phase
+                .as_ref()
+                .ok_or(WorkflowParsingError::UnrecognisedTaskPhase)?
                 .to_string(),
-            status: TaskStatus::try_from(
-                node_status
-                    .phase
-                    .ok_or(WorkflowParsingError::UnrecognisedTaskPhase)?
-                    .to_string(),
-            )?,
-            depends,
-            dependencies: node_status.children,
-        })
+        )
+    }
+
+    /// Parent of a task
+    async fn depends(&self) -> Vec<String> {
+        self.depends.clone()
+    }
+
+    /// Children of a task
+    async fn dependencies(&self) -> Vec<String> {
+        self.node_status.children.clone()
     }
 }
 
@@ -337,9 +343,12 @@ impl TaskMap {
             .into_iter()
             .map(|(node_name, node_status)| {
                 let depends = relationship_map.remove(&node_name).unwrap_or_default();
-                Task::new(node_status, depends)
+                Task {
+                    node_status,
+                    depends,
+                }
             })
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Vec<_>>();
         Ok(Tasks::Fetched(tasks))
     }
 }
