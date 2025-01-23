@@ -119,12 +119,34 @@ impl WorkflowRunningStatus {
     }
 
     /// Tasks created by the workflow
-    async fn tasks(&self) -> Result<Vec<Task>, WorkflowParsingError> {
-        let nodes = self.0.status.as_ref().unwrap().nodes.clone();
-        match TaskMap(nodes).into_tasks(Arc::clone(&self.0))? {
-            Tasks::Fetched(tasks) => Ok(tasks),
-            Tasks::UnFetched(_) => panic!("Unfetched tasks should be resolved"),
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
+        let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
+        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let mut nodes = self.0.status.as_ref().unwrap().nodes.clone();
+        if nodes.is_empty() {
+            url.path_segments_mut().unwrap().extend([
+                "api",
+                "v1",
+                "workflows",
+                self.0.as_ref().metadata.namespace.as_ref().unwrap(),
+                self.0.as_ref().metadata.name.as_ref().unwrap(),
+            ]);
+            let request = if let Some(auth_token) = auth_token {
+                CLIENT.get(url).bearer_auth(auth_token.token())
+            } else {
+                CLIENT.get(url)
+            };
+            nodes = request
+                .send()
+                .await?
+                .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+                .await?
+                .into_result()?
+                .status
+                .unwrap() //  Safe as the status field is always present
+                .nodes;
         }
+        Ok(TaskMap(nodes).into_tasks())
     }
 }
 
@@ -182,12 +204,34 @@ impl WorkflowCompleteStatus {
     }
 
     /// Tasks created by the workflow
-    async fn tasks(&self) -> Result<Vec<Task>, WorkflowParsingError> {
-        let nodes = self.0.status.as_ref().unwrap().nodes.clone();
-        match TaskMap(nodes).into_tasks(Arc::clone(&self.0))? {
-            Tasks::Fetched(tasks) => Ok(tasks),
-            Tasks::UnFetched(_) => panic!("Unfetched tasks should be resolved"),
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
+        let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
+        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let mut nodes = self.0.status.as_ref().unwrap().nodes.clone();
+        if nodes.is_empty() {
+            url.path_segments_mut().unwrap().extend([
+                "api",
+                "v1",
+                "workflows",
+                self.0.as_ref().metadata.namespace.as_ref().unwrap(),
+                self.0.as_ref().metadata.name.as_ref().unwrap(),
+            ]);
+            let request = if let Some(auth_token) = auth_token {
+                CLIENT.get(url).bearer_auth(auth_token.token())
+            } else {
+                CLIENT.get(url)
+            };
+            nodes = request
+                .send()
+                .await?
+                .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+                .await?
+                .into_result()?
+                .status
+                .unwrap() //  Safe as the status field is always present
+                .nodes;
         }
+        Ok(TaskMap(nodes).into_tasks())
     }
 }
 
@@ -265,53 +309,6 @@ impl Task {
     }
 }
 
-#[allow(clippy::missing_docs_in_private_items)]
-#[derive(Debug)]
-enum Tasks {
-    Fetched(Vec<Task>),
-    UnFetched(Arc<IoArgoprojWorkflowV1alpha1Workflow>),
-}
-
-#[Object]
-impl Tasks {
-    #[allow(clippy::missing_docs_in_private_items)]
-    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
-        match self {
-            Tasks::Fetched(tasks) => Ok(tasks.clone()),
-            Tasks::UnFetched(manifest) => {
-                let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-                let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
-                let mut url = server_url.clone();
-                url.path_segments_mut().unwrap().extend([
-                    "api",
-                    "v1",
-                    "workflows",
-                    manifest.as_ref().metadata.namespace.as_ref().unwrap(),
-                    manifest.as_ref().metadata.name.as_ref().unwrap(),
-                ]);
-                let request = if let Some(auth_token) = auth_token {
-                    CLIENT.get(url).bearer_auth(auth_token.token())
-                } else {
-                    CLIENT.get(url)
-                };
-                let nodes = request
-                    .send()
-                    .await?
-                    .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
-                    .await?
-                    .into_result()?
-                    .status
-                    .unwrap() //  Safe as the status field is always present
-                    .nodes;
-                Ok(match TaskMap(nodes).into_tasks(Arc::clone(manifest))? {
-                    Tasks::Fetched(fetched_tasks) => fetched_tasks,
-                    Tasks::UnFetched(_) => vec![],
-                })
-            }
-        }
-    }
-}
-
 /// A wrapper for list of tasks
 struct TaskMap(HashMap<String, IoArgoprojWorkflowV1alpha1NodeStatus>);
 
@@ -331,17 +328,10 @@ impl TaskMap {
         parent_map
     }
 
-    /// Converts [`TaskMap`] into [`Tasks`]`
-    fn into_tasks(
-        self,
-        manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
-    ) -> Result<Tasks, WorkflowParsingError> {
+    /// Converts [`TaskMap`] into [`Vec<Task>`]`
+    fn into_tasks(self) -> Vec<Task> {
         let mut relationship_map = TaskMap::generate_relationship_map(&self);
-        if self.0.is_empty() {
-            return Ok(Tasks::UnFetched(manifest));
-        }
-        let tasks = self
-            .0
+        self.0
             .into_iter()
             .map(|(node_name, node_status)| {
                 let depends = relationship_map.remove(&node_name).unwrap_or_default();
@@ -350,8 +340,7 @@ impl TaskMap {
                     depends,
                 }
             })
-            .collect::<Vec<_>>();
-        Ok(Tasks::Fetched(tasks))
+            .collect::<Vec<_>>()
     }
 }
 
