@@ -73,7 +73,7 @@ impl WorkflowStatus {
     ) -> Result<Option<Self>, WorkflowParsingError> {
         let status = workflow.status.as_ref().unwrap();
         match status.phase.as_deref() {
-            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus::from(workflow)))),
+            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus(workflow)))),
             Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus(workflow)))),
             Some("Succeeded") => Ok(Some(Self::Succeeded(
                 WorkflowCompleteStatus::new(workflow)?.into(),
@@ -91,17 +91,14 @@ impl WorkflowStatus {
 }
 
 /// No tasks within the workflow have been scheduled
-#[derive(Debug, SimpleObject)]
-struct WorkflowPendingStatus {
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-}
+#[derive(Debug)]
+struct WorkflowPendingStatus(Arc<IoArgoprojWorkflowV1alpha1Workflow>);
 
-impl From<Arc<IoArgoprojWorkflowV1alpha1Workflow>> for WorkflowPendingStatus {
-    fn from(value: Arc<IoArgoprojWorkflowV1alpha1Workflow>) -> Self {
-        Self {
-            message: value.status.as_ref().unwrap().message.clone(),
-        }
+#[Object]
+impl WorkflowPendingStatus {
+    /// A human readable message indicating details about why the workflow is in this condition
+    async fn message(&self) -> Option<String> {
+        self.0.status.as_ref().unwrap().message.clone()
     }
 }
 
