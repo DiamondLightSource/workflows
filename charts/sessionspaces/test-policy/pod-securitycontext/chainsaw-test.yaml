@@ -9,7 +9,7 @@ spec:
         app.kubernetes.io/managed-by: sessionspaces
   steps:
     - try:
-        - apply:
+        - create:
             resource:
               apiVersion: v1
               kind: ConfigMap
@@ -22,10 +22,38 @@ spec:
                 gid: "1234"
         - create:
             resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "4321"
+              spec: {}
+        - command:
+            env:
+              - name: namespace
+                value: ($namespace)
+            entrypoint: kubectl
+            args:
+              - get
+              - workflow
+              - test-workflow
+              - --namespace=$namespace
+              - --output=jsonpath={.metadata.uid}
+            outputs:
+              - name: workflow_uid
+                value: ($stdout)
+        - create:
+            resource:
               apiVersion: v1
               kind: Pod
               metadata:
                 name: test-pod
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: ($workflow_uid)
               spec:
                 containers:
                   - name: test-container
@@ -42,13 +70,13 @@ spec:
               spec:
                 securityContext:
                   runAsGroup: 1234
-                  runAsUser: 36055
+                  runAsUser: 4321
                 containers:
                   - name: test-container
                     image: docker.io/library/busybox:latest
                     securityContext:
                       runAsGroup: 1234
-                      runAsUser: 36055
+                      runAsUser: 4321
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
                 initContainers:
@@ -56,6 +84,6 @@ spec:
                     image: docker.io/library/busybox:latest
                     securityContext:
                       runAsGroup: 1234
-                      runAsUser: 36055
+                      runAsUser: 4321
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true

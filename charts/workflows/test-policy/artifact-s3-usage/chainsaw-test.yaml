@@ -29,12 +29,26 @@ spec:
               data:
                 data_directory: "/allowed/path"
                 gid: "1234"
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"
+              spec: {}
         - create:
             resource:
               apiVersion: v1
               kind: Pod
               metadata:
                 name: allowed
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: abc1234
               spec:
                 initContainers:
                   - name: init
