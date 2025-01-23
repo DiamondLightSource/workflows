@@ -76,14 +76,10 @@ impl WorkflowStatus {
             Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus(workflow)))),
             Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus(workflow)))),
             Some("Succeeded") => Ok(Some(Self::Succeeded(
-                WorkflowCompleteStatus::new(workflow)?.into(),
+                WorkflowCompleteStatus(workflow).into(),
             ))),
-            Some("Failed") => Ok(Some(Self::Failed(
-                WorkflowCompleteStatus::new(workflow)?.into(),
-            ))),
-            Some("Error") => Ok(Some(Self::Errored(
-                WorkflowCompleteStatus::new(workflow)?.into(),
-            ))),
+            Some("Failed") => Ok(Some(Self::Failed(WorkflowCompleteStatus(workflow).into()))),
+            Some("Error") => Ok(Some(Self::Errored(WorkflowCompleteStatus(workflow).into()))),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
             None => Ok(None),
         }
@@ -157,35 +153,41 @@ struct WorkflowErroredStatus {
 }
 
 /// All tasks in the workflow have completed (succeeded, failed, or errored)
-#[derive(Debug, SimpleObject)]
-struct WorkflowCompleteStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// Tasks created by the workflow
-    #[graphql(flatten)]
-    tasks: Tasks,
-}
+#[derive(Debug)]
+struct WorkflowCompleteStatus(Arc<IoArgoprojWorkflowV1alpha1Workflow>);
 
+#[Object]
 impl WorkflowCompleteStatus {
-    /// Creates a new [`WorkflowCompleteStatus`] from [`IoArgoprojWorkflowV1alpha1Workflow`]
-    fn new(value: Arc<IoArgoprojWorkflowV1alpha1Workflow>) -> Result<Self, WorkflowParsingError> {
-        let status = value.status.as_ref().unwrap();
-        Ok(Self {
-            start_time: **status
-                .started_at
-                .as_ref()
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: **status
-                .finished_at
-                .as_ref()
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: status.message.clone(),
-            tasks: TaskMap(status.nodes.clone()).into_tasks(value)?,
-        })
+    /// Time at which this workflow started
+    async fn start_time(&self) -> Result<DateTime<Utc>, WorkflowParsingError> {
+        let status = self.0.status.as_ref().unwrap();
+        Ok(**status
+            .started_at
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingStartTime)?)
+    }
+
+    /// Time at which this workflow completed
+    async fn end_time(&self) -> Result<DateTime<Utc>, WorkflowParsingError> {
+        let status = self.0.status.as_ref().unwrap();
+        Ok(**status
+            .finished_at
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingEndTime)?)
+    }
+
+    /// A human readable message indicating details about why the workflow is in this condition
+    async fn message(&self) -> Option<String> {
+        self.0.status.as_ref().unwrap().message.clone()
+    }
+
+    /// Tasks created by the workflow
+    async fn tasks(&self) -> Result<Vec<Task>, WorkflowParsingError> {
+        let nodes = self.0.status.as_ref().unwrap().nodes.clone();
+        match TaskMap(nodes).into_tasks(Arc::clone(&self.0))? {
+            Tasks::Fetched(tasks) => Ok(tasks),
+            Tasks::UnFetched(_) => panic!("Unfetched tasks should be resolved"),
+        }
     }
 }
 
