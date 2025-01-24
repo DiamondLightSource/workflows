@@ -55,7 +55,7 @@ jobs:
     needs: graph_proxy_schema
     runs-on: ubuntu-latest
     steps:
-      - uses: diamondlightsource/graph-federation/workflows/update@v1.0.0
+      - uses: diamondlightsource/graph-federation/actions/update@move-actions-dir
         with:
           name: workflows
           routing-url: https://workflows.diamond.ac.uk/graphql
@@ -68,7 +68,7 @@ jobs:
     needs: supergraph_composition
     runs-on: ubuntu-latest
     steps:
-    - uses: diamondlightsource/graph-federation/workflows/update@v1.0.0
+    - uses: diamondlightsource/graph-federation/actions/update@move-actions-dir
       with:
         name: workflows
         routing-url: https://workflows.diamond.ac.uk/graphql
