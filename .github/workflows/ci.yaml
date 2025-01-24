@@ -53,7 +53,14 @@ jobs:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: graph_proxy_schema
-    uses: ./.github/workflows/_supergraph_composition.yaml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: diamondlightsource/graph-federation/workflows/update@v1.0.0
+        with:
+          name: workflows
+          routing-url: https://workflows.diamond.ac.uk/graphql
+          subgraph-schema-artifact: graph-proxy
+          subgraph-schema-filename: workflows.graphql
 
   supergraph_update:
     # Only update the supergraph on releases (tagged pushes to main)
