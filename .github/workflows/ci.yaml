@@ -49,24 +49,27 @@ jobs:
       contents: read
       packages: write
 
-  supergraph_composition:
+  supergraph_update:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: graph_proxy_schema
-    uses: ./.github/workflows/_supergraph_composition.yaml
-
-  supergraph_update:
-    # Only update the supergraph on releases (tagged pushes to main)
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: supergraph_composition
-    uses: ./.github/workflows/_supergraph_update.yaml
-    secrets:
-      GRAPH_FEDERATOR: ${{ secrets.GRAPH_FEDERATOR }}
-    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Supergraph
+        uses: diamondlightsource/graph-federation@main
+        with:
+          name: workflows
+          routing-url: https://workflows.diamond.ac.uk/graphql
+          subgraph-schema-artifact: graph-proxy
+          subgraph-schema-filename: workflows.graphql
+          github-app-id: 1010045
+          github-app-private-key: ${{ secrets.GRAPH_FEDERATOR }}
+          publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+ 
   frontend_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
-    needs: supergraph_composition
+    needs: supergraph_update
     uses: ./.github/workflows/_frontend_code.yaml
 
   dashboard_container:
