@@ -52,10 +52,10 @@ vcluster:
               controller:
                 resources:
                   limits:
-                    cpu: 1000m
+                    cpu: 500m
                     memory: 512Mi
                   requests:
-                    cpu: 500m
+                    cpu: 300m
                     memory: 256Mi
               dex:
                 resources:
@@ -92,10 +92,10 @@ vcluster:
               repoServer:
                 resources:
                   limits:
-                    cpu: 1500m
+                    cpu: 600m
                     memory: 1024Mi
                   requests:
-                    cpu: 1000m
+                    cpu: 200m
                     memory: 512Mi
               applicationSet:
                 resources:
@@ -144,3 +144,6 @@ vcluster:
                   automated:
                     prune: true
                     selfHeal: true
+
+ingress:
+  enabled: false
