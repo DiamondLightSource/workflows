@@ -1,13 +1,13 @@
 events:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
 groups:
-  enabled: true
+  enabled: false
 
 kyverno:
-  enabled: true
+  enabled: false
   valuesObject:
     admissionController:
       replicas: 1
@@ -30,12 +30,12 @@ kyverno:
           memory: 1Gi
 
 sessionspaces:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
 sealedsecrets:
-  enabled: true
+  enabled: false
   valuesObject:
     resources:
       limits:
@@ -46,12 +46,12 @@ sealedsecrets:
         memory: 256Mi
 
 workflows:
-  enabled: true
+  enabled: 
   extraValueFiles:
     - dev-values.yaml
 
 graphProxy:
-  enabled: true
+  enabled: false
 
 dashboard:
-  enabled: true
+  enabled: false
