@@ -66,9 +66,17 @@ jobs:
     # Only update the supergraph on releases (tagged pushes to main)
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: supergraph_composition
-    uses: ./.github/workflows/_supergraph_update.yaml
-    secrets:
-      GRAPH_FEDERATOR: ${{ secrets.GRAPH_FEDERATOR }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: diamondlightsource/graph-federation/workflows/update@v1.0.0
+      with:
+        name: workflows
+        routing-url: https://workflows.diamond.ac.uk/graphql
+        subgraph-schema-artifact: graph-proxy
+        subgraph-schema-filename: workflows.graphql
+        github-app-id: 1010045
+        github-app-private-key: ${{ secrets.GRAPH_FEDERATOR }}
+        publish: true
     
   frontend_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
