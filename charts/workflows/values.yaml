@@ -32,6 +32,7 @@ argo-workflows:
     workflowDefaults:
       spec:
         serviceAccountName: argo-workflow
+    parallelism: "0"
   server:
     replicas: 3
     authModes: ["client"]
