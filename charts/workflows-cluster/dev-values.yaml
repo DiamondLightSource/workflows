@@ -31,11 +31,11 @@ vcluster:
         replicas: 1
       resources:
         limits:
-          cpu: 1
+          cpu: 2
           ephemeral-storage: 2Gi
           memory: 1Gi
         requests:
-          cpu: 500m
+          cpu: 2000m
           memory: 500Mi
   experimental:
     deploy:
