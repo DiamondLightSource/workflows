@@ -1,5 +1,5 @@
 argocd:
-  enabled: false
+  enabled: true
 
 events:
   enabled: false
