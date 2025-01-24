@@ -1,0 +1,267 @@
+{
+  "metadata": {
+    "name": "numpy-benchmark-kc7pf",
+    "generateName": "numpy-benchmark-",
+    "namespace": "mg36964-1",
+    "uid": "9aa7ef6e-3e9a-4fdb-a5a2-6125f6a98fca",
+    "resourceVersion": "233334857",
+    "generation": 3,
+    "creationTimestamp": "2025-01-22T12:29:45Z",
+    "labels": {
+      "submit-from-ui": "true",
+      "workflows.argoproj.io/cluster-workflow-template": "numpy-benchmark",
+      "workflows.argoproj.io/completed": "false",
+      "workflows.argoproj.io/creator": "d2cc5e04-14e7-453b-9622-e20bea96ccf5",
+      "workflows.argoproj.io/creator-email": "yousef.moazzam.at.diamond.ac.uk",
+      "workflows.argoproj.io/creator-preferred-username": "twi18192",
+      "workflows.argoproj.io/phase": "Running",
+      "workflows.argoproj.io/resubmitted-from-workflow": "numpy-benchmark-hdkgt"
+    },
+    "annotations": {
+      "workflows.argoproj.io/pod-name-format": "v2"
+    },
+    "managedFields": [
+      {
+        "manager": "argo",
+        "operation": "Update",
+        "apiVersion": "argoproj.io/v1alpha1",
+        "time": "2025-01-22T12:29:44Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              ".": {},
+              "f:workflows.argoproj.io/pod-name-format": {}
+            },
+            "f:generateName": {},
+            "f:labels": {
+              ".": {},
+              "f:submit-from-ui": {},
+              "f:workflows.argoproj.io/cluster-workflow-template": {},
+              "f:workflows.argoproj.io/creator": {},
+              "f:workflows.argoproj.io/creator-email": {},
+              "f:workflows.argoproj.io/creator-preferred-username": {},
+              "f:workflows.argoproj.io/resubmitted-from-workflow": {}
+            }
+          },
+          "f:spec": {}
+        }
+      },
+      {
+        "manager": "workflow-controller",
+        "operation": "Update",
+        "apiVersion": "argoproj.io/v1alpha1",
+        "time": "2025-01-22T12:29:55Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:labels": {
+              "f:workflows.argoproj.io/completed": {},
+              "f:workflows.argoproj.io/phase": {}
+            }
+          },
+          "f:status": {}
+        }
+      }
+    ]
+  },
+  "spec": {
+    "entrypoint": "numpy-test",
+    "arguments": {
+      "parameters": [
+        {
+          "name": "size",
+          "value": "100000"
+        },
+        {
+          "name": "memory",
+          "value": "10Gi"
+        }
+      ]
+    },
+    "podGC": {
+      "strategy": "OnPodCompletion",
+      "deleteDelayDuration": "60s"
+    },
+    "workflowTemplateRef": {
+      "name": "numpy-benchmark",
+      "clusterScope": true
+    }
+  },
+  "status": {
+    "phase": "Running",
+    "startedAt": "2025-01-22T12:29:45Z",
+    "finishedAt": null,
+    "estimatedDuration": 10,
+    "progress": "0/1",
+    "nodes": {
+      "numpy-benchmark-kc7pf": {
+        "id": "numpy-benchmark-kc7pf",
+        "name": "numpy-benchmark-kc7pf",
+        "displayName": "numpy-benchmark-kc7pf",
+        "type": "Pod",
+        "templateName": "numpy-test",
+        "templateScope": "local/",
+        "phase": "Running",
+        "startedAt": "2025-01-22T12:29:45Z",
+        "finishedAt": null,
+        "estimatedDuration": 6,
+        "progress": "0/1",
+        "inputs": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "100000"
+            },
+            {
+              "name": "memory",
+              "value": "10Gi"
+            }
+          ]
+        },
+        "hostNodeName": "cs05r-sc-cloud-10.diamond.ac.uk"
+      }
+    },
+    "storedTemplates": {
+      "cluster/numpy-benchmark/numpy-test": {
+        "name": "numpy-test",
+        "inputs": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "2000"
+            },
+            {
+              "name": "memory",
+              "value": "20Gi"
+            }
+          ]
+        },
+        "outputs": {},
+        "metadata": {},
+        "script": {
+          "name": "",
+          "image": "gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1",
+          "command": [
+            "python"
+          ],
+          "env": [
+            {
+              "name": "MKL_NUM_THREADS",
+              "value": "1"
+            },
+            {
+              "name": "NUMEXPR_NUM_THREADS",
+              "value": "1"
+            },
+            {
+              "name": "OMP_NUM_THREADS",
+              "value": "1"
+            }
+          ],
+          "resources": {},
+          "source": "import numpy as np\nimport time\n\nn = int(\"{{ inputs.parameters.size }}\")\nA = np.random.randn(n,n).astype('float64')\nB = np.random.randn(n,n).astype('float64')\nstart_time = time.time()\nnrm = np.linalg.norm(A@B)\nprint(\" took {} seconds \".format(time.time() - start_time))\nprint(\" norm = \",nrm)\nprint(np.__config__.show())\n"
+        },
+        "podSpecPatch": "containers:\n- name: main\n  resources:\n    requests:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n    limits:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n"
+      }
+    },
+    "conditions": [
+      {
+        "type": "PodRunning",
+        "status": "True"
+      }
+    ],
+    "storedWorkflowTemplateSpec": {
+      "templates": [
+        {
+          "name": "numpy-test",
+          "inputs": {
+            "parameters": [
+              {
+                "name": "size",
+                "value": "2000"
+              },
+              {
+                "name": "memory",
+                "value": "20Gi"
+              }
+            ]
+          },
+          "outputs": {},
+          "metadata": {},
+          "script": {
+            "name": "",
+            "image": "gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1",
+            "command": [
+              "python"
+            ],
+            "env": [
+              {
+                "name": "MKL_NUM_THREADS",
+                "value": "1"
+              },
+              {
+                "name": "NUMEXPR_NUM_THREADS",
+                "value": "1"
+              },
+              {
+                "name": "OMP_NUM_THREADS",
+                "value": "1"
+              }
+            ],
+            "resources": {},
+            "source": "import numpy as np\nimport time\n\nn = int(\"{{ inputs.parameters.size }}\")\nA = np.random.randn(n,n).astype('float64')\nB = np.random.randn(n,n).astype('float64')\nstart_time = time.time()\nnrm = np.linalg.norm(A@B)\nprint(\" took {} seconds \".format(time.time() - start_time))\nprint(\" norm = \",nrm)\nprint(np.__config__.show())\n"
+          },
+          "podSpecPatch": "containers:\n- name: main\n  resources:\n    requests:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n    limits:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n"
+        }
+      ],
+      "entrypoint": "numpy-test",
+      "arguments": {
+        "parameters": [
+          {
+            "name": "size",
+            "value": "100000"
+          },
+          {
+            "name": "memory",
+            "value": "10Gi"
+          }
+        ]
+      },
+      "serviceAccountName": "argo-workflow",
+      "podGC": {
+        "strategy": "OnPodCompletion",
+        "deleteDelayDuration": "60s"
+      },
+      "workflowTemplateRef": {
+        "name": "numpy-benchmark",
+        "clusterScope": true
+      }
+    },
+    "artifactRepositoryRef": {
+      "default": true,
+      "artifactRepository": {
+        "archiveLogs": true,
+        "s3": {
+          "endpoint": "sci-nas-s3.diamond.ac.uk",
+          "bucket": "k8s-workflows-test",
+          "region": "unsupported",
+          "accessKeySecret": {
+            "name": "artifact-s3",
+            "key": "access-key"
+          },
+          "secretKeySecret": {
+            "name": "artifact-s3",
+            "key": "secret-key"
+          }
+        }
+      }
+    },
+    "artifactGCStatus": {
+      "notSpecified": true
+    },
+    "taskResultsCompletionStatus": {
+      "numpy-benchmark-kc7pf": false
+    }
+  }
+}
