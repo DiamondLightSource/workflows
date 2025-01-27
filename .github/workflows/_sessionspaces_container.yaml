@@ -50,7 +50,7 @@ jobs:
           driver-opts: network=host
 
       - name: Build Image
-        uses: docker/build-push-action@v6.12.0
+        uses: docker/build-push-action@v6.13.0
         with:
           context: ./sessionspaces
           build-args: DATABASE_URL=mysql://root:rootpassword@localhost:3306/ispyb_build
