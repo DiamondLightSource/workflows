@@ -62,3 +62,5 @@ graphProxy:
 
 dashboard:
   enabled: true
+  extraValueFiles:
+    - dev-values.yaml
