@@ -1,5 +1,7 @@
 argocd:
   enabled: true
+  extraValueFiles:
+    - dev-values.yaml
 
 events:
   enabled: true
