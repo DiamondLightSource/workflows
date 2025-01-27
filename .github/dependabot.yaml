@@ -56,5 +56,9 @@ updates:
         update-types:
           - patch
           - minor
+      vite:
+        patterns:
+          - vite
+          - vitest
     commit-message:
       prefix: "chore(deps)"
