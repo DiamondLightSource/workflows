@@ -3,12 +3,12 @@ name: workflows
 description: Data Analysis workflow orchestration
 type: application
 
-version: 0.13.0
+version: 0.13.1
 
 dependencies:
   - name: argo-workflows
     repository: https://argoproj.github.io/argo-helm
-    version: 0.45.1
+    version: 0.45.4
     condition: argo-workflows.enabled
   - name: postgresql-ha
     repository: https://charts.bitnami.com/bitnami
