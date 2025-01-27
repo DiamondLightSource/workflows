@@ -16,7 +16,7 @@ exclude = ["test-resources/"]
 [dependencies]
 anyhow = { version = "1.0.95" }
 argo-workflows-openapi = { path = "./argo-workflows-openapi" }
-async-graphql = { version = "7.0.13", features = ["chrono"] }
+async-graphql = { version = "7.0.13", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.13" }
 axum = { version = "0.7.9" }
 axum-extra = { version = "0.9.6", features = ["typed-header"] }
