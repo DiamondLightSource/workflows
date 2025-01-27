@@ -16,7 +16,7 @@ jobs:
         uses: azure/setup-helm@v4.0.0
 
       - name: Setup Chart Testing
-        uses: helm/chart-testing-action@v2.6.1
+        uses: helm/chart-testing-action@v2.7.0
 
       - name: Install chart dependencies
         run: |
