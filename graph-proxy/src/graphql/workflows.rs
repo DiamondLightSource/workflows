@@ -465,7 +465,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-resources");
+        response_file_path.push("test-assets");
         response_file_path.push("get-workflow-wdkwj.json");
         let workflow_endpoint = server
             .mock(
@@ -515,7 +515,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-resources");
+        response_file_path.push("test-assets");
         response_file_path.push("get-workflow-wdkwj.json");
         let workflow_endpoint = server
             .mock(
@@ -579,7 +579,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-resources");
+        response_file_path.push("test-assets");
         response_file_path.push("get-workflow-qhb59-failed.json");
         let workflow_endpoint = server
             .mock(
@@ -643,7 +643,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-resources");
+        response_file_path.push("test-assets");
         response_file_path.push("get-workflow-jwcfp-errored.json");
         let workflow_endpoint = server
             .mock(
@@ -707,7 +707,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-resources");
+        response_file_path.push("test-assets");
         response_file_path.push("get-workflow-kc7pf-running.json");
         let workflow_endpoint = server
             .mock(
@@ -769,7 +769,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-resources");
+        response_file_path.push("test-assets");
         response_file_path.push("get-workflow-pwtgn-null.json");
         let workflow_endpoint = server
             .mock(
@@ -821,7 +821,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("test-assets");
         multiple_workflows_response_file_path.push("get-workflows.json");
 
         let workflows_endpoint = server
@@ -887,13 +887,13 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("test-assets");
         multiple_workflows_response_file_path.push("get-workflows.json");
         let mut workflow_one_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        workflow_one_response_file_path.push("test-resources");
+        workflow_one_response_file_path.push("test-assets");
         workflow_one_response_file_path.push("get-workflow-wdkwj.json");
         let mut workflow_two_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        workflow_two_response_file_path.push("test-resources");
+        workflow_two_response_file_path.push("test-assets");
         workflow_two_response_file_path.push("get-workflow-n6jsg.json");
 
         let workflows_endpoint = server
@@ -988,7 +988,7 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
         let mut multiple_workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        multiple_workflows_response_file_path.push("test-resources");
+        multiple_workflows_response_file_path.push("test-assets");
         multiple_workflows_response_file_path.push("get-workflows.json");
 
         let workflows_endpoint = server
