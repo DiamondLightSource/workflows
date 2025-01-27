@@ -1,8 +1,7 @@
-use super::{Visit, VisitInput, CLIENT};
+use super::{VisitInput, CLIENT};
 use crate::ArgoServerUrl;
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
-    IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
@@ -12,6 +11,7 @@ use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
 use std::{collections::HashMap, ops::Deref, sync::Arc};
 use tracing::{debug, instrument};
+use url::Url;
 
 /// An error encountered when parsing the Argo Server API Workflow response
 #[derive(Debug, thiserror::Error)]
@@ -30,35 +30,24 @@ pub(super) enum WorkflowParsingError {
 }
 
 /// A Workflow consisting of one or more [`Task`]s
-#[derive(Debug, SimpleObject)]
-pub(super) struct Workflow {
-    /// Metadata containing name, proposal code, proposal number and visit of a workflow
-    #[graphql(flatten)]
-    metadata: Arc<Metadata>,
-    /// The time at which the workflow began running
-    status: Option<WorkflowStatus>,
-}
+#[derive(Debug)]
+pub(super) struct Workflow(pub(super) Arc<IoArgoprojWorkflowV1alpha1Workflow>);
 
-#[derive(Debug, SimpleObject)]
-struct Metadata {
-    /// The name given to the workflow, unique within a given visit
-    name: String,
-    /// The visit the Workflow was run against
-    visit: Visit,
-}
-
-#[allow(clippy::missing_docs_in_private_items)]
+#[Object]
 impl Workflow {
-    pub(super) fn new(
-        value: IoArgoprojWorkflowV1alpha1Workflow,
-        visit: Visit,
-    ) -> Result<Self, WorkflowParsingError> {
-        let metadata = Arc::new(Metadata {
-            name: value.metadata.name.clone().unwrap(),
-            visit,
-        });
-        let status = WorkflowStatus::new(value.status.clone().unwrap(), metadata.clone())?;
-        Ok(Self { metadata, status })
+    /// The name given to the workflow, unique within a given visit
+    async fn name(&self) -> &str {
+        self.0.metadata.name.as_ref().unwrap()
+    }
+
+    /// The visit the Workflow was run against
+    async fn visit(&self) -> &str {
+        self.0.metadata.namespace.as_ref().unwrap()
+    }
+
+    /// The current status of the workflow
+    async fn status(&self) -> Result<Option<WorkflowStatus>, WorkflowParsingError> {
+        WorkflowStatus::new(Arc::clone(&self.0))
     }
 }
 
@@ -74,25 +63,19 @@ enum WorkflowStatus {
 }
 
 impl WorkflowStatus {
-    /// Creates a new `WorkflowStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
+    /// Creates a new [`WorkflowStatus`] from [`IoArgoprojWorkflowV1alpha1Workflow`]
     fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
+        workflow: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
     ) -> Result<Option<Self>, WorkflowParsingError> {
-        match value.phase.as_deref() {
-            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus::from(value)))),
-            Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus::new(
-                value, metadata,
-            )?))),
+        let status = workflow.status.as_ref().unwrap();
+        match status.phase.as_deref() {
+            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus(workflow)))),
+            Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus(workflow)))),
             Some("Succeeded") => Ok(Some(Self::Succeeded(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
+                WorkflowCompleteStatus(workflow).into(),
             ))),
-            Some("Failed") => Ok(Some(Self::Failed(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
-            ))),
-            Some("Error") => Ok(Some(Self::Errored(
-                WorkflowCompleteStatus::new(value, metadata)?.into(),
-            ))),
+            Some("Failed") => Ok(Some(Self::Failed(WorkflowCompleteStatus(workflow).into()))),
+            Some("Error") => Ok(Some(Self::Errored(WorkflowCompleteStatus(workflow).into()))),
             Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
             None => Ok(None),
         }
@@ -100,45 +83,45 @@ impl WorkflowStatus {
 }
 
 /// No tasks within the workflow have been scheduled
-#[derive(Debug, SimpleObject)]
-struct WorkflowPendingStatus {
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-}
+#[derive(Debug)]
+struct WorkflowPendingStatus(Arc<IoArgoprojWorkflowV1alpha1Workflow>);
 
-impl From<IoArgoprojWorkflowV1alpha1WorkflowStatus> for WorkflowPendingStatus {
-    fn from(value: IoArgoprojWorkflowV1alpha1WorkflowStatus) -> Self {
-        Self {
-            message: value.message,
-        }
+#[Object]
+impl WorkflowPendingStatus {
+    /// A human readable message indicating details about why the workflow is in this condition
+    async fn message(&self) -> Option<String> {
+        self.0.status.as_ref().unwrap().message.clone()
     }
 }
 
 /// At least one of the tasks has been scheduled, but they have not yet all complete
-#[derive(Debug, SimpleObject)]
-struct WorkflowRunningStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// Tasks created by the workflow
-    #[graphql(flatten)]
-    tasks: Tasks,
-}
+#[derive(Debug)]
+struct WorkflowRunningStatus(Arc<IoArgoprojWorkflowV1alpha1Workflow>);
 
+#[Object]
 impl WorkflowRunningStatus {
-    /// Creates a new `WorkflowRunningStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
-    fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
-        })
+    /// Time at which this workflow started
+    async fn start_time(&self) -> Result<DateTime<Utc>, WorkflowParsingError> {
+        let status = self.0.status.as_ref().unwrap();
+        Ok(**status
+            .started_at
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingStartTime)?)
+    }
+
+    /// A human readable message indicating details about why the workflow is in this condition
+    async fn message(&self) -> Option<String> {
+        self.0.status.as_ref().unwrap().message.clone()
+    }
+
+    /// Tasks created by the workflow
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
+        let url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
+        let token = ctx
+            .data_unchecked::<Option<Authorization<Bearer>>>()
+            .to_owned();
+        let nodes = fetch_missing_task_info(url, token, Arc::clone(&self.0)).await?;
+        Ok(TaskMap(nodes).into_tasks())
     }
 }
 
@@ -167,35 +150,42 @@ struct WorkflowErroredStatus {
 }
 
 /// All tasks in the workflow have completed (succeeded, failed, or errored)
-#[derive(Debug, SimpleObject)]
-struct WorkflowCompleteStatus {
-    /// Time at which this workflow started
-    start_time: DateTime<Utc>,
-    /// Time at which this workflow completed
-    end_time: DateTime<Utc>,
-    /// A human readable message indicating details about why the workflow is in this condition
-    message: Option<String>,
-    /// Tasks created by the workflow
-    #[graphql(flatten)]
-    tasks: Tasks,
-}
+#[derive(Debug)]
+struct WorkflowCompleteStatus(Arc<IoArgoprojWorkflowV1alpha1Workflow>);
 
+#[Object]
 impl WorkflowCompleteStatus {
-    /// Creates a new [`WorkflowCompleteStatus`] from [`IoArgoprojWorkflowV1alpha1WorkflowStatus`] and associated metadata.
-    fn new(
-        value: IoArgoprojWorkflowV1alpha1WorkflowStatus,
-        metadata: Arc<Metadata>,
-    ) -> Result<Self, WorkflowParsingError> {
-        Ok(Self {
-            start_time: *value
-                .started_at
-                .ok_or(WorkflowParsingError::MissingStartTime)?,
-            end_time: *value
-                .finished_at
-                .ok_or(WorkflowParsingError::MissingEndTime)?,
-            message: value.message,
-            tasks: TaskMap(value.nodes).into_tasks(metadata)?,
-        })
+    /// Time at which this workflow started
+    async fn start_time(&self) -> Result<DateTime<Utc>, WorkflowParsingError> {
+        let status = self.0.status.as_ref().unwrap();
+        Ok(**status
+            .started_at
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingStartTime)?)
+    }
+
+    /// Time at which this workflow completed
+    async fn end_time(&self) -> Result<DateTime<Utc>, WorkflowParsingError> {
+        let status = self.0.status.as_ref().unwrap();
+        Ok(**status
+            .finished_at
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingEndTime)?)
+    }
+
+    /// A human readable message indicating details about why the workflow is in this condition
+    async fn message(&self) -> Option<String> {
+        self.0.status.as_ref().unwrap().message.clone()
+    }
+
+    /// Tasks created by the workflow
+    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
+        let url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
+        let token = ctx
+            .data_unchecked::<Option<Authorization<Bearer>>>()
+            .to_owned();
+        let nodes = fetch_missing_task_info(url, token, Arc::clone(&self.0)).await?;
+        Ok(TaskMap(nodes).into_tasks())
     }
 }
 
@@ -229,89 +219,80 @@ impl TryFrom<String> for TaskStatus {
 }
 
 /// A Task created by a workflow
-#[derive(Debug, SimpleObject, Clone)]
-struct Task {
-    /// Unique name of the task
-    id: String,
-    /// Display name of the task
-    name: String,
-    /// Current status of a task
-    status: TaskStatus,
-    /// Parent of a task
-    depends: Vec<String>,
-    /// Children of a task
-    dependencies: Vec<String>,
-}
-
-impl Task {
-    /// Create a task from node status and its dependencies
-    fn new(
-        node_status: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1NodeStatus,
-        depends: Vec<String>,
-    ) -> Result<Self, WorkflowParsingError> {
-        Ok(Self {
-            id: node_status.id,
-            name: node_status
-                .display_name
-                .ok_or(WorkflowParsingError::UnrecognisedTaskDisplayName)?
-                .to_string(),
-            status: TaskStatus::try_from(
-                node_status
-                    .phase
-                    .ok_or(WorkflowParsingError::UnrecognisedTaskPhase)?
-                    .to_string(),
-            )?,
-            depends,
-            dependencies: node_status.children,
-        })
-    }
-}
-
 #[allow(clippy::missing_docs_in_private_items)]
-#[derive(Debug)]
-enum Tasks {
-    Fetched(Vec<Task>),
-    UnFetched(Arc<Metadata>),
+#[derive(Debug, Clone)]
+struct Task {
+    node_status: IoArgoprojWorkflowV1alpha1NodeStatus,
+    depends: Vec<String>,
 }
 
 #[Object]
-impl Tasks {
-    #[allow(clippy::missing_docs_in_private_items)]
-    async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
-        match self {
-            Tasks::Fetched(tasks) => Ok(tasks.clone()),
-            Tasks::UnFetched(metadata) => {
-                let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-                let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
-                let mut url = server_url.clone();
-                url.path_segments_mut().unwrap().extend([
-                    "api",
-                    "v1",
-                    "workflows",
-                    &metadata.visit.to_string(),
-                    &metadata.name,
-                ]);
-                let request = if let Some(auth_token) = auth_token {
-                    CLIENT.get(url).bearer_auth(auth_token.token())
-                } else {
-                    CLIENT.get(url)
-                };
-                let nodes = request
-                    .send()
-                    .await?
-                    .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
-                    .await?
-                    .into_result()?
-                    .status
-                    .unwrap() //  Safe as the status field is always present
-                    .nodes;
-                Ok(match TaskMap(nodes).into_tasks(metadata.clone())? {
-                    Tasks::Fetched(fetched_tasks) => fetched_tasks,
-                    Tasks::UnFetched(_) => vec![],
-                })
-            }
-        }
+impl Task {
+    /// Unique name of the task
+    async fn id(&self) -> &String {
+        &self.node_status.id
     }
+
+    /// Display name of the task
+    async fn name(&self) -> Result<&String, WorkflowParsingError> {
+        self.node_status
+            .display_name
+            .as_ref()
+            .ok_or(WorkflowParsingError::UnrecognisedTaskDisplayName)
+    }
+
+    /// Current status of a task
+    async fn status(&self) -> Result<TaskStatus, WorkflowParsingError> {
+        TaskStatus::try_from(
+            self.node_status
+                .phase
+                .as_ref()
+                .ok_or(WorkflowParsingError::UnrecognisedTaskPhase)?
+                .to_string(),
+        )
+    }
+
+    /// Parent of a task
+    async fn depends(&self) -> Vec<String> {
+        self.depends.clone()
+    }
+
+    /// Children of a task
+    async fn dependencies(&self) -> Vec<String> {
+        self.node_status.children.clone()
+    }
+}
+
+async fn fetch_missing_task_info(
+    mut url: Url,
+    token: Option<Authorization<Bearer>>,
+    manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
+) -> anyhow::Result<HashMap<String, IoArgoprojWorkflowV1alpha1NodeStatus>> {
+    let mut nodes = manifest.status.as_ref().unwrap().nodes.clone();
+    if nodes.is_empty() {
+        url.path_segments_mut().unwrap().extend([
+            "api",
+            "v1",
+            "workflows",
+            manifest.as_ref().metadata.namespace.as_ref().unwrap(),
+            manifest.as_ref().metadata.name.as_ref().unwrap(),
+        ]);
+        let request = if let Some(token) = token {
+            CLIENT.get(url).bearer_auth(token.token())
+        } else {
+            CLIENT.get(url)
+        };
+        nodes = request
+            .send()
+            .await?
+            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+            .await?
+            .into_result()?
+            .status
+            .unwrap() //  Safe as the status field is always present
+            .nodes;
+    }
+    Ok(nodes)
 }
 
 /// A wrapper for list of tasks
@@ -333,21 +314,19 @@ impl TaskMap {
         parent_map
     }
 
-    /// Converts [`TaskMap`] into [`Tasks`]`
-    fn into_tasks(self, metadata: Arc<Metadata>) -> Result<Tasks, WorkflowParsingError> {
+    /// Converts [`TaskMap`] into [`Vec<Task>`]`
+    fn into_tasks(self) -> Vec<Task> {
         let mut relationship_map = TaskMap::generate_relationship_map(&self);
-        if self.0.is_empty() {
-            return Ok(Tasks::UnFetched(metadata));
-        }
-        let tasks = self
-            .0
+        self.0
             .into_iter()
             .map(|(node_name, node_status)| {
                 let depends = relationship_map.remove(&node_name).unwrap_or_default();
-                Task::new(node_status, depends)
+                Task {
+                    node_status,
+                    depends,
+                }
             })
-            .collect::<Result<Vec<_>, _>>()?;
-        Ok(Tasks::Fetched(tasks))
+            .collect::<Vec<_>>()
     }
 }
 
@@ -387,7 +366,7 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(workflow, visit.into())?)
+        Ok(Workflow(Arc::new(workflow)))
     }
 
     #[instrument(skip(self, ctx))]
@@ -430,8 +409,8 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| Workflow::new(workflow, visit.clone().into()))
-            .collect::<Result<Vec<_>, _>>()?;
+            .map(|workflow| Workflow(Arc::new(workflow)))
+            .collect::<Vec<_>>();
         let mut connection = Connection::new(
             cursor_index > 0,
             workflows_response.metadata.continue_.is_some(),
