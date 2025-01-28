@@ -52,6 +52,8 @@ workflows:
 
 graphProxy:
   enabled: true
+  extraValueFiles:
+    - dev-values.yaml
 
 dashboard:
   enabled: true
