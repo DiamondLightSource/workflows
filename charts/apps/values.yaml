@@ -3,7 +3,7 @@ destination:
 
 argocd:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: argocd-oidc
   extraValuesFiles: []
   valuesObject: {}
 
