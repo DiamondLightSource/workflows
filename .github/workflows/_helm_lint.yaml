@@ -22,8 +22,11 @@ jobs:
         run: |
           helm repo add vcluster https://charts.loft.sh
           helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
+          helm repo add opentelemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 
       - name: Lint
         run: >

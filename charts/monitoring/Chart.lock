@@ -1,0 +1,18 @@
+dependencies:
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 8.6.2
+- name: thanos
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.8.1
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 25.30.1
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  version: 2.27.0
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.114.0
+digest: sha256:7d832624971dd32b9b6a7d1f2c7907443642b8fc65f2cf14ecacf7c8c7aee402
+generated: "2025-01-23T15:41:28.754197174Z"
