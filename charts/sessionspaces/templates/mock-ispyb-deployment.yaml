@@ -1,0 +1,51 @@
+{{- if $.Values.mockDatabase.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  {{- with $.Values.deployment.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.mockDatabase.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
+    spec:
+      {{/* {{- if $.Values.serviceAccount.create }} */}}
+      {{/* serviceAccountName: {{ default ( include "common.names.fullname" $ ) $.Values.serviceAccount.name }} */}}
+      {{/* {{- else }} */}}
+      {{/* serviceAccountName: {{ default "default" $.Values.serviceAccount.name }} */}}
+      {{/* {{- end }} */}}
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      containers:
+        - name: ispyb-mock
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.mockDatabase.image "global" $.Values.global "chart" $.Chart )}}
+          imagePullPolicy: {{ $.Values.mockDatabase.image.pullPolicy }}
+          resources:
+            {{- $.Values.mockDatabase.resources | toYaml | nindent 12 }}
+          {{- with $.Values.mockDatabase.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.mockDatabase.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.mockDatabase.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+{{- end }}

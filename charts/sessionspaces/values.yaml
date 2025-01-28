@@ -27,6 +27,7 @@ deployment:
   tolerations: []
 
 policy:
+  create: true
   runAsUser: 36055
 
 serviceAccount:
@@ -34,5 +35,23 @@ serviceAccount:
   annotations: {}
   name: ""
 
+secret:
+  create: true
+
+mockDatabase:
+  create: false
+  image:
+    repository: ghcr.io/diamondlightsource/ispyb-database
+    pullPolicy: Always
+    tag: "v4.3.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
 nameOverride: ""
 fullnameOverride: ""
+

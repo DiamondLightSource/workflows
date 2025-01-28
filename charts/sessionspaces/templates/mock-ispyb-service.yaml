@@ -1,0 +1,4 @@
+{{- if $.Values.mockDatabase.create }}
+
+{{- end }}
+

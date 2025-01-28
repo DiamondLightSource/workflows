@@ -35,10 +35,14 @@ spec:
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           env:
             - name: DATABASE_PASSWORD
+              {{- if $.Values.database.mockDatabase }}
+              value: {{ $.Values.database.password.value }}
+              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ default (printf "%s-ispyb" (include "common.names.fullname" $)) $.Values.database.password.secretName }}
                   key: {{ default "password" $.Values.database.password.secretKey }}
+              {{- end }}
             - name: DATABASE_URL
               value: {{ include "sessionspaces.databaseURL" $ }}
             - name: LDAP_URL

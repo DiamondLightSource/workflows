@@ -3,19 +3,19 @@ destination:
 
 argocd:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
 
 events:
   enabled: false
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
 
 groups:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
 
@@ -54,7 +54,7 @@ kyverno:
 
 sessionspaces:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
 
@@ -66,18 +66,18 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
 
 graphProxy:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
 
 dashboard:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: dev-values-pt2
   extraValuesFiles: []
   valuesObject: {}
