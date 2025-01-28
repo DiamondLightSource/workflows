@@ -1,3 +1,8 @@
+argocd:
+  enabled: true
+  extraValueFiles:
+    - dev-values.yaml
+
 events:
   enabled: true
   extraValueFiles:
@@ -52,6 +57,10 @@ workflows:
 
 graphProxy:
   enabled: true
+  extraValueFiles:
+    - dev-values.yaml
 
 dashboard:
   enabled: true
+  extraValueFiles:
+    - dev-values.yaml
