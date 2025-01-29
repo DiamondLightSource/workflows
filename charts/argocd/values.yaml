@@ -12,6 +12,18 @@ argo-cd:
           - openid
           - profile
           - email
+    rbac:
+      create: true
+      policy.default: role:readonly
+      policy.csv: |
+        p, role:admin, applications, *, */*, allow
+        p, role:admin, clusters, *, *, allow
+        p, role:admin, repositories, *, *, allow
+        p, role:admin, projects, *, *, allow
+        p, role:admin, exec, create, */*, allow
+        p, role:admin, logs, get, */*, allow
+        p, role:admin, settings, *, *, allow
+        g, admin, role:admin
 
 ingress:
   enabled: true
