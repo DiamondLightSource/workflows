@@ -95,39 +95,38 @@ impl<'a> WorkflowStatus<'a> {
         workflow: &'a IoArgoprojWorkflowV1alpha1Workflow,
         metadata: &'a Metadata,
     ) -> Result<Option<Self>, WorkflowParsingError> {
-        let status = match workflow.status.as_ref() {
-            Some(status) => status,
-            None => return Err(WorkflowParsingError::MissingWorkflowStatus),
-        };
-        match status.phase.as_deref() {
-            Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus(status)))),
-            Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus {
-                manifest: status,
-                metadata,
-            }))),
-            Some("Succeeded") => Ok(Some(Self::Succeeded(
-                WorkflowCompleteStatus {
+        match workflow.status.as_ref() {
+            Some(status) => match status.phase.as_deref() {
+                Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus(status)))),
+                Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus {
                     manifest: status,
                     metadata,
-                }
-                .into(),
-            ))),
-            Some("Failed") => Ok(Some(Self::Failed(
-                WorkflowCompleteStatus {
-                    manifest: status,
-                    metadata,
-                }
-                .into(),
-            ))),
-            Some("Error") => Ok(Some(Self::Errored(
-                WorkflowCompleteStatus {
-                    manifest: status,
-                    metadata,
-                }
-                .into(),
-            ))),
-            Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
-            None => Ok(None),
+                }))),
+                Some("Succeeded") => Ok(Some(Self::Succeeded(
+                    WorkflowCompleteStatus {
+                        manifest: status,
+                        metadata,
+                    }
+                    .into(),
+                ))),
+                Some("Failed") => Ok(Some(Self::Failed(
+                    WorkflowCompleteStatus {
+                        manifest: status,
+                        metadata,
+                    }
+                    .into(),
+                ))),
+                Some("Error") => Ok(Some(Self::Errored(
+                    WorkflowCompleteStatus {
+                        manifest: status,
+                        metadata,
+                    }
+                    .into(),
+                ))),
+                Some(_) => Err(WorkflowParsingError::UnrecognisedPhase),
+                None => Ok(None),
+            },
+            None => Err(WorkflowParsingError::MissingWorkflowStatus),
         }
     }
 }
