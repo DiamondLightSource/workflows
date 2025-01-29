@@ -15,6 +15,7 @@ jobs:
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
+          cache: false
           components: rustfmt
 
       - name: Cache Rust Build
