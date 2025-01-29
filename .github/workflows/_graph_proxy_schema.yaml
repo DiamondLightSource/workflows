@@ -14,6 +14,8 @@ jobs:
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
 
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.7
