@@ -21,7 +21,7 @@ COPY . .
 RUN touch src/main.rs \
   && cargo build --release
 
-FROM gcr.io/distroless/cc-debian12@sha256:3b75fdd33932d16e53a461277becf57c4f815c6cee5f6bc8f52457c095e004c8 AS deploy
+FROM gcr.io/distroless/cc-debian12@sha256:b7550f0b15838de14c564337eef2b804ba593ae55d81ca855421bd52f19bb480 AS deploy
 
 COPY --from=build /app/target/release/graph-proxy /graph-proxy
 
