@@ -224,10 +224,7 @@ impl WorkflowTemplatesMutation {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow {
-            manifest: Arc::new(workflow),
-            visit: visit.into(),
-        })
+        Ok(Workflow::new(Arc::new(workflow), visit.into()))
     }
 }
 

@@ -37,26 +37,45 @@ pub(super) enum WorkflowParsingError {
 pub(super) struct Workflow {
     /// Manifest associated with the workflow
     pub(super) manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
-    /// Visit associated with the workflow
-    pub(super) visit: Visit,
+    /// Metadata associated with the workflow
+    pub(super) metadata: Metadata,
+}
+
+impl Workflow {
+    /// Create [`Workflow`] from [`Arc<IoArgoprojWorkflowV1alpha1Workflow>`] and [`Visit`]
+    pub fn new(manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>, visit: Visit) -> Workflow {
+        let name = manifest.metadata.name.clone().unwrap();
+        Workflow {
+            manifest,
+            metadata: Metadata { name, visit },
+        }
+    }
 }
 
 #[Object]
 impl Workflow {
     /// The name given to the workflow, unique within a given visit
     async fn name(&self) -> &str {
-        self.manifest.metadata.name.as_ref().unwrap()
+        &self.metadata.name
     }
 
     /// The visit the Workflow was run against
     async fn visit(&self) -> &Visit {
-        &self.visit
+        &self.metadata.visit
     }
 
     /// The current status of the workflow
     async fn status(&self) -> Result<Option<WorkflowStatus>, WorkflowParsingError> {
-        WorkflowStatus::new(&self.manifest)
+        WorkflowStatus::new(&self.manifest, &self.metadata)
     }
+}
+
+#[derive(Debug)]
+pub(super) struct Metadata {
+    /// The name given to the workflow, unique within a given visit
+    name: String,
+    /// The visit the Workflow was run against
+    visit: Visit,
 }
 
 /// The status of a workflow
@@ -71,44 +90,39 @@ enum WorkflowStatus<'a> {
 }
 
 impl<'a> WorkflowStatus<'a> {
-    /// Creates a new [`WorkflowStatus`] from [`IoArgoprojWorkflowV1alpha1Workflow`]
+    /// Creates a new `WorkflowStatus` from `IoArgoprojWorkflowV1alpha1WorkflowStatus` and associated metadata.
     fn new(
         workflow: &'a IoArgoprojWorkflowV1alpha1Workflow,
+        metadata: &'a Metadata,
     ) -> Result<Option<Self>, WorkflowParsingError> {
         let status = match workflow.status.as_ref() {
             Some(status) => status,
             None => return Err(WorkflowParsingError::MissingWorkflowStatus),
         };
-        let namespace = workflow.metadata.namespace.as_ref().unwrap();
-        let name = workflow.metadata.name.as_ref().unwrap();
         match status.phase.as_deref() {
             Some("Pending") => Ok(Some(Self::Pending(WorkflowPendingStatus(status)))),
             Some("Running") => Ok(Some(Self::Running(WorkflowRunningStatus {
                 manifest: status,
-                namespace,
-                name,
+                metadata,
             }))),
             Some("Succeeded") => Ok(Some(Self::Succeeded(
                 WorkflowCompleteStatus {
                     manifest: status,
-                    namespace,
-                    name,
+                    metadata,
                 }
                 .into(),
             ))),
             Some("Failed") => Ok(Some(Self::Failed(
                 WorkflowCompleteStatus {
                     manifest: status,
-                    namespace,
-                    name,
+                    metadata,
                 }
                 .into(),
             ))),
             Some("Error") => Ok(Some(Self::Errored(
                 WorkflowCompleteStatus {
                     manifest: status,
-                    namespace,
-                    name,
+                    metadata,
                 }
                 .into(),
             ))),
@@ -135,8 +149,7 @@ impl WorkflowPendingStatus<'_> {
 #[derive(Debug)]
 struct WorkflowRunningStatus<'a> {
     manifest: &'a IoArgoprojWorkflowV1alpha1WorkflowStatus,
-    namespace: &'a str,
-    name: &'a str,
+    metadata: &'a Metadata,
 }
 
 #[Object]
@@ -161,8 +174,7 @@ impl WorkflowRunningStatus<'_> {
         let token = ctx
             .data_unchecked::<Option<Authorization<Bearer>>>()
             .to_owned();
-        let nodes =
-            fetch_missing_task_info(url, token, self.manifest, self.namespace, self.name).await?;
+        let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
         Ok(TaskMap(nodes).into_tasks())
     }
 }
@@ -196,8 +208,7 @@ struct WorkflowErroredStatus<'a> {
 #[derive(Debug)]
 struct WorkflowCompleteStatus<'a> {
     manifest: &'a IoArgoprojWorkflowV1alpha1WorkflowStatus,
-    namespace: &'a str,
-    name: &'a str,
+    metadata: &'a Metadata,
 }
 
 #[Object]
@@ -231,8 +242,7 @@ impl WorkflowCompleteStatus<'_> {
         let token = ctx
             .data_unchecked::<Option<Authorization<Bearer>>>()
             .to_owned();
-        let nodes =
-            fetch_missing_task_info(url, token, self.manifest, self.namespace, self.name).await?;
+        let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
         Ok(TaskMap(nodes).into_tasks())
     }
 }
@@ -315,8 +325,7 @@ async fn fetch_missing_task_info(
     mut url: Url,
     token: Option<Authorization<Bearer>>,
     manifest: &IoArgoprojWorkflowV1alpha1WorkflowStatus,
-    namespace: &str,
-    workflow_name: &str,
+    metadata: &Metadata,
 ) -> anyhow::Result<HashMap<String, IoArgoprojWorkflowV1alpha1NodeStatus>> {
     let mut nodes = manifest.nodes.clone();
     if nodes.is_empty() {
@@ -324,8 +333,8 @@ async fn fetch_missing_task_info(
             "api",
             "v1",
             "workflows",
-            namespace,
-            workflow_name,
+            &metadata.visit.to_string(),
+            &metadata.name,
         ]);
         let request = if let Some(token) = token {
             CLIENT.get(url).bearer_auth(token.token())
@@ -416,10 +425,7 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow {
-            manifest: Arc::new(workflow),
-            visit: visit.into(),
-        })
+        Ok(Workflow::new(Arc::new(workflow), visit.into()))
     }
 
     #[instrument(skip(self, ctx))]
@@ -462,10 +468,7 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| Workflow {
-                manifest: Arc::new(workflow),
-                visit: visit.clone().into(),
-            })
+            .map(|workflow| Workflow::new(Arc::new(workflow), visit.clone().into()))
             .collect::<Vec<_>>();
         let mut connection = Connection::new(
             cursor_index > 0,
