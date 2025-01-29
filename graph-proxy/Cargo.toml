@@ -5,7 +5,7 @@ default-members = ["."]
 [workspace.dependencies]
 chrono = { version = "0.4.39" }
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.137" }
+serde_json = { version = "1.0.138" }
 
 [package]
 name = "graph-proxy"
@@ -16,12 +16,12 @@ exclude = ["test-resources/"]
 [dependencies]
 anyhow = { version = "1.0.95" }
 argo-workflows-openapi = { path = "./argo-workflows-openapi" }
-async-graphql = { version = "7.0.13", features = ["chrono"] }
-async-graphql-axum = { version = "7.0.13" }
+async-graphql = { version = "7.0.14", features = ["chrono"] }
+async-graphql-axum = { version = "7.0.14" }
 axum = { version = "0.7.9" }
 axum-extra = { version = "0.9.6", features = ["typed-header"] }
 chrono = { workspace = true }
-clap = { version = "4.5.26", features = ["derive", "env"] }
+clap = { version = "4.5.27", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = [
   "deref",
   "deref_mut",
@@ -35,7 +35,7 @@ opentelemetry-otlp = { version = "0.27.0", features = ["metrics"] }
 opentelemetry-semantic-conventions = "0.27.0"
 opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
 regex = "1.11.1"
-reqwest = { version = "0.12.9", default-features = false, features = [
+reqwest = { version = "0.12.12", default-features = false, features = [
   "rustls-tls",
   "json",
 ] }
