@@ -18,6 +18,8 @@ updates:
     directories:
       - /sessionspaces/
       - /sessionspaces/.devcontainer/
+      - /graph-proxy/
+      - /graph-proxy/.devcontainer/
     schedule:
       interval: weekly
     groups:
