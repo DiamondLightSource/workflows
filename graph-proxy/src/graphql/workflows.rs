@@ -138,8 +138,8 @@ struct WorkflowPendingStatus<'a>(&'a IoArgoprojWorkflowV1alpha1WorkflowStatus);
 #[Object]
 impl WorkflowPendingStatus<'_> {
     /// A human readable message indicating details about why the workflow is in this condition
-    async fn message(&self) -> Option<String> {
-        self.0.message.clone()
+    async fn message(&self) -> Option<&str> {
+        self.0.message.as_deref()
     }
 }
 
@@ -163,8 +163,8 @@ impl WorkflowRunningStatus<'_> {
     }
 
     /// A human readable message indicating details about why the workflow is in this condition
-    async fn message(&self) -> Option<String> {
-        self.manifest.message.clone()
+    async fn message(&self) -> Option<&str> {
+        self.manifest.message.as_deref()
     }
 
     /// Tasks created by the workflow
@@ -231,8 +231,8 @@ impl WorkflowCompleteStatus<'_> {
     }
 
     /// A human readable message indicating details about why the workflow is in this condition
-    async fn message(&self) -> Option<String> {
-        self.manifest.message.clone()
+    async fn message(&self) -> Option<&str> {
+        self.manifest.message.as_deref()
     }
 
     /// Tasks created by the workflow
