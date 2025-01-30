@@ -15,6 +15,7 @@ argo-cd:
     rbac:
       create: true
       policy.default: role:readonly
+      scopes: "[email, profile, openid]"
       policy.csv: |
         p, role:admin, applications, *, */*, allow
         p, role:admin, clusters, *, *, allow
@@ -24,6 +25,11 @@ argo-cd:
         p, role:admin, logs, get, */*, allow
         p, role:admin, settings, *, *, allow
         g, admin, role:admin
+        g, benedikt.daurer@diamond.ac.uk, role:admin
+        g, garry.o'donnell@diamond.ac.uk, role:admin
+        g, max.herbert@diamond.ac.uk, role:admin
+        g, Thomas.Thomas@diamond.ac.uk, role:admin
+        g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
 
 ingress:
   enabled: true
