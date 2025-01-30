@@ -10,7 +10,7 @@ use async_graphql::{
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
-use std::{collections::HashMap, ops::Deref, sync::Arc};
+use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 use url::Url;
 
@@ -36,14 +36,14 @@ pub(super) enum WorkflowParsingError {
 #[derive(Debug)]
 pub(super) struct Workflow {
     /// Manifest associated with the workflow
-    pub(super) manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>,
+    pub(super) manifest: IoArgoprojWorkflowV1alpha1Workflow,
     /// Metadata associated with the workflow
     pub(super) metadata: Metadata,
 }
 
 impl Workflow {
-    /// Create [`Workflow`] from [`Arc<IoArgoprojWorkflowV1alpha1Workflow>`] and [`Visit`]
-    pub fn new(manifest: Arc<IoArgoprojWorkflowV1alpha1Workflow>, visit: Visit) -> Workflow {
+    /// Create [`Workflow`] from [`IoArgoprojWorkflowV1alpha1Workflow`] and [`Visit`]
+    pub fn new(manifest: IoArgoprojWorkflowV1alpha1Workflow, visit: Visit) -> Workflow {
         let name = manifest.metadata.name.clone().unwrap();
         Workflow {
             manifest,
@@ -424,7 +424,7 @@ impl WorkflowsQuery {
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
             .await?
             .into_result()?;
-        Ok(Workflow::new(Arc::new(workflow), visit.into()))
+        Ok(Workflow::new(workflow, visit.into()))
     }
 
     #[instrument(skip(self, ctx))]
@@ -467,7 +467,7 @@ impl WorkflowsQuery {
         let workflows = workflows_response
             .items
             .into_iter()
-            .map(|workflow| Workflow::new(Arc::new(workflow), visit.clone().into()))
+            .map(|workflow| Workflow::new(workflow, visit.clone().into()))
             .collect::<Vec<_>>();
         let mut connection = Connection::new(
             cursor_index > 0,
