@@ -9,6 +9,8 @@ pub mod instruments;
 pub mod permissionables;
 /// Kubernetes resource templating
 mod resources;
+/// Telemetry setup and configuration
+mod telemetry;
 
 use crate::permissionables::Sessions;
 use clap::Parser;
@@ -16,6 +18,7 @@ use ldap3::LdapConnAsync;
 use resources::{create_configmap, create_namespace, delete_namespace};
 use sqlx::mysql::MySqlPoolOptions;
 use std::{collections::BTreeSet, time::Duration};
+use telemetry::setup_telemetry;
 use tokio::time::interval;
 use tracing::{info, warn};
 use url::Url;
@@ -37,7 +40,13 @@ struct Cli {
     request_rate: Option<u64>,
     /// The [`tracing::Level`] to log at
     #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
-    log_level: tracing::Level,
+    tracing_level: tracing::Level,
+    /// The URL of the metrics endpoint
+    #[clap(long, env)]
+    metrics_endpoint: Option<Url>,
+    /// The URL of the tracing endpoint
+    #[clap(long, env)]
+    tracing_endpoint: Option<Url>,
 }
 
 #[tokio::main(flavor = "current_thread")]
@@ -45,9 +54,12 @@ async fn main() {
     dotenvy::dotenv().ok();
     let args = Cli::parse();
 
-    tracing_subscriber::fmt()
-        .with_max_level(args.log_level)
-        .init();
+    let _otel_guard = setup_telemetry(
+        args.metrics_endpoint,
+        args.tracing_endpoint,
+        args.tracing_level,
+    )
+    .unwrap();
 
     let ispyb_pool = MySqlPoolOptions::new()
         .connect(args.database_url.as_str())
