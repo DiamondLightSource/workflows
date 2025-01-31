@@ -150,3 +150,19 @@ oauth2-proxy:
     - name: secret
       mountPath: /etc/alpha
       readOnly: true
+
+ingresstlssecret:
+  enabled: true 
+s3sealedsecret:
+  enabled: true 
+bitnamisecret:
+  enabled: true
+
+s3artifactpolicy:
+  enabled: true 
+sessionspacepolicy:
+  enabled: true
+podgcpolicy:
+  enabled: true
+workflowlabelpolicy:
+  enabled: true
