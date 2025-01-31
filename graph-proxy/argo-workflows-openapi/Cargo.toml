@@ -2,6 +2,7 @@
 name = "argo-workflows-openapi"
 version = "0.1.0"
 edition = "2021"
+license-file = "../../LICENSE"
 
 [dependencies]
 chrono = { workspace = true, features = ["serde"] }
