@@ -4,7 +4,8 @@ ARG ARGO_SERVER_SCHEMA_URL
 
 WORKDIR /app
 
-RUN rustup component add rustfmt
+RUN rustup component add rustfmt \
+    && cargo install cargo-auditable
 
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY argo-workflows-openapi/build.rs argo-workflows-openapi/build.rs
@@ -19,7 +20,7 @@ RUN mkdir src \
 COPY . .
 
 RUN touch src/main.rs \
-  && cargo build --release
+  && cargo auditable build --release
 
 FROM gcr.io/distroless/cc-debian12@sha256:b7550f0b15838de14c564337eef2b804ba593ae55d81ca855421bd52f19bb480 AS deploy
 
