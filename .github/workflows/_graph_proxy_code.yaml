@@ -45,6 +45,12 @@ jobs:
           --
           --deny warnings
 
+      - name: Check Dependencies with Cargo Deny
+        uses: EmbarkStudios/cargo-deny-action@v2.0.4
+        with:
+          command: check licenses
+          manifest-path: graph-proxy/Cargo.toml
+
   test:
     runs-on: ubuntu-latest
     env:
