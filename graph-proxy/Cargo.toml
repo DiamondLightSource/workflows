@@ -5,7 +5,7 @@ default-members = ["."]
 [workspace.dependencies]
 chrono = { version = "0.4.39" }
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.137" }
+serde_json = { version = "1.0.138" }
 
 [package]
 name = "graph-proxy"
@@ -17,12 +17,12 @@ license-file = "../LICENSE"
 [dependencies]
 anyhow = { version = "1.0.95" }
 argo-workflows-openapi = { path = "./argo-workflows-openapi" }
-async-graphql = { version = "7.0.13", features = ["chrono", "url"] }
+async-graphql = { version = "7.0.15", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.13" }
 axum = { version = "0.7.9" }
 axum-extra = { version = "0.9.6", features = ["typed-header"] }
 chrono = { workspace = true }
-clap = { version = "4.5.26", features = ["derive", "env"] }
+clap = { version = "4.5.27", features = ["derive", "env"] }
 derive_more = { version = "1.0.0", features = [
   "deref",
   "deref_mut",
