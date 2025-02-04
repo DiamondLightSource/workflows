@@ -94,6 +94,24 @@ const grafanaCard = (
   </React.Fragment>
 );
 
+const argoCdCard = (
+  <React.Fragment>
+    <CardActionArea
+      href="https://argo-cd.workflows.diamond.ac.uk"
+      target="_blank"
+    >
+      <CardContent>
+        <Typography gutterBottom variant="h5" component="div">
+          ArgoCD
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          Monitors deployments of services and workflow templates.
+        </Typography>
+      </CardContent>
+    </CardActionArea>
+  </React.Fragment>
+);
+
 function Dashboard() {
   return (
     <>
@@ -121,6 +139,9 @@ function Dashboard() {
           </Grid>
           <Grid key={"grafana"} size={{ xs: 2, sm: 2, md: 3 }}>
             <Card style={{ height: "100%" }}>{grafanaCard}</Card>
+          </Grid>
+          <Grid key={"argocd"} size={{ xs: 2, sm: 2, md: 3 }}>
+            <Card style={{ height: "100%" }}>{argoCdCard}</Card>
           </Grid>
         </Grid>
       </Container>
