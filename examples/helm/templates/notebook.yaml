@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: notebook
+spec:
+  entrypoint: notebook
+  templates:
+    - name: notebook
+      script:
+        image: docker.io/jupter/datascience-notebook
+        command:
+          - jupyter-nbconvert
+          - --execute
+          - --stdin
+          - --to
+          - html
+          - --output
+          - notebook
+          - --output-dir
+          - /outputs
+        source: |
+          {{ .Files.Get "notebooks/notebook.ipynb" | fromJson | toPrettyJson | nindent 10 }}
+        volumeMounts:
+          - name: outputs
+            mountPath: /outputs
+  volumeClaimTemplates:
+    - metadata:
+        name: outputs
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
