@@ -1,0 +1,32 @@
+FROM docker.io/library/rust:1.84.1-bookworm AS build
+
+ARG DATABASE_URL
+
+WORKDIR /app
+
+RUN cargo install cargo-auditable
+
+COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
+COPY graph-proxy/Cargo.toml graph-proxy/
+COPY sessionspaces/Cargo.toml sessionspaces/
+COPY Cargo.toml Cargo.lock ./
+
+RUN mkdir argo-workflows-openapi/src \
+    && touch argo-workflows-openapi/src/lib.rs \
+    && mkdir graph-proxy/src \
+    && echo "fn main() {}" > graph-proxy/src/main.rs 
+
+RUN mkdir sessionspaces/src && echo "fn main() {}" > sessionspaces/src/main.rs \
+  && touch --date @0 sessionspaces/src/main.rs \
+  && cargo build --release --package sessionspaces
+
+COPY . .
+
+RUN touch sessionspaces/src/main.rs \
+  && cargo auditable build --release --manifest-path sessionspaces/Cargo.toml
+
+FROM gcr.io/distroless/cc-debian12@sha256:b7550f0b15838de14c564337eef2b804ba593ae55d81ca855421bd52f19bb480 AS deploy
+
+COPY --from=build /app/target/release/sessionspaces /sessionspaces
+
+ENTRYPOINT ["/sessionspaces"]

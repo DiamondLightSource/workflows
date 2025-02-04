@@ -10,13 +10,17 @@ RUN rustup component add rustfmt \
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY argo-workflows-openapi/build.rs argo-workflows-openapi/build.rs
 COPY argo-workflows-openapi/src/lib.rs argo-workflows-openapi/src/lib.rs
+COPY sessionspaces/Cargo.toml sessionspaces/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY Cargo.toml Cargo.lock ./
+
+RUN mkdir sessionspaces/src \
+    && echo "fn main() {}" > sessionspaces/src/main.rs 
 
 RUN mkdir graph-proxy/src \
   && echo "fn main() {}" > graph-proxy/src/main.rs \
   && touch --date @0 graph-proxy/src/main.rs \
-  && cargo build --release --manifest-path graph-proxy/Cargo.toml
+  && cargo build --release --package graph-proxy
 
 COPY . .
 
