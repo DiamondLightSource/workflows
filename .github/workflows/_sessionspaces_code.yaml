@@ -29,18 +29,17 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          workspaces: sessionspaces
-          shared-key: sessionspaces
+          workspaces: backend/sessionspaces
+          shared-key: backend/sessionspaces
 
       - name: Check Formatting
-        working-directory: sessionspaces
+        working-directory: backend/sessionspaces
         run: >
           cargo fmt
-          --all
           --check
 
       - name: Lint with Clippy
-        working-directory: sessionspaces
+        working-directory: backend/sessionspaces
         run: >
           cargo clippy
           --all-targets
@@ -53,7 +52,7 @@ jobs:
         uses: EmbarkStudios/cargo-deny-action@v2.0.4
         with:
           command: check licenses
-          manifest-path: sessionspaces/Cargo.toml
+          manifest-path: backend/sessionspaces/Cargo.toml
 
   test:
     runs-on: ubuntu-latest
@@ -80,11 +79,11 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          workspaces: sessionspaces
-          shared-key: sessionspaces
+          workspaces: backend/sessionspaces
+          shared-key: backend/sessionspaces
 
       - name: Run Tests
-        working-directory: sessionspaces
+        working-directory: backend/sessionspaces
         run: >
           cargo test
           --all-targets
