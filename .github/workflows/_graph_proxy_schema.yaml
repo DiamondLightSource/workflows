@@ -21,11 +21,11 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          workspaces: graph-proxy
-          shared-key: graph-proxy
+          workspaces: backend/graph-proxy
+          shared-key: backend/graph-proxy
 
       - name: Generate Schema
-        working-directory: graph-proxy
+        working-directory: backend/graph-proxy
         run: >
           cargo run
           schema
@@ -35,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4.6.0
         with:
           name: graph-proxy
-          path: graph-proxy/workflows.graphql
+          path: backend/graph-proxy/workflows.graphql
