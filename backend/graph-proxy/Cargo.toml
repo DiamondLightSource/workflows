@@ -1,22 +1,13 @@
-[workspace]
-members = [".", "argo-workflows-openapi"]
-default-members = ["."]
-
-[workspace.dependencies]
-chrono = { version = "0.4.39" }
-serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.137" }
-
 [package]
 name = "graph-proxy"
 version = "0.1.0"
 edition = "2021"
 exclude = ["test-resources/"]
-license-file = "../LICENSE"
+license-file = "../../LICENSE"
 
 [dependencies]
 anyhow = { version = "1.0.95" }
-argo-workflows-openapi = { path = "./argo-workflows-openapi" }
+argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.13", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.13" }
 axum = { version = "0.8.1" }

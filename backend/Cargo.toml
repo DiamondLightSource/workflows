@@ -1,3 +1,8 @@
 [workspace]
-members = ["."]
+members = ["argo-workflows-openapi", "graph-proxy"]
 resolver = "2"
+
+[workspace.dependencies]
+chrono = { version = "0.4.39" }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = { version = "1.0.137" }

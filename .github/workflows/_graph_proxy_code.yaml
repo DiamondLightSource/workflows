@@ -21,22 +21,22 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          workspaces: graph-proxy
-          shared-key: graph-proxy
+          workspaces: backend/graph-proxy
+          shared-key: backend/graph-proxy
 
       - name: Create argo workflows openapi types file
         run: |
-          printf "\n" > graph-proxy/argo-workflows-openapi/src/types.rs
+          printf "\n" > backend/argo-workflows-openapi/src/types.rs
 
       - name: Check Formatting
-        working-directory: graph-proxy
+        working-directory: backend/graph-proxy
         run: >
           cargo fmt
           --all
           --check
 
       - name: Lint with Clippy
-        working-directory: graph-proxy
+        working-directory: backend/graph-proxy
         run: >
           cargo clippy
           --all-targets
@@ -49,7 +49,7 @@ jobs:
         uses: EmbarkStudios/cargo-deny-action@v2.0.4
         with:
           command: check licenses
-          manifest-path: graph-proxy/Cargo.toml
+          manifest-path: backend/graph-proxy/Cargo.toml
 
   test:
     runs-on: ubuntu-latest
@@ -68,11 +68,11 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.7
         with:
-          workspaces: graph-proxy
-          shared-key: graph-proxy
+          workspaces: backend/graph-proxy
+          shared-key: backend/graph-proxy
 
       - name: Run Tests
-        working-directory: graph-proxy
+        working-directory: backend/graph-proxy
         run: >
           cargo test
           --all-targets
