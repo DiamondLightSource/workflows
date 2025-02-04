@@ -1,5 +1,5 @@
 [workspace]
-members = ["argo-workflows-openapi", "graph-proxy"]
+members = ["argo-workflows-openapi", "graph-proxy", "sessionspaces"]
 resolver = "2"
 
 [workspace.dependencies]
