@@ -52,8 +52,9 @@ jobs:
       - name: Build Image
         uses: docker/build-push-action@v6.13.0
         with:
-          context: ./sessionspaces
           build-args: DATABASE_URL=mysql://root:rootpassword@localhost:3306/ispyb_build
+          context: backend
+          file: backend/Dockerfile.sessionspaces
           target: deploy
           push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
           load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags')) }}
