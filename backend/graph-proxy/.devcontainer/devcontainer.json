@@ -12,7 +12,7 @@
     "vscode": {
       "settings": {
         "rust-analyzer.linkedProjects": [
-          "graph-proxy/Cargo.toml"
+          "backend/graph-proxy/Cargo.toml"
         ]
       },
       "extensions": [
@@ -27,6 +27,6 @@
       "upgradePackages": false
     }
   },
-  "workspaceMount": "source=${localWorkspaceFolder}/..,target=/workspace,type=bind",
+  "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
   "workspaceFolder": "/workspace/"
 }
