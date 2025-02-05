@@ -51,8 +51,8 @@ jobs:
       - name: Check Dependencies with Cargo Deny
         uses: EmbarkStudios/cargo-deny-action@v2.0.4
         with:
-          command: check licenses
-          manifest-path: backend/sessionspaces/Cargo.toml
+          command: check licenses ban
+          manifest-path: backend/Cargo.toml
 
   test:
     runs-on: ubuntu-latest
