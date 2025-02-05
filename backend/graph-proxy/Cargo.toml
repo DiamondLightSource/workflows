@@ -6,21 +6,16 @@ exclude = ["test-resources/"]
 license-file = "../../LICENSE"
 
 [dependencies]
-anyhow = { version = "1.0.95" }
+anyhow = { workspace = true }
 argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.13", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.13" }
 axum = { version = "0.8.1" }
 axum-extra = { version = "0.10.0", features = ["typed-header"] }
 chrono = { workspace = true }
-clap = { version = "4.5.26", features = ["derive", "env"] }
-derive_more = { version = "1.0.0", features = [
-  "deref",
-  "deref_mut",
-  "from",
-  "into",
-] }
-dotenvy = { version = "0.15.7" }
+clap = { workspace = true }
+derive_more = { workspace = true }
+dotenvy = { workspace = true }
 lazy_static = { version = "1.5.0" }
 mime_guess = "2.0.5"
 opentelemetry = { version = "0.27.1" }
@@ -28,19 +23,16 @@ opentelemetry-otlp = { version = "0.27.0", features = ["metrics"] }
 opentelemetry-semantic-conventions = "0.27.0"
 opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
 regex = "1.11.1"
-reqwest = { version = "0.12.9", default-features = false, features = [
-  "rustls-tls",
-  "json",
-] }
+reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { version = "2.0.11" }
-tokio = { version = "1.43.0", features = ["macros", "net", "rt-multi-thread"] }
+tokio = { workspace = true }
 tower-http = { version = "0.6.2", features = ["cors"] }
-tracing = { version = "0.1.41" }
+tracing = { workspace = true }
 tracing-opentelemetry = { version = "0.28.0" }
-tracing-subscriber = { version = "0.3.19" }
-url = { version = "2.5.4" }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
 
 [dev-dependencies]
 mockito = "1.6.1"

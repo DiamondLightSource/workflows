@@ -3,6 +3,29 @@ members = ["argo-workflows-openapi", "graph-proxy", "sessionspaces"]
 resolver = "2"
 
 [workspace.dependencies]
+anyhow = { version = "1.0.95" }
+clap = { version = "4.5.26", features = ["derive", "env"] }
 chrono = { version = "0.4.39" }
+derive_more = { version = "1.0.0", features = [
+    "deref",
+    "deref_mut",
+    "from",
+    "into",
+] }
+dotenvy = { version = "0.15.7" }
+reqwest = { version = "0.12.9", default-features = false, features = [
+    "rustls-tls",
+    "json",
+    "blocking",
+] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = { version = "1.0.137" }
+tracing = { version = "0.1.41" }
+tokio = { version = "1.43.0", features = [
+    "macros",
+    "time",
+    "net",
+    "rt-multi-thread",
+] }
+tracing-subscriber = { version = "0.3.19" }
+url = { version = "2.5.4" }
