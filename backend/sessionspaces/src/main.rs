@@ -16,6 +16,7 @@ use ldap3::LdapConnAsync;
 use resources::{create_configmap, create_namespace, delete_namespace};
 use sqlx::mysql::MySqlPoolOptions;
 use std::{collections::BTreeSet, time::Duration};
+use telemetry::{setup_telemetry, TelemetryArgs};
 use tokio::time::interval;
 use tracing::{info, warn};
 use url::Url;
@@ -35,9 +36,9 @@ struct Cli {
     /// The maximum allowable k8s API requests per second
     #[clap(long, env, default_value = "10")]
     request_rate: Option<u64>,
-    /// The [`tracing::Level`] to log at
-    #[arg(long, env="LOG_LEVEL", default_value_t=tracing::Level::INFO)]
-    log_level: tracing::Level,
+    /// Args to setup telemetry
+    #[command(flatten)]
+    telemetry_args: TelemetryArgs,
 }
 
 #[tokio::main(flavor = "current_thread")]
@@ -45,9 +46,12 @@ async fn main() {
     dotenvy::dotenv().ok();
     let args = Cli::parse();
 
-    tracing_subscriber::fmt()
-        .with_max_level(args.log_level)
-        .init();
+    let _otlp_guard = setup_telemetry(
+        args.telemetry_args.metrics_endpoint.clone(),
+        args.telemetry_args.tracing_endpoint.clone(),
+        args.telemetry_args.telemetry_level,
+    )
+    .unwrap();
 
     let ispyb_pool = MySqlPoolOptions::new()
         .connect(args.database_url.as_str())
