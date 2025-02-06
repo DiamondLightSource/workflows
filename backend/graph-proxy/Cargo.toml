@@ -18,24 +18,19 @@ derive_more = { workspace = true }
 dotenvy = { workspace = true }
 lazy_static = { version = "1.5.0" }
 mime_guess = "2.0.5"
-opentelemetry = { version = "0.27.1" }
-opentelemetry-otlp = { version = "0.27.0", features = ["metrics"] }
-opentelemetry-semantic-conventions = "0.27.0"
-opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
 regex = "1.11.1"
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-thiserror = { version = "2.0.11" }
+thiserror = { workspace = true }
+telemetry = { path = "../telemetry" }
 tokio = { workspace = true }
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = { workspace = true }
-tracing-opentelemetry = { version = "0.28.0" }
-tracing-subscriber = { workspace = true }
 url = { workspace = true }
 
 [dev-dependencies]
 mockito = "1.6.1"
 
 [build-dependencies]
-built = { version = "0.7.5" }
+built = { workspace = true }
