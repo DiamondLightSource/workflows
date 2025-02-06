@@ -19,4 +19,5 @@ tracing-subscriber = { version = "0.3.19" }
 url = { workspace = true }
 
 [build-dependencies]
-built = { workspace = true }
+built = { version = "0.7.5" }
+
