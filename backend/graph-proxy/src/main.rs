@@ -5,8 +5,6 @@
 
 /// GraphQL resolvers
 mod graphql;
-/// OpenTelemetry setup and configuration
-mod telemetry;
 
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{response::Html, routing::get, Router};
@@ -20,7 +18,7 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     path::PathBuf,
 };
-use telemetry::setup_telemetry;
+use telemetry::{setup_telemetry, TelemetryConfig};
 use tokio::net::TcpListener;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{info, instrument, Level};
@@ -51,15 +49,9 @@ struct ServeArgs {
     /// The endpoint at which the GraphQL API should be served
     #[arg(long, env = "PREFIX_PATH", default_value = "/")]
     prefix_path: String,
-    /// The endpoint to send OTLP metrics to
-    #[arg(short, long, env = "METRICS_ENDPOINT")]
-    metrics_endpoint: Option<Url>,
-    /// The endpoint to send OTLP traces to
-    #[arg(short, long, env = "TRACING_ENDPOINT")]
-    tracing_endpoint: Option<Url>,
-    /// The minimum telemetry level
-    #[arg(short, long, env="TELEMETRY_LEVEL", default_value_t=Level::INFO)]
-    telemetry_level: Level,
+    /// Args to setup telemetry
+    #[command(flatten)]
+    telemetry_config: TelemetryConfig,
     /// Regexes of Cross Origin Resource Sharing (CORS) Origins to allow
     #[arg(long, env="CORS_ALLOW", value_delimiter=' ', num_args=1..)]
     cors_allow: Option<Vec<Regex>>,
@@ -84,12 +76,7 @@ async fn main() {
 
     match args {
         Cli::Serve(args) => {
-            let _otlp_guard = setup_telemetry(
-                args.metrics_endpoint.clone(),
-                args.tracing_endpoint.clone(),
-                args.telemetry_level,
-            )
-            .unwrap();
+            let _otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
             info!(?args, "Starting GraphQL Server");
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
@@ -98,7 +85,12 @@ async fn main() {
             serve(router, args.host, args.port).await.unwrap();
         }
         Cli::Schema(args) => {
-            setup_telemetry(None, None, Level::INFO).unwrap();
+            setup_telemetry(TelemetryConfig {
+                metrics_endpoint: None,
+                tracing_endpoint: None,
+                telemetry_level: Level::INFO,
+            })
+            .unwrap();
             info!(?args, "Generating GraphQL schema");
             let schema = root_schema_builder().finish();
             let schema_string = schema.sdl_with_options(SDLExportOptions::new().federation());
