@@ -1,9 +1,15 @@
 [workspace]
-members = ["argo-workflows-openapi", "graph-proxy", "sessionspaces"]
+members = [
+    "argo-workflows-openapi",
+    "graph-proxy",
+    "sessionspaces",
+    "telemetry",
+]
 resolver = "2"
 
 [workspace.dependencies]
 anyhow = { version = "1.0.95" }
+built = { version = "0.7.5" }
 clap = { version = "4.5.26", features = ["derive", "env"] }
 chrono = { version = "0.4.39" }
 derive_more = { version = "1.0.0", features = [
@@ -20,6 +26,7 @@ reqwest = { version = "0.12.9", default-features = false, features = [
 ] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = { version = "1.0.137" }
+thiserror = { version = "2.0.11" }
 tracing = { version = "0.1.41" }
 tokio = { version = "1.43.0", features = [
     "macros",
