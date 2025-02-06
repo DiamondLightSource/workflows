@@ -9,6 +9,9 @@ RUN cargo install cargo-auditable
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
+COPY telemetry/Cargo.toml telemetry/Cargo.toml
+COPY telemetry/build.rs telemetry/build.rs
+COPY telemetry/src/lib.rs telemetry/src/lib.rs
 COPY Cargo.toml Cargo.lock ./
 
 RUN mkdir argo-workflows-openapi/src \
