@@ -12,6 +12,9 @@ COPY argo-workflows-openapi/build.rs argo-workflows-openapi/build.rs
 COPY argo-workflows-openapi/src/lib.rs argo-workflows-openapi/src/lib.rs
 COPY sessionspaces/Cargo.toml sessionspaces/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
+COPY telemetry/Cargo.toml telemetry/Cargo.toml
+COPY telemetry/build.rs telemetry/build.rs
+COPY telemetry/src/lib.rs telemetry/src/lib.rs
 COPY Cargo.toml Cargo.lock ./
 
 RUN mkdir sessionspaces/src \
