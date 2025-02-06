@@ -1,0 +1,22 @@
+[package]
+name = "telemetry"
+build = "build.rs"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "A telemetry library for collecting and exporting metrics and traces."
+
+[dependencies]
+clap = { workspace = true }
+opentelemetry = { version = "0.27.1" }
+opentelemetry-otlp = { version = "0.27.0", features = ["metrics"] }
+opentelemetry-semantic-conventions = "0.27.0"
+opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-opentelemetry = { version = "0.28.0" }
+tracing-subscriber = { version = "0.3.19" }
+url = { workspace = true }
+
+[build-dependencies]
+built = { workspace = true }
