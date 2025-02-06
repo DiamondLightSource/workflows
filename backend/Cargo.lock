@@ -3026,11 +3026,11 @@ dependencies = [
  "serde_json",
  "sqlx",
  "strum",
+ "telemetry",
  "time",
  "tokio",
  "tower 0.5.2",
  "tracing",
- "tracing-subscriber",
  "url",
  "wiremock",
 ]
