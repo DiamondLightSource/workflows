@@ -11,7 +11,7 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "keycloak-js": "^26.1.0",
+    "keycloak-js": "^26.1.1",
     "react-relay": "18.2.0",
     "react-router-dom": "^7.1.5",
     "relay-workflows-lib": "*",
