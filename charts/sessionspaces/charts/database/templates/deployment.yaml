@@ -36,8 +36,6 @@ spec:
           nodeSelector:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
-          ports:
-            - containerPort: {{ $.Values.dbPort }}
           {{- with $.Values.affinity }}
           affinity:
             {{- . | toYaml | nindent 8 }}
