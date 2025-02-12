@@ -10,16 +10,37 @@
   ],
   "packages": {
     "backend/graph-proxy": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/graph-proxy/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ]       
     },
     "backend/sessionspaces": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/sessionspaces/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ] 
     },
     "docs": {
       "release-type": "simple"
     },
     "frontend/dashboard": {
-      "release-type": "node"
+      "release-type": "node",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/dashboard/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ] 
     },
     "frontend/relay-workflows-lib": {
       "release-type": "node"
