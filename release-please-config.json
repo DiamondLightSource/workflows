@@ -15,36 +15,6 @@
     "backend/sessionspaces": {
       "release-type": "rust"
     },
-    "charts/apps": {
-      "release-type": "helm"
-    },
-    "charts/argocd": {
-      "release-type": "helm"
-    },
-    "charts/dashboard": {
-      "release-type": "helm"
-    },
-    "charts/events": {
-      "release-type": "helm"
-    },
-    "charts/graph-proxy": {
-      "release-type": "helm"
-    },
-    "charts/groups": {
-      "release-type": "helm"
-    },
-    "charts/sessionspaces": {
-      "release-type": "helm"
-    },
-    "charts/verflixt": {
-      "release-type": "helm"
-    },
-    "charts/workflows": {
-      "release-type": "helm"
-    },
-    "charts/workflows-cluster": {
-      "release-type": "helm"
-    },
     "docs": {
       "release-type": "simple"
     },
