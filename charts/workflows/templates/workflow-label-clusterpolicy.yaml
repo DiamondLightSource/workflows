@@ -1,3 +1,4 @@
+{{ if .Values.workflowlabelpolicy.enabled }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -16,3 +17,4 @@ spec:
           metadata:
             labels:
               workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra | "workflows.diamond.ac.uk/posixuid" | [0] }}` }}'
+{{- end }}

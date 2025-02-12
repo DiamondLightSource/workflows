@@ -1,3 +1,4 @@
+{{if .Values.podgcpolicy.enabled }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -16,3 +17,4 @@ spec:
             +(podGC):
               +(strategy): OnPodCompletion
               +(deleteDelayDuration): 60s
+{{- end }}

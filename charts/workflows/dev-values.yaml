@@ -12,6 +12,7 @@ argo-workflows:
         ephemeral-storage: 128Mi
   server:
     replicas: 1
+    authModes: []
     resources:
       limits:
         cpu: 100m
@@ -29,6 +30,22 @@ argo-workflows:
       requests:
         cpu: 250m
         memory: 256Mi
+
+ingresstlssecret:
+  enabled: false
+s3sealedsecret:
+  enabled: false
+bitnamisecret:
+  enabled: false 
+
+s3artifactpolicy:
+  enabled: false
+sessionspacepolicy:
+  enabled: false
+podgcpolicy:
+  enabled: false
+workflowlabelpolicy:
+  enabled: false
 
 postgresql-ha:
   postgresql:
@@ -52,10 +69,16 @@ postgresql-ha:
     storageClass: netapp
     size: 5Gi
 
-oauth2-proxy:
-  replicaCount: 1
-  ingress:
+  oauth2-proxy:
     enabled: false
+  # replicaCount: 1
+  # ingress:
+  #   enabled: false
+  # extraVolumes: []
+  # extraVolumeMounts: []
+  # alphaConfig:
+  #   configData:
+  #     providers: []
   redis:
     master:
       resources:

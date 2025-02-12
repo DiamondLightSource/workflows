@@ -1,0 +1,42 @@
+name: Verify dev resource requests & types
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.1.0
+
+      - name: Build Charts
+        run: |
+          charts_folder="charts"
+          for dir in "$charts_folder"/*/ ; do
+            if [ -f "$dir/Chart.yaml" ]; then
+              echo "Updating dependencies for $dir"
+              helm dependency update "$dir"
+            fi
+          done
+
+      - name: Install yaml
+        run: |
+          npm install yaml
+
+      - name: Check dev resources
+        id: version
+        uses: actions/github-script@v7.0.1
+        env: 
+          MAX_CPU: 10000
+          MAX_MEM: 30000
+        with:
+          result-encoding: string
+          script: |
+            const validate_resources = require('.github/workflows/check_k8s_resources.js');
+            validate_resources("charts");
+            return;

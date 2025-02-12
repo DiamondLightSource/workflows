@@ -1,0 +1,11 @@
+apiVersion: v2
+name: database
+description: Ispyb database deployment
+type: application
+
+version: 0.1.0
+appVersion: 0.1.0-rc25
+dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts
