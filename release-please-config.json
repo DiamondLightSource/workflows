@@ -46,6 +46,9 @@
     },
     "frontend/workflows-lib": {
       "release-type": "node"
+    },
+    "backend/telemetry": {
+      "release-type": "rust"
     }
   }
 }
