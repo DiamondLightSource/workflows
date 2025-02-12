@@ -31,9 +31,6 @@
         }
       ] 
     },
-    "docs": {
-      "release-type": "simple"
-    },
     "frontend/dashboard": {
       "release-type": "node",
       "extra-files": [
