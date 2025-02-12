@@ -4,6 +4,8 @@
   "include-v-in-tag": true,
   "tag-separator": "@",
   "separate-pull-requests": true,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
   "extra-files": [
     "README.md",
     "mkdocs.yml"
