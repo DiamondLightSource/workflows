@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "tag-separator": "@",
+  "separate-pull-requests": true,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "plugins": [
+    "node-workspace",
+    "cargo-workspace"
+  ],
+  "extra-files": [
+    "README.md",
+    "mkdocs.yml"
+  ],
+  "packages": {
+    "backend/graph-proxy": {
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/graph-proxy/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ]       
+    },
+    "backend/sessionspaces": {
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/sessionspaces/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ] 
+    },
+    "frontend/dashboard": {
+      "release-type": "node",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/dashboard/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ] 
+    },
+    "frontend/relay-workflows-lib": {
+      "release-type": "node"
+    },
+    "frontend/workflows-lib": {
+      "release-type": "node"
+    },
+    "backend/telemetry": {
+      "release-type": "rust"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+name: Release Please
+
+on:
+  workflow_call:
+    secrets:
+      release_please_token:
+        required: true
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: 1077859
+          private-key: ${{ secrets.release_please_token }}
+
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          manifest-file: .release-please-manifest.json
+          config-file: release-please-config.json
+
+      - name: Release Outputs
+        run: |
+          echo "Paths Released: ${{ steps.release.outputs.paths_released }}"
+          echo "Apps Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/apps') }}"
+          echo "Argocd Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/argocd') }}"
+          echo "Dashboard Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/dashboard') }}"
+          echo "Events Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/events') }}"
+          echo "Graph Proxy Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/graph-proxy') }}"
+          echo "Groups Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/groups') }}"
+          echo "Sessionspaces Chart Released: ${{ contains(steps.release.outputs.paths_released, 'charts/sessionspaces') }}"
+          echo "Docs Released: ${{ contains(steps.release.outputs.paths_released, 'docs') }}"
+          echo "Dashboard node package Released: ${{ contains(steps.release.outputs.paths_released, 'frontend/dashboard') }}"
+          echo "Relay workflows library node package Released: ${{ contains(steps.release.outputs.paths_released, 'frontend/relay-workflows-lib') }}"
+          echo "Workflows Library node package Released: ${{ contains(steps.release.outputs.paths_released, 'frontend/workflows-lib') }}"
+          echo "Graph Proxy Released: ${{ contains(steps.release.outputs.paths_released, 'graph-proxy') }}"
+          echo "Sessionspaces Released: ${{ contains(steps.release.outputs.paths_released, 'sessionspaces') }}"
