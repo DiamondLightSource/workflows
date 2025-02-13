@@ -24,13 +24,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract Version from Tag
+        id: tags
+        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT 
+
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5.6.1
         with:
           images: ${{ env.IMAGE_REPOSITORY }}
           tags: |
-            type=ref,event=tag
+            type=raw,value=${{ steps.tags.outputs.version }}
             type=raw,value=latest
 
       - name: Set up Docker Buildx
