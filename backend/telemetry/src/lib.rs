@@ -1,4 +1,4 @@
-use opentelemetry::{global, trace::TracerProvider as _, KeyValue};
+use opentelemetry::{trace::TracerProvider as _, KeyValue};
 use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
 use opentelemetry_sdk::{
     metrics::{PeriodicReader, SdkMeterProvider},
@@ -68,6 +68,14 @@ pub struct TelemetryConfig {
 
 /// Sets up Logging & Tracing using opentelemetry if available
 pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryError> {
+    let (guard, subscriber) = setup_telemetry_layers(config)?;
+    subscriber.try_init()?;
+    Ok(guard)
+}
+
+fn setup_telemetry_layers(
+    config: TelemetryConfig,
+) -> Result<(OtelGuard, impl tracing::Subscriber + Send + Sync + 'static), TelemetryError> {
     let level_filter = LevelFilter::from_level(config.telemetry_level);
     let log_layer = tracing_subscriber::fmt::layer();
 
@@ -114,14 +122,72 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
     };
 
     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::default());
-    tracing_subscriber::Registry::default()
+
+    let subscriber = tracing_subscriber::Registry::default()
         .with(level_filter)
         .with(log_layer)
         .with(metrics_layer)
-        .with(tracing_layer)
-        .try_init()?;
-    Ok(otel_guard)
+        .with(tracing_layer);
+
+    Ok((otel_guard, subscriber))
 }
+
+// /// Sets up Logging & Tracing using opentelemetry if available
+// pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryError> {
+//     let level_filter = LevelFilter::from_level(config.telemetry_level);
+//     let log_layer = tracing_subscriber::fmt::layer();
+
+//     let otel_resources = Resource::new([
+//         KeyValue::new(SERVICE_NAME, built_info::PKG_NAME),
+//         KeyValue::new(SERVICE_VERSION, built_info::PKG_VERSION),
+//     ]);
+
+//     let (meter_provider, metrics_layer) = if let Some(metrics_endpoint) = config.metrics_endpoint {
+//         let exporter = MetricExporter::builder()
+//             .with_tonic()
+//             .with_endpoint(metrics_endpoint)
+//             .build()?;
+//         let meter_provider = SdkMeterProvider::builder()
+//             .with_reader(PeriodicReader::builder(exporter, runtime::Tokio).build())
+//             .with_resource(otel_resources.clone())
+//             .build();
+//         (
+//             Some(meter_provider.clone()),
+//             Some(MetricsLayer::new(meter_provider)),
+//         )
+//     } else {
+//         (None, None)
+//     };
+
+//     let (tracer_provider, tracing_layer) = if let Some(tracing_endpoint) = config.tracing_endpoint {
+//         let exporter = SpanExporter::builder()
+//             .with_tonic()
+//             .with_endpoint(tracing_endpoint)
+//             .build()?;
+//         let tracer_provider = TracerProvider::builder()
+//             .with_batch_exporter(exporter, runtime::Tokio)
+//             .with_resource(otel_resources)
+//             .build();
+//         let tracer = tracer_provider.tracer(built_info::PKG_NAME);
+//         (Some(tracer_provider), Some(OpenTelemetryLayer::new(tracer)))
+//     } else {
+//         (None, None)
+//     };
+
+//     let otel_guard = OtelGuard {
+//         tracer_provider,
+//         meter_provider,
+//     };
+
+//     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::default());
+//     tracing_subscriber::Registry::default()
+//         .with(level_filter)
+//         .with(log_layer)
+//         .with(metrics_layer)
+//         .with(tracing_layer)
+//         .try_init()?;
+//     Ok(otel_guard)
+// }
 
 #[cfg(test)]
 mod tests {
@@ -191,8 +257,12 @@ mod tests {
             telemetry_level: Level::INFO,
         };
         {
-            let _guard = setup_telemetry(config).unwrap();
-            tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
+            // let _guard = setup_telemetry(config).unwrap();
+            // tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
+            let (_guard, subscriber) = setup_telemetry_layers(config).unwrap();
+            tracing::subscriber::with_default(subscriber, || {
+                tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
+            });
         }
 
         let requests = metrics_requests.lock().unwrap();
@@ -218,9 +288,12 @@ mod tests {
             telemetry_level: Level::INFO,
         };
         {
-            let _guard = setup_telemetry(config).unwrap();
-            let span = tracing::info_span!("test_span");
-            let _enter = span.enter();
+            let (_guard, subscriber) = setup_telemetry_layers(config).unwrap();
+            tracing::subscriber::with_default(subscriber, || {
+                tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
+                let span = tracing::info_span!("test_span");
+                let _enter = span.enter();
+            });
         }
         let requests = trace_requests.lock().unwrap();
         assert!(!requests.is_empty(), "No traces were exported");
