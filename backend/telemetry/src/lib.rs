@@ -122,3 +122,90 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
         .try_init()?;
     Ok(otel_guard)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{setup_telemetry, TelemetryConfig};
+    use opentelemetry_proto::tonic::collector::{
+        metrics::v1::{
+            metrics_service_server::{MetricsService, MetricsServiceServer},
+            ExportMetricsServiceRequest, ExportMetricsServiceResponse,
+        },
+        trace::v1::{
+            trace_service_server::{TraceService, TraceServiceServer},
+            ExportTraceServiceRequest, ExportTraceServiceResponse,
+        },
+    };
+    use std::sync::{Arc, Mutex};
+    use tonic::{transport::Server, Request, Response, Status};
+    use tracing::Level;
+    use url::Url;
+
+    #[derive(Debug, Default)]
+    struct MockMetricsService {
+        requests: Arc<Mutex<Vec<ExportMetricsServiceRequest>>>,
+    }
+
+    #[tonic::async_trait]
+    impl MetricsService for MockMetricsService {
+        async fn export(
+            &self,
+            request: Request<ExportMetricsServiceRequest>,
+        ) -> Result<Response<ExportMetricsServiceResponse>, Status> {
+            self.requests.lock().unwrap().push(request.into_inner());
+            Ok(Response::new(ExportMetricsServiceResponse::default()))
+        }
+    }
+
+    #[derive(Debug, Default)]
+    struct MockTraceService {
+        requests: Arc<Mutex<Vec<ExportTraceServiceRequest>>>,
+    }
+
+    #[tonic::async_trait]
+    impl TraceService for MockTraceService {
+        async fn export(
+            &self,
+            request: Request<ExportTraceServiceRequest>,
+        ) -> Result<Response<ExportTraceServiceResponse>, Status> {
+            self.requests.lock().unwrap().push(request.into_inner());
+            Ok(Response::new(ExportTraceServiceResponse::default()))
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_metrics_export() {
+        let metrics_requests = Arc::new(Mutex::new(Vec::new()));
+        let metrics_service = MockMetricsService {
+            requests: metrics_requests.clone(),
+        };
+        let trace_requests = Arc::new(Mutex::new(Vec::new()));
+        let trace_service = MockTraceService {
+            requests: trace_requests.clone(),
+        };
+        let addr = "[::1]:50051".parse().unwrap();
+        let server = Server::builder()
+            .add_service(MetricsServiceServer::new(metrics_service))
+            .add_service(TraceServiceServer::new(trace_service))
+            .serve(addr);
+
+        tokio::spawn(async move {
+            server.await.unwrap();
+        });
+        let config = TelemetryConfig {
+            metrics_endpoint: Some(Url::parse("http://[::1]:50051").unwrap()),
+            tracing_endpoint: Some(Url::parse("http://[::1]:50051").unwrap()),
+            telemetry_level: Level::INFO,
+        };
+        {
+            let _guard = setup_telemetry(config).unwrap();
+            tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
+            tracing::info_span!("test_span");
+        }
+        opentelemetry::global::shutdown_tracer_provider();
+        let metrics_requests = metrics_requests.lock().unwrap();
+        let trace_requests = trace_requests.lock().unwrap();
+        assert!(!metrics_requests.is_empty(), "No metrics were exported");
+        assert!(!trace_requests.is_empty(), "No traces were exported");
+    }
+}
