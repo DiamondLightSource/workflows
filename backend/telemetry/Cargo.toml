@@ -18,6 +18,10 @@ tracing-opentelemetry = { version = "0.28.0" }
 tracing-subscriber = { version = "0.3.19" }
 url = { workspace = true }
 
+[dev-dependencies]
+opentelemetry-proto = { version = "0.28.0" }
+tokio = { workspace = true }
+tonic = { version = "0.12.3" }
+
 [build-dependencies]
 built = { version = "0.7.5" }
-
