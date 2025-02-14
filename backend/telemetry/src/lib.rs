@@ -1,4 +1,4 @@
-use opentelemetry::{trace::TracerProvider as _, KeyValue};
+use opentelemetry::{global, trace::TracerProvider as _, KeyValue};
 use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
 use opentelemetry_sdk::{
     metrics::{PeriodicReader, SdkMeterProvider},
@@ -121,4 +121,108 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
         .with(tracing_layer)
         .try_init()?;
     Ok(otel_guard)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use opentelemetry_proto::tonic::collector::{
+        metrics::v1::{
+            metrics_service_server::{MetricsService, MetricsServiceServer},
+            ExportMetricsServiceRequest, ExportMetricsServiceResponse,
+        },
+        trace::v1::{
+            trace_service_server::{TraceService, TraceServiceServer},
+            ExportTraceServiceRequest, ExportTraceServiceResponse,
+        },
+    };
+    use std::sync::{Arc, Mutex};
+    use tonic::{transport::Server, Request, Response, Status};
+
+    #[derive(Debug, Default)]
+    struct MockMetricsService {
+        requests: Arc<Mutex<Vec<ExportMetricsServiceRequest>>>,
+    }
+
+    #[tonic::async_trait]
+    impl MetricsService for MockMetricsService {
+        async fn export(
+            &self,
+            request: Request<ExportMetricsServiceRequest>,
+        ) -> Result<Response<ExportMetricsServiceResponse>, Status> {
+            self.requests.lock().unwrap().push(request.into_inner());
+            Ok(Response::new(ExportMetricsServiceResponse::default()))
+        }
+    }
+
+    #[derive(Debug, Default)]
+    struct MockTraceService {
+        requests: Arc<Mutex<Vec<ExportTraceServiceRequest>>>,
+    }
+
+    #[tonic::async_trait]
+    impl TraceService for MockTraceService {
+        async fn export(
+            &self,
+            request: Request<ExportTraceServiceRequest>,
+        ) -> Result<Response<ExportTraceServiceResponse>, Status> {
+            self.requests.lock().unwrap().push(request.into_inner());
+            Ok(Response::new(ExportTraceServiceResponse::default()))
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_metrics_export() {
+        let metrics_requests = Arc::new(Mutex::new(Vec::new()));
+        let metrics_service = MockMetricsService {
+            requests: metrics_requests.clone(),
+        };
+        let addr = "[::1]:50051".parse().unwrap();
+        let server = Server::builder()
+            .add_service(MetricsServiceServer::new(metrics_service))
+            .serve(addr);
+
+        tokio::spawn(async move {
+            server.await.unwrap();
+        });
+        let config = TelemetryConfig {
+            metrics_endpoint: Some(Url::parse("http://[::1]:50051").unwrap()),
+            tracing_endpoint: None,
+            telemetry_level: Level::INFO,
+        };
+        {
+            let _guard = setup_telemetry(config).unwrap();
+            tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
+        }
+
+        let requests = metrics_requests.lock().unwrap();
+        assert!(!requests.is_empty(), "No metrics were exported");
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_trace_export() {
+        let trace_requests = Arc::new(Mutex::new(Vec::new()));
+        let trace_service = MockTraceService {
+            requests: trace_requests.clone(),
+        };
+        let addr = "[::1]:50052".parse().unwrap();
+        let server = Server::builder()
+            .add_service(TraceServiceServer::new(trace_service))
+            .serve(addr);
+        tokio::spawn(async move {
+            server.await.unwrap();
+        });
+        let config = TelemetryConfig {
+            metrics_endpoint: None,
+            tracing_endpoint: Some(Url::parse("http://[::1]:50052").unwrap()),
+            telemetry_level: Level::INFO,
+        };
+        {
+            let _guard = setup_telemetry(config).unwrap();
+            let span = tracing::info_span!("test_span");
+            let _enter = span.enter();
+        }
+        let requests = trace_requests.lock().unwrap();
+        assert!(!requests.is_empty(), "No traces were exported");
+    }
 }
