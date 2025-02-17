@@ -41,3 +41,38 @@ spec:
                 - apiGroup: rbac.authorization.k8s.io
                   kind: User
                   name: "oidc:mgr27357"
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                members: "[\"enu43627\", \"iat69393\", \"mgr27357\", \"kiw94553\"]"
+        - sleep:
+            duration: 5s
+        - assert:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: visit-member
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: ClusterRole
+                name: visit-member
+              subjects:
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:enu43627"
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:iat69393"
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:mgr27357"
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: "oidc:kiw94553"
