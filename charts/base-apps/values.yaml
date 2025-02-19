@@ -1,5 +1,5 @@
 destination:
-  server: https://kubernetes.default.svc
+  name: argus
 
 monitoring:
   enabled: true

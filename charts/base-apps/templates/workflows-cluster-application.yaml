@@ -7,7 +7,7 @@ metadata:
 spec:
   destination:
     namespace: {{ .Release.Namespace }}
-    server: {{ .Values.destination.server }}
+    name: {{ .Values.destination.name }}
   project: {{ .Release.Namespace }}
   source:
     repoURL: https://github.com/DiamondLightSource/workflows.git
