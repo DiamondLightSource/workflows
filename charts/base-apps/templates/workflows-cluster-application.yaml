@@ -2,12 +2,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ include "common.names.fullname" . }}-workflows-cluster
+  name: workflows-cluster
   namespace: {{ .Release.Namespace }}
 spec:
   destination:
     namespace: {{ .Release.Namespace }}
-    server: {{ .Values.destination.server }}
+    name: {{ .Values.destination.name }}
   project: {{ .Release.Namespace }}
   source:
     repoURL: https://github.com/DiamondLightSource/workflows.git
