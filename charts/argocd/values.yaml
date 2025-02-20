@@ -2,7 +2,7 @@ argo-cd:
   enabled: true
   configs:
     cm:
-      admin.enabled: "false"
+      admin.enabled: "true"
       url: https://argo-cd.workflows.diamond.ac.uk
       oidc.config: |
         name: Keycloak
