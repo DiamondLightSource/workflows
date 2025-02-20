@@ -1,15 +1,18 @@
 database:
+  create: false
   host: mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb
   user: ispyb_ro
   password:
     secretName: ""
     secretKey: ""
+    value: ""
 ldapUrl: ldap://ldapmaster.diamond.ac.uk
 requestRate: 1
 
 image:
   repository: ghcr.io/diamondlightsource/workflows-sessionspaces
   pullPolicy: Always
+  imagePullSecrets: []
   tag: ""
 
 deployment:
@@ -27,6 +30,7 @@ deployment:
   tolerations: []
 
 policy:
+  create: true
   runAsUser: 36055
 
 serviceAccount:
@@ -34,5 +38,10 @@ serviceAccount:
   annotations: {}
   name: ""
 
+secret:
+  create: true
+
+
 nameOverride: ""
 fullnameOverride: ""
+
