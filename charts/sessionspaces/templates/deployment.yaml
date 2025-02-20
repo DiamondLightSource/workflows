@@ -35,12 +35,20 @@ spec:
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           env:
             - name: DATABASE_PASSWORD
+              {{- if $.Values.database.create }}
+              value: {{ $.Values.database.password.value }}
+              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ default (printf "%s-ispyb" (include "common.names.fullname" $)) $.Values.database.password.secretName }}
                   key: {{ default "password" $.Values.database.password.secretKey }}
+              {{- end }}
             - name: DATABASE_URL
+            {{- if $.Values.database.create }}
+              value: "mysql://{{ $.Values.database.user }}:{{ $.Values.database.password.value }}@{{ include "common.names.fullname" $ }}-database.{{ .Release.Namespace }}.svc.cluster.local:3306"
+            {{- else }}
               value: {{ include "sessionspaces.databaseURL" $ }}
+            {{- end }}
             - name: LDAP_URL
               value: {{ $.Values.ldapUrl }}
             {{- if $.Values.requestRate }}
