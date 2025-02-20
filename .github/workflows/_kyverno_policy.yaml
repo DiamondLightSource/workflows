@@ -21,6 +21,7 @@ jobs:
 
       - name: Install chart dependencies
         run: |
+          set -x
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo add kyverno https://kyverno.github.io/kyverno/
@@ -28,6 +29,7 @@ jobs:
           helm repo update
           helm dep build charts/workflows
           helm dep build charts/sessionspaces
+          helm dep build charts/sessionspaces/charts/database
 
       - name: Install Kyverno
         run: |
@@ -40,7 +42,7 @@ jobs:
 
       - name: Wait for CRDs
         run: |
-         cat /tmp/crds.yaml | kubectl wait --for=condition=Established --timeout=60s -f -
+          cat /tmp/crds.yaml | kubectl wait --for=condition=Established --timeout=60s -f -
 
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
