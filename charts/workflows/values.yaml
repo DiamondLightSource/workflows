@@ -1,3 +1,6 @@
+localstack:
+  enabled: false
+
 argo-workflows:
   enabled: true
   artifactRepository:
@@ -19,7 +22,7 @@ argo-workflows:
     persistence:
       archive: true
       postgresql:
-        host: workflows-postgresql-ha-pgpool  # TODO: Use templated value: {{ .Release.Name }}-postgresql-ha-pgpool
+        host: workflows-postgresql-ha-pgpool # TODO: Use templated value: {{ .Release.Name }}-postgresql-ha-pgpool
         port: 5432
         database: argo_workflows
         tableName: workflows
@@ -152,14 +155,14 @@ oauth2-proxy:
       readOnly: true
 
 ingresstlssecret:
-  enabled: true 
+  enabled: true
 s3sealedsecret:
-  enabled: true 
+  enabled: true
 bitnamisecret:
   enabled: true
 
 s3artifactpolicy:
-  enabled: true 
+  enabled: true
 sessionspacepolicy:
   enabled: true
 podgcpolicy:

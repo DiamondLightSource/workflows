@@ -35,7 +35,7 @@ kyverno:
           memory: 1Gi
 
 sessionspaces:
-  enabled: true 
+  enabled: true
   extraValueFiles:
     - dev-values.yaml
 
@@ -51,7 +51,7 @@ sealedsecrets:
         memory: 256Mi
 
 workflows:
-  enabled: false 
+  enabled: true
   extraValueFiles:
     - dev-values.yaml
 

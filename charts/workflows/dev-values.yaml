@@ -1,4 +1,28 @@
+localstack:
+  enabled: true
+  debug: true
+  enableStartupScripts: true
+  startupScriptContent: |
+    #!/bin/bash
+    awslocal s3api create-bucket --bucket k8s-workflows-test --region unsupported
+
 argo-workflows:
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      accessKeySecret:
+        name: ""
+        key: ""
+      secretKeySecret:
+        name: ""
+        key: ""
+    endpoint:
+      valueFrom:
+        configMapKeyRef:
+          name: localstack-configmap
+          key: endpoint
+    bucket: k8s-workflows-test
+    region: unsupported
   controller:
     replicas: 1
     resources:
@@ -45,7 +69,6 @@ podgcpolicy:
   enabled: false
 workflowlabelpolicy:
   enabled: false
-
 postgresql-ha:
   postgresql:
     replicaCount: 1
