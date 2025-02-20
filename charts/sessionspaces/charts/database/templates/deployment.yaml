@@ -1,0 +1,50 @@
+{{- if $.Values.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
+    spec:
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      containers:
+        - name: ispyb-mock
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values "chart" $.Chart )}}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: database-port
+              protocol: TCP
+              targetPort: {{ $.Values.dbPort }}
+              containerPort: {{ $.Values.dbPort }}
+          resources:
+            {{- $.Values.resources | toYaml | nindent 12 }}
+          env:
+            - name: MARIADB_ROOT_PASSWORD
+              value: {{ $.Values.password.value }}
+          {{- with $.Values.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+{{- end }}
