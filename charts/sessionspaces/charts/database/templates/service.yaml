@@ -1,0 +1,19 @@
+{{- if $.Values.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "common.labels.matchLabels" $ | nindent 4 }}
+  ports:
+    - name: {{ include "common.names.fullname" $ }}
+      port: {{ $.Values.dbPort }}
+      targetPort: {{ $.Values.dbPort }}
+      protocol: TCP
+{{- end }}
+
