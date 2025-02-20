@@ -1,3 +1,4 @@
+{{- if $.Values.policy.create }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -77,3 +78,4 @@ spec:
             volumes:
             - =(hostPath):
                 path: "{{ `{{values.data.data_directory}}` }}"
+{{- end }}          
