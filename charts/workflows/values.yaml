@@ -19,7 +19,8 @@ argo-workflows:
     persistence:
       archive: true
       postgresql:
-        host: workflows-postgresql-ha-pgpool # TODO: Use templated value: {{ .Release.Name }}-postgresql-ha-pgpool
+        host: workflows-postgresql-ha-pgpool
+        # TODO: Use templated value: {{ .Release.Name }}-postgresql-ha-pgpool
         port: 5432
         database: argo_workflows
         tableName: workflows
