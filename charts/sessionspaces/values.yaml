@@ -41,7 +41,5 @@ serviceAccount:
 secret:
   create: true
 
-
 nameOverride: ""
 fullnameOverride: ""
-
