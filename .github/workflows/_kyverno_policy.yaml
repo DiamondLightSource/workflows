@@ -28,6 +28,7 @@ jobs:
           helm repo update
           helm dep build charts/workflows
           helm dep build charts/sessionspaces
+          helm dep build charts/sessionspaces/charts/database
 
       - name: Install Kyverno
         run: |
