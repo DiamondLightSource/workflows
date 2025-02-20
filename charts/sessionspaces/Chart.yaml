@@ -3,7 +3,7 @@ name: sessionspaces
 description: Namespace controller for creating session namespaces
 type: application
 
-version: 0.3.5
+version: 0.3.6
 appVersion: 0.1.0-rc25
 dependencies:
   - name: common
