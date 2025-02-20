@@ -4,7 +4,7 @@ argocd:
     - dev-values.yaml
 
 events:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
@@ -40,7 +40,7 @@ sessionspaces:
     - dev-values.yaml
 
 sealedsecrets:
-  enabled: true
+  enabled: false
   valuesObject:
     resources:
       limits:
