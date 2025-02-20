@@ -9,3 +9,6 @@ kubeconfig.yaml
 
 # Relay
 __generated__
+
+# File Types
+**/*.tgz #Chart files created when deploying helm dep build
