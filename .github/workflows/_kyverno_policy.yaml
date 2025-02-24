@@ -25,6 +25,7 @@ jobs:
           helm repo add argo https://argoproj.github.io/argo-helm
           helm repo add kyverno https://kyverno.github.io/kyverno/
           helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
+          helm repo add localstack https://localstack.github.io/helm-charts
           helm repo update
           helm dep build charts/workflows
           helm dep build charts/sessionspaces
@@ -41,7 +42,7 @@ jobs:
 
       - name: Wait for CRDs
         run: |
-         cat /tmp/crds.yaml | kubectl wait --for=condition=Established --timeout=60s -f -
+          cat /tmp/crds.yaml | kubectl wait --for=condition=Established --timeout=60s -f -
 
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
