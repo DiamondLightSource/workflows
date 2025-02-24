@@ -39,7 +39,7 @@ jobs:
           --deny warnings
 
       - name: Check Dependencies with Cargo Deny
-        uses: EmbarkStudios/cargo-deny-action@v2.0.4
+        uses: EmbarkStudios/cargo-deny-action@v2.0.5
         with:
           command: check licenses ban
           manifest-path: backend/Cargo.toml
