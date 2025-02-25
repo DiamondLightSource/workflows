@@ -5,5 +5,8 @@ dependencies:
 - name: vcluster
   repository: https://charts.loft.sh
   version: 0.20.5
-digest: sha256:588561c241cb38517be72b6afb65dade039a8a1e4c8435035304250168f93d8f
-generated: "2024-11-20T15:41:43.045982166Z"
+- name: oidc-mock
+  repository: file://./charts/oidc-mock
+  version: 0.1.0
+digest: sha256:a081a462b1d1517d4c0cdb40f2f015695159a81573da3449e2b1f90753612770
+generated: "2025-03-06T10:51:01.513688889Z"
