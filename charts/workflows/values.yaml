@@ -1,6 +1,9 @@
 localstack:
   enabled: false
 
+oidc-mock:
+  enabled: false
+
 argo-workflows:
   enabled: true
   artifactRepository:

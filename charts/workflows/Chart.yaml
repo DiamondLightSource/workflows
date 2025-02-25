@@ -21,3 +21,6 @@ dependencies:
   - name: localstack
     repository: https://localstack.github.io/helm-charts
     version: 0.6.20
+  - name: oidc-mock
+    version: 0.1.0
+    repository: file://./charts/oidc-mock

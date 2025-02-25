@@ -1,0 +1,50 @@
+{{- if $.Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  replicas: {{ $.Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.template.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
+    spec:
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      containers:
+        - name: oidc-server-mock
+          image: {{ $.Values.image.image }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: oidc-port
+              protocol: TCP
+              containerPort: {{ $.Values.image.port }}
+          resources:
+            {{- $.Values.resources | toYaml | nindent 12 }}
+          {{- with $.Values.env }}
+          env:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 10 }}
+          {{- end }}
+          {{- with $.Values.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 10 }}
+          {{- end }}
+          {{- with $.Values.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 10 }}
+          {{- end }}
+{{- end }}

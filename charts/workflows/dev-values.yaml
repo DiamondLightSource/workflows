@@ -14,6 +14,76 @@ localstack:
       cpu: 100m
       memory: 128Mi
 
+oidc-mock:
+  enabled: true
+  replicas: 1
+  template:
+    podAnnotations: []
+    labels: []
+  image:
+    image: ghcr.io/soluto/oidc-server-mock
+    imagePullPolicy: Always
+    port: 80
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+
+  env:
+    - name: ASPNETCORE_ENVIRONMENT
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: ASPNETCORE_ENVIRONMENT
+    - name: SERVER_OPTIONS_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: SERVER_OPTIONS_INLINE
+    - name: LOGIN_OPTIONS_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: LOGIN_OPTIONS_INLINE
+    - name: LOGOUT_OPTIONS_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: LOGOUT_OPTIONS_INLINE
+    - name: API_SCOPES_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: API_SCOPES_INLINE
+    - name: API_RESOURCES_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: API_RESOURCES_INLINE
+    - name: USERS_CONFIGURATION_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: USERS_CONFIGURATION_INLINE
+    - name: CLIENTS_CONFIGURATION_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: CLIENTS_CONFIGURATION_INLINE
+    - name: ASPNET_SERVICES_OPTIONS_INLINE
+      valueFrom:
+        configMapKeyRef:
+          name: oidc-mock-configmap
+          key: ASPNET_SERVICES_OPTIONS_INLINE
+
+  nodeSelector: []
+  affinity: []
+  tolerations: []
+
 argo-workflows:
   artifactRepository:
     archiveLogs: true
@@ -92,24 +162,25 @@ postgresql-ha:
     size: 5Gi
 
 oauth2-proxy:
-  replicaCount: 1
-  ingress:
-    enabled: false
-  redis:
-    master:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 200m
-          memory: 512Mi
-    replica:
-      replicaCount: 0
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 200m
-      memory: 512Mi
+  enabled: false
+  # replicaCount: 1
+  # ingress:
+  #   enabled: false
+  # redis:
+  #   master:
+  #     resources:
+  #       requests:
+  #         cpu: 100m
+  #         memory: 256Mi
+  #       limits:
+  #         cpu: 200m
+  #         memory: 512Mi
+  #   replica:
+  #     replicaCount: 0
+  # resources:
+  #   requests:
+  #     cpu: 100m
+  #     memory: 256Mi
+  #   limits:
+  #     cpu: 200m
+  #     memory: 512Mi
