@@ -1,3 +1,4 @@
+{{- if .Values.authenticationConfiguration.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,4 +8,5 @@ data:
   authn-config.yaml: |
     apiVersion: apiserver.config.k8s.io/v1beta1
     kind: AuthenticationConfiguration
-    {{- .Values.authenticationConfiguration | toYaml | nindent 4 }}
+    {{- .Values.authenticationConfiguration.data | toYaml | nindent 4 }}
+{{- end }}

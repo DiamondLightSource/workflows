@@ -12,3 +12,6 @@ dependencies:
   - name: vcluster
     repository: https://charts.loft.sh
     version: 0.20.5
+  - name: oidc-mock
+    version: 0.1.0
+    repository: file://./charts/oidc-mock
