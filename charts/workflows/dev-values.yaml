@@ -30,6 +30,13 @@ argo-workflows:
         cpu: 250m
         memory: 256Mi
 
+ingresstlssecret:
+  enabled: false
+s3sealedsecret:
+  enabled: false
+bitnamisecret:
+  enabled: false
+
 postgresql-ha:
   postgresql:
     replicaCount: 1
