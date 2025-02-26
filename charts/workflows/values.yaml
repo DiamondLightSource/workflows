@@ -49,7 +49,7 @@ postgresql-ha:
   postgresql:
     existingSecret: postgres-passwords
     initdbScriptsSecret: postgres-initdb-script
-    podAntiAffinityPreset: hard
+    podAntiAffinityPreset: soft
     resources:
       requests:
         cpu: 500m
