@@ -20,7 +20,7 @@ jobs:
         run: yarn --frozen-lockfile
 
       - name: Download Supergraph Schema Artifact
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.1.9
         with:
           name: supergraph
           path: frontend/relay-workflows-lib
