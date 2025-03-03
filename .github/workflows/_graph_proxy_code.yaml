@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        uses: actions-rust-lang/setup-rust-toolchain@v1.11.0
         with:
           cache: false
           components: clippy,rustfmt
@@ -46,7 +46,7 @@ jobs:
           --deny warnings
 
       - name: Check Dependencies with Cargo Deny
-        uses: EmbarkStudios/cargo-deny-action@v2.0.5
+        uses: EmbarkStudios/cargo-deny-action@v2.0.6
         with:
           command: check licenses ban
           manifest-path: backend/Cargo.toml
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        uses: actions-rust-lang/setup-rust-toolchain@v1.11.0
         with:
           cache: false
           components: rustfmt
