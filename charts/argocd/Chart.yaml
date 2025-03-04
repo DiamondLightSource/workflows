@@ -3,7 +3,7 @@ name: argocd
 description: ArgoCD, with a few extras
 type: application
 
-version: 0.3.5
+version: 0.3.6
 dependencies:
   - name: common
     version: 2.23.0
