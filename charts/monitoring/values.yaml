@@ -289,10 +289,10 @@ opentelemetry-collector:
       enabled: false
   resources:
     requests:
-      cpu: '4'
+      cpu: '8'
       memory: 24Gi
     limits:
-      cpu: '8'
+      cpu: '12'
       memory: 24Gi
   config:
     receivers:
