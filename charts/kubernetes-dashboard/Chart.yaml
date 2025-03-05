@@ -1,0 +1,17 @@
+apiVersion: v2
+name: kubernetes-dashboard
+description: Kubernetes dashboard
+type: application
+
+version: 0.1.0
+dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts
+  - name: kubernetes-dashboard
+    version: 7.11.1
+    repository: https://kubernetes.github.io/dashboard/
+  - name: oauth2-proxy
+    repository: https://oauth2-proxy.github.io/manifests
+    version: 7.8.0
+    condition: oauth2-proxy.enabled
