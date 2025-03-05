@@ -1,0 +1,12 @@
+dependencies:
+- name: common
+  repository: oci://docker.io/bitnamicharts
+  version: 2.23.0
+- name: kubernetes-dashboard
+  repository: https://kubernetes.github.io/dashboard/
+  version: 7.11.1
+- name: oauth2-proxy
+  repository: https://oauth2-proxy.github.io/manifests
+  version: 7.8.0
+digest: sha256:a071582b7c1cf0add231233976586a5c772f67780d3a882e689f56df460cd8d0
+generated: "2025-03-11T14:40:10.11906917Z"
