@@ -7,6 +7,12 @@ argocd:
   extraValuesFiles: []
   valuesObject: {}
 
+kubernetesDashboard:
+  enabled: true
+  targetRevision: kubernetes-dashboard
+  extraValuesFiles: []
+  valuesObject: {}
+
 events:
   enabled: false
   targetRevision: HEAD
