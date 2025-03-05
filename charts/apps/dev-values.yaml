@@ -1,18 +1,22 @@
 argocd:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 events:
   enabled: false
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 groups:
   enabled: true
+targetRevision: HEAD
 
 kyverno:
   enabled: true
+  targetRevision: HEAD
   valuesObject:
     admissionController:
       replicas: 1
@@ -36,11 +40,13 @@ kyverno:
 
 sessionspaces:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 sealedsecrets:
   enabled: false
+  targetRevision: HEAD
   valuesObject:
     resources:
       limits:
@@ -51,16 +57,19 @@ sealedsecrets:
         memory: 256Mi
 
 workflows:
-  enabled: true
+  enabled: true 
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 graphProxy:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 dashboard:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
