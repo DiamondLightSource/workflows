@@ -1,0 +1,9 @@
+dependencies:
+- name: common
+  repository: oci://docker.io/bitnamicharts
+  version: 2.23.0
+- name: kubernetes-dashboard
+  repository: https://kubernetes.github.io/dashboard/
+  version: 7.11.1
+digest: sha256:c0da22fb047f71e125339c0a7955d8a487aa1c593d083315c267d57ef90ad084
+generated: "2025-03-05T16:46:05.44089355Z"
