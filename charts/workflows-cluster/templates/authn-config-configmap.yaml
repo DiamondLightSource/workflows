@@ -5,6 +5,8 @@ metadata:
   name: {{ include "common.names.fullname" $ }}-authn-config
   namespace: {{ .Release.Namespace }}
 data:
+  mock-url: 'http://{{ .Release.Name }}-oidc-mock.{{ .Release.Namespace }}.svc.cluster.local:8080'
+  mock-discovery-url: 'http://{{ .Release.Name }}-oidc-mock.{{ .Release.Namespace }}.svc.cluster.local:8080/.well-known/openid-configuration'
   authn-config.yaml: |
     apiVersion: apiserver.config.k8s.io/v1beta1
     kind: AuthenticationConfiguration
