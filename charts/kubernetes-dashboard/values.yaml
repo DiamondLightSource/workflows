@@ -1,3 +1,36 @@
+kubernetes-dashboard:
+  auth:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+  api:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+  web:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+  metricsScraper:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
 
 ingress:
   enabled: true

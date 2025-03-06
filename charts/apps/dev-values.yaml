@@ -1,10 +1,12 @@
 argocd:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
 kubernetesDashboard:
-  enabled: false
+  enabled: true
+  extraValueFiles:
+    - dev-values.yaml
 
 events:
   enabled: false
