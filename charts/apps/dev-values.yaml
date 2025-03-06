@@ -4,7 +4,7 @@ argocd:
     - dev-values.yaml
 
 kubernetesDashboard:
-  enabled: true
+  enabled: false
 
 events:
   enabled: false
