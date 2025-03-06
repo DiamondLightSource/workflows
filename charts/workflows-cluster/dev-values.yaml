@@ -155,9 +155,6 @@ vcluster:
 ingress:
   enabled: false
 
-authenticationConfiguration:
-  enabled: false
-
 oidc-mock:
   enabled: true
   replicas: 1
@@ -167,7 +164,7 @@ oidc-mock:
   image:
     image: ghcr.io/soluto/oidc-server-mock
     imagePullPolicy: Always
-    port: 80
+    port: 8080
 
   resources:
     requests:
@@ -228,4 +225,28 @@ oidc-mock:
   affinity: []
   tolerations: []
 
-
+authenticationConfiguration:
+  enabled: true
+  data:
+    jwt:
+      - issuer:
+          url:
+            valueFrom:
+              configMapKeyRef:
+                name: authn-config-configmap
+              key: mock-url
+          discoveryURL:
+            valueFrom:
+              configMapKeyRef:
+                name: authn-config-configmap
+                key: mock-discovery-url
+          audiences:
+            - workflows-cluster
+          audienceMatchPolicy: MatchAny
+        claimMappings:
+          username:
+            claim: fedid
+          groups:
+            claim: groups
+          uid:
+            claim: fedid

@@ -26,45 +26,33 @@ data:
       "AutomaticRedirectAfterSignOut": true
     }
   API_SCOPES_INLINE: |
-    - Name: some-app-scope-1
-    - Name: some-app-scope-2
+    - Name: workflows-cluster
   API_RESOURCES_INLINE: |
-    - Name: some-app
+    - Name: workflows-cluster
       Scopes:
-        - some-app-scope-1
-        - some-app-scope-2
+        - developer-scope
   USERS_CONFIGURATION_INLINE: |
     [
       {
         "SubjectId":"1",
-        "Username":"User1",
-        "Password":"pwd",
+        "Username":"Dev",
+        "Password":"dev-password",
         "Claims": [
           {
-            "Type": "name",
-            "Value": "Sam Tailor",
-            "ValueType": "string"
-          },
-          {
             "Type": "email",
-            "Value": "sam.tailor@gmail.com",
+            "Value": "developer@diamond.ac.uk",
             "ValueType": "string"
           },
           {
-            "Type": "some-api-resource-claim",
-            "Value": "Sam's Api Resource Custom Claim",
+            "Type": "fedid",
+            "Value": "fed1234",
             "ValueType": "string"
           },
           {
-            "Type": "some-api-scope-claim",
-            "Value": "Sam's Api Scope Custom Claim",
+            "Type": "groups",
+            "Value": "dasc",
             "ValueType": "string"
           },
-          {
-            "Type": "some-identity-resource-claim",
-            "Value": "Sam's Identity Resource Custom Claim",
-            "ValueType": "string"
-          }
         ]
       }
     ]
@@ -85,7 +73,7 @@ data:
         "ClientSecrets": ["client-credentials-mock-client-secret"],
         "Description": "Client for client credentials flow",
         "AllowedGrantTypes": ["client_credentials"],
-        "AllowedScopes": ["some-app-scope-1"],
+        "AllowedScopes": ["developer-scope"],
         "ClientClaimsPrefix": "",
         "Claims": [
           {

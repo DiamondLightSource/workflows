@@ -118,7 +118,7 @@ ingress:
           - kubernetes.workflows.diamond.ac.uk
 
 authenticationConfiguration:
-  enabled: true
+  enabled: false
   data:
     jwt:
       - issuer:
