@@ -42,14 +42,10 @@ spec:
               value: {{ $.Values.prefixPath }}
             - name: TELEMETRY_LEVEL
               value: {{ $.Values.telemetry.level }}
-            {{- with $.Values.telemetry.metricsEndpoint }}
             - name: METRICS_ENDPOINT
-              value: {{ . }}
-            {{- end }}
-            {{- with $.Values.telemetry.tracingEndpoint }}
+              value: http://monitoring-opentelemetry-collector.workflows.svc.cluster.local:4317
             - name: TRACING_ENDPOINT
-              value: {{ . }}
-            {{- end }}
+              value: http://monitoring-opentelemetry-collector.workflows.svc.cluster.local:4317
             {{- with $.Values.cors.matchOrigins }}
             - name: CORS_ALLOW
               value: {{ . | join " " }}

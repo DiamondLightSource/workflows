@@ -26,8 +26,6 @@ deployment:
 
 telemetry:
   level: Info
-  metricsEndpoint: ""
-  tracingEndpoint: ""
 
 cors:
   matchOrigins:
