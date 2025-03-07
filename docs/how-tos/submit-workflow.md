@@ -96,7 +96,7 @@ and login with your Diamond credentials. It should open the dashboard in the wor
     A workflow can only by submitted within a namespace. For now, the available namespaces are all of Diamond's visits. 
     In the future, we anticipate to also add other namespaces, e.g. user/fedid
 
-After specifying the namespace in which you would like your workflow to be executed, you can click on 
+After specifying the namespace in which you would like your workflow to be executed, you can click on
 ```+ SUBMIT NEW WORKFLOW``` which should give you a prompt
 that allows you to either select an existing template or edit a default template:
 
@@ -118,14 +118,37 @@ has successfully finished, it should look like this:
 ![](argo_dashboard_success.png)
 
 !!! note
-    
+
     As you might have realised the UI/UX of this argo dashboard has its limitations. 
     We are planning to provide a more simple and intuitive web-interface for workflows in the near future. 
-
 
 ## Using the Argo CLI to submit a workflow
 
 !!! warn "Authentication"
 
     Since we currently rely on CAS for authentication, we cannot use the Argo CLI to submit a workflow.
-    
+
+See the official documentation for the [Workflows CLI](https://argo-workflows.readthedocs.io/en/latest/).
+
+!!! note
+    The workflows CLI is officially called 'argo'. We have renamed it to workflows to avoid confusion with the Argo CD CLI, and make it clear what it does. If refering to the official docs, be aware that the two are the same.
+
+# Getting Started
+
+Use the module system to load all the relevant tools. This will give you the latest supported version of the workflows CLI.
+
+```bash
+module load workflows
+```
+
+The most basic usecases are covered below
+
+``` bash
+argo submit hello-world.yaml    # submit a workflow spec to Kubernetes
+argo list                       # list current workflows
+argo get hello-world-xxx        # get info about a specific workflow
+argo logs hello-world-xxx       # print the logs from a workflow
+argo delete hello-world-xxx     # delete workflow
+```
+
+When subbmiting workflows, please use your visit ID as the namespace, eg `mg36964-1`
