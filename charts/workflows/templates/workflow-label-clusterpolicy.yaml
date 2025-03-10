@@ -15,4 +15,4 @@ spec:
         patchStrategicMerge:
           metadata:
             labels:
-              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra | "workflows.diamond.ac.uk/posixuid" | [0] }}` }}'
+              test: '{{ `{{ request.userInfo.extra | "workflows.diamond.ac.uk/posixuid" | [0] }}` }}'
