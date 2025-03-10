@@ -12,7 +12,7 @@ interface WorkflowProps {
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme.spacing(1),
   borderTop: "1px solid rgba(0, 0, 0, .125)",
-  height: "80vh",
+  height: "450px",
 }));
 
 const WorkflowAccordion: React.FC<WorkflowProps> = ({ workflow, children }) => {
