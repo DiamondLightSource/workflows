@@ -63,27 +63,27 @@ export function getWorkflowStatusIcon(
           <QuestionMarkIcon color="warning" sx={{ fontSize: size }} />
         </Tooltip>
       ),
-      Pending: (
+      WorkflowPendingStatus: (
         <Tooltip title="Pending">
           <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
         </Tooltip>
       ),
-      Running: (
+      WorkflowRunningStatus: (
         <Tooltip title="Running">
           <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
         </Tooltip>
       ),
-      Succeeded: (
+      WorkflowSucceededStatus: (
         <Tooltip title="Succeeded">
           <TaskAltTwoToneIcon color="success" sx={{ fontSize: size }} />
         </Tooltip>
       ),
-      Failed: (
+      WorkflowFailedStatus: (
         <Tooltip title="Failed">
           <CancelTwoToneIcon color="error" sx={{ fontSize: size }} />
         </Tooltip>
       ),
-      Errored: (
+      WorkflowErroredStatus: (
         <Tooltip title="Errored">
           <ReportProblemTwoToneIcon color="error" sx={{ fontSize: size }} />
         </Tooltip>
