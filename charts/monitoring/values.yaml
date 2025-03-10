@@ -296,6 +296,9 @@ opentelemetry-collector:
       memory: 24Gi
   config:
     receivers:
+      otlp:
+        protocols:
+          grpc:
       prometheus:
         config:
           scrape_configs:
@@ -383,6 +386,7 @@ opentelemetry-collector:
         metrics:
           receivers:
             - prometheus
+            - otlp
           processors:
             - memory_limiter
             - batch
