@@ -11,6 +11,8 @@ spec:
         resources:
           kinds:
             - argoproj.io/*/Workflow
+          operations:
+            - CREATE
       mutate:
         patchStrategicMerge:
           metadata:
