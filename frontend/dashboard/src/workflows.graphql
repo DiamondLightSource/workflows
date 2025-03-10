@@ -1,0 +1,327 @@
+
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+
+
+
+
+"""
+A scalar that can represent any JSON value.
+"""
+scalar JSON
+
+"""
+The root mutation of the service
+"""
+type Mutation {
+	submitWorkflowTemplate(name: String!, visit: VisitInput!, parameters: JSON!): Workflow!
+}
+
+"""
+Information about pagination in a connection
+"""
+type PageInfo @shareable {
+	"""
+	When paginating backwards, are there more items?
+	"""
+	hasPreviousPage: Boolean!
+	"""
+	When paginating forwards, are there more items?
+	"""
+	hasNextPage: Boolean!
+	"""
+	When paginating backwards, the cursor to continue.
+	"""
+	startCursor: String
+	"""
+	When paginating forwards, the cursor to continue.
+	"""
+	endCursor: String
+}
+
+"""
+The root query of the service
+"""
+type Query {
+	"""
+	Get a single [`Workflow`] by proposal, visit, and name
+	"""
+	workflow(visit: VisitInput!, name: String!): Workflow!
+	workflows(visit: VisitInput!, cursor: String, limit: Int): WorkflowConnection!
+	workflowTemplate(name: String!): WorkflowTemplate!
+	workflowTemplates(cursor: String, limit: Int): WorkflowTemplateConnection!
+}
+
+
+"""
+A Task created by a workflow
+"""
+type Task {
+	"""
+	Unique name of the task
+	"""
+	id: String!
+	"""
+	Display name of the task
+	"""
+	name: String!
+	"""
+	Current status of a task
+	"""
+	status: TaskStatus!
+	"""
+	Parent of a task
+	"""
+	depends: [String!]!
+	"""
+	Children of a task
+	"""
+	dependencies: [String!]!
+}
+
+enum TaskStatus {
+	PENDING
+	RUNNING
+	SUCCEEDED
+	SKIPPED
+	FAILED
+	ERROR
+	OMITTED
+}
+
+"""
+A visit to an instrument as part of a session
+"""
+type Visit {
+	"""
+	Project Proposal Code
+	"""
+	proposalCode: String!
+	"""
+	Project Proposal Number
+	"""
+	proposalNumber: Int!
+	"""
+	Session visit Number
+	"""
+	number: Int!
+}
+
+"""
+A visit to an instrument as part of a session
+"""
+input VisitInput {
+	"""
+	Project Proposal Code
+	"""
+	proposalCode: String!
+	"""
+	Project Proposal Number
+	"""
+	proposalNumber: Int!
+	"""
+	Session visit Number
+	"""
+	number: Int!
+}
+
+"""
+A Workflow consisting of one or more [`Task`]s
+"""
+type Workflow {
+	"""
+	The name given to the workflow, unique within a given visit
+	"""
+	name: String!
+	"""
+	The visit the Workflow was run against
+	"""
+	visit: Visit!
+	"""
+	The time at which the workflow began running
+	"""
+	status: WorkflowStatus
+}
+
+type WorkflowConnection @shareable {
+	"""
+	Information to aid in pagination.
+	"""
+	pageInfo: PageInfo!
+	"""
+	A list of edges.
+	"""
+	edges: [WorkflowEdge!]!
+	"""
+	A list of nodes.
+	"""
+	nodes: [Workflow!]!
+}
+
+"""
+An edge in a connection.
+"""
+type WorkflowEdge @shareable {
+	"""
+	The item at the end of the edge
+	"""
+	node: Workflow!
+	"""
+	A cursor for use in pagination
+	"""
+	cursor: String!
+}
+
+"""
+The controller has encountered an error whilst scheduling the workflow
+"""
+type WorkflowErroredStatus {
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	Time at which this workflow completed
+	"""
+	endTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	tasks: [Task!]!
+}
+
+"""
+A task in the workflow has completed with a non-zero exit code
+"""
+type WorkflowFailedStatus {
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	Time at which this workflow completed
+	"""
+	endTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	tasks: [Task!]!
+}
+
+"""
+No tasks within the workflow have been scheduled
+"""
+type WorkflowPendingStatus {
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+}
+
+"""
+At least one of the tasks has been scheduled, but they have not yet all complete
+"""
+type WorkflowRunningStatus {
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	tasks: [Task!]!
+}
+
+"""
+The status of a workflow
+"""
+union WorkflowStatus = WorkflowPendingStatus | WorkflowRunningStatus | WorkflowSucceededStatus | WorkflowFailedStatus | WorkflowErroredStatus
+
+"""
+All tasks in the workflow have succeeded
+"""
+type WorkflowSucceededStatus {
+	"""
+	Time at which this workflow started
+	"""
+	startTime: DateTime!
+	"""
+	Time at which this workflow completed
+	"""
+	endTime: DateTime!
+	"""
+	A human readable message indicating details about why the workflow is in this condition
+	"""
+	message: String
+	tasks: [Task!]!
+}
+
+"""
+A Template which specifies how to produce a [`Workflow`]
+"""
+type WorkflowTemplate {
+	"""
+	The name given to the workflow template, globally unique
+	"""
+	name: String!
+	"""
+	The group who maintains the workflow template
+	"""
+	maintainer: String!
+	"""
+	A human readable title for the workflow template
+	"""
+	title: String
+	"""
+	A human readable description of the workflow which is created
+	"""
+	description: String
+	"""
+	A JSON Schema describing the arguments of a Workflow Template
+	"""
+	arguments: JSON!
+	"""
+	A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
+	"""
+	uiSchema: JSON
+}
+
+type WorkflowTemplateConnection @shareable {
+	"""
+	Information to aid in pagination.
+	"""
+	pageInfo: PageInfo!
+	"""
+	A list of edges.
+	"""
+	edges: [WorkflowTemplateEdge!]!
+	"""
+	A list of nodes.
+	"""
+	nodes: [WorkflowTemplate!]!
+}
+
+"""
+An edge in a connection.
+"""
+type WorkflowTemplateEdge @shareable {
+	"""
+	The item at the end of the edge
+	"""
+	node: WorkflowTemplate!
+	"""
+	A cursor for use in pagination
+	"""
+	cursor: String!
+}
+
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @specifiedBy(url: String!) on SCALAR
