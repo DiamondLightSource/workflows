@@ -17,7 +17,7 @@ jobs:
           app-id: 1077859
           private-key: ${{ secrets.release_please_token }}
 
-      - uses: googleapis/release-please-action@v4.1.4
+      - uses: googleapis/release-please-action@v4.2.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           manifest-file: .release-please-manifest.json
