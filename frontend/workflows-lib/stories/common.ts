@@ -1,57 +1,72 @@
-import { WorkflowStatus, TaskStatus } from "../lib/types";
+import { WorkflowStatus, TaskStatus, Artifact, Task } from "../lib/types";
 
-export const fakeTasksA = [
+const logArtifact: Artifact = {
+  name: "main.log",
+  url: "fakepath/to/main-logs",
+  mimeType: "text/plain",
+};
+
+export const fakeTasksA: Task[] = [
   {
     id: "task-1",
     name: "task-1",
     status: "SUCCEEDED" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-1"],
     id: "task-2",
     name: "task-2 DKJFOKJLSKDMFO",
     status: "SUCCEEDED" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-1"],
     id: "task-3",
     name: "task-3",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     id: "task-4",
     name: "task-4 ERFBAK3KJ34",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-3"],
     id: "task-6",
     name: "task-6 KNMNE9",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-3"],
     id: "task-7",
     name: "task-7 KLDJF034 DFJSOID 039402KDJO",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-3"],
     id: "task-8",
     name: "task-8",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-6"],
     id: "task-9",
     name: "task-9",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
   {
     depends: ["task-9"],
     id: "task-10",
     name: "task-10",
     status: "RUNNING" as TaskStatus,
+    artifacts: [logArtifact],
   },
 ];
 

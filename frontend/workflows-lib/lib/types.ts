@@ -12,6 +12,13 @@ export interface Task {
   name: string;
   status: TaskStatus;
   depends?: string[];
+  artifacts: Artifact[];
+}
+
+export interface Artifact {
+  name: string;
+  url: string;
+  mimeType: string;
 }
 
 export interface TaskNode extends Task {
@@ -20,11 +27,11 @@ export interface TaskNode extends Task {
 
 export type WorkflowStatus =
   | "Unknown"
-  | "Pending"
-  | "Running"
-  | "Succeeded"
-  | "Failed"
-  | "Errored";
+  | "WorkflowPendingStatus"
+  | "WorkflowRunningStatus"
+  | "WorkflowSucceededStatus"
+  | "WorkflowFailedStatus"
+  | "WorkflowErroredStatus";
 
 export interface Workflow {
   name: string;
