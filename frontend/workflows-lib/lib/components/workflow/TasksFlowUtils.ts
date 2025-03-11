@@ -60,24 +60,29 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   edges: Edge[];
 } {
   const nodes: Node[] = [];
-  const edgeSet = new Set<Edge>();
+  const edges: Edge[] = [];
 
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     tasks.forEach((task) => {
-      nodes.push({
-        id: task.id,
-        type: "custom",
-        data: { label: task.name, status: task.status },
-        position: { x: 0, y: 0 },
-      });
-
+      if (!nodes.some((existingNode) => existingNode.id === task.id)) {
+        nodes.push({
+          id: task.id,
+          type: "custom",
+          data: { label: task.name, status: task.status },
+          position: { x: 0, y: 0 },
+        });
+      }
       parents.forEach((parent) => {
-        edgeSet.add({
+        const edge = {
           id: `e${parent}-${task.id}`,
           source: parent,
           target: task.id,
           animated: true,
-        });
+        };
+
+        if (!edges.some((existingEdge) => existingEdge.id === edge.id)) {
+          edges.push(edge);
+        }
       });
 
       if (task.children && task.children.length > 0) {
@@ -87,6 +92,5 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   };
 
   traverse(taskNodes);
-  const edges = Array.from(edgeSet);
   return { nodes, edges };
 }
