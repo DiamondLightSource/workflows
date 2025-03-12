@@ -26,7 +26,7 @@ deployment:
 
 telemetry:
   enabled: true
-  level: Info
+  level: Trace
 
 cors:
   matchOrigins:
