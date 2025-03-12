@@ -1,3 +1,6 @@
+telemetry:
+  enabled: false
+
 deployment:
   replicas: 1
   resources:

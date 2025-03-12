@@ -25,6 +25,7 @@ deployment:
   tolerations: []
 
 telemetry:
+  enabled: true
   level: Info
 
 cors:
