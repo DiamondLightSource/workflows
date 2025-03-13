@@ -1,4 +1,36 @@
+localstack:
+  enabled: true
+  debug: true
+  enableStartupScripts: true
+  startupScriptContent: |
+    #!/bin/bash
+    awslocal s3api create-bucket --bucket k8s-workflows-test --region unsupported
+  replicaCount: 1
+  resource:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
 argo-workflows:
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      accessKeySecret:
+        name: ""
+        key: ""
+      secretKeySecret:
+        name: ""
+        key: ""
+    endpoint:
+      valueFrom:
+        configMapKeyRef:
+          name: localstack-configmap
+          key: endpoint
+    bucket: k8s-workflows-test
+    region: unsupported
   controller:
     replicas: 1
     resources:

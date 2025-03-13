@@ -27,6 +27,7 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
           helm repo add opentelemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+          helm repo add localstack https://localstack.github.io/helm-charts
 
       - name: Lint
         run: >
