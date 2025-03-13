@@ -1,15 +1,18 @@
 argocd:
   enabled: true
+  targetRevision: delete-own-workflows
   extraValueFiles:
     - dev-values.yaml
 
 events:
   enabled: false
+  targetRevision: delete-own-workflows
   extraValueFiles:
     - dev-values.yaml
 
 groups:
   enabled: true
+  targetRevision: delete-own-workflows
 
 kyverno:
   enabled: true
@@ -36,11 +39,13 @@ kyverno:
 
 sessionspaces:
   enabled: true
+  targetRevision: delete-own-workflows
   extraValueFiles:
     - dev-values.yaml
 
 sealedsecrets:
   enabled: false
+  targetRevision: delete-own-workflows
   valuesObject:
     resources:
       limits:
@@ -52,15 +57,18 @@ sealedsecrets:
 
 workflows:
   enabled: true
+  targetRevision: delete-own-workflows
   extraValueFiles:
     - dev-values.yaml
 
 graphProxy:
   enabled: true
+  targetRevision: delete-own-workflows
   extraValueFiles:
     - dev-values.yaml
 
 dashboard:
   enabled: true
+  targetRevision: delete-own-workflows
   extraValueFiles:
     - dev-values.yaml
