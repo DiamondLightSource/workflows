@@ -4,6 +4,11 @@ argocd:
   extraValueFiles:
     - dev-values.yaml
 
+kubernetesDashboard:
+  enabled: false
+  extraValueFiles:
+    - dev-values.yaml
+
 events:
   enabled: false
   extraValueFiles:
@@ -14,7 +19,7 @@ groups:
   targetRevision: HEAD
 
 kyverno:
-  enabled: true
+  enabled: false
   valuesObject:
     admissionController:
       replicas: 1
