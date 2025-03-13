@@ -1,5 +1,5 @@
 argocd:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
@@ -14,10 +14,10 @@ events:
     - dev-values.yaml
 
 groups:
-  enabled: true
+  enabled: false
 
 kyverno:
-  enabled: true
+  enabled: false
   valuesObject:
     admissionController:
       replicas: 1
@@ -40,7 +40,7 @@ kyverno:
           memory: 1Gi
 
 sessionspaces:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
@@ -56,16 +56,16 @@ sealedsecrets:
         memory: 256Mi
 
 workflows:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
 
 graphProxy:
-  enabled: true
+  enabled: false 
   extraValueFiles:
     - dev-values.yaml
 
 dashboard:
-  enabled: true
+  enabled: false
   extraValueFiles:
     - dev-values.yaml
