@@ -1,0 +1,98 @@
+kubernetes-dashboard:
+  auth:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+  api:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+  web:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+  metricsScraper:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200m
+      limits:
+        cpu: 250m
+        memory: 400m
+
+ingress:
+  enabled: true
+
+oauth2-proxy:
+  enabled: true
+  replicaCount: 3
+  ingress:
+    enabled: true
+    pathType: Prefix
+    hosts:
+      - kubernetes-dashboard.workflows.diamond.ac.uk
+    path: /
+    tls:
+      - secretName: '{{ include "common.names.fullname" $ }}-ingress-tls'
+        hosts:
+          - kubernetes-dashboard.workflows.diamond.ac.uk
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+  config:
+  alphaConfig:
+    enabled: true
+    configFile: |-
+      upstreamConfig:
+        upstreams:
+          - id: kubernetes-dashboard-kong-proxy
+            path: /
+            uri: https://{{ .Release.Name }}-kong-proxy:443
+    configData:
+      injectRequestHeaders:
+        - name: Authorization
+          values:
+            - claim: access_token
+              prefix: "Bearer "
+          preserveRequestValue: true
+      injectResponseHeaders:
+        - name: Identity
+          values:
+            - claim: id_token
+      providers:
+        - provider: oidc
+          scope: "openid posix-uid profile email fedid"
+          clientId: kubernetes-dashboard-kong-proxy
+          clientSecretFile: /etc/alpha/secret
+          id: authn
+          oidcConfig:
+            issuerURL: https://authn.diamond.ac.uk/realms/master
+            insecureAllowUnverifiedEmail: false
+            audienceClaims:
+              - aud
+            emailClaim: email
+            userIDClaim: fedid
+  extraArgs:
+    - --cookie-refresh=55s
+  extraVolumes:
+    - name: secret
+      secret:
+        secretName: kubernetes-dashboard-sso
+        items:
+          - key: secret
+            path: secret
+  extraVolumeMounts:
+    - name: secret
+      mountPath: /etc/alpha
+      readOnly: true
