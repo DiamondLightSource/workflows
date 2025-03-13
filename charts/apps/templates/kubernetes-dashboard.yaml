@@ -1,0 +1,34 @@
+{{- if .Values.kubernetesDashboard.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubernetes-dashboard
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  destination:
+    namespace: kubernetes-dashboard
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/kubernetes-dashboard
+    targetRevision: {{ .Values.kubernetesDashboard.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.argocd.extraValueFiles }}
+        {{- .Values.argocd.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.argocd.valuesObject }}
+      valuesObject:
+        {{- .Values.argocd.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}

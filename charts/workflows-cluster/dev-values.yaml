@@ -139,7 +139,7 @@ vcluster:
                       - dev-values.yaml
                   path: charts/apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
-                  targetRevision: HEAD
+                  targetRevision: kubernetes-dashboard
                 syncPolicy:
                   automated:
                     prune: true
