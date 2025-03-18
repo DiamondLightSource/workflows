@@ -55,6 +55,18 @@ spec:
             - name: REQUEST_RATE
               value: "{{ $.Values.requestRate }}"
             {{- end }}
+
+            - name: TELEMETRY_LEVEL
+              value: {{ $.Values.telemetry.level }}
+            - name: METRICS_ENDPOINT
+              value: monitoring-opentelemetry-collector.workflows.svc.cluster.local:4317
+            - name: TRACING_ENDPOINT
+              value: monitoring-opentelemetry-collector.workflows.svc.cluster.local:4317
+            {{- with $.Values.cors.matchOrigins }}
+            - name: CORS_ALLOW
+              value: {{ . | join " " }}
+            {{- end }}
+
           resources:
             {{- $.Values.deployment.resources | toYaml | nindent 12 }}
           {{- with $.Values.deployment.nodeSelector }}
