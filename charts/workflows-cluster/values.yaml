@@ -106,6 +106,9 @@ vcluster:
     toHost:
       ingresses:
         enabled: true
+  networking:
+    advanced:
+      fallbackHostCluster: true
 
 ingress:
   enabled: true
