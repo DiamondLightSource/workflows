@@ -50,7 +50,6 @@ oauth2-proxy:
           - kubernetes-dashboard.workflows.diamond.ac.uk
     annotations:
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
-  config:
   alphaConfig:
     enabled: true
     configFile: |-
