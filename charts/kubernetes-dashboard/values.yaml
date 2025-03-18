@@ -50,6 +50,25 @@ oauth2-proxy:
           - kubernetes-dashboard.workflows.diamond.ac.uk
     annotations:
       nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+  config:
+    configFile: |-
+      email_domains = [
+        "*"
+      ]
+      skip_auth_routes = [
+        "OPTIONS=^/$",
+        "GET=^/api/",
+        "DELETE=^/api/",
+        "PUT=^/api/",
+        "POST=^/api/",
+        "GET=^/artifact-files/",
+        "GET=^/artifacts-by-uid/",
+        "GET=^/artifacts/",
+        "GET=^/input-artifacts-by-uid/",
+        "GET=^/input-artifacts/",
+        "GET=^/assets/"
+      ]
+      skip_provider_button = true
   alphaConfig:
     enabled: true
     configFile: |-
