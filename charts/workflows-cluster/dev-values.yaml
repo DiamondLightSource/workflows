@@ -56,6 +56,9 @@ vcluster:
               name: argocd
               namespace: argocd
             values: |-
+              configs:
+                cm:
+                  timeout.reconcilliation: 10s
               controller:
                 resources:
                   limits:
