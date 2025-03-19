@@ -95,6 +95,10 @@ oauth2-proxy:
   replicaCount: 1
   ingress:
     enabled: false
+  providers:
+    - provider: oidc-mock
+ # 'http://{{ .Release.Name }}-oidc-mock.{{ .Release.Namespace }}.svc.cluster.local:8080/connect/deviceauthorization'
+ #
   redis:
     master:
       resources:

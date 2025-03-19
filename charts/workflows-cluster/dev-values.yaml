@@ -250,3 +250,5 @@ authenticationConfiguration:
             claim: groups
           uid:
             claim: fedid
+          posix-uid:
+            claim: posix-uid

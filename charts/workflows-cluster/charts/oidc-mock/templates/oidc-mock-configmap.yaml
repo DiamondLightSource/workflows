@@ -53,6 +53,11 @@ data:
             "Value": "dasc",
             "ValueType": "string"
           },
+          {
+            "Type": "posix-uid",
+            "Value": "posix123",
+            "ValueType": "string"
+          },
         ]
       }
     ]
