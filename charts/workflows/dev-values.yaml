@@ -92,28 +92,4 @@ postgresql-ha:
     size: 5Gi
 
 oauth2-proxy:
-  replicaCount: 1
-  ingress:
-    enabled: false
-  providers:
-    - provider: oidc-mock
- # 'http://{{ .Release.Name }}-oidc-mock.{{ .Release.Namespace }}.svc.cluster.local:8080/connect/deviceauthorization'
- #
-  redis:
-    master:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 200m
-          memory: 512Mi
-    replica:
-      replicaCount: 0
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 200m
-      memory: 512Mi
+  enabled: false
