@@ -3,7 +3,7 @@ name: workflows
 description: Data Analysis workflow orchestration
 type: application
 
-version: 0.13.5
+version: 0.13.6
 
 dependencies:
   - name: argo-workflows
@@ -21,3 +21,4 @@ dependencies:
   - name: localstack
     repository: https://localstack.github.io/helm-charts
     version: 0.6.20
+    condition: localstack.enabled
