@@ -16,7 +16,7 @@ groups:
 
 kyverno:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: 3.2.6
   valuesObject:
     admissionController:
       replicas: 1

@@ -157,3 +157,6 @@ vcluster:
 
 ingress:
   enabled: false
+
+authenticationConfiguration:
+  enabled: true
