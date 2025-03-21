@@ -1,6 +1,3 @@
-localstack:
-  enabled: false
-
 argo-workflows:
   enabled: true
   artifactRepository:
@@ -161,3 +158,6 @@ s3sealedsecret:
   enabled: true
 bitnamisecret:
   enabled: true
+
+s3mock:
+  enabled: false
