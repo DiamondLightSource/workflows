@@ -1,0 +1,11 @@
+# Changelog
+
+## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.0...sessionspaces@v0.1.1) (2025-03-21)
+
+
+### Bug Fixes
+
+* **backend:** move common dependencies to workspace ([20f8058](https://github.com/DiamondLightSource/workflows/commit/20f8058d311c12a7f4582f2833f5944a697bb1a5))
+* **sessionspaces:** move to backend dir ([903819a](https://github.com/DiamondLightSource/workflows/commit/903819ad185a543a681d6238accd70f0682b6827))
+* **sessionspaces:** update Dockerfile ([9d3d267](https://github.com/DiamondLightSource/workflows/commit/9d3d267d5f3faf884ea6db5a112fcacb480f8833))
+* **sessionspaces:** use telemetry library ([b523f51](https://github.com/DiamondLightSource/workflows/commit/b523f5175212720ec8ed46ab43fe66cb9b6da55f))
