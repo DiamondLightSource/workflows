@@ -7,6 +7,7 @@ import { Workflow } from "../../types";
 interface WorkflowProps {
   workflow: Workflow;
   children: React.ReactNode;
+  expanded?: boolean;
 }
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
@@ -15,9 +16,13 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   height: "450px",
 }));
 
-const WorkflowAccordion: React.FC<WorkflowProps> = ({ workflow, children }) => {
+const WorkflowAccordion: React.FC<WorkflowProps> = ({
+  workflow,
+  children,
+  expanded = false,
+}) => {
   return (
-    <Accordion key={workflow.name}>
+    <Accordion key={workflow.name} defaultExpanded={expanded}>
       <AccordionSummary
         expandIcon={getWorkflowStatusIcon(workflow.status)}
         sx={{

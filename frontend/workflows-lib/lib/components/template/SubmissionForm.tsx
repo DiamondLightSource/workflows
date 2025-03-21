@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { ErrorObject } from "ajv";
 import { Visit } from "../../types";
+import { visitRegex } from "../common/utils";
 
 interface TemplateSubmissionFormProps {
   title: string;
@@ -24,8 +25,6 @@ interface TemplateSubmissionFormProps {
   visit?: Visit;
   onSubmit?: (visit: Visit, parameters: object) => void;
 }
-
-const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
 
 const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   title,

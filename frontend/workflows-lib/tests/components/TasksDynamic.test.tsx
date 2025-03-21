@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import TasksDynamic from "../../lib/components/workflow/TasksDynamic";
+import TasksFlow from "../../lib/components/workflow/TasksFlow";
 import { ReactFlowInstance } from "@xyflow/react";
 import { Node, Edge } from "@xyflow/react";
-import { Task, TaskStatus } from "../../lib/types";
+import { Task } from "../../lib/types";
+import { mockTasks } from "./data";
+import "react-resizable/css/styles.css";
 
 vi.mock("@xyflow/react", () => ({
   ReactFlow: ({
@@ -31,18 +33,7 @@ vi.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
   generateNodesAndEdges: () => ({}),
 }));
 
-describe("TasksDynamic", () => {
-  const mockTasks = [
-    { id: "task-1", name: "task-1", status: "Pending" as TaskStatus },
-    {
-      id: "task-2",
-      name: "task-2",
-      status: "Succeeded" as TaskStatus,
-      depends: ["task-1"],
-    },
-    { id: "task-3", name: "task-3", status: "Running" as TaskStatus },
-  ];
-
+describe("TasksFlow", () => {
   it("should render Graph when there is no overflow", () => {
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
       width: 200,
@@ -58,7 +49,11 @@ describe("TasksDynamic", () => {
       },
     });
 
-    render(<TasksDynamic tasks={mockTasks} />);
+    console.log("Mock Tasks:", mockTasks);
+
+    render(
+      <TasksFlow tasks={mockTasks} isDynamic={true} onNavigate={() => {}} />
+    );
     expect(screen.getByTestId("reactflow-mock")).toBeInTheDocument();
     expect(screen.queryByTestId("taskstable-mock")).not.toBeInTheDocument();
   });
@@ -78,7 +73,11 @@ describe("TasksDynamic", () => {
       },
     });
 
-    render(<TasksDynamic tasks={mockTasks} />);
+    console.log("Mock Tasks:", mockTasks);
+
+    render(
+      <TasksFlow tasks={mockTasks} isDynamic={true} onNavigate={() => {}} />
+    );
     expect(screen.getByTestId("taskstable-mock")).toBeInTheDocument();
     expect(screen.queryByTestId("reactflow-mock")).not.toBeInTheDocument();
   });
@@ -86,7 +85,9 @@ describe("TasksDynamic", () => {
   it("should clean up event listeners on unmount", () => {
     const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
 
-    const { unmount } = render(<TasksDynamic tasks={mockTasks} />);
+    const { unmount } = render(
+      <TasksFlow tasks={mockTasks} isDynamic={true} onNavigate={() => {}} />
+    );
     unmount();
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(

@@ -7,7 +7,7 @@ import {
   generateNodesAndEdges,
 } from "../../lib/components/workflow/TasksFlowUtils";
 import { ReactFlow } from "@xyflow/react";
-import { TaskStatus } from "../../lib/types";
+import { mockTasks } from "./data";
 
 describe("TasksFlow Component", () => {
   beforeEach(() => {
@@ -20,22 +20,19 @@ describe("TasksFlow Component", () => {
     );
   });
 
-  const mockTasks = vi.hoisted(() => [
-    { id: "task-1", name: "task-1", status: "Pending" as TaskStatus },
-    {
-      id: "task-2",
-      name: "task-2",
-      status: "Succeeded" as TaskStatus,
-      depends: ["task-1"],
-    },
-    { id: "task-3", name: "task-3", status: "Running" as TaskStatus },
-  ]);
-
   const mockTaskTree = vi.hoisted(() => ({}));
-  const mockNodes = vi.hoisted(() => [{}]);
-  const mockEdges = vi.hoisted(() => [{}]);
-  const mockLayoutedNodes = vi.hoisted(() => [{}]);
-  const mockLayoutedEdges = vi.hoisted(() => [{}]);
+  const mockNodes = vi.hoisted(() => [
+    { id: "node-1", position: { x: 0, y: 0 }, data: {} },
+  ]);
+  const mockEdges = vi.hoisted(() => [
+    { id: "edge-1", source: "node-1", target: "node-2" },
+  ]);
+  const mockLayoutedNodes = vi.hoisted(() => [
+    { id: "node-1", position: { x: 0, y: 0 }, data: {} },
+  ]);
+  const mockLayoutedEdges = vi.hoisted(() => [
+    { id: "edge-1", source: "node-1", target: "node-2" },
+  ]);
 
   beforeEach(() => {
     vi.mock(
@@ -67,46 +64,54 @@ describe("TasksFlow Component", () => {
   });
 
   it("should render without crashing", () => {
-    const { getByText } = render(<TasksFlow tasks={mockTasks} />);
+    const { getByText } = render(
+      <TasksFlow tasks={mockTasks} onNavigate={() => {}} />
+    );
     expect(getByText("ReactFlow Mock")).toBeInTheDocument();
   });
 
   it("should build the task tree", () => {
-    render(<TasksFlow tasks={mockTasks} />);
+    render(<TasksFlow tasks={mockTasks} onNavigate={() => {}} />);
 
     expect(buildTaskTree).toHaveBeenCalledWith(mockTasks);
   });
 
   it("should generate nodes and edges based on the task tree", () => {
-    render(<TasksFlow tasks={mockTasks} />);
+    render(<TasksFlow tasks={mockTasks} onNavigate={() => {}} />);
 
     expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree);
   });
 
   it("should apply the dagre layout", () => {
-    render(<TasksFlow tasks={mockTasks} />);
+    render(<TasksFlow tasks={mockTasks} onNavigate={() => {}} />);
 
     expect(applyDagreLayout).toHaveBeenCalledWith(mockNodes, mockEdges);
   });
 
   it("should initialize ReactFlow with the correct nodes and edges", () => {
-    render(<TasksFlow tasks={mockTasks} />);
+    render(<TasksFlow tasks={mockTasks} onNavigate={() => {}} />);
 
     expect(ReactFlow).toHaveBeenCalledWith(
       expect.objectContaining({
+        defaultViewport: {
+          x: 0,
+          y: 0,
+          zoom: 1.5,
+        },
         nodes: mockLayoutedNodes,
         edges: mockLayoutedEdges,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         nodeTypes: expect.objectContaining({ custom: expect.any(Function) }),
         nodesDraggable: false,
         nodesConnectable: false,
-        elementsSelectable: false,
+        elementsSelectable: true,
         zoomOnScroll: false,
         zoomOnPinch: false,
         zoomOnDoubleClick: false,
         panOnDrag: false,
         preventScrolling: false,
-        style: { width: "100%", height: "100%" },
+        fitView: true,
+        style: { width: "100%", overflow: "auto", height: "100%" },
       }),
       {}
     );

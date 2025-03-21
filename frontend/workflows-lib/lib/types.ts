@@ -13,6 +13,8 @@ export interface Task {
   status: TaskStatus;
   depends?: string[];
   artifacts: Artifact[];
+  workflow: string;
+  instrumentSession: Visit;
 }
 
 export interface Artifact {
