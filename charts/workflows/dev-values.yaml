@@ -45,6 +45,9 @@ argo-workflows:
         cpu: 50m
         memory: 128Mi
         ephemeral-storage: 128Mi
+  controller:
+    replicas: 1
+
   server:
     replicas: 1
     authModes: ["server"]
