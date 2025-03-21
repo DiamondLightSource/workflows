@@ -1,36 +1,21 @@
-localstack:
+s3mock:
   enabled: true
-  debug: true
-  enableStartupScripts: true
-  startupScriptContent: |
-    #!/bin/bash
-    awslocal s3api create-bucket --bucket k8s-workflows-test --region unsupported
-  replicaCount: 1
-  resource:
-    limits:
-      cpu: 100m
-      memory: 128Mi
+  image:
+    repository: adobe/s3mock
+    pullPolicy: Always
+    tag: "latest"
+  config:
+    initialBuckets: k8s-workflows-test
+    debug: true
+  bucketPort: 9090
+  bucketPortS: 9091
+  resources:
     requests:
       cpu: 100m
       memory: 128Mi
-  service:
-    type: ClusterIP
-    externalTrafficPolicy: Cluster
-    loadBalancerIP: ""
-    ipFamilies: []
-    ipFamilyPolicy: Single
-    clusterIP: ""
-
-    edgeService:
-      name: my-service
-      targetPort: 80
-
-    dnsService: false
-
-    externalServicePorts:
-      start: 30000
-      end: 30010
-      nodePortStart: null
+    limits:
+      cpu: 200m
+      memory: 512Mi
 
 argo-workflows:
   artifactRepository:
@@ -45,7 +30,7 @@ argo-workflows:
     endpoint:
       valueFrom:
         configMapKeyRef:
-          name: localstack-configmap
+          name: s3mock-configmap
           key: endpoint
     bucket: k8s-workflows-test
     region: unsupported

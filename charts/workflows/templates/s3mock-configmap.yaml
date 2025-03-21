@@ -1,8 +1,8 @@
-{{ if .Values.localstack.enabled }}
+{{ if .Values.s3mock.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: localstack-configmap
+  name: s3mock-configmap
   namespace: {{ .Release.Namespace }}
 data:
   endpoint: {{ include "common.names.fullname" $ }}.{{ .Release.Namespace }}.svc.cluster.local:4566
