@@ -1,16 +1,17 @@
-import WorkflowRelay from "./WorkflowRelay";
+import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
 import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
+import { workflowFragment$key } from "./__generated__/workflowFragment.graphql";
 import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { Visit } from "workflows-lib";
-import { useState, useEffect, startTransition } from "react";
+import { useState, useCallback, useEffect, startTransition } from "react";
 import Pagination from "@mui/material/Pagination";
 
 const WorkflowsQuery = graphql`
   query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!) {
     workflows(visit: $visit, cursor: $cursor, limit: $limit) {
       nodes {
-        ...WorkflowRelayFragment
+        ...workflowFragment
       }
       pageInfo {
         endCursor
@@ -24,45 +25,58 @@ const WorkflowsQuery = graphql`
 
 export default function Workflows({ visit }: { visit: Visit }) {
   const [cursor, setCursor] = useState<string | null>(null);
-  const [workflows, setWorkflows] = useState<any[]>([]);
-  const [cursorHistory, setCursorHistory] = useState(
-    new Set<string | null>([null])
-  );
+  const [workflows, setWorkflows] = useState<workflowFragment$key[]>([]);
+  const [cursorHistory, setCursorHistory] = useState<{
+    [page: number]: string | null;
+  }>({ 1: null });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  console.log("Fetching data");
+
   const data = useLazyLoadQuery<WorkflowsQueryType>(WorkflowsQuery, {
     visit,
-    limit: 3,
+    limit: 5,
     cursor,
   });
-  console.log("Fetched data");
-  useEffect(() => {
-    if (data) {
-      setWorkflows([...data.workflows.nodes]);
-      if (currentPage === totalPages && data.workflows.pageInfo.hasNextPage) {
-        setTotalPages(cursorHistory.size + 1);
-      } else {
-        setTotalPages(cursorHistory.size);
-      }
-    }
-  }, [data, cursorHistory]);
 
-  if (!data) {
-    return <div>Loading...</div>;
-  }
+  const updateWorkflows = (
+    nodes: WorkflowsQueryType["response"]["workflows"]["nodes"]
+  ) => {
+    setWorkflows([...nodes]);
+  };
+
+  const updateTotalPages = useCallback(
+    (pageInfo: WorkflowsQueryType["response"]["workflows"]["pageInfo"]) => {
+      const hasNextPage = pageInfo.hasNextPage;
+      const currentPageCount = Object.keys(cursorHistory).length;
+
+      if (hasNextPage && !cursorHistory[currentPage + 1]) {
+        setTotalPages(currentPageCount + 1);
+      } else {
+        setTotalPages(currentPageCount);
+      }
+    },
+    [cursorHistory, currentPage]
+  );
+
+  useEffect(() => {
+    updateWorkflows(data.workflows.nodes);
+    updateTotalPages(data.workflows.pageInfo);
+  }, [data, cursorHistory, updateTotalPages]);
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     page: number
   ) => {
-    const cursorArray = Array.from(cursorHistory);
-    if (page > currentPage && data.workflows.pageInfo.hasNextPage) {
+    const targetCursor = cursorHistory[page];
+    if (
+      !targetCursor &&
+      page === currentPage + 1 &&
+      data.workflows.pageInfo.hasNextPage
+    ) {
       loadMore();
     } else {
-      const newCursor = cursorArray[page - 1];
       startTransition(() => {
-        setCursor(newCursor);
+        setCursor(targetCursor);
         setCurrentPage(page);
       });
     }
@@ -72,12 +86,13 @@ export default function Workflows({ visit }: { visit: Visit }) {
     if (data.workflows.pageInfo.hasNextPage) {
       startTransition(() => {
         const newCursor = data.workflows.pageInfo.endCursor ?? null;
-        setCursorHistory((prevCursorHistory) => {
-          const updatedCursorHistory = new Set(prevCursorHistory);
-          updatedCursorHistory.add(newCursor);
-          return updatedCursorHistory;
-        });
-        setCursor(data.workflows.pageInfo.endCursor || null);
+        if (!Object.values(cursorHistory).includes(newCursor)) {
+          setCursorHistory((prevCursorHistory) => ({
+            ...prevCursorHistory,
+            [currentPage + 1]: newCursor,
+          }));
+        }
+        setCursor(newCursor);
         setCurrentPage(currentPage + 1);
       });
     }

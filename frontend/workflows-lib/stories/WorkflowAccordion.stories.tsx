@@ -15,6 +15,8 @@ export default meta;
 export const Accordion: Story = {
   args: {
     workflow: fakeWorkflowA,
-    children: <TasksFlow tasks={fakeTasksA} isDynamic={true} />,
+    children: (
+      <TasksFlow tasks={fakeTasksA} isDynamic={true} onNavigate={() => {}} />
+    ),
   },
 };

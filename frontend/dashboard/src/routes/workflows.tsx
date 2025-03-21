@@ -1,29 +1,27 @@
 import { Container, Box } from "@mui/material";
-import Workflows from "../components/Workflows";
-import { Visit } from "workflows-lib";
-import { VisitInput } from "@diamondlightsource/sci-react-ui";
-import { useState } from "react";
+import {
+  VisitInput,
+  ThemeProvider,
+  DiamondTheme,
+} from "@diamondlightsource/sci-react-ui";
+import { useVisitInput } from "./utils";
+import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 
-function WorkflowsList() {
-  const [visit, setVisit] = useState<Visit>({
-    proposalCode: "mg",
-    proposalNumber: 36964,
-    number: 1,
-  } as Visit);
+function WorkflowsSelect() {
+  const { handleVisitSubmit } = useVisitInput();
   return (
-    <>
+    <ThemeProvider theme={DiamondTheme} defaultMode="light">
+      <WorkflowsNavbar
+        title={"Instrument Session Selection"}
+        sessionInfo={"No Instrument Session Selected"}
+      ></WorkflowsNavbar>
       <Container maxWidth="sm">
-        <Box display="flex" flexDirection="column" alignItems="center" marginTop="20px">
-          <Box width="100%" mb={2}>
-            <VisitInput onSubmit={setVisit} visit={visit}></VisitInput>
-          </Box>
-          <Box width="100%">
-            <Workflows visit={visit} />
-          </Box>
+        <Box mt={5}>
+          <VisitInput onSubmit={handleVisitSubmit} />
         </Box>
       </Container>
-    </>
+    </ThemeProvider>
   );
 }
 
-export default WorkflowsList;
+export default WorkflowsSelect;

@@ -1,9 +1,10 @@
 import { generateNodesAndEdges } from "../../lib/components/workflow/TasksFlowUtils";
-import { TaskStatus } from "../../lib/types";
+import { TaskNode, TaskStatus } from "../../lib/types";
+import { instrumentSession } from "../components/data";
 
 describe("generateNodesAndEdges", () => {
   it("should generate nodes and edges from a task tree", () => {
-    const taskTree = [
+    const taskTree: TaskNode[] = [
       {
         id: "task-1",
         name: "task-1",
@@ -27,18 +28,33 @@ describe("generateNodesAndEdges", () => {
                     status: "Succeeded" as TaskStatus,
                     depends: ["task-4"],
                     children: [],
+                    artifacts: [],
+                    workflow: "workflow-5",
+                    instrumentSession: instrumentSession,
                   },
                 ],
+                artifacts: [],
+                workflow: "workflow-4",
+                instrumentSession: instrumentSession,
               },
             ],
+            artifacts: [],
+            workflow: "workflowA",
+            instrumentSession: instrumentSession,
           },
         ],
+        artifacts: [],
+        workflow: "workflowB",
+        instrumentSession: instrumentSession,
       },
       {
         id: "task-3",
         name: "task-3",
         status: "Running" as TaskStatus,
         children: [],
+        artifacts: [],
+        workflow: "workflow-3",
+        instrumentSession: instrumentSession,
       },
     ];
 
@@ -48,31 +64,69 @@ describe("generateNodesAndEdges", () => {
       {
         id: "task-1",
         type: "custom",
-        data: { label: "task-1", status: "Pending" },
+        data: {
+          details: [],
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflowB",
+          label: "task-1",
+          status: "Pending",
+        },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-2",
         type: "custom",
-        data: { label: "task-2", status: "Succeeded" },
+        data: {
+          details: [],
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflowA", label: "task-2", status: "Succeeded" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-4",
         type: "custom",
-        data: { label: "task-4", status: "Succeeded" },
+        data: {
+          details: [],
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflow-4", label: "task-4", status: "Succeeded" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-5",
         type: "custom",
-        data: { label: "task-5", status: "Succeeded" },
+        data: {
+          details: [],
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflow-5", label: "task-5", status: "Succeeded" },
         position: { x: 0, y: 0 },
       },
       {
         id: "task-3",
         type: "custom",
-        data: { label: "task-3", status: "Running" },
+        data: {
+          details: [],
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflow-3", label: "task-3", status: "Running" },
         position: { x: 0, y: 0 },
       },
     ]);
