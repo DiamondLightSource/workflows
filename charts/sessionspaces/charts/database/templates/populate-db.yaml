@@ -1,0 +1,22 @@
+{{- if $.Values.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" $ }}-build-db
+  namespace: {{ .Release.Namespace }}
+data:
+  populate_db: |
+    #!/bin/bash
+    set -x
+    until mariadb -p{{ $.Values.password.value }} -e "CREATE DATABASE ispyb"; do
+      echo "Waiting for MariaDB to be ready to create the database..."
+      sleep 2
+    done
+
+    echo "MariaDB is ready. Building tables"
+
+    mariadb -p{{ $.Values.password.value }} ispyb < schemas/ispyb/tables.sql
+    mariadb -p{{ $.Values.password.value }} ispyb < schemas/ispyb/lookups.sql
+    mariadb -p{{ $.Values.password.value }} ispyb < schemas/ispyb/data.sql
+    mariadb -p{{ $.Values.password.value }} ispyb < schemas/ispyb/routines.sql
+{{- end }}
