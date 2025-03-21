@@ -5,5 +5,5 @@ metadata:
   name: s3mock-configmap
   namespace: {{ .Release.Namespace }}
 data:
-  endpoint: {{ include "common.names.fullname" $ }}.{{ .Release.Namespace }}.svc.cluster.local:4566
+  endpoint: {{ include "common.names.fullname" $ }}-s3mock.{{ .Release.Namespace }}.svc.cluster.local
 {{- end}}
