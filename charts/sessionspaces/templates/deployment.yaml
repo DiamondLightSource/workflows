@@ -45,7 +45,7 @@ spec:
               {{- end }}
             - name: DATABASE_URL
             {{- if $.Values.database.create }}
-              value: "mysql://{{ $.Values.database.user }}:{{ $.Values.database.password.value }}@{{ include "common.names.fullname" $ }}-database.{{ .Release.Namespace }}.svc.cluster.local:3306"
+              value: "mysql://{{ $.Values.database.user }}:{{ $.Values.database.password.value }}@{{ include "common.names.fullname" $ }}-database.{{ .Release.Namespace }}.svc.cluster.local:3306/ispyb_build"
             {{- else }}
               value: {{ include "sessionspaces.databaseURL" $ }}
             {{- end }}
