@@ -1,40 +1,70 @@
 import { useFragment } from "react-relay";
-import { graphql } from "react-relay";
-import { WorkflowAccordion } from "workflows-lib";
-import type { WorkflowStatus } from "workflows-lib";
-import { WorkflowRelayFragment$key } from "./__generated__/WorkflowRelayFragment.graphql";
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 
-const WorkflowRelay = (props: {
-  workflow: WorkflowRelayFragment$key;
+import { TasksFlow, WorkflowAccordion } from "workflows-lib";
+import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
+import {   workflowFragment$key } from "./__generated__/workflowFragment.graphql";
+import { Visit } from "@diamondlightsource/sci-react-ui";
+import { useNavigate } from "react-router-dom";
+import { workflowFragment } from "./workflow";
+
+interface WorkflowRelayProps {
+  workflow:   workflowFragment$key;
   children: React.ReactNode;
+  expanded?: boolean;
+}
+
+const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
+  workflow,
+  expanded,
 }) => {
-  const workflowFragment = graphql`
-    fragment WorkflowRelayFragment on Workflow {
-      name
-      status {
-        __typename
-      }
-    }
-  `;
-  const data = useFragment(workflowFragment, props.workflow);
-  const statusTextMap: { [key: string]: WorkflowStatus } = {
-    WorkflowPendingStatus: "Pending",
-    WorkflowRunningStatus: "Running",
-    WorkflowSucceededStatus: "Succeeded",
-    WorkflowFailedStatus: "Failed",
-    WorkflowErroredStatus: "Errored",
-  };
-  const statusText = data.status
-    ? statusTextMap[data.status.__typename]
-    : "Unknown";
+  const data = useFragment(workflowFragment, workflow);
+  const navigate = useNavigate();
+
+  const statusText = data.status?.__typename ?? "Unknown";
+
+  const tasks: Task[] =
+    data.status && "tasks" in data.status
+      ? data.status.tasks.map((task) => ({
+          id: task.id,
+          name: task.name,
+          status: task.status as TaskStatus,
+          depends: [...task.depends],
+          artifacts: [...task.artifacts],
+          workflow: data.name,
+          instrumentSession: data.visit as Visit,
+        }))
+      : [];
+
   return (
     <WorkflowAccordion
       workflow={{
         name: data.name,
-        status: statusText,
+        status: statusText as WorkflowStatus,
       }}
+      expanded={expanded}
     >
-      children
+      <ResizableBox
+        width={1150}
+        height={400}
+        resizeHandles={["se"]}
+        style={{
+          border: "2px dashed #ccc",
+          padding: "10px",
+          overflow: "auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <TasksFlow
+          tasks={tasks}
+          onNavigate={(path: string) => {
+            void navigate(path);
+          }}
+        ></TasksFlow>
+      </ResizableBox>
     </WorkflowAccordion>
   );
 };
