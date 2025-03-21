@@ -26,6 +26,9 @@ spec:
         - name: ispyb-mock
           image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values "chart" $.Chart )}}
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["bash", "-c"]
+          args:
+            - "docker-entrypoint.sh mariadbd & bash /ispyb-setup/populate_db && wait"
           ports:
             - name: database-port
               protocol: TCP
