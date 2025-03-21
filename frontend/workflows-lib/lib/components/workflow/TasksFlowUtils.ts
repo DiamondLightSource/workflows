@@ -68,7 +68,13 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
         nodes.push({
           id: task.id,
           type: "custom",
-          data: { label: task.name, status: task.status, details: task.artifacts },
+          data: {
+            label: task.name,
+            status: task.status,
+            details: task.artifacts,
+            workflow: task.workflow,
+            instrumentSession: task.instrumentSession,
+          },
           position: { x: 0, y: 0 },
         });
       }

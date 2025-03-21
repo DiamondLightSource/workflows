@@ -7,7 +7,7 @@ import {
 } from "relay-runtime";
 import keycloak from "./keycloak";
 
-const HTTP_ENDPOINT = "https://workflows.diamond.ac.uk/graphql";
+const HTTP_ENDPOINT = "http://workflows.diamond.ac.uk/graphql";
 
 const kcinit = keycloak.init({
   onLoad: "login-required"

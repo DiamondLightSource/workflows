@@ -8,7 +8,7 @@ import {
   getNodesBounds,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import TaskFlowNode from "./TasksFlowNode";
+import TaskFlowNode, { TaskFlowNodeData } from "./TasksFlowNode";
 import {
   applyDagreLayout,
   buildTaskTree,
@@ -17,18 +17,24 @@ import {
 import { Task } from "../../types";
 import TasksTable from "./TasksTable";
 
-const nodeTypes = {
-  custom: TaskFlowNode,
-};
-
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 
 interface TasksFlowProps {
   tasks: Task[];
+  onNavigate: (s: string) => void;
   isDynamic?: boolean;
 }
 
-const TasksFlow: React.FC<TasksFlowProps> = ({ tasks, isDynamic }) => {
+const TasksFlow: React.FC<TasksFlowProps> = ({
+  tasks,
+  onNavigate,
+  isDynamic,
+}) => {
+  const nodeTypes = {
+    custom: (props: { data: TaskFlowNodeData }) => (
+      <TaskFlowNode onNavigate={onNavigate} {...props} />
+    ),
+  };
   const taskTree = buildTaskTree(tasks);
   const { nodes, edges } = generateNodesAndEdges(taskTree);
   const { nodes: layoutedNodes, edges: layoutedEdges } = applyDagreLayout(

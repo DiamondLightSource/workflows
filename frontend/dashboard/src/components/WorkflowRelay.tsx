@@ -6,110 +6,119 @@ import "react-resizable/css/styles.css";
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import { WorkflowRelayFragment$key } from "./__generated__/WorkflowRelayFragment.graphql";
+import { Visit } from "@diamondlightsource/sci-react-ui";
+import { useNavigate } from "react-router-dom";
 
-const WorkflowRelay = (props: {
-  workflow: WorkflowRelayFragment$key;
-  children: React.ReactNode;
-}) => {
-  const workflowFragment = graphql`
-    fragment WorkflowRelayFragment on Workflow {
-      name
-      visit {
-        proposalCode
-        proposalNumber
-        number
+export const workflowFragment = graphql`
+  fragment WorkflowRelayFragment on Workflow {
+    name
+    visit {
+      proposalCode
+      proposalNumber
+      number
+    }
+    status {
+      __typename
+      ... on WorkflowPendingStatus {
+        message
       }
-      status {
-        __typename
-        ... on WorkflowPendingStatus {
-          message
-        }
-        ... on WorkflowRunningStatus {
-          startTime
-          message
-          tasks {
-            id
+      ... on WorkflowRunningStatus {
+        startTime
+        message
+        tasks {
+          id
+          name
+          status
+          depends
+          dependencies
+          artifacts {
             name
-            status
-            depends
-            dependencies
-            artifacts {
-              name
-              url
-              mimeType
-            }
+            url
+            mimeType
           }
         }
-        ... on WorkflowSucceededStatus {
-          startTime
-          endTime
-          message
-          tasks {
-            id
+      }
+      ... on WorkflowSucceededStatus {
+        startTime
+        endTime
+        message
+        tasks {
+          id
+          name
+          status
+          depends
+          dependencies
+          artifacts {
             name
-            status
-            depends
-            dependencies
-            artifacts {
-              name
-              url
-              mimeType
-            }
+            url
+            mimeType
           }
         }
-        ... on WorkflowFailedStatus {
-          startTime
-          endTime
-          message
-          tasks {
-            id
+      }
+      ... on WorkflowFailedStatus {
+        startTime
+        endTime
+        message
+        tasks {
+          id
+          name
+          status
+          depends
+          dependencies
+          artifacts {
             name
-            status
-            depends
-            dependencies
-            artifacts {
-              name
-              url
-              mimeType
-            }
+            url
+            mimeType
           }
         }
-        ... on WorkflowErroredStatus {
-          startTime
-          endTime
-          message
-          tasks {
-            id
+      }
+      ... on WorkflowErroredStatus {
+        startTime
+        endTime
+        message
+        tasks {
+          id
+          name
+          status
+          depends
+          dependencies
+          artifacts {
             name
-            status
-            depends
-            dependencies
-            artifacts {
-              name
-              url
-              mimeType
-            }
+            url
+            mimeType
           }
         }
       }
     }
-  `;
-  const data = useFragment(workflowFragment, props.workflow);
+  }
+`;
+
+interface WorkflowRelayProps {
+  workflow: WorkflowRelayFragment$key;
+  children: React.ReactNode;
+  expanded?: boolean;
+}
+
+const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
+  workflow,
+  expanded,
+}) => {
+  const data = useFragment(workflowFragment, workflow);
 
   const statusText = data.status?.__typename ?? "Unknown";
 
-  let tasks: Task[] = [];
-  if (data.status) {
-    if ('tasks' in data.status) {
-      tasks = data.status.tasks.map((task) => ({
-        id: task.id,
-        name: task.name,
-        status: task.status as TaskStatus,
-        depends: [...task.depends],
-        artifacts: [...task.artifacts],
-      }));
-    }
-  }
+  const tasks: Task[] =
+    data.status && "tasks" in data.status
+      ? data.status.tasks.map((task) => ({
+          id: task.id,
+          name: task.name,
+          status: task.status as TaskStatus,
+          depends: [...task.depends],
+          artifacts: [...task.artifacts],
+          workflow: data.name,
+          instrumentSession: data.visit as Visit,
+        }))
+      : [];
 
   return (
     <WorkflowAccordion
@@ -117,6 +126,7 @@ const WorkflowRelay = (props: {
         name: data.name,
         status: statusText as WorkflowStatus,
       }}
+      expanded={expanded}
     >
       <ResizableBox
         width={1150}
@@ -131,7 +141,7 @@ const WorkflowRelay = (props: {
           justifyContent: "center",
         }}
       >
-        <TasksFlow tasks={tasks}></TasksFlow>
+        <TasksFlow tasks={tasks} onNavigate={useNavigate()}></TasksFlow>
       </ResizableBox>
     </WorkflowAccordion>
   );
