@@ -19,6 +19,7 @@ spec:
       {{- end }}
       labels:
         {{- include "common.labels.matchLabels" $ | nindent 8 }}
+
     spec:
       imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
       containers:
@@ -47,4 +48,14 @@ spec:
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
+          volumeMounts:
+            - name: setup-db
+              mountPath: /ispyb-setup
+      volumes:
+        - name: setup-db
+          configMap:
+            name: {{ include "common.names.fullname" $ }}-build-db
+            items:
+              - key: populate_db
+                path: populate_db
 {{- end }}
