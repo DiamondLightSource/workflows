@@ -1,0 +1,9 @@
+{{ if .Values.s3mock.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3mock-configmap
+  namespace: {{ .Release.Namespace }}
+data:
+  endpoint: {{ include "common.names.fullname" $ }}-s3mock.{{ .Release.Namespace }}.svc.cluster.local
+{{- end}}
