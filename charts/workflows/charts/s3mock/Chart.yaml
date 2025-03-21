@@ -1,0 +1,10 @@
+apiVersion: v2
+name: s3mock
+description: A mock s3 deployment
+type: application
+
+version: 0.1.0
+dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts
