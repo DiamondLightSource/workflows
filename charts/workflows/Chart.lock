@@ -8,8 +8,8 @@ dependencies:
 - name: oauth2-proxy
   repository: https://oauth2-proxy.github.io/manifests
   version: 7.8.0
-- name: localstack
-  repository: https://localstack.github.io/helm-charts
-  version: 0.6.20
-digest: sha256:e399969455dfdeda7c8704b4612a8985dfb586ca85703f85977834deedc881bf
-generated: "2025-03-19T16:30:10.00173146Z"
+- name: s3mock
+  repository: file://./charts/s3mock/
+  version: 0.1.0
+digest: sha256:dd5f92717c1fb703ebaed466e5e372a96c552762dde1460ac23fd7ef2a9bc3c2
+generated: "2025-03-21T10:12:15.695976836Z"
