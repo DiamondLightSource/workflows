@@ -13,6 +13,24 @@ localstack:
     requests:
       cpu: 100m
       memory: 128Mi
+  service:
+    type: ClusterIP
+    externalTrafficPolicy: Cluster
+    loadBalancerIP: ""
+    ipFamilies: []
+    ipFamilyPolicy: Single
+    clusterIP: ""
+
+    edgeService:
+      name: my-service
+      targetPort: 80
+
+    dnsService: false
+
+    externalServicePorts:
+      start: 30000
+      end: 30010
+      nodePortStart: null
 
 argo-workflows:
   artifactRepository:
