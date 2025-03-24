@@ -91,7 +91,7 @@ oauth2-proxy:
       providers:
         - provider: oidc
           scope: "openid posix-uid profile email fedid"
-          clientId: kubernetes-dashboard-kong-proxy
+          clientId: oidc_kubernetes_dashboard_workflows_diamond_ac_uk
           clientSecretFile: /etc/alpha/secret
           id: authn
           oidcConfig:
