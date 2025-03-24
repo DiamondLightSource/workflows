@@ -45,7 +45,7 @@ jobs:
         run: mkdocs build
 
       - name: Upload Docs Artifact
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: docs
           path: site
@@ -70,7 +70,7 @@ jobs:
         run: yarn build-storybook --output-dir storybook-static
 
       - name: Upload Storybook Artifact
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: storybook
           path: frontend/workflows-lib/storybook-static
@@ -93,13 +93,13 @@ jobs:
         uses: actions/configure-pages@v5.0.0
 
       - name: Download Docs Artifact
-        uses: actions/download-artifact@v4.1.9
+        uses: actions/download-artifact@v4.2.1
         with:
           name: docs
           path: docs
 
       - name: Download Storybook Artifact
-        uses: actions/download-artifact@v4.1.9
+        uses: actions/download-artifact@v4.2.1
         with:
           name: storybook
           path: storybook
@@ -108,12 +108,12 @@ jobs:
         run: chmod -R +rX docs storybook
 
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4.6.1
+        uses: actions/upload-artifact/merge@v4.6.2
         with:
           separate-directories: true 
 
       - name: Download Merged Artifact
-        uses: actions/download-artifact@v4.1.9
+        uses: actions/download-artifact@v4.2.1
         with:
           name: merged-artifacts
           path: merged-artifacts
