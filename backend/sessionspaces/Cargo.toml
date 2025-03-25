@@ -24,7 +24,7 @@ sqlx = { version = "0.8.3", features = [
     "mysql",
     "time",
 ] }
-strum = { version = "0.26.3", features = ["derive"] }
+strum = { version = "0.27.1", features = ["derive"] }
 telemetry = { path = "../telemetry" }
 time = { version = "0.3.41" }
 tokio = { workspace = true }
