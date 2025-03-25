@@ -30,8 +30,7 @@ updates:
       prefix: "chore(deps)"
   - package-ecosystem: cargo
     directories:
-      - /sessionspaces/
-      - /graph-proxy/
+      - /backend/
     schedule:
       interval: weekly
     groups:
