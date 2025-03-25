@@ -16,10 +16,9 @@ updates:
       prefix: "chore(deps)"
   - package-ecosystem: docker
     directories:
-      - /sessionspaces/
-      - /sessionspaces/.devcontainer/
-      - /graph-proxy/
-      - /graph-proxy/.devcontainer/
+      - /backend/
+      - /backend/sessionspaces/.devcontainer/
+      - /backend/graph-proxy/.devcontainer/
     schedule:
       interval: weekly
     groups:
