@@ -30,4 +30,4 @@ tracing = { workspace = true }
 url = { workspace = true }
 
 [dev-dependencies]
-mockito = "1.6.1"
+mockito = "1.7.0"
