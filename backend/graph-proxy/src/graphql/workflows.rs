@@ -74,6 +74,15 @@ impl Workflow {
     async fn status(&self) -> Result<Option<WorkflowStatus>, WorkflowParsingError> {
         WorkflowStatus::new(&self.manifest, &self.metadata)
     }
+
+    /// The name of the template used to run the workflow
+    async fn workflow_template_ref(&self) -> Option<&str> {
+        self.manifest
+            .spec
+            .workflow_template_ref
+            .as_ref()
+            .and_then(|template_ref| template_ref.name.as_deref())
+    }
 }
 
 #[derive(Debug)]
