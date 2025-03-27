@@ -44,6 +44,10 @@ argo-workflows:
         ephemeral-storage: 128Mi
   server:
     replicas: 1
+    authModes: ["server"]
+    extraEnv:
+      - name: ARGO_SECURE
+        value: "false"
     resources:
       limits:
         cpu: 100m
