@@ -22,16 +22,13 @@ argo-workflows:
     archiveLogs: true
     s3:
       accessKeySecret:
-        name: ""
-        key: ""
+        name: artifact-s3
+        key: access-key
       secretKeySecret:
-        name: ""
-        key: ""
-    endpoint:
-      valueFrom:
-        configMapKeyRef:
-          name: s3mock-configmap
-          key: endpoint
+        name: artifact-s3
+        key: secret-key
+      insecure: true
+      endpoint: workflows-s3mock.workflows.svc.cluster.local
     bucket: k8s-workflows-test
     region: unsupported
   controller:
