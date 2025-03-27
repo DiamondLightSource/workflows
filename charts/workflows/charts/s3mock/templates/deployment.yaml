@@ -30,10 +30,6 @@ spec:
               protocol: TCP
               targetPort: {{ $.Values.bucketPort }}
               containerPort: {{ $.Values.bucketPort }}
-            - name: bucket-s
-              protocol: TCP
-              targetPort: {{ $.Values.bucketPortS }}
-              containerPort: {{ $.Values.bucketPortS }}
           resources:
             {{- $.Values.resources | toYaml | nindent 12 }}
           env:
