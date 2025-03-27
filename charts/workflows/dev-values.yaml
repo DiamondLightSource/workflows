@@ -12,10 +12,10 @@ s3mock:
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 1Gi
     limits:
       cpu: 200m
-      memory: 512Mi
+      memory: 1Gi
 
 argo-workflows:
   artifactRepository:
