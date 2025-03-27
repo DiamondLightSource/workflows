@@ -1,5 +1,6 @@
 argocd:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
@@ -9,7 +10,8 @@ events:
     - dev-values.yaml
 
 groups:
-  enabled: true
+  enabled: false
+  targetRevision: HEAD
 
 kyverno:
   enabled: true
@@ -36,6 +38,7 @@ kyverno:
 
 sessionspaces:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
@@ -52,15 +55,18 @@ sealedsecrets:
 
 workflows:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 graphProxy:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
 
 dashboard:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
