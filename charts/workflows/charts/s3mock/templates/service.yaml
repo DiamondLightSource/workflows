@@ -15,9 +15,5 @@ spec:
       port: 80
       targetPort: {{ $.Values.bucketPort }}
       protocol: TCP
-    - name: {{ include "common.names.fullname" $ }}-https
-      port: 443
-      targetPort: {{ $.Values.bucketPortS }}
-      protocol: TCP
 {{- end }}
 
