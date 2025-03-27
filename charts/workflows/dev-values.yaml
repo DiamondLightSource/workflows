@@ -1,3 +1,4 @@
+uid: "some-uid"
 s3mock:
   enabled: true
   image:
