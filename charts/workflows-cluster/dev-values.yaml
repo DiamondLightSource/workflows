@@ -1,5 +1,9 @@
 vcluster:
   controlPlane:
+    distro:
+      k8s:
+        apiServer:
+          extraArgs: []
     backingStore:
       etcd:
         deploy:
@@ -27,6 +31,9 @@ vcluster:
             cpu: 100m
             memory: 250Mi
     statefulSet:
+      persistence:
+        addVolumes: []
+        addVolumeMounts: []
       highAvailability:
         replicas: 1
       resources:
