@@ -1293,6 +1293,7 @@ mod tests {
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
     }
 
+
     #[tokio::test]
     async fn workflow_template_ref() {
         let workflow_name = "numpy-benchmark-wdkwj";
@@ -1301,15 +1302,39 @@ mod tests {
             proposal_number: 36964,
             number: 1,
         };
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    workflowTemplateRef
+                }}
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let endpoint = format!("/api/v1/workflows/{}/{}", visit, workflow_name);
 
+        let expected_data = json!({
+            "workflow": {
+                "workflowTemplateRef": "numpy-benchmark"
+            }
+        });
+
+
+        let resp = query_workflow(query, endpoint).await;
+        assert_eq!(resp, expected_data);
+    }
+
+    async fn query_workflow(query: String, endpoint: String) -> serde_json::Value {
         let mut server = mockito::Server::new_async().await;
         let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         response_file_path.push("test-assets");
         response_file_path.push("get-workflow-wdkwj.json");
+
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &*endpoint,
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1322,24 +1347,9 @@ mod tests {
             .data(ArgoServerUrl(argo_server_url))
             .data(None::<Authorization<Bearer>>)
             .finish();
-        let query = format!(
-            r#"
-            query {{
-                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
-                    workflowTemplateRef
-                }}
-            }}
-        "#,
-            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
-        );
-        let resp = schema.execute(query).await.into_result().unwrap();
 
+        let response = schema.execute(query).await.into_result().unwrap();
         workflow_endpoint.assert_async().await;
-        let expected_data = json!({
-            "workflow": {
-                "workflowTemplateRef": "numpy-benchmark"
-            }
-        });
-        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+        response.data.into_json().unwrap()
     }
 }
