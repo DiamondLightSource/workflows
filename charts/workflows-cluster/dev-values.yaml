@@ -6,11 +6,11 @@ vcluster:
           statefulSet:
             resources:
               limits:
-                cpu: 200m
-                memory: 500Mi
+                cpu: 500m
+                memory: 5Gi
               requests:
-                cpu: 100m
-                memory: 250Mi
+                cpu: 500m
+                memory: 5Gi
             highAvailability:
               replicas: 1
             persistence:
@@ -31,11 +31,11 @@ vcluster:
         replicas: 1
       resources:
         limits:
-          cpu: 2
+          cpu: 2500m
           ephemeral-storage: 2Gi
           memory: 1Gi
         requests:
-          cpu: 2000m
+          cpu: 2500m
           memory: 500Mi
   experimental:
     deploy:
