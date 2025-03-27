@@ -27,6 +27,8 @@ vcluster connect workflows-cluster --silent -- <COMMAND>
 helm install workflows-cluster charts/workflows-cluster -f charts/workflows-cluster/dev-values.yaml
 ```
 
+If you wish to run workflows, you should override the `uid` in the workflows app with your own uid.
+
 ## Serve Docs
 
 Firstly, install `mkdocs` and the requisite dependencies in `docs/requirements.txt`; For this you may wish to use `pipx`, as:
