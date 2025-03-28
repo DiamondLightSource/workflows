@@ -74,6 +74,15 @@ impl Workflow {
     async fn status(&self) -> Result<Option<WorkflowStatus>, WorkflowParsingError> {
         WorkflowStatus::new(&self.manifest, &self.metadata)
     }
+
+    /// The name of the template used to run the workflow
+    async fn workflow_template_ref(&self) -> Option<&str> {
+        self.manifest
+            .spec
+            .workflow_template_ref
+            .as_ref()
+            .and_then(|template_ref| template_ref.name.as_deref())
+    }
 }
 
 #[derive(Debug)]
@@ -1282,5 +1291,65 @@ mod tests {
             }
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+
+    #[tokio::test]
+    async fn workflow_template_ref() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                    workflowTemplateRef
+                }}
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let endpoint = format!("/api/v1/workflows/{}/{}", visit, workflow_name);
+
+        let expected_data = json!({
+            "workflow": {
+                "workflowTemplateRef": "numpy-benchmark"
+            }
+        });
+
+
+        let resp = query_workflow(query, endpoint).await;
+        assert_eq!(resp, expected_data);
+    }
+
+    async fn query_workflow(query: String, endpoint: String) -> serde_json::Value {
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-wdkwj.json");
+
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &*endpoint,
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+
+        let response = schema.execute(query).await.into_result().unwrap();
+        workflow_endpoint.assert_async().await;
+        response.data.into_json().unwrap()
     }
 }

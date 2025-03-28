@@ -38,13 +38,13 @@ enum Cli {
 #[derive(Debug, Parser)]
 struct ServeArgs {
     /// The base URL of the Argo Server from which data is to be retrieved
-    #[arg(short, long, env = "ARGO_SERVER_URL")]
+    #[arg(long, env = "ARGO_SERVER_URL")]
     argo_server_url: Url,
     /// The host IP to bind the service to
-    #[arg(short, long, env="HOST", default_value_t=IpAddr::V4(Ipv4Addr::UNSPECIFIED))]
+    #[arg(long, env="HOST", default_value_t=IpAddr::V4(Ipv4Addr::UNSPECIFIED))]
     host: IpAddr,
     /// The port to bind this service to
-    #[arg(short, long, env = "PORT", default_value_t = 80)]
+    #[arg(long, env = "PORT", default_value_t = 80)]
     port: u16,
     /// The endpoint at which the GraphQL API should be served
     #[arg(long, env = "PREFIX_PATH", default_value = "/")]
