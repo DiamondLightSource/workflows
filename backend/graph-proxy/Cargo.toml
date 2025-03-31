@@ -10,8 +10,8 @@ anyhow = { workspace = true }
 argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.16", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.16" }
-axum = { version = "0.8.1" }
-axum-extra = { version = "0.10.0", features = ["typed-header"] }
+axum = { version = "0.8.3" }
+axum-extra = { version = "0.10.1", features = ["typed-header"] }
 chrono = { workspace = true }
 clap = { workspace = true }
 derive_more = { workspace = true }
