@@ -1,10 +1,7 @@
 use opentelemetry::{trace::TracerProvider as _, KeyValue};
 use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
 use opentelemetry_sdk::{
-    metrics::{PeriodicReader, SdkMeterProvider},
-    propagation::TraceContextPropagator,
-    runtime,
-    trace::TracerProvider,
+    metrics::SdkMeterProvider, propagation::TraceContextPropagator, trace::SdkTracerProvider,
     Resource,
 };
 use opentelemetry_semantic_conventions::resource::{SERVICE_NAME, SERVICE_VERSION};
@@ -22,19 +19,19 @@ mod built_info {
 
 #[derive(Debug, Error)]
 pub enum TelemetryError {
-    #[error("Metric error: {0}")]
-    MetricError(#[from] opentelemetry_sdk::metrics::MetricError),
-    #[error("Trace error: {0}")]
-    TraceError(#[from] opentelemetry::trace::TraceError),
+    #[error("OTEL SDK error: {0}")]
+    SdkError(#[from] opentelemetry_sdk::error::OTelSdkError),
     #[error("Tracing Subscriber initialization error: {0}")]
     TracingSubscriberInitError(#[from] tracing_subscriber::util::TryInitError),
+    #[error("Exporter build error: {0}")]
+    ExporterBuildError(#[from] opentelemetry_otlp::ExporterBuildError),
 }
 
 /// Encapsulates a [`TracerProvider`] and [`SdkMeterProvider`] to ensure metrics & trace streams
 /// are shutdown and flushed on drop
 #[allow(clippy::missing_docs_in_private_items)]
 pub struct OtelGuard {
-    tracer_provider: Option<TracerProvider>,
+    tracer_provider: Option<SdkTracerProvider>,
     meter_provider: Option<SdkMeterProvider>,
 }
 
@@ -42,12 +39,12 @@ impl Drop for OtelGuard {
     fn drop(&mut self) {
         if let Some(tracer_provider) = &self.tracer_provider {
             if let Err(err) = tracer_provider.shutdown() {
-                eprintln!("{}", TelemetryError::TraceError(err));
+                eprintln!("{}", TelemetryError::SdkError(err));
             }
         }
         if let Some(meter_provider) = &self.meter_provider {
             if let Err(err) = meter_provider.shutdown() {
-                eprintln!("{}", TelemetryError::MetricError(err));
+                eprintln!("{}", TelemetryError::SdkError(err));
             }
         }
     }
@@ -71,10 +68,12 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
     let level_filter = LevelFilter::from_level(config.telemetry_level);
     let log_layer = tracing_subscriber::fmt::layer();
 
-    let otel_resources = Resource::new([
-        KeyValue::new(SERVICE_NAME, built_info::PKG_NAME),
-        KeyValue::new(SERVICE_VERSION, built_info::PKG_VERSION),
-    ]);
+    let otel_resources = Resource::builder()
+        .with_attributes([
+            KeyValue::new(SERVICE_NAME, built_info::PKG_NAME),
+            KeyValue::new(SERVICE_VERSION, built_info::PKG_VERSION),
+        ])
+        .build();
 
     let (meter_provider, metrics_layer) = if let Some(metrics_endpoint) = config.metrics_endpoint {
         let exporter = MetricExporter::builder()
@@ -82,7 +81,7 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
             .with_endpoint(metrics_endpoint)
             .build()?;
         let meter_provider = SdkMeterProvider::builder()
-            .with_reader(PeriodicReader::builder(exporter, runtime::Tokio).build())
+            .with_periodic_exporter(exporter)
             .with_resource(otel_resources.clone())
             .build();
         (
@@ -98,8 +97,8 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
             .with_tonic()
             .with_endpoint(tracing_endpoint)
             .build()?;
-        let tracer_provider = TracerProvider::builder()
-            .with_batch_exporter(exporter, runtime::Tokio)
+        let tracer_provider = SdkTracerProvider::builder()
+            .with_batch_exporter(exporter)
             .with_resource(otel_resources)
             .build();
         let tracer = tracer_provider.tracer(built_info::PKG_NAME);
@@ -202,7 +201,6 @@ mod tests {
             tracing::info!(monotonic_counter.test_metric = 1u64, "Test metric");
             tracing::info_span!("test_span");
         }
-        opentelemetry::global::shutdown_tracer_provider();
         let metrics_requests = metrics_requests.lock().unwrap();
         let trace_requests = trace_requests.lock().unwrap();
         assert!(!metrics_requests.is_empty(), "No metrics were exported");
