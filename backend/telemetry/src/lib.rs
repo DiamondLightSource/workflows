@@ -56,13 +56,13 @@ impl Drop for OtelGuard {
 #[derive(clap::Parser, Clone, Debug)]
 pub struct TelemetryConfig {
     /// The endpoint to send OTLP metrics to
-    #[arg(short, long, env = "METRICS_ENDPOINT")]
+    #[arg(long, env = "METRICS_ENDPOINT")]
     pub metrics_endpoint: Option<Url>,
     /// The endpoint to send OTLP traces to
-    #[arg(short, long, env = "TRACING_ENDPOINT")]
+    #[arg(long, env = "TRACING_ENDPOINT")]
     pub tracing_endpoint: Option<Url>,
     /// The minimum telemetry level
-    #[arg(short, long, env="TELEMETRY_LEVEL", default_value_t=Level::INFO)]
+    #[arg(long, env="TELEMETRY_LEVEL", default_value_t=Level::INFO)]
     pub telemetry_level: Level,
 }
 
