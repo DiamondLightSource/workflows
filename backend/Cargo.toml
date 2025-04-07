@@ -10,7 +10,7 @@ resolver = "2"
 [workspace.dependencies]
 anyhow = { version = "1.0.97" }
 built = { version = "0.7.5" }
-clap = { version = "4.5.34", features = ["derive", "env"] }
+clap = { version = "4.5.35", features = ["derive", "env"] }
 chrono = { version = "0.4.40" }
 derive_more = { version = "1.0.0", features = [
     "deref",
@@ -28,7 +28,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = { version = "1.0.140" }
 thiserror = { version = "2.0.12" }
 tracing = { version = "0.1.41" }
-tokio = { version = "1.44.1", features = [
+tokio = { version = "1.44.2", features = [
     "macros",
     "time",
     "net",
