@@ -62,6 +62,7 @@ impl Workflow {
 impl Workflow {
     /// The name given to the workflow, unique within a given visit
     async fn name(&self) -> &str {
+        println!("{:#?}", &self.manifest);
         &self.metadata.name
     }
 
@@ -527,12 +528,23 @@ impl WorkflowsQuery {
         visit: VisitInput,
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
+        creator: Option<String>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
         let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &visit.to_string()]);
+
+        if let Some(creator) = creator {
+            let label_selector = format!(
+                "workflows.argoproj.io/creator-preferred-username=={}",
+                creator
+            );
+            url.query_pairs_mut()
+                .append_pair("listOptions.labelSelector", &label_selector);
+        }
+
         let limit = limit.unwrap_or(10);
         url.query_pairs_mut()
             .append_pair("listOptions.limit", &limit.to_string());
