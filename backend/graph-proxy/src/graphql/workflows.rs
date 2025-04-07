@@ -6,7 +6,7 @@ use argo_workflows_openapi::{
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Enum, Object, SimpleObject, Union,
+    Context, Enum, InputObject, Object, SimpleObject, Union,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
@@ -481,6 +481,49 @@ impl TaskMap {
     }
 }
 
+/// Represents workflow status filters
+#[allow(clippy::missing_docs_in_private_items)]
+#[derive(Debug, Default, Clone, InputObject)]
+struct WorkflowStatusFilter {
+    #[graphql(default = false)]
+    pending: bool,
+    #[graphql(default = false)]
+    running: bool,
+    #[graphql(default = false)]
+    succeeded: bool,
+    #[graphql(default = false)]
+    failed: bool,
+    #[graphql(default = false)]
+    error: bool,
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+impl WorkflowStatusFilter {
+    pub fn is_enabled(&self) -> bool {
+        self.pending || self.running || self.succeeded || self.failed || self.error
+    }
+
+    fn to_phases(&self) -> Vec<&'static str> {
+        let mut phases = Vec::new();
+        if self.pending {
+            phases.push("Pending");
+        }
+        if self.running {
+            phases.push("Running");
+        }
+        if self.succeeded {
+            phases.push("Succeeded");
+        }
+        if self.failed {
+            phases.push("Failed");
+        }
+        if self.error {
+            phases.push("Error");
+        }
+        phases
+    }
+}
+
 /// Queries related to [`Workflow`]s
 #[derive(Debug, Clone, Default)]
 pub struct WorkflowsQuery;
@@ -527,12 +570,21 @@ impl WorkflowsQuery {
         visit: VisitInput,
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
+        #[graphql(default)] filter: WorkflowStatusFilter,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
         let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &visit.to_string()]);
+        if filter.is_enabled() {
+            let label_selector = format!(
+                "workflows.argoproj.io/phase in ({})",
+                filter.to_phases().join(", ")
+            );
+            url.query_pairs_mut()
+                .append_pair("listOptions.labelSelector", &label_selector);
+        }
         let limit = limit.unwrap_or(10);
         url.query_pairs_mut()
             .append_pair("listOptions.limit", &limit.to_string());
