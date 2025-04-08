@@ -481,6 +481,40 @@ impl TaskMap {
     }
 }
 
+/// All the supported Workflows filters
+#[derive(Debug, Default, Clone, InputObject)]
+struct WorkflowFilter {
+    /// The status field for a workflow
+    workflow_status_filter: Option<WorkflowStatusFilter>,
+}
+
+impl WorkflowFilter {
+    /// Generates and applies all the filters
+    fn generate_filters(&self, url: &mut Url) {
+        let labels = &self.create_label_selection();
+        url.query_pairs_mut()
+            .append_pair("listOptions.labelSelector", labels);
+    }
+
+    /// Creates a string of all the reqested filters that belong to the
+    /// `labelSelector` query key in the Workflow API
+    fn create_label_selection(&self) -> String {
+        let mut label_selectors = Vec::new();
+
+        if let Some(status_filter) = &self.workflow_status_filter {
+            if status_filter.is_enabled() {
+                let status_label = format!(
+                    "workflows.argoproj.io/phase in ({})",
+                    status_filter.to_phases().join(", ")
+                );
+                label_selectors.push(status_label);
+            }
+        }
+
+        label_selectors.join(",")
+    }
+}
+
 /// Represents workflow status filters
 #[allow(clippy::missing_docs_in_private_items)]
 #[derive(Debug, Default, Clone, InputObject)]
@@ -570,20 +604,16 @@ impl WorkflowsQuery {
         visit: VisitInput,
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
-        #[graphql(default)] filter: WorkflowStatusFilter,
+        filter: Option<WorkflowFilter>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
         let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &visit.to_string()]);
-        if filter.is_enabled() {
-            let label_selector = format!(
-                "workflows.argoproj.io/phase in ({})",
-                filter.to_phases().join(", ")
-            );
-            url.query_pairs_mut()
-                .append_pair("listOptions.labelSelector", &label_selector);
+
+        if let Some(filter) = &filter {
+            filter.generate_filters(&mut url);
         }
         let limit = limit.unwrap_or(10);
         url.query_pairs_mut()
