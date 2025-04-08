@@ -75,6 +75,21 @@ impl Workflow {
         WorkflowStatus::new(&self.manifest, &self.metadata)
     }
 
+    /// The top-level workflow parameters
+    async fn parameters(&self) -> Option<HashMap<&str, Option<&str>>> {
+        let arguments = self.manifest.spec.arguments.as_ref();
+
+        if let Some(args) = arguments {
+            let params = &args.parameters;
+            let mut param_map: HashMap<&str, Option<&str>> = HashMap::new();
+            params.iter().for_each(|this_parameter| {
+                param_map.insert(&this_parameter.name, this_parameter.value.as_deref());
+            });
+            return Some(param_map);
+        }
+        None
+    }
+
     /// The name of the template used to run the workflow
     async fn workflow_template_ref(&self) -> Option<&str> {
         self.manifest
