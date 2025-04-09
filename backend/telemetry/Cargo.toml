@@ -19,9 +19,8 @@ tracing-subscriber = { version = "0.3.19" }
 url = { workspace = true }
 
 [dev-dependencies]
-opentelemetry-proto = { version = "0.29.0" }
 tokio = { workspace = true }
-tonic = { version = "0.12.3" }
+mockito = { version = "1.7.0" }
 
 [build-dependencies]
 built = { version = "0.7.5" }
