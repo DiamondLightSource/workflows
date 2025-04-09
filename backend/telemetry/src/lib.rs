@@ -77,7 +77,7 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
 
     let (meter_provider, metrics_layer) = if let Some(metrics_endpoint) = config.metrics_endpoint {
         let exporter = MetricExporter::builder()
-            .with_tonic()
+            .with_http()
             .with_endpoint(metrics_endpoint)
             .build()?;
         let meter_provider = SdkMeterProvider::builder()
@@ -94,7 +94,7 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
 
     let (tracer_provider, tracing_layer) = if let Some(tracing_endpoint) = config.tracing_endpoint {
         let exporter = SpanExporter::builder()
-            .with_tonic()
+            .with_http()
             .with_endpoint(tracing_endpoint)
             .build()?;
         let tracer_provider = SdkTracerProvider::builder()
