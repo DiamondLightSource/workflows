@@ -76,7 +76,7 @@ impl Workflow {
     }
 
     /// The name of the template used to run the workflow
-    async fn workflow_template_ref(&self) -> Option<&str> {
+    async fn template_ref(&self) -> Option<&str> {
         self.manifest
             .spec
             .workflow_template_ref
@@ -1378,7 +1378,7 @@ mod tests {
             r#"
             query {{
                 workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
-                    workflowTemplateRef
+                    templateRef
                 }}
             }}
         "#,
@@ -1389,11 +1389,12 @@ mod tests {
         workflow_endpoint.assert_async().await;
         let expected_data = json!({
             "workflow": {
-                "workflowTemplateRef": "numpy-benchmark"
+                "templateRef": "numpy-benchmark"
             }
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
     }
+
     #[tokio::test]
     async fn multiple_workflows_query_with_filter() {
         let visit = Visit {
