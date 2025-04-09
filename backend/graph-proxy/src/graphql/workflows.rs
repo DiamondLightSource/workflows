@@ -486,6 +486,8 @@ impl TaskMap {
 struct WorkflowFilter {
     /// The status field for a workflow
     workflow_status_filter: Option<WorkflowStatusFilter>,
+    /// The creator of the workflow
+    creator: Option<String>,
 }
 
 impl WorkflowFilter {
@@ -509,6 +511,14 @@ impl WorkflowFilter {
                 );
                 label_selectors.push(status_label);
             }
+        }
+
+        if let Some(creator) = &self.creator {
+            let creator_label = format!(
+                "workflows.argoproj.io/creator-preferred-username={}",
+                creator
+            );
+            label_selectors.push(creator_label);
         }
 
         label_selectors.join(",")
