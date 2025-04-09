@@ -1461,7 +1461,7 @@ mod tests {
             query {{
                 workflows(
                     visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
-                    filter: {{ error: true }}
+                    filter: {{ workflowStatusFilter: {{ error: true }} }}
                 ) {{
                     nodes {{
                         name
@@ -1491,7 +1491,7 @@ mod tests {
             query {{
                 workflows(
                     visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
-                    filter: {{ failed: true, error: true, succeeded: false, pending: false, running: false }}
+                    filter: {{ workflowStatusFilter: {{ failed: true, error: true, succeeded: false, pending: false, running: false }} }}
                 ) {{
                     nodes {{
                         name
