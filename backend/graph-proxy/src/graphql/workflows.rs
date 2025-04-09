@@ -1452,7 +1452,7 @@ mod tests {
             .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
             .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
                 "listOptions.labelSelector".to_string(),
-                "workflows.argoproj.io/phase in (Error)".to_string(),
+                "workflows.argoproj.io/phase in (Error),workflows.argoproj.io/creator-preferred-username=enu43627".to_string(),
             )]))
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1471,7 +1471,7 @@ mod tests {
             query {{
                 workflows(
                     visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
-                    filter: {{ workflowStatusFilter: {{ error: true }} }}
+                    filter: {{ workflowStatusFilter: {{ error: true }}, creator: "enu43627" }}
                 ) {{
                     nodes {{
                         name
