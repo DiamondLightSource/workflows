@@ -20,7 +20,7 @@ url = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
-mockito = { version = "1.7.0" }
+mockito = { workspace = true }
 
 [build-dependencies]
 built = { version = "0.7.5" }
