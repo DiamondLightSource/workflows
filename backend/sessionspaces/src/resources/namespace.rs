@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 use tracing::{info, instrument};
 
 /// Removes a Namespace from the cluster
-#[instrument(skip(k8s_client))]
+#[instrument(name = "sessionspaces_delete_namespace", skip(k8s_client))]
 pub async fn delete_namespace(
     namespace: &str,
     k8s_client: kube::Client,
@@ -30,7 +30,7 @@ pub async fn delete_namespace(
 }
 
 /// Creates a Namespace with the given name
-#[instrument(skip(k8s_client))]
+#[instrument(name = "sessionspaces_create_namespace", skip(k8s_client))]
 pub async fn create_namespace(
     namespace: String,
     k8s_client: kube::Client,

@@ -29,7 +29,7 @@ pub struct BasicInfo {
 
 impl BasicInfo {
     /// Fetches [`Session`]s from ISPyB
-    #[instrument(name = "fetch_sessions")]
+    #[instrument(name = "sessionspaces_fetch_sessions")]
     pub async fn fetch(ispyb_pool: &MySqlPool) -> Result<Vec<Self>, sqlx::Error> {
         Ok(query_as!(
             BasicInfoRow,
