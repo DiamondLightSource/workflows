@@ -55,6 +55,16 @@ spec:
             - name: REQUEST_RATE
               value: "{{ $.Values.requestRate }}"
             {{- end }}
+            - name: TELEMETRY_LEVEL
+              value: {{ $.Values.telemetry.level }}
+            {{- with $.Values.telemetry.metricsEndpoint }}
+            - name: METRICS_ENDPOINT
+              value: {{ . }}
+            {{- end }}
+            {{- with $.Values.telemetry.tracingEndpoint }}
+            - name: TRACING_ENDPOINT
+              value: {{ . }}
+            {{- end }}
           resources:
             {{- $.Values.deployment.resources | toYaml | nindent 12 }}
           {{- with $.Values.deployment.nodeSelector }}
