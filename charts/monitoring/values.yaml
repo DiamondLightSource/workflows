@@ -287,6 +287,21 @@ opentelemetry-collector:
       enabled: false
     zipkin:
       enabled: false
+  ingress:
+    enabled: true
+    annotations:
+        kubernetes.io/ingressClassName: nginx
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    hosts:
+      - host: otelcollector.workflows.diamond.ac.uk
+        paths:
+          - path: '/'
+            pathType: Prefix
+            port: 4318
+    tls:
+      - secretName: letsencrypt-otelcollector-workflows-diamond-ac-uk
+        hosts:
+          - otelcollector.workflows.diamond.ac.uk
   resources:
     requests:
       cpu: '8'
