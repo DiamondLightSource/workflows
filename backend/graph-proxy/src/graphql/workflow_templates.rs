@@ -77,7 +77,7 @@ pub struct WorkflowTemplatesQuery;
 
 #[Object]
 impl WorkflowTemplatesQuery {
-    #[instrument(skip(self, ctx))]
+    #[instrument(name = "graph_proxy_workflow_template", skip(self, ctx))]
     async fn workflow_template(
         &self,
         ctx: &Context<'_>,
@@ -107,7 +107,7 @@ impl WorkflowTemplatesQuery {
         Ok(workflow_templates.into())
     }
 
-    #[instrument(skip(self, ctx))]
+    #[instrument(name = "graph_proxy_workflow_templates", skip(self, ctx))]
     async fn workflow_templates(
         &self,
         ctx: &Context<'_>,
@@ -170,7 +170,7 @@ pub struct WorkflowTemplatesMutation;
 
 #[Object]
 impl WorkflowTemplatesMutation {
-    #[instrument(skip(self, ctx))]
+    #[instrument(name = "graph_proxy_submit_workflow_template", skip(self, ctx))]
     async fn submit_workflow_template(
         &self,
         ctx: &Context<'_>,

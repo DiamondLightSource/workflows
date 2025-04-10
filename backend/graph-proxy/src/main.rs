@@ -106,7 +106,7 @@ async fn main() {
 }
 
 /// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
-#[instrument(skip(schema))]
+#[instrument(name = "graph_proxy_router_setup", skip(schema))]
 fn setup_router(
     schema: RootSchema,
     prefix_path: &str,
