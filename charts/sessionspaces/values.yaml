@@ -42,3 +42,8 @@ secret:
 
 nameOverride: ""
 fullnameOverride: ""
+
+telemetry:
+  level: Info
+  metricsEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/metrics
+  tracingEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/traces
