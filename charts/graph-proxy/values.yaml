@@ -26,8 +26,8 @@ deployment:
 
 telemetry:
   level: Info
-  metricsEndpoint: ""
-  tracingEndpoint: ""
+  metricsEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/metrics
+  tracingEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/traces
 
 cors:
   matchOrigins:
