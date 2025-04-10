@@ -15,7 +15,7 @@ struct DirectSubjectRow {
 
 impl DirectSubjects {
     /// Fetches [`DirectSubjects`] from ISPyB
-    #[instrument(name = "fetch_direct_subjects")]
+    #[instrument(name = "sessionspaces_fetch_direct_subjects")]
     pub async fn fetch(ispyb_pool: &MySqlPool) -> Result<Self, sqlx::Error> {
         let mut direct_subjects = Self::default();
         for DirectSubjectRow { session, subject } in query_as!(

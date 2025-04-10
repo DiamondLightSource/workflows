@@ -221,7 +221,7 @@ impl InstrumentGroup {
 }
 
 impl InstrumentSubjects {
-    #[instrument(name = "fetch_instrument_subjects")]
+    #[instrument(name = "sessionspaces_fetch_instrument_subjects")]
     pub async fn fetch(ldap_connection: &mut Ldap) -> Result<Self, LdapError> {
         let mut instrument_subjects = Self::default();
         for result_entry in ldap_connection

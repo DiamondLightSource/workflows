@@ -142,7 +142,7 @@ impl Sessions {
     }
 
     /// Fetches the neccasary information to create Sessions from ISPyB and the SciComp LDAP
-    #[instrument(skip_all)]
+    #[instrument(name = "sessionspaces_fetch_info", skip_all)]
     pub async fn fetch(
         ispyb_pool: &MySqlPool,
         ldap_connection: &mut Ldap,
