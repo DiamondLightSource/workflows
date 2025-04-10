@@ -402,6 +402,14 @@ opentelemetry-collector:
     exporters:
       prometheus:
         endpoint: 0.0.0.0:9090
+      otlphttp:
+        endpoint: "https://otel.tracing.diamond.ac.uk:4318"
+        timeout: 30s
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 5m
     service:
       pipelines:
         metrics:
@@ -413,3 +421,12 @@ opentelemetry-collector:
             - batch
           exporters:
             - prometheus
+            - otlphttp
+        traces:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - batch
+          exporters:
+            - otlphttp
