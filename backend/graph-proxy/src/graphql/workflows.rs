@@ -575,7 +575,7 @@ pub struct WorkflowsQuery;
 #[Object]
 impl WorkflowsQuery {
     /// Get a single [`Workflow`] by proposal, visit, and name
-    #[instrument(skip(self, ctx))]
+    #[instrument(name = "graph_proxy_workflow", skip(self, ctx))]
     async fn workflow(
         &self,
         ctx: &Context<'_>,
@@ -607,7 +607,7 @@ impl WorkflowsQuery {
         Ok(Workflow::new(workflow, visit.into()))
     }
 
-    #[instrument(skip(self, ctx))]
+    #[instrument(name = "graph_proxy_workflows", skip(self, ctx))]
     async fn workflows(
         &self,
         ctx: &Context<'_>,
