@@ -390,6 +390,15 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_pod_node_name]
                   action: replace
                   target_label: node
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins:
+                - "*"
     exporters:
       prometheus:
         endpoint: 0.0.0.0:9090
@@ -398,6 +407,7 @@ opentelemetry-collector:
         metrics:
           receivers:
             - prometheus
+            - otlp
           processors:
             - memory_limiter
             - batch
