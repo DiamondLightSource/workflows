@@ -18,7 +18,7 @@ use sqlx::mysql::MySqlPoolOptions;
 use std::{collections::BTreeSet, time::Duration};
 use telemetry::{setup_telemetry, TelemetryConfig};
 use tokio::time::interval;
-use tracing::{info, warn};
+use tracing::{info, instrument, warn};
 use url::Url;
 
 /// SessionSpaces periodically polls the authorization bundle server and applies templates to the cluster accordingly
@@ -80,6 +80,11 @@ async fn main() {
 }
 
 /// Updates the k8s resources in all sessionspaces according to observed changes between current and new [`Sessions`].
+#[instrument(
+    name = "update_sessionspaces",
+    skip(current_sessions, new_sessions, k8s_client),
+    fields(sessions_to_update)
+)]
 async fn update_sessionspaces(
     current_sessions: &mut Sessions,
     new_sessions: &mut Sessions,
@@ -91,6 +96,7 @@ async fn update_sessionspaces(
         .union(&new_session_names)
         .collect::<BTreeSet<_>>();
 
+    tracing::Span::current().record("sessions_to_update", to_update.len());
     info!("Updating {} SessionSpaces", to_update.len());
     for namespace in to_update.into_iter() {
         if let Err(err) = update_sessionspace(
@@ -107,6 +113,7 @@ async fn update_sessionspaces(
 }
 
 /// Updates a single sessionspace according to the changes between a current and new [`permissionables::Session`].
+#[instrument(name = "update_sessionspace", skip(current_sessions, new_sessions, k8s_client), fields(namespace = %namespace))]
 async fn update_sessionspace(
     namespace: String,
     current_sessions: &mut Sessions,
