@@ -118,6 +118,7 @@ vcluster:
             "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
             "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-otelcollector-workflows-diamond-ac-uk": "monitoring/otelcollector-tls-cert"
+            "/argocd-oauth": "argocd/argocd-oauth"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
   rbac:
