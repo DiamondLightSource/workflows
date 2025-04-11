@@ -1,0 +1,72 @@
+argocd:
+  enabled: true
+  targetRevision: staging-merge
+  extraValueFiles:
+    - staging-values.yaml
+
+events:
+  enabled: false
+  extraValueFiles:
+    - staging-values.yaml
+
+groups:
+  enabled: true
+  targetRevision: staging-merge
+
+kyverno:
+  enabled: true
+  valuesObject:
+    admissionController:
+      replicas: 1
+      container:
+        resources:
+          limits:
+            cpu: 200m
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    backgroundController:
+      replicas: 1
+      resources:
+        limits:
+          cpu: 200m
+          memory: 2Gi
+        requests:
+          cpu: 100m
+          memory: 1Gi
+
+sessionspaces:
+  enabled: true
+  targetRevision: staging-merge
+  extraValueFiles:
+    - staging-values.yaml
+
+sealedsecrets:
+  enabled: true
+  valuesObject:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+workflows:
+  enabled: true
+  targetRevision: staging-merge
+  extraValueFiles:
+    - staging-values.yaml
+
+graphProxy:
+  enabled: true
+  targetRevision: staging-merge
+  extraValueFiles:
+    - staging-values.yaml
+
+dashboard:
+  enabled: true
+  targetRevision: staging-merge
+  extraValueFiles:
+    - staging-values.yaml
