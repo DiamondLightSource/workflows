@@ -11,4 +11,4 @@ dependencies:
     repository: oci://docker.io/bitnamicharts
   - name: vcluster
     repository: https://charts.loft.sh
-    version: 0.20.5
+    version: 0.24.1
