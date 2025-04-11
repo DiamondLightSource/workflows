@@ -106,6 +106,15 @@ vcluster:
     toHost:
       ingresses:
         enabled: true
+    fromHost:
+      secrets:
+        enabled: true
+        mappings:
+          byName: {}
+  rbac:
+    clusterRole:
+      enabled: false
+
 
 ingress:
   enabled: true
