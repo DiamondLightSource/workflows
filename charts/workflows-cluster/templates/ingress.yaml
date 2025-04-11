@@ -22,7 +22,7 @@ spec:
                 port:
                   name: https
   tls:
-    - secretName: letsencrypt-kubernetes-workflows-diamond-ac-uk
+    - secretName: {{ .Values.ingress.secretName }}
       hosts:
         - {{ .Values.ingress.host }}
 {{- end }}

@@ -16,3 +16,4 @@ dependencies:
     repository: file://./charts/secrets
     version: 0.0.1
     condition: secrets.enabled
+
