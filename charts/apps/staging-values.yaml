@@ -1,6 +1,6 @@
 argocd:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: staging-merge
   extraValueFiles:
     - staging-values.yaml
 
@@ -11,7 +11,7 @@ events:
 
 groups:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: staging-merge
 
 kyverno:
   enabled: true
@@ -38,7 +38,7 @@ kyverno:
 
 sessionspaces:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: staging-merge
   extraValueFiles:
     - staging-values.yaml
 
@@ -55,19 +55,19 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: staging-merge
   extraValueFiles:
     - staging-values.yaml
 
 graphProxy:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: staging-merge
   extraValueFiles:
     - staging-values.yaml
 
 dashboard:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: staging-merge
   extraValueFiles:
     - staging-values.yaml
 
