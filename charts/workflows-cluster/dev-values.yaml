@@ -151,6 +151,15 @@ vcluster:
                   automated:
                     prune: true
                     selfHeal: true
+  sync:
+    fromHost:
+      hostNamespaceOnly: true
+      secrets:
+        enabled: true
+        mappings:
+          byName:
+            "workflows/vc-config-workflows-cluster": "default/test-secret"
+            "workflows/my-secret": "default/another-test"
 
 ingress:
   enabled: false
