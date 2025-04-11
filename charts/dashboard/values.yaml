@@ -38,12 +38,12 @@ service:
 ingress:
   create: true
   className: nginx
-  tls: []
   hosts:
     - host: workflows.diamond.ac.uk
       paths:
         - path: /
           pathType: Prefix
+  tls: false
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
