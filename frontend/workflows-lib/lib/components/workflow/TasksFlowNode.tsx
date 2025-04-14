@@ -1,9 +1,8 @@
-import { Box, Paper, Typography, useTheme } from "@mui/material";
+import { Box, Paper, Typography, useTheme, Tooltip } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { getTaskStatusIcon } from "../common/StatusIcons";
 import { Artifact, TaskStatus } from "../../types";
-import { Tooltip } from "@mui/material";
 import { Visit } from "../../types";
 import { visitToText } from "../common/utils";
 
@@ -45,6 +44,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         type="target"
         position={Position.Left}
         style={{ background: theme.palette.grey[700] }}
+        data-testid="handle-target"
       />
       <Box
         display="flex"
@@ -77,6 +77,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         type="source"
         position={Position.Right}
         style={{ background: theme.palette.grey[700] }}
+        data-testid="handle-source"
       />
     </Paper>
   );
