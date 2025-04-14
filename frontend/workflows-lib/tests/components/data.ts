@@ -3,9 +3,29 @@ import { Visit } from "@diamondlightsource/sci-react-ui";
 
 export const logArtifact: Artifact = {
   name: "main.log",
-  url: "fakepath/to/main-logs",
+  url: "fakepath/to/main.log",
   mimeType: "text/plain",
 };
+
+export const mockArtifacts: Artifact[] = [
+  logArtifact,
+  {
+    name: "image1.png",
+    mimeType: "image/png",
+    url: "fakepath/to/image1.png",
+  },
+
+  {
+    name: "textfile.txt",
+    mimeType: "text/plain",
+    url: "fakepath/to/textfile.txt",
+  },
+  {
+    name: "image2.png",
+    mimeType: "image/png",
+    url: "fakepath/to/image2.png",
+  },
+];
 
 export const instrumentSession: Visit = {
   proposalCode: "xx",

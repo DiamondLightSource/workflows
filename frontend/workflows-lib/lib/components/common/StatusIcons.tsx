@@ -13,37 +13,37 @@ import React from "react";
 export function getTaskStatusIcon(status: TaskStatus, size: number = 25) {
   const TaskStatusIconMap: { [key in TaskStatus]: React.JSX.Element } = {
     PENDING: (
-      <Tooltip title="Pending">
+      <Tooltip title="Pending" data-testid="task-status-icon-pending">
         <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
       </Tooltip>
     ),
     RUNNING: (
-      <Tooltip title="Running">
+      <Tooltip title="Running" data-testid="task-status-icon-running">
         <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
       </Tooltip>
     ),
     SUCCEEDED: (
-      <Tooltip title="Succeeded">
+      <Tooltip title="Succeeded" data-testid="task-status-icon-succeeded">
         <TaskAltTwoToneIcon color="success" sx={{ fontSize: size }} />
       </Tooltip>
     ),
     SKIPPED: (
-      <Tooltip title="Skipped">
+      <Tooltip title="Skipped" data-testid="task-status-icon-skipped">
         <SkipNextTwoToneIcon color="warning" sx={{ fontSize: size }} />
       </Tooltip>
     ),
     FAILED: (
-      <Tooltip title="Failed">
+      <Tooltip title="Failed" data-testid="task-status-icon-failed">
         <CancelTwoToneIcon color="error" sx={{ fontSize: size }} />
       </Tooltip>
     ),
     ERROR: (
-      <Tooltip title="Error">
+      <Tooltip title="Error" data-testid="task-status-icon-error">
         <ErrorTwoToneIcon color="error" sx={{ fontSize: size }} />
       </Tooltip>
     ),
     OMITTED: (
-      <Tooltip title="Omitted">
+      <Tooltip title="Omitted" data-testid="task-status-icon-omitted">
         <ReportProblemTwoToneIcon color="warning" sx={{ fontSize: size }} />
       </Tooltip>
     ),
@@ -59,32 +59,32 @@ export function getWorkflowStatusIcon(
   const workflowStatusIconMap: { [key in WorkflowStatus]: React.JSX.Element } =
     {
       Unknown: (
-        <Tooltip title="Unknown">
+        <Tooltip title="Unknown" data-testid="status-icon-unknown">
           <QuestionMarkIcon color="warning" sx={{ fontSize: size }} />
         </Tooltip>
       ),
       WorkflowPendingStatus: (
-        <Tooltip title="Pending">
+        <Tooltip title="Pending" data-testid="status-icon-pending">
           <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
         </Tooltip>
       ),
       WorkflowRunningStatus: (
-        <Tooltip title="Running">
+        <Tooltip title="Running" data-testid="status-icon-running">
           <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
         </Tooltip>
       ),
       WorkflowSucceededStatus: (
-        <Tooltip title="Succeeded">
+        <Tooltip title="Succeeded" data-testid="status-icon-succeeded">
           <TaskAltTwoToneIcon color="success" sx={{ fontSize: size }} />
         </Tooltip>
       ),
       WorkflowFailedStatus: (
-        <Tooltip title="Failed">
+        <Tooltip title="Failed" data-testid="status-icon-failed">
           <CancelTwoToneIcon color="error" sx={{ fontSize: size }} />
         </Tooltip>
       ),
       WorkflowErroredStatus: (
-        <Tooltip title="Errored">
+        <Tooltip title="Errored" data-testid="status-icon-errored">
           <ReportProblemTwoToneIcon color="error" sx={{ fontSize: size }} />
         </Tooltip>
       ),

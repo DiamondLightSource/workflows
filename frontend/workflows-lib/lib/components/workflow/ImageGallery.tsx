@@ -31,7 +31,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ artifactList }) => {
     <>
       {imageArtifacts.length === 0 ? null : (
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton onClick={handlePrevious}>
+          <IconButton onClick={handlePrevious} aria-label="previous image">
             <ArrowBackIcon />
           </IconButton>
           <Box
@@ -46,7 +46,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ artifactList }) => {
               objectFit: "contain",
             }}
           />
-          <IconButton onClick={handleNext}>
+          <IconButton onClick={handleNext} aria-label="next image">
             <ArrowForwardIcon />
           </IconButton>
         </Box>
