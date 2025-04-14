@@ -1,3 +1,5 @@
+secrets:
+  cluster: dev
 vcluster:
   controlPlane:
     distro:
