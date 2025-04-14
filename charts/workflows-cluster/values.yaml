@@ -1,3 +1,6 @@
+secrets:
+  cluster: argus
+
 vcluster:
   telemetry:
     enabled: false
@@ -110,7 +113,13 @@ vcluster:
       secrets:
         enabled: true
         mappings:
-          byName: {}
+          byName:
+            "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
+            "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
+            "/argocd-oauth": "argocd/argocd-oauth"
+            "/argo-server-sso": "workflows/argo-server-sso"
+            "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
+            "/s3-artifact": "workflows/artifact-s3"
   rbac:
     clusterRole:
       enabled: false
@@ -119,6 +128,7 @@ vcluster:
 ingress:
   enabled: true
   host: kubernetes.workflows.diamond.ac.uk
+  secretName: letsencrypt-kubernetes-workflows-diamond-ac-uk
   pathType: Prefix
 
 authenticationConfiguration:
