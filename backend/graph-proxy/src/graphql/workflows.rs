@@ -211,7 +211,7 @@ impl WorkflowRunningStatus<'_> {
             .data_unchecked::<Option<Authorization<Bearer>>>()
             .to_owned();
         let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
-        Ok(TaskMap(nodes).into_tasks(self.metadata))
+        Ok(TaskMap(nodes).into_tasks())
     }
 }
 
@@ -279,7 +279,7 @@ impl WorkflowCompleteStatus<'_> {
             .data_unchecked::<Option<Authorization<Bearer>>>()
             .to_owned();
         let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
-        Ok(TaskMap(nodes).into_tasks(self.metadata))
+        Ok(TaskMap(nodes).into_tasks())
     }
 }
 
@@ -315,17 +315,13 @@ impl TryFrom<String> for TaskStatus {
 /// An output produced by a [`Task`] within a [`Workflow`]
 #[allow(clippy::missing_docs_in_private_items)]
 #[derive(Debug)]
-struct Artifact<'a> {
-    manifest: &'a IoArgoprojWorkflowV1alpha1Artifact,
-    metadata: &'a Metadata,
-    node_id: &'a str,
-}
+struct Artifact<'a>(&'a IoArgoprojWorkflowV1alpha1Artifact);
 
 #[Object]
 impl Artifact<'_> {
     /// The file name of the artifact
     async fn name(&self) -> Result<&str, WorkflowParsingError> {
-        artifact_filename(self.manifest)
+        artifact_filename(self.0)
     }
 
     /// The download URL for the artifact
@@ -337,7 +333,7 @@ impl Artifact<'_> {
             .data::<S3Bucket>()
             .map_err(|_| WorkflowParsingError::MissingS3Bucket)?;
         let key = self
-            .manifest
+            .0
             .s3
             .as_ref()
             .ok_or(WorkflowParsingError::UnrecognisedArtifactStore)?
@@ -362,7 +358,7 @@ impl Artifact<'_> {
 
     /// The MIME type of the artifact data
     async fn mime_type(&self) -> Result<&str, WorkflowParsingError> {
-        let filename = artifact_filename(self.manifest)?;
+        let filename = artifact_filename(self.0)?;
         Ok(mime_guess::from_path(filename)
             .first_raw()
             .unwrap_or("application/octet-stream"))
@@ -390,14 +386,13 @@ fn artifact_filename(
 /// A Task created by a workflow
 #[allow(clippy::missing_docs_in_private_items)]
 #[derive(Debug, Clone)]
-struct Task<'a> {
+struct Task {
     node_status: IoArgoprojWorkflowV1alpha1NodeStatus,
     depends: Vec<String>,
-    metadata: &'a Metadata,
 }
 
 #[Object]
-impl Task<'_> {
+impl Task {
     /// Unique name of the task
     async fn id(&self) -> &String {
         &self.node_status.id
@@ -437,17 +432,7 @@ impl Task<'_> {
         self.node_status
             .outputs
             .as_ref()
-            .map(|outputs| {
-                outputs
-                    .artifacts
-                    .iter()
-                    .map(|manifest| Artifact {
-                        manifest,
-                        metadata: self.metadata,
-                        node_id: &self.node_status.id,
-                    })
-                    .collect::<Vec<_>>()
-            })
+            .map(|outputs| outputs.artifacts.iter().map(Artifact).collect::<Vec<_>>())
             .unwrap_or_default()
     }
 }
@@ -505,7 +490,7 @@ impl TaskMap {
     }
 
     /// Converts [`TaskMap`] into [`Vec<Task>`]`
-    fn into_tasks(self, metadata: &Metadata) -> Vec<Task> {
+    fn into_tasks(self) -> Vec<Task> {
         let mut relationship_map = TaskMap::generate_relationship_map(&self);
         self.0
             .into_iter()
@@ -514,7 +499,6 @@ impl TaskMap {
                 Task {
                     node_status,
                     depends,
-                    metadata,
                 }
             })
             .collect::<Vec<_>>()
