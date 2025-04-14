@@ -1,5 +1,5 @@
 use super::{Visit, VisitInput, CLIENT};
-use crate::ArgoServerUrl;
+use crate::{ArgoServerUrl, S3Bucket};
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
@@ -8,6 +8,7 @@ use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
     Context, Enum, InputObject, Object, SimpleObject, Union,
 };
+use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
 use std::{collections::HashMap, ops::Deref, path::Path};
@@ -36,6 +37,12 @@ pub(super) enum WorkflowParsingError {
     MissingArtifactKey,
     #[error("artifact file name is not valid UTF-8")]
     InvalidArtifactFilename,
+    #[error("s3 client was expected but not present")]
+    MissingS3Client,
+    #[error("s3 bucket was expected but not present")]
+    MissingS3Bucket,
+    #[error("invalid presigned s3 url")]
+    InvalidPresignedS3Url,
 }
 
 /// A Workflow consisting of one or more [`Task`]s
@@ -322,17 +329,35 @@ impl Artifact<'_> {
     }
 
     /// The download URL for the artifact
-    async fn url(&self, ctx: &Context<'_>) -> Url {
-        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let mut url = server_url.clone();
-        url.path_segments_mut().unwrap().extend([
-            "artifacts",
-            &self.metadata.visit.to_string(),
-            &self.metadata.name,
-            self.node_id,
-            &self.manifest.name,
-        ]);
-        url
+    async fn url(&self, ctx: &Context<'_>) -> Result<Url, WorkflowParsingError> {
+        let s3_client = ctx
+            .data::<aws_sdk_s3::Client>()
+            .map_err(|_| WorkflowParsingError::MissingS3Client)?;
+        let s3_bucket = ctx
+            .data::<S3Bucket>()
+            .map_err(|_| WorkflowParsingError::MissingS3Bucket)?;
+        let key = self
+            .manifest
+            .s3
+            .as_ref()
+            .ok_or(WorkflowParsingError::UnrecognisedArtifactStore)?
+            .key
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingArtifactKey)?;
+        let presigning_config = PresigningConfig::builder()
+            .expires_in(std::time::Duration::from_secs(3600))
+            .build()
+            .unwrap();
+        s3_client
+            .get_object()
+            .bucket(s3_bucket.clone())
+            .key(key)
+            .presigned(presigning_config)
+            .await
+            .map_err(|_| WorkflowParsingError::InvalidPresignedS3Url)
+            .and_then(|req| {
+                Url::parse(req.uri()).map_err(|_| WorkflowParsingError::InvalidPresignedS3Url)
+            })
     }
 
     /// The MIME type of the artifact data

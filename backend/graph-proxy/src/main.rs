@@ -14,7 +14,7 @@ use clap::Parser;
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
 use regex::Regex;
 use reqwest::Method;
-use s3client::{Client, FromS3ClientArgs, S3Bucket, S3ClientArgs};
+use s3client::{Client, S3Bucket, S3ClientArgs};
 use std::{
     fs::File,
     io::Write,
@@ -87,7 +87,7 @@ async fn main() {
         Cli::Serve(args) => {
             let _otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
             info!(?args, "Starting GraphQL Server");
-            let s3_client = Client::from_s3_client_args(args.s3_client);
+            let s3_client = Client::from(args.s3_client);
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
                 .data(s3_client)
