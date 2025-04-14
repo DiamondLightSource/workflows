@@ -1,0 +1,2 @@
+schema: 'https://workflows.diamond.ac.uk/graphql'
+documents: '**.{graphql,js,ts,jsx,tsx}'

@@ -1,0 +1,23 @@
+query{
+    workflow(name: "fantastic-rhino", visit:  {
+       number: 1,
+       proposalCode: "au",
+       proposalNumber:34214 
+    }){
+        name
+        status {
+            ... on WorkflowSucceededStatus {
+                tasks {
+                id
+                name
+                    artifacts {
+                        name
+                        url
+                        mimeType
+                    }
+                }
+            }
+        }
+
+    }
+}
