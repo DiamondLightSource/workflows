@@ -110,7 +110,8 @@ vcluster:
       secrets:
         enabled: true
         mappings:
-          byName: {}
+          byName:
+            "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
   rbac:
     clusterRole:
       enabled: false
