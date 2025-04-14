@@ -82,7 +82,7 @@ oauth2-proxy:
       - argo-workflows.workflows.diamond.ac.uk
     path: /
     tls:
-      - secretName: '{{ include "common.names.fullname" $ }}-ingress-tls'
+      - secretName: workflows-tls-cert
         hosts:
           - argo-workflows.workflows.diamond.ac.uk
     annotations:
@@ -152,8 +152,6 @@ oauth2-proxy:
       mountPath: /etc/alpha
       readOnly: true
 
-ingresstlssecret:
-  enabled: true
 s3sealedsecret:
   enabled: true
 bitnamisecret:
