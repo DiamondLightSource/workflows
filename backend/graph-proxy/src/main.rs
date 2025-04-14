@@ -5,6 +5,8 @@
 
 /// GraphQL resolvers
 mod graphql;
+/// S3 client
+mod s3client;
 
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{response::Html, routing::get, Router};
@@ -12,6 +14,7 @@ use clap::Parser;
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
 use regex::Regex;
 use reqwest::Method;
+use s3client::{Client, FromS3ClientArgs, S3Bucket, S3ClientArgs};
 use std::{
     fs::File,
     io::Write,
@@ -55,6 +58,12 @@ struct ServeArgs {
     /// Regexes of Cross Origin Resource Sharing (CORS) Origins to allow
     #[arg(long, env="CORS_ALLOW", value_delimiter=' ', num_args=1..)]
     cors_allow: Option<Vec<Regex>>,
+    /// The S3 bucket in which artifacts are to be stored in.
+    #[arg(long, env)]
+    s3_bucket: S3Bucket,
+    /// Configuration argument of the S3 client.
+    #[command(flatten)]
+    s3_client: S3ClientArgs,
 }
 
 /// Arguments for producing the GraphQL schema
@@ -78,8 +87,11 @@ async fn main() {
         Cli::Serve(args) => {
             let _otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
             info!(?args, "Starting GraphQL Server");
+            let s3_client = Client::from_s3_client_args(args.s3_client);
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
+                .data(s3_client)
+                .data(args.s3_bucket)
                 .finish();
             let router = setup_router(schema, &args.prefix_path, args.cors_allow).unwrap();
             serve(router, args.host, args.port).await.unwrap();
