@@ -695,7 +695,7 @@ impl WorkflowsQuery {
 #[cfg(test)]
 mod tests {
     use crate::graphql::{root_schema_builder, Authorization, Bearer, Visit};
-    use crate::ArgoServerUrl;
+    use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
     use serde_json::json;
     use std::path::PathBuf;
     use url::Url;
@@ -1294,11 +1294,24 @@ mod tests {
             .create_async()
             .await;
 
+        let s3_bucket = S3Bucket("test-bucket".to_string());
+        let s3_client_args = S3ClientArgs {
+            s3_endpoint_url: None,
+            s3_access_key_id: Some("test-access-key".to_string()),
+            s3_secret_access_key: Some("test-secret-key".to_string()),
+            s3_force_path_style: true,
+            s3_region: Some("us-west-2".to_string()),
+        };
+        let s3_client = Client::from(s3_client_args.clone());
+        let artifact_key = format!("{}/{}/main.log", workflow_name, workflow_name);
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
             .data(None::<Authorization<Bearer>>)
+            .data(s3_client)
+            .data(s3_bucket.clone())
             .finish();
+
         let query = format!(
             r#"
             query {{
@@ -1318,29 +1331,39 @@ mod tests {
         "#,
             workflow_name, visit.proposal_code, visit.proposal_number, visit.number
         );
-        let resp = schema.execute(query).await.into_result().unwrap();
+
+        let resp = schema
+            .execute(&query)
+            .await
+            .into_result()
+            .unwrap()
+            .data
+            .into_json()
+            .unwrap();
 
         workflow_endpoint.assert_async().await;
-        let expected_download_url = format!(
-            "{}/artifacts/{}/{}/{}/main-logs",
-            server.url(),
-            visit,
-            workflow_name,
-            workflow_name
+
+        let actual_url = resp["workflow"]["status"]["tasks"][0]["artifacts"][0]["url"]
+            .as_str()
+            .expect("URL should be a string");
+        let expected_base = if s3_client_args.s3_force_path_style {
+            format!(
+                "https://s3.us-west-2.amazonaws.com/{}/{}",
+                s3_bucket.0, artifact_key
+            )
+        } else {
+            format!(
+                "https://{}.s3.us-west-2.amazonaws.com/{}",
+                s3_bucket.0, artifact_key
+            )
+        };
+        assert!(actual_url.starts_with(&expected_base),);
+        assert!(actual_url.contains("X-Amz-Algorithm=AWS4-HMAC-SHA256"),);
+        assert!(actual_url.contains("X-Amz-Expires=3600"),);
+        assert_eq!(
+            resp["workflow"]["status"]["tasks"][0]["artifacts"][0]["name"],
+            "main.log"
         );
-        let expected_data = json!({
-            "workflow": {
-                "status": {
-                    "tasks": [{
-                        "artifacts": [{
-                            "name": "main.log",
-                            "url": expected_download_url
-                        }]
-                    }]
-                }
-            }
-        });
-        assert_eq!(resp.data.into_json().unwrap(), expected_data);
     }
 
     #[tokio::test]
