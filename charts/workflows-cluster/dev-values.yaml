@@ -151,6 +151,10 @@ vcluster:
                   automated:
                     prune: true
                     selfHeal: true
+  sync:
+    fromHost:
+      secrets:
+        enabled: false
 
 ingress:
   enabled: false
