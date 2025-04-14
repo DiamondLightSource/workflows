@@ -1,0 +1,91 @@
+vcluster:
+  controlPlane:
+    backingStore:
+      etcd:
+        deploy:
+          statefulSet:
+            persistence:
+              volumeClaim:
+                storageClass: netapp
+    coredns:
+      deployment:
+        replicas: 2
+
+  experimental:
+    deploy:
+      vcluster:
+        helm:
+          - release:
+              name: argocd
+              namespace: argocd
+            chart:
+              name: argo-cd
+              version: 7.7.22
+              repo: https://argoproj.github.io/argo-helm
+          - release:
+              name: verflixt
+              namespace: argocd
+            # This is the `charts/verflixt` chart as a packaged base64 string.
+            # You can re-create it with `helm package charts/verflixt && base64 aoa-*.tgz`.
+            # This hack allows us to deploy manifests in a deterministic order, which is not possible using `manifests`.
+            bundle: H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOzVsWrDMBAGYM1+Cj2B8ktRIsjadwh0vEHQgJQYSxYurt+92NCh7uChyKXhvuXAi8/8/Ocy5MPLG3VZvVMMogoAOFu7TADrCZwgtD1bDX10DgLaQENI1Fnnuz5l6gR+/a71x/0T1N6uvku3x/0ii2nuFP1FliE35esplFZo/npPVsfc/0Kh96neAdjsP37031jN/d/DnH/2sQ2UfTqUocZ/YDN/41b5H0/OcP57GEeprkv/5YfMj1eKQU4Tn3vGGHt2nwEAAP//izRyhQAOAAA=
+            values: |-
+              apiVersion: argoproj.io/v1alpha1
+              kind: Application
+              metadata:
+                name: apps
+                namespace: argocd
+                annotations:
+                  argocd.argoproj.io/sync-wave: "0"
+              spec:
+                destination:
+                  namespace: argocd
+                  server: https://kubernetes.default.svc
+                project: default
+                source:
+                  helm:
+                    valueFiles:
+                      - staging-values.yaml
+                  path: charts/apps
+                  repoURL: https://github.com/DiamondLightSource/workflows.git
+                  targetRevision: staging
+                syncPolicy:
+                  automated:
+                    prune: true
+                    selfHeal: true
+  sync:
+    fromHost:
+      secrets:
+        mappings:
+          byName:
+            "/letsencrypt-argo-cd-staging-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
+            "/letsencrypt-argo-workflows-staging-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
+
+ingress:
+  secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk
+  host: kubernetes.staging.workflows.diamond.ac.uk
+
+authenticationConfiguration:
+  jwt:
+    - issuer:
+        url: https://authn.diamond.ac.uk/realms/master
+        audiences:
+          - workflows-cluster-staging
+        audienceMatchPolicy: MatchAny
+      claimMappings:
+        username:
+          claim: fedid
+          prefix: "oidc:"
+        groups:
+          claim: groups
+          prefix: "oidc:"
+        uid:
+          claim: fedid
+        extra:
+        - key: 'workflows.diamond.ac.uk/posixuid'
+          valueExpression: 'string(claims.posix_uid)'
+      userValidationRules:
+      - expression: "!user.username.startsWith('system:')"
+        message: 'username cannot use reserved system: prefix'
+      - expression: "user.groups.all(group, !group.startsWith('system:'))"
+        message: 'groups cannot use reserved system: prefix'
