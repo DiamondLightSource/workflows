@@ -112,6 +112,7 @@ vcluster:
         mappings:
           byName:
             "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
+            "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
   rbac:
     clusterRole:
       enabled: false
