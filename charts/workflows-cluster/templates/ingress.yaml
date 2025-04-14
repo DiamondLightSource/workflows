@@ -22,7 +22,7 @@ spec:
                 port:
                   name: https
   tls:
-    - secretName: {{ include "common.names.dependency.fullname" (dict "chartName" "vcluster" "chartValues" .Values.vcluster "context" $) }}-ingress-tls
+    - secretName: {{ .Values.ingress.secretName }}
       hosts:
         - {{ .Values.ingress.host }}
 {{- end }}
