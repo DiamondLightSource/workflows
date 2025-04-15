@@ -10,7 +10,7 @@ events:
     - staging-values.yaml
 
 groups:
-  enabled: false
+  enabled: true
   targetRevision: staging
 
 kyverno:
@@ -37,13 +37,13 @@ kyverno:
           memory: 1Gi
 
 sessionspaces:
-  enabled: true
+  enabled: false
   targetRevision: staging
   extraValueFiles:
     - staging-values.yaml
 
 sealedsecrets:
-  enabled: false
+  enabled: true
   valuesObject:
     resources:
       limits:
@@ -60,7 +60,7 @@ workflows:
     - staging-values.yaml
 
 graphProxy:
-  enabled: true
+  enabled: false
   targetRevision: staging
   extraValueFiles:
     - staging-values.yaml
