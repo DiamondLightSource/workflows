@@ -34,3 +34,5 @@ argo-cd:
 
 ingress:
   enabled: true
+  host: argo-cd.workflows.diamond.ac.uk
+  secretName: argo-cd-tls-cert
