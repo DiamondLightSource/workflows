@@ -1,16 +1,28 @@
-import { Container, Typography } from "@mui/material";
+import { Container, Box } from "@mui/material";
+import {
+  ThemeProvider,
+  DiamondTheme,
+} from "@diamondlightsource/sci-react-ui";
+import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
+import Templates from "relay-workflows-lib/lib/components/templates";
 
-function TemplatesList() {
 
+const TemplateList: React.FC = () => {
   return (
     <>
-      <Container maxWidth="sm">
-        <Typography variant='h3' align='center' gutterBottom>
-          List of Templates
-        </Typography> 
-      </Container> 
+      <ThemeProvider theme={DiamondTheme} defaultMode="light">
+        <WorkflowsNavbar
+          title="Templates"
+          sessionInfo={""}
+        />
+        <Container maxWidth="sm">
+            <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
+              <Templates />
+            </Box>
+        </Container>
+      </ThemeProvider>
     </>
-  )
-}
+  );
+};
 
-export default TemplatesList
+export default TemplateList;
