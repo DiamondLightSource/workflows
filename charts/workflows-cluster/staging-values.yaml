@@ -1,3 +1,6 @@
+secrets:
+  cluster: pollux
+
 vcluster:
   controlPlane:
     backingStore:
