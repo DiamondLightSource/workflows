@@ -1,0 +1,14 @@
+oauth2-proxy:
+  ingress:
+    hosts:
+      - argo-workflows.staging.workflows.diamond.ac.uk
+    path: /
+    tls:
+      - secretName: workflows-tls-cert
+        hosts:
+          - argo-workflows.staging.workflows.diamond.ac.uk
+
+
+postgresql-ha:
+  persistence:
+    storageClass: netapp
