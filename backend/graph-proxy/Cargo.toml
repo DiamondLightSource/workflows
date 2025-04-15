@@ -2,7 +2,7 @@
 name = "graph-proxy"
 version = "0.1.3"
 edition = "2021"
-exclude = ["test-resources/"]
+exclude = ["test-assets/"]
 license-file = "../../LICENSE"
 
 [dependencies]
