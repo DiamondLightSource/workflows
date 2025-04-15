@@ -29,6 +29,11 @@ telemetry:
   metricsEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/metrics
   tracingEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/traces
 
+s3:
+  url: https://sci-nas-s3.diamond.ac.uk
+  forcePathStyle: true
+  bucket: k8s-workflows-test
+
 cors:
   matchOrigins:
     - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?
