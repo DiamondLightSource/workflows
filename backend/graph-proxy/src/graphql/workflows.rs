@@ -637,7 +637,7 @@ impl WorkflowsQuery {
         ctx: &Context<'_>,
         visit: VisitInput,
         cursor: Option<String>,
-        #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
+        #[graphql(validator(minimum = 1, maximum = 30))] limit: Option<u32>,
         filter: Option<WorkflowFilter>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
         let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
