@@ -6,8 +6,6 @@
   "separate-pull-requests": true,
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
-  "bootstrap-sha": "b49879a00f04a6044bf344c34cd91fd40c14d761",
-  "last-release-sha": "b49879a00f04a6044bf344c34cd91fd40c14d761",  
   "packages": {
     "backend/graph-proxy": {
       "release-type": "rust",
