@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.2...workflows-lib@v0.1.3) (2025-04-17)
+
+
+### Features
+
+* **dashboard:** add ui component tests ([6230a22](https://github.com/DiamondLightSource/workflows/commit/6230a22ee6c247135b2dffb18447beadfe4476f0))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.1...workflows-lib@v0.1.2) (2025-04-14)
 
 
