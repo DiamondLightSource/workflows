@@ -6,6 +6,17 @@
   "separate-pull-requests": true,
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
+  "plugins": [
+    {
+      "type": "node-workspace",
+      "updateAllPackages": false,
+      "updatePeerDependencies": true
+    }, 
+    {
+      "type": "cargo-workspace",
+      "updateAllPackages": false
+    }
+  ],
   "packages": {
     "backend/graph-proxy": {
       "release-type": "rust",
