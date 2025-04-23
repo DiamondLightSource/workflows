@@ -6,6 +6,7 @@ import { useLazyLoadQuery } from "react-relay/hooks";
 import { Visit } from "workflows-lib";
 import { useState, useCallback, useEffect, startTransition } from "react";
 import Pagination from "@mui/material/Pagination";
+import { FormControl, Select, MenuItem, SelectChangeEvent } from "@mui/material";
 
 const WorkflowsQuery = graphql`
   query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!) {
@@ -31,10 +32,11 @@ export default function Workflows({ visit }: { visit: Visit }) {
   }>({ 1: null });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedLimit, setSelectedLimit] = useState(10);
 
   const data = useLazyLoadQuery<WorkflowsQueryType>(WorkflowsQuery, {
     visit,
-    limit: 5,
+    limit: selectedLimit,
     cursor,
   });
 
@@ -106,6 +108,13 @@ export default function Workflows({ visit }: { visit: Visit }) {
     </div>
   ));
 
+  const limitChanged = (event: SelectChangeEvent) => {
+      setSelectedLimit(Number(event.target.value));
+      setCursorHistory({ 1: null });
+      setCurrentPage(1);
+      setCursor(null);
+  };
+
   return (
     <div
       style={{
@@ -116,13 +125,31 @@ export default function Workflows({ visit }: { visit: Visit }) {
       }}
     >
       {workflowList}
-      <div style={{ marginTop: "20px" }}>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
         <Pagination
           count={totalPages}
           page={currentPage}
           onChange={handlePageChange}
           showFirstButton
+          siblingCount={1}
+          boundaryCount={0}
         />
+
+        <FormControl sx={{ width: 65 }}>
+            <Select
+              size="small"
+              labelId="setLimitSelector"
+              value={selectedLimit.toString()}
+              aria-label="Results Per Page"
+              onChange={limitChanged}
+            >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={30}>30</MenuItem>
+          </Select>
+        </FormControl>
       </div>
     </div>
   );
