@@ -121,6 +121,9 @@ impl WorkflowTemplatesQuery {
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "cluster-workflow-templates"]);
+        let limit = limit.unwrap_or(10);
+        url.query_pairs_mut()
+            .append_pair("listOptions.limit", &limit.to_string());
         let cursor_index = if let Some(cursor) = cursor {
             let cursor_index = OpaqueCursor::<usize>::decode_cursor(&cursor)
                 .map_err(|err| anyhow!("Invalid Cursor: {err}"))?;
