@@ -11,10 +11,6 @@
       "type": "node-workspace",
       "updateAllPackages": false,
       "updatePeerDependencies": true
-    }, 
-    {
-      "type": "cargo-workspace",
-      "updateAllPackages": false
     }
   ],
   "packages": {
