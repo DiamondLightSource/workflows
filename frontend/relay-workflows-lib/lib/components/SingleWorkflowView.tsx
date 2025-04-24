@@ -13,7 +13,7 @@ import type { Artifact, Task, TaskStatus } from "workflows-lib";
 import { TasksFlow } from "workflows-lib";
 import { useLazyLoadQuery, useFragment } from "react-relay/hooks";
 import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
-import { workflowFragment } from "./workflow"; 
+import { workflowFragment } from "./workflowFragment";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { useNavigate } from "react-router-dom";
 
