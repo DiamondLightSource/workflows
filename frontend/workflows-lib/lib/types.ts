@@ -45,3 +45,10 @@ export interface Visit {
   proposalNumber: number;
   number: number;
 }
+
+export interface Template {
+  name: string;
+  description: string | null | undefined;
+  title: string | null | undefined;
+  maintainer: string;
+}
