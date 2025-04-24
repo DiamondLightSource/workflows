@@ -5,32 +5,8 @@
 
 ### Features
 
-* **graph-proxy:** add parameters to graph ([a258172](https://github.com/DiamondLightSource/workflows/commit/a2581726919ff15706a5c16ac4937d19b3750d8a))
-* **graph-proxy:** added filter by creator ([6bd7c42](https://github.com/DiamondLightSource/workflows/commit/6bd7c42a0e35d7c14d301cc9f14961df265cbd4b))
-* **graph-proxy:** added template ref to graph ([be3e3ed](https://github.com/DiamondLightSource/workflows/commit/be3e3edb0e4ace02c572a1cb2d75f141fe586af5))
-* **graph-proxy:** added test for creator filter ([e1fe530](https://github.com/DiamondLightSource/workflows/commit/e1fe530c6cd798d8e7a5d0faa89ebef7f9775a87))
 * **graph-proxy:** increase the limit on requested workflows ([f004818](https://github.com/DiamondLightSource/workflows/commit/f00481851d48eaebbd710a74b3c41f937938b712))
 * **graph-proxy:** limit number of returned workflows templates results ([9f0e006](https://github.com/DiamondLightSource/workflows/commit/9f0e0065f95c367e4b294e8e4eb5cc852b8c4a6f))
-* **graph-proxy:** restructured filter to accept multiple filters ([383c8be](https://github.com/DiamondLightSource/workflows/commit/383c8bebc92c3ecb43ca4b035a427427f78e381b))
-* **graph-proxy:** test case for workflow_template_ref ([6b99d4b](https://github.com/DiamondLightSource/workflows/commit/6b99d4b83aa88e4685ea5d8e03223cb2d89f5b0a))
-* **graph-proxy:** test for parameters ([74bf0e0](https://github.com/DiamondLightSource/workflows/commit/74bf0e0098b2e247540409617613c91f2ad33587))
-
-
-### Bug Fixes
-
-* **backend:** move mockito to workspace level ([37c80ab](https://github.com/DiamondLightSource/workflows/commit/37c80ab152ef5610d87578a4602ad8583d0931a1))
-* **graph-proxy:** add status filters to workflows query ([f60007b](https://github.com/DiamondLightSource/workflows/commit/f60007b025669baf6cc5d90819290fb1f900e626))
-* **graph-proxy:** add tests for workflows status filter ([e5f35fd](https://github.com/DiamondLightSource/workflows/commit/e5f35fd475a6e733c20f612c0321829dd6a99eb6))
-* **graph-proxy:** configure s3 client ([877c596](https://github.com/DiamondLightSource/workflows/commit/877c59684e215407d13a25b43d5f5dbf1c165f16))
-* **graph-proxy:** fix incorrect dir in exclude config ([509cf64](https://github.com/DiamondLightSource/workflows/commit/509cf6486d2446ce2b1bc28af1da33b8995c4f4a))
-* **graph-proxy:** generated presigned url for artifacts ([10c7ac7](https://github.com/DiamondLightSource/workflows/commit/10c7ac7bcae050bc9b1feeb633b761f40c076791))
-* **graph-proxy:** name all telemetry instruments ([c87cfd3](https://github.com/DiamondLightSource/workflows/commit/c87cfd3e92685527279f22914b87c8013f2ac4f1))
-* **graph-proxy:** remove metadata from Tasks ([4f143db](https://github.com/DiamondLightSource/workflows/commit/4f143db8280af3e08996a99699f6bbcd1d4372f9))
-* **graph-proxy:** removed broken 'short' from cli args ([0dc967e](https://github.com/DiamondLightSource/workflows/commit/0dc967e863f4688433e2d4d9fbd97367d4044c62))
-* **graph-proxy:** removed overly-descriptive name for template_ref ([3ea4e99](https://github.com/DiamondLightSource/workflows/commit/3ea4e9915a3a1febd5cd63cc0f3fb9fbec8ade34))
-* **graph-proxy:** test artifact download url ([e675f19](https://github.com/DiamondLightSource/workflows/commit/e675f19a4cca6451450fa30f1e1af1bec2aac39b))
-* **graph-proxy:** updated tests for restructuring ([4d1e153](https://github.com/DiamondLightSource/workflows/commit/4d1e153803a39a8091bfa0559c2f974205870fe7))
-
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.1...graph-proxy@v0.1.2) (2025-04-15)
 
 
