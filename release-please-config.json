@@ -9,8 +9,7 @@
   "plugins": [
     {
       "type": "node-workspace",
-      "updateAllPackages": false,
-      "updatePeerDependencies": true
+      "updateAllPackages": false
     }
   ],
   "packages": {
@@ -23,7 +22,7 @@
           "path": "/charts/graph-proxy/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
-      ]       
+      ]
     },
     "backend/sessionspaces": {
       "release-type": "rust",
@@ -34,7 +33,7 @@
           "path": "/charts/sessionspaces/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
-      ] 
+      ]
     },
     "frontend/dashboard": {
       "release-type": "node",
@@ -45,7 +44,7 @@
           "path": "/charts/dashboard/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
-      ] 
+      ]
     },
     "frontend/relay-workflows-lib": {
       "release-type": "node",
