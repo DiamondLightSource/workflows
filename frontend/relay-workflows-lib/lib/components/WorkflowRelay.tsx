@@ -7,7 +7,7 @@ import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import {   workflowFragment$key } from "./__generated__/workflowFragment.graphql";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { useNavigate } from "react-router-dom";
-import { workflowFragment } from "./workflow";
+import { workflowFragment } from "./workflowFragment";
 
 interface WorkflowRelayProps {
   workflow:   workflowFragment$key;
