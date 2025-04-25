@@ -7,7 +7,7 @@ import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavb
 import Templates from "relay-workflows-lib/lib/components/templates";
 
 
-const TemplateList: React.FC = () => {
+const TemplatesList: React.FC = () => {
   return (
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">
@@ -25,4 +25,4 @@ const TemplateList: React.FC = () => {
   );
 };
 
-export default TemplateList;
+export default TemplatesList;
