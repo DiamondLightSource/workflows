@@ -10,6 +10,8 @@ import {
 import { SingleWorkflowInfo } from "relay-workflows-lib/lib/components/SingleWorkflowView";
 import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import Button from "@mui/material/Button";
 
 function WorkflowView() {
   const { visitid, workflowname, taskname } = useParams<{
@@ -26,6 +28,19 @@ function WorkflowView() {
         title={"Workflow Information"}
         sessionInfo={`Instrument Session ID is ${visitid?? ""}`}
       ></WorkflowsNavbar>
+        <Button
+          startIcon={<ArrowBackIosIcon />}
+          href={`/workflows/${visitid?? ""}`}
+          sx={{
+            margin: 2,
+            justifyContent: "left",
+          textAlign: "center",
+        }}
+        >
+          <Typography variant="body1" sx={{ color: "text.secondary" }}>
+            Workflow List
+          </Typography>
+        </Button>
       {visit && workflowname ? (
         <Container maxWidth="sm">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
