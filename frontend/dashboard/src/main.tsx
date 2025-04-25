@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./routes/Dashboard.tsx";
 import WorkflowsSelect from "./routes/workflows.tsx";
-import TemplatesList from "./routes/templates.tsx";
+import TemplatesList from "./routes/TemplatesList.tsx";
 import TemplateView from "./routes/templateview.tsx";
 import WorkflowsList from "./routes/workflowslist.tsx";
 import WorkflowView from "./routes/workflowview.tsx";
