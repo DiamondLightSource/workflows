@@ -45,7 +45,9 @@ describe("SubmissionForm Component", () => {
     const { getByText } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        onSubmit={() => {}}
       />
     );
     expect(getByText("Numpy Benchmark")).toBeInTheDocument();
@@ -56,7 +58,9 @@ describe("SubmissionForm Component", () => {
       <TemplateSubmissionForm
         title="Numpy Benchmark"
         description="Description of Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        onSubmit={() => {}}
       />
     );
     expect(getByText("Description of Numpy Benchmark")).toBeInTheDocument();
@@ -66,7 +70,9 @@ describe("SubmissionForm Component", () => {
     const dom = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        onSubmit={() => {}}
       />
     );
     const getById = queryByAttribute.bind(null, "id");
@@ -82,7 +88,9 @@ describe("SubmissionForm Component", () => {
     const { getByTestId } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        onSubmit={() => {}}
       />
     );
     expect(getByTestId("visit-field")).toBeInTheDocument();
@@ -92,7 +100,9 @@ describe("SubmissionForm Component", () => {
     const { getByTestId } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        onSubmit={() => {}}
       />
     );
     expect(getByTestId("submit-button")).toBeInTheDocument();
@@ -103,6 +113,7 @@ describe("SubmissionForm Component", () => {
     const { getByTestId } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={callback}
       />
@@ -136,7 +147,9 @@ describe("SubmissionForm Layout", () => {
     render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        onSubmit={() => {}}
       />
     );
     expect(jsonforms.JsonForms).toHaveBeenCalledWith(
@@ -152,8 +165,10 @@ describe("SubmissionForm Layout", () => {
     render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
+        maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         parametersUISchema={mockParameterUISchema}
+        onSubmit={() => {}}
       />
     );
     expect(jsonforms.JsonForms).toHaveBeenCalledWith(

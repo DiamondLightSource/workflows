@@ -119,7 +119,6 @@ function Dashboard() {
     <ThemeProvider theme={DiamondTheme} defaultMode="light">
       <WorkflowsNavbar
         title={"Workflows at Diamond"}
-        sessionInfo={""}
       ></WorkflowsNavbar>
       <Container maxWidth="sm" sx={{ mt: 5, mb: 4 }}>
         <Grid
