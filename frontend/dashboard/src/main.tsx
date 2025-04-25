@@ -27,7 +27,7 @@ const router = createBrowserRouter([
     element: <TemplatesList />,
   },
   {
-    path: "templates/:templatename",
+    path: "templates/:templateName",
     element: <TemplateView />,
   },
   {

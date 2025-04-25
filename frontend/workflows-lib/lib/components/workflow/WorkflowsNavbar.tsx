@@ -2,8 +2,8 @@ import { Box, Typography } from "@mui/material";
 import { Navbar, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 
 interface WorkflowsNavbarProps {
-  title: string;
-  sessionInfo: string;
+  title?: string;
+  sessionInfo?: string;
 }
 
 const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({
@@ -11,18 +11,27 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({
   sessionInfo,
 }) => (
   <Navbar logo="theme">
-    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "right" }}>
-      <Typography
-        sx={{ color: DiamondTheme.palette.primary.contrastText, size: "h1" }}
-      >
-        {title}
-      </Typography>
-    </Box>
-    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}>
-      <Typography sx={{ color: DiamondTheme.palette.primary.contrastText }}>
-        {sessionInfo}
-      </Typography>
-    </Box>
+    <>
+      {title ? (
+        <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "right" }}>
+          <Typography
+            sx={{
+              color: DiamondTheme.palette.primary.contrastText,
+              fontSize: "h1",
+            }}
+          >
+            {title}
+          </Typography>
+        </Box>
+      ) : null}
+      {sessionInfo ? (
+        <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-end" }}>
+          <Typography sx={{ color: DiamondTheme.palette.primary.contrastText }}>
+            {sessionInfo}
+          </Typography>
+        </Box>
+      ) : null}
+    </>
   </Navbar>
 );
 

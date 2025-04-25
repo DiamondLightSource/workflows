@@ -4,30 +4,25 @@ import {
 } from "@jsonforms/material-renderers";
 import { JsonSchema, UISchemaElement, createAjv } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
-import React, { ChangeEvent, useState } from "react";
-import {
-  Button,
-  Divider,
-  Stack,
-  TextField,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import React, { useState } from "react";
+import { Divider, Snackbar, Stack, Typography, useTheme } from "@mui/material";
 import { ErrorObject } from "ajv";
 import { Visit } from "../../types";
-import { visitRegex } from "../common/utils";
+import { VisitInput } from "@diamondlightsource/sci-react-ui";
 
 interface TemplateSubmissionFormProps {
   title: string;
+  maintainer: string;
   description?: string;
   parametersSchema: JsonSchema;
   parametersUISchema?: UISchemaElement;
   visit?: Visit;
-  onSubmit?: (visit: Visit, parameters: object) => void;
+  onSubmit: (visit: Visit, parameters: object) => void;
 }
 
 const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   title,
+  maintainer,
   description,
   parametersSchema,
   parametersUISchema,
@@ -38,41 +33,35 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   const validator = createAjv({ useDefaults: true });
   const [parameters, setParameters] = useState({});
   const [errors, setErrors] = useState<ErrorObject[]>([]);
-  const [visitText, setVisitText] = useState(
-    visit
-      ? `${visit.proposalCode}${visit.proposalNumber.toFixed(
-          0
-        )}-${visit.number.toFixed(0)}`
-      : ""
-  );
 
-  const ready = errors.length === 0 && visitRegex.exec(visitText) !== null;
+  const [submitted, setSubmitted] = useState(false);
 
-  const onClickSubmit = () => {
-    const parsedVisit = visitRegex.exec(visitText);
-    if (parsedVisit === null) return;
-    onSubmit?.(
-      {
-        proposalCode: parsedVisit[1],
-        proposalNumber: Number(parsedVisit[2]),
-        number: Number(parsedVisit[3]),
-      },
-      parameters
-    );
+  const onClick = (visit: Visit, parameters?: object) => {
+    if (errors.length === 0) {
+      onSubmit(visit, parameters?? {});
+      setSubmitted(true);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSubmitted(false);
   };
 
   return (
     <Stack direction="column" spacing={theme.spacing(2)}>
-      <Typography variant="h2" align="center">
+      <Typography variant="h4" align="center">
         {title}
       </Typography>
       <Typography variant="body1" align="center">
         {description}
       </Typography>
+      <Typography variant="body1" align="center">
+        Maintainer: {maintainer}
+      </Typography>
       <Divider />
       <JsonForms
         schema={parametersSchema}
-        uischema={parametersUISchema}
+        uischema={parametersUISchema ?? undefined}
         data={parameters}
         renderers={materialRenderers}
         cells={materialCells}
@@ -84,30 +73,18 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
         data-testid="paramters-form"
       />
       <Divider />
-      <Stack
-        direction="row"
-        alignContent="end"
-        spacing={theme.spacing(1)}
-        alignSelf="end"
-      >
-        <TextField
-          label="Visit"
-          value={visitText}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            setVisitText(event.target.value);
-          }}
-          data-testid="visit-field"
-        />
-        <Button
-          variant="contained"
-          disabled={!ready}
-          onClick={onClickSubmit}
-          data-testid="submit-button"
-        >
-          {" "}
-          Submit
-        </Button>
-      </Stack>
+      <VisitInput
+        visit={visit}
+        onSubmit={onClick}
+        parameters={parameters}
+        submitOnReturn={false}
+      ></VisitInput>
+      <Snackbar
+        open={submitted}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message="Workflow submitted!"
+      />
     </Stack>
   );
 };
