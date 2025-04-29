@@ -2,12 +2,10 @@ import { Box, Typography } from "@mui/material";
 import { Navbar, DiamondTheme, NavLinks, NavLink } from "@diamondlightsource/sci-react-ui";
 
 interface WorkflowsNavbarProps {
-  title?: string;
   sessionInfo?: string;
 }
 
 const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({
-  title,
   sessionInfo,
 }) => (
   <Navbar logo="theme">

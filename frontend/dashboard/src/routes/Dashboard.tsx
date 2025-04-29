@@ -117,9 +117,7 @@ const argoCdCard = (
 function Dashboard() {
   return (
     <ThemeProvider theme={DiamondTheme} defaultMode="light">
-      <WorkflowsNavbar
-        title={"Workflows at Diamond"}
-      ></WorkflowsNavbar>
+      <WorkflowsNavbar />
       <Container maxWidth="sm" sx={{ mt: 5, mb: 4 }}>
         <Grid
           container

@@ -13,7 +13,6 @@ function WorkflowsSelect() {
   return (
     <ThemeProvider theme={DiamondTheme} defaultMode="light">
       <WorkflowsNavbar
-        title={"Instrument Session Selection"}
         sessionInfo={"No Instrument Session Selected"}
       />
       <Breadcrumbs path={window.location.pathname} />

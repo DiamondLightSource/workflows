@@ -24,7 +24,6 @@ function WorkflowView() {
   return (
     <ThemeProvider theme={DiamondTheme} defaultMode="light">
       <WorkflowsNavbar
-        title={"Workflow Information"}
         sessionInfo={`Instrument Session ID is ${visitid?? ""}`}
       />
       <Breadcrumbs path={window.location.pathname} />

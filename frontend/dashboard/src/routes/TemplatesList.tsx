@@ -7,7 +7,7 @@ const TemplatesList: React.FC = () => {
   return (
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">
-        <WorkflowsNavbar title="Templates" />
+        <WorkflowsNavbar />
         <Breadcrumbs path={window.location.pathname} />
         <Container maxWidth="sm">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
