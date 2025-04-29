@@ -9,6 +9,21 @@ import keycloak from "./keycloak";
 
 const HTTP_ENDPOINT = "https://workflows.diamond.ac.uk/graphql";
 
+keycloak.onTokenExpired = () => {
+  console.log("JWT expired");
+  keycloak.updateToken(10)
+    .then((refreshed) => {
+      if (refreshed) {
+        console.log("Fetched new JWT");
+      } else {
+        console.warn("Token still valid");
+      }
+    })
+    .catch((err: unknown) => {
+      console.error("Failed to update JWT", err);
+    });
+};
+
 const kcinit = keycloak.init({
   onLoad: "login-required"
 })
@@ -16,9 +31,6 @@ const kcinit = keycloak.init({
   auth => {
       console.info("Authenticated");
       console.log("auth", auth);
-      keycloak.onTokenExpired = () => {
-        console.log("token expired");
-      };
   },
   () => {
     console.error("Authentication failed");
