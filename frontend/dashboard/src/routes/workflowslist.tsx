@@ -7,6 +7,7 @@ import {
   VisitInput,
   ThemeProvider,
   DiamondTheme,
+  Breadcrumbs,
 } from "@diamondlightsource/sci-react-ui";
 
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
@@ -24,6 +25,7 @@ const WorkflowsList: React.FC = () => {
           title="Submitted Workflows"
           sessionInfo={`Instrument Session ID is ${visitid?? ""}`}
         />
+        <Breadcrumbs path={window.location.pathname} />
         <Container maxWidth="sm">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
             <Box width="100%" mb={2}>

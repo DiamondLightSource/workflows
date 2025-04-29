@@ -6,6 +6,7 @@ import "react-resizable/css/styles.css";
 import {
   ThemeProvider,
   DiamondTheme,
+  Breadcrumbs,
 } from "@diamondlightsource/sci-react-ui";
 import { SingleWorkflowInfo } from "relay-workflows-lib/lib/components/SingleWorkflowView";
 import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
@@ -25,7 +26,8 @@ function WorkflowView() {
       <WorkflowsNavbar
         title={"Workflow Information"}
         sessionInfo={`Instrument Session ID is ${visitid?? ""}`}
-      ></WorkflowsNavbar>
+      />
+      <Breadcrumbs path={window.location.pathname} />
       {visit && workflowname ? (
         <Container maxWidth="sm">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
