@@ -1,5 +1,5 @@
 import { Container, Box } from "@mui/material";
-import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import { ThemeProvider, DiamondTheme, Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import { useParams } from "react-router-dom";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 import TemplateView from "relay-workflows-lib/lib/components/TemplateView";
@@ -12,6 +12,7 @@ const TemplatesView: React.FC = () => {
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">
         <WorkflowsNavbar />
+        <Breadcrumbs path={window.location.pathname} />
         <Container maxWidth="sm">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
             <WorkflowsErrorBoundary>
