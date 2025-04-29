@@ -1,13 +1,16 @@
-import { Container, Box } from "@mui/material";
-import { ThemeProvider, DiamondTheme, Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import { useParams } from "react-router-dom";
+import { Container, Box  } from "@mui/material";
+import {
+  ThemeProvider,
+  DiamondTheme,
+  Breadcrumbs,
+} from "@diamondlightsource/sci-react-ui";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 import TemplateView from "relay-workflows-lib/lib/components/TemplateView";
 import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
 import { Suspense } from "react";
 const TemplatesView: React.FC = () => {
   const { templateName } = useParams<{ templateName: string }>();
-
   return (
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">

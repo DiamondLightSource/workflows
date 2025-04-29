@@ -22,7 +22,6 @@ const WorkflowsList: React.FC = () => {
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">
         <WorkflowsNavbar
-          title="Submitted Workflows"
           sessionInfo={`Instrument Session ID is ${visitid?? ""}`}
         />
         <Breadcrumbs path={window.location.pathname} />
