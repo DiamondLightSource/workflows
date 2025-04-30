@@ -47,7 +47,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     >
       <ResizableBox
         width={1150}
-        height={400}
+        height={200}
         resizeHandles={["se"]}
         style={{
           border: "2px dashed #ccc",
