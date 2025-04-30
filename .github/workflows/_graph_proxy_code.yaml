@@ -21,8 +21,8 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.8
         with:
-          workspaces: backend/graph-proxy
           shared-key: backend/graph-proxy
+          workspaces: backend
 
       - name: Create argo workflows openapi types file
         run: |
@@ -68,8 +68,8 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.8
         with:
-          workspaces: backend/graph-proxy
           shared-key: backend/graph-proxy
+          workspaces: backend
 
       - name: Run Tests
         working-directory: backend/graph-proxy
