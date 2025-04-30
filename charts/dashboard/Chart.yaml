@@ -2,8 +2,8 @@ apiVersion: v2
 name: dashboard
 description: A dashboard for Diamond workflows
 type: application
-version: 0.1.6
-appVersion: 0.1.3
+version: 0.1.7
+appVersion: 0.1.4
 dependencies:
   - name: common
     version: 2.23.0

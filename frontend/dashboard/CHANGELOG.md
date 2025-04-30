@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.3...dashboard@v0.1.4) (2025-04-30)
+
+
+### Features
+
+* **dashboard:** add workflows navigation bar to dashboard page ([9e00bb0](https://github.com/DiamondLightSource/workflows/commit/9e00bb02446ae9b4ceb77c139f1a302f3a19fbc1))
+* **dashboard:** added breadcrumbs to workflows/templates pages ([f375f09](https://github.com/DiamondLightSource/workflows/commit/f375f092e408df8fd1cbb1eb1477ef4c5fafdf6c))
+* **dashboard:** added individual template view page ([b32cd43](https://github.com/DiamondLightSource/workflows/commit/b32cd43f69532984d53fc606fcf38c863b69943b))
+* **dashboard:** created templates page ([784530f](https://github.com/DiamondLightSource/workflows/commit/784530fe3c6112fb9cbc5d964db60b14eb16303f))
+* **frontend:** add workflow submission page ([d97f0ce](https://github.com/DiamondLightSource/workflows/commit/d97f0ced22a94471e86078434db8ebeb4580abfb))
+
+
+### Bug Fixes
+
+* **dashboard:** auto-refresh jwt ([a3d786f](https://github.com/DiamondLightSource/workflows/commit/a3d786fa2829c083ffad38584b06f85726e4d9ff))
+* **dashboard:** changed file name to templateslist ([3ce6256](https://github.com/DiamondLightSource/workflows/commit/3ce62560901d7b95c4c82b717a9c01f6999f8c4e))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.2...dashboard@v0.1.3) (2025-04-14)
 
 
