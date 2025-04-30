@@ -29,7 +29,7 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.8
         with:
-          workspaces: backend/sessionspaces
+          workspaces: backend
           shared-key: backend/sessionspaces
 
       - name: Check Formatting
@@ -79,7 +79,7 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.7.8
         with:
-          workspaces: backend/sessionspaces
+          workspaces: backend
           shared-key: backend/sessionspaces
 
       - name: Run Tests
