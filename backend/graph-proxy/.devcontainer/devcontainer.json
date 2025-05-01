@@ -6,7 +6,9 @@
   },
   "containerEnv": {
     "ARGO_SERVER_URL": "https://argo-workflows.workflows.diamond.ac.uk/",
-    "ARGO_SERVER_SCHEMA_URL": "https://argo-workflows.workflows.diamond.ac.uk/assets/openapi-spec/swagger.json"
+    "ARGO_SERVER_SCHEMA_URL": "https://argo-workflows.workflows.diamond.ac.uk/assets/openapi-spec/swagger.json",
+    "S3_BUCKET": "k8s-workflows-test",
+    "S3_ENDPOINT_URL": "https://sci-nas-s3.diamond.ac.uk"
   },
   "customizations": {
     "vscode": {
