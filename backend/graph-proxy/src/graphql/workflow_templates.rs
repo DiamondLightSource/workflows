@@ -9,12 +9,13 @@ use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Json, Object,
+    Context, InputObject, Json, Object,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
+use url::Url;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::missing_docs_in_private_items)]
@@ -113,6 +114,7 @@ impl WorkflowTemplatesQuery {
         ctx: &Context<'_>,
         cursor: Option<String>,
         #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
+        filter: Option<WorkflowTemplatesFilter>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, WorkflowTemplate, EmptyFields, EmptyFields>>
     {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
@@ -124,6 +126,10 @@ impl WorkflowTemplatesQuery {
         let limit = limit.unwrap_or(10);
         url.query_pairs_mut()
             .append_pair("listOptions.limit", &limit.to_string());
+
+        if let Some(filter) = filter {
+            filter.generate_filters(&mut url);
+        }
         let cursor_index = if let Some(cursor) = cursor {
             let cursor_index = OpaqueCursor::<usize>::decode_cursor(&cursor)
                 .map_err(|err| anyhow!("Invalid Cursor: {err}"))?;
@@ -242,4 +248,32 @@ fn to_argo_parameter(name: String, value: Value) -> Result<Option<String>, serde
         Value::Object(map) => serde_json::to_string(&map).map(Some),
     }?
     .map(|parameter| format!("{name}={parameter}")))
+}
+
+/// Supported label filters for ClusterWorkflowTemplates
+#[derive(Debug, Default, Clone, InputObject)]
+struct WorkflowTemplatesFilter {
+    /// The science group owning the template eg imaging
+    science_group: Option<String>,
+}
+
+impl WorkflowTemplatesFilter {
+    /// Generates and applies all the filters
+    fn generate_filters(&self, url: &mut Url) {
+        let labels = &self.create_label_selection();
+        url.query_pairs_mut()
+            .append_pair("listOptions.labelSelector", labels);
+    }
+
+    /// Creates string of requested labels
+    fn create_label_selection(&self) -> String {
+        let mut label_selectors = Vec::new();
+
+        if let Some(group) = &self.science_group {
+            let this_label = format!("workflows.diamond.ac.uk/science-group={}", group);
+            label_selectors.push(this_label);
+        }
+
+        label_selectors.join(",")
+    }
 }
