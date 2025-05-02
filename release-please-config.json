@@ -9,7 +9,6 @@
   "packages": {
     "backend/graph-proxy": {
       "release-type": "rust",
-      "component": "graph-proxy",
       "extra-files": [
         {
           "type": "yaml",
@@ -20,7 +19,6 @@
     },
     "backend/sessionspaces": {
       "release-type": "rust",
-      "component": "sessionspaces",
       "extra-files": [
         {
           "type": "yaml",
@@ -31,7 +29,6 @@
     },
     "frontend/dashboard": {
       "release-type": "node",
-      "component": "dashboard",
       "extra-files": [
         {
           "type": "yaml",
@@ -42,15 +39,12 @@
     },
     "frontend/relay-workflows-lib": {
       "release-type": "node",
-      "component": "relay-workflows-lib"
     },
     "frontend/workflows-lib": {
       "release-type": "node",
-      "component": "workflows-lib"
     },
     "backend/telemetry": {
       "release-type": "rust",
-      "component": "telemetry"
     }
   }
 }
