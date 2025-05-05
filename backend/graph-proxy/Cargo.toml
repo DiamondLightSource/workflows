@@ -7,12 +7,12 @@ license-file = "../../LICENSE"
 
 [dependencies]
 anyhow = { workspace = true }
-aws-credential-types = { version = "1.2.2" }
+aws-credential-types = { version = "1.2.3" }
 aws-sdk-s3 = { version = "1.82.0" , features = ["behavior-version-latest"]}
 argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.16", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.16" }
-axum = { version = "0.8.3" }
+axum = { version = "0.8.4" }
 axum-extra = { version = "0.10.1", features = ["typed-header"] }
 chrono = { workspace = true }
 clap = { workspace = true }
