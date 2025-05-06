@@ -102,9 +102,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
 
   const workflowList = workflows.map((node, index) => (
     <div key={index} style={{ width: "1200px", height: "100%" }}>
-      <WorkflowRelay key={index} workflow={node}>
-        ""
-      </WorkflowRelay>
+      <WorkflowRelay key={index} workflow={node} />
     </div>
   ));
 

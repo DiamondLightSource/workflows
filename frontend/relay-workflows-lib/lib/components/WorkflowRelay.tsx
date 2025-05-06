@@ -11,7 +11,6 @@ import { workflowFragment } from "./workflowFragment";
 
 interface WorkflowRelayProps {
   workflow:   workflowFragment$key;
-  children: React.ReactNode;
   highlightedTaskName?: string
   expanded?: boolean;
 }
