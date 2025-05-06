@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Box, Container } from "@mui/material";
-import { ResizableBox } from "react-resizable";
 import { graphql } from "relay-runtime";
 import {
     workflowFragment$key,
@@ -10,12 +9,10 @@ import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__gene
 import { Visit } from "@diamondlightsource/sci-react-ui";
 
 import type { Artifact, Task, TaskStatus } from "workflows-lib";
-import { TasksFlow } from "workflows-lib";
 import { useLazyLoadQuery, useFragment } from "react-relay/hooks";
 import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
 import { workflowFragment } from "./workflowFragment";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
-import { useNavigate } from "react-router-dom";
 
 type WorkflowStatusType = NonNullable<  workflowFragment$data["status"]>;
 
@@ -47,7 +44,6 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
   workflowname,
   taskname: initialTaskname,
 }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [taskname, setTaskname] = useState<string | undefined>(initialTaskname);
 
@@ -63,7 +59,6 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
     data.workflow
   );
 
-  const navigate = useNavigate();
 
   useEffect(() => {
     let fetchedTasks: Task[] = [];
@@ -78,7 +73,6 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
         instrumentSession: visit,
       }));
     }
-    setTasks(fetchedTasks);
 
     if (taskname) {
       const filteredTask = fetchedTasks.find((task) => task.name === taskname);
@@ -122,6 +116,7 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
               />
             </ResizableBox>
           </WorkflowRelay>
+          <WorkflowRelay workflow={data.workflow} expanded={true} highlightedTaskName={taskname} />
           {taskname && <TaskInfo artifactList={artifactList}></TaskInfo>}
         </Box>
       </Container>
