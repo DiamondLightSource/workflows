@@ -55,7 +55,7 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
   return roots;
 }
 
-export function generateNodesAndEdges(taskNodes: TaskNode[]): {
+export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName?: string): {
   nodes: Node[];
   edges: Edge[];
 } {
@@ -74,6 +74,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
             details: task.artifacts,
             workflow: task.workflow,
             instrumentSession: task.instrumentSession,
+            highlighted: task.name === highlightedTaskName,
           },
           position: { x: 0, y: 0 },
         });

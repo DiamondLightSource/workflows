@@ -15,12 +15,14 @@ const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 
 interface TasksFlowProps {
   tasks: Task[];
+  highlightedTaskName?: string;
   onNavigate: (s: string) => void;
   isDynamic?: boolean;
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
   tasks,
+  highlightedTaskName,
   onNavigate,
   isDynamic,
 }) => {
@@ -30,7 +32,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     ),
   };
   const taskTree = buildTaskTree(tasks);
-  const { nodes, edges } = generateNodesAndEdges(taskTree);
+  const { nodes, edges } = generateNodesAndEdges(taskTree, highlightedTaskName);
   const { nodes: layoutedNodes, edges: layoutedEdges } = applyDagreLayout(
     nodes,
     edges
