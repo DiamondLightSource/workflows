@@ -58,7 +58,7 @@ describe("generateNodesAndEdges", () => {
       },
     ];
 
-    const { nodes, edges } = generateNodesAndEdges(taskTree);
+    const { nodes, edges } = generateNodesAndEdges(taskTree, "task-1");
 
     expect(nodes).toEqual([
       {
@@ -66,6 +66,7 @@ describe("generateNodesAndEdges", () => {
         type: "custom",
         data: {
           details: [],
+          highlighted: true,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
@@ -82,6 +83,7 @@ describe("generateNodesAndEdges", () => {
         type: "custom",
         data: {
           details: [],
+          highlighted: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
@@ -95,6 +97,7 @@ describe("generateNodesAndEdges", () => {
         type: "custom",
         data: {
           details: [],
+          highlighted: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
@@ -108,6 +111,7 @@ describe("generateNodesAndEdges", () => {
         type: "custom",
         data: {
           details: [],
+          highlighted: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
@@ -121,6 +125,7 @@ describe("generateNodesAndEdges", () => {
         type: "custom",
         data: {
           details: [],
+          highlighted: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
