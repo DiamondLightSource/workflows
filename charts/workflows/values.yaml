@@ -139,7 +139,7 @@ oauth2-proxy:
             emailClaim: email
             userIDClaim: fedid
   extraArgs:
-    - --cookie-refresh=55s
+    - --cookie-refresh=45s
   extraVolumes:
     - name: secret
       secret:
