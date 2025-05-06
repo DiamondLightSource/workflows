@@ -12,6 +12,7 @@ export interface TaskFlowNodeData {
   details: Artifact[];
   workflow: string;
   instrumentSession: Visit;
+  highlighted: boolean
 }
 
 interface TaskFlowNodeProps {
@@ -38,6 +39,9 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         width: "100%",
         height: "100%",
         maxHeight: 100,
+        border: data.highlighted ? "1px solid #202740" : "1px solid #ccc",
+        boxShadow: data.highlighted ? "0 0 10px #202740" : theme.shadows[3],
+        transition: "all 0.3s ease-in-out",
       }}
     >
       <Handle
