@@ -9,10 +9,12 @@ groups:
       - name: example-manifests
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples/manifests
+        targetRevision: notebooks
       - name: example-helm
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples/helm
         sourceType: helm
+        targetRevision: notebooks
   - name: imaging
     enabled: true
     permittedRepos: []
