@@ -94,28 +94,6 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
           alignItems="center"
           marginTop="20px"
         >
-          <WorkflowRelay workflow={data.workflow} expanded={true}>
-            <ResizableBox
-              width={1150}
-              height={400}
-              resizeHandles={["se"]}
-              style={{
-                border: "2px dashed #ccc",
-                padding: "10px",
-                overflow: "auto",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <TasksFlow
-                tasks={tasks}
-                onNavigate={(path: string) => {
-                  void navigate(path);
-                }}
-              />
-            </ResizableBox>
-          </WorkflowRelay>
           <WorkflowRelay workflow={data.workflow} expanded={true} highlightedTaskName={taskname} />
           {taskname && <TaskInfo artifactList={artifactList}></TaskInfo>}
         </Box>
