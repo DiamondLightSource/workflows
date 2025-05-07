@@ -60,7 +60,7 @@ workflows:
     - staging-values.yaml
 
 graphProxy:
-  enabled: false
+  enabled: true
   targetRevision: staging
   extraValueFiles:
     - staging-values.yaml
