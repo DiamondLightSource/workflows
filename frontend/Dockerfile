@@ -8,18 +8,20 @@ COPY ./relay-workflows-lib ./relay-workflows-lib
 COPY ./workflows-lib ./workflows-lib
 RUN yarn install --frozen-lockfile
 
-COPY . .
 COPY ./supergraph.graphql ./relay-workflows-lib/supergraph.graphql
 RUN yarn run --cwd=relay-workflows-lib relay
 
 COPY ./supergraph.graphql ./dashboard/supergraph.graphql
+
+COPY . .
 RUN yarn run --cwd=dashboard build
 
-FROM docker.io/library/nginx:1.23.3-alpine-slim as nginx
+FROM docker.io/library/nginx:stable-otel as nginx
 
 WORKDIR /app
 
 COPY --from=build /app/dashboard/dist /usr/share/nginx/html
 COPY ./container_utils/default.conf.template /etc/nginx/templates/default.conf.template
+COPY ./container_utils/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
