@@ -1,0 +1,46 @@
+name: Lint workflow templates
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.2.2
+
+      - name: Mock kubectl config
+        run: |
+          mkdir -p ~/.kube
+          cat <<EOF > ~/.kube/config
+          apiVersion: v1
+          kind: Config
+          preferences: {}
+          current-context: user@cluster
+          clusters:
+            - name: cluster
+              cluster:
+                server: https://url.co.uk
+          contexts:
+            - name: user@cluster
+              context:
+                cluster: cluster
+                user: user
+          users:
+            - name: user
+              user:
+                token: dummy-token
+          EOF
+
+      - name: Install ArgoCLI
+        run: |
+          curl -sLO "https://github.com/argoproj/argo-workflows/releases/download/v3.6.7/argo-linux-amd64.gz"
+          gunzip "argo-linux-amd64.gz"
+          chmod +x "argo-linux-amd64"
+          mv "./argo-linux-amd64" /usr/local/bin/argo
+          argo version
+
+      - name: Lint files
+        run: |
+          argo lint examples
