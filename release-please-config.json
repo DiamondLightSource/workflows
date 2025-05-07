@@ -38,13 +38,13 @@
       ] 
     },
     "frontend/relay-workflows-lib": {
-      "release-type": "node",
+      "release-type": "node"
     },
     "frontend/workflows-lib": {
-      "release-type": "node",
+      "release-type": "node"
     },
     "backend/telemetry": {
-      "release-type": "rust",
+      "release-type": "rust"
     }
   }
 }
