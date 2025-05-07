@@ -1,0 +1,8 @@
+argoServerUrl: https://argo-workflows.staging.workflows.diamond.ac.uk
+
+ingress:
+  hosts:
+    - host: staging.workflows.diamond.ac.uk
+      paths:
+        - path: /graphql
+          pathType: Exact
