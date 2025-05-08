@@ -77,9 +77,9 @@ describe("TasksFlow Component", () => {
   });
 
   it("should generate nodes and edges based on the task tree", () => {
-    render(<TasksFlow tasks={mockTasks} onNavigate={() => {}} />);
+    render(<TasksFlow tasks={mockTasks} highlightedTaskName="node-1" onNavigate={() => {}} />);
 
-    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree);
+    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree, "node-1");
   });
 
   it("should apply the dagre layout", () => {

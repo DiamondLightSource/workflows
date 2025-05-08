@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Box, Container } from "@mui/material";
-import { ResizableBox } from "react-resizable";
 import { graphql } from "relay-runtime";
 import {
     workflowFragment$key,
@@ -10,12 +9,10 @@ import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__gene
 import { Visit } from "@diamondlightsource/sci-react-ui";
 
 import type { Artifact, Task, TaskStatus } from "workflows-lib";
-import { TasksFlow } from "workflows-lib";
 import { useLazyLoadQuery, useFragment } from "react-relay/hooks";
 import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
 import { workflowFragment } from "./workflowFragment";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
-import { useNavigate } from "react-router-dom";
 
 type WorkflowStatusType = NonNullable<  workflowFragment$data["status"]>;
 
@@ -47,7 +44,7 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
   workflowname,
   taskname: initialTaskname,
 }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [, setTasks] = useState<Task[]>([]);
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [taskname, setTaskname] = useState<string | undefined>(initialTaskname);
 
@@ -63,7 +60,6 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
     data.workflow
   );
 
-  const navigate = useNavigate();
 
   useEffect(() => {
     let fetchedTasks: Task[] = [];
@@ -76,6 +72,7 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
         artifacts: [...task.artifacts],
         workflow: workflowname,
         instrumentSession: visit,
+        highlighted: task.name === taskname,
       }));
     }
     setTasks(fetchedTasks);
@@ -100,28 +97,7 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
           alignItems="center"
           marginTop="20px"
         >
-          <WorkflowRelay workflow={data.workflow} expanded={true}>
-            <ResizableBox
-              width={1150}
-              height={400}
-              resizeHandles={["se"]}
-              style={{
-                border: "2px dashed #ccc",
-                padding: "10px",
-                overflow: "auto",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <TasksFlow
-                tasks={tasks}
-                onNavigate={(path: string) => {
-                  void navigate(path);
-                }}
-              />
-            </ResizableBox>
-          </WorkflowRelay>
+          <WorkflowRelay workflow={data.workflow} expanded={true} highlightedTaskName={taskname} />
           {taskname && <TaskInfo artifactList={artifactList}></TaskInfo>}
         </Box>
       </Container>

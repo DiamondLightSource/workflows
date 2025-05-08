@@ -14,6 +14,7 @@ vi.mock("react-router-dom", async () => ({
 const mockData: TaskFlowNodeData = {
   label: "TaskA",
   status: "SUCCEEDED",
+  highlighted: false,
   details: [],
   workflow: "Workflow1",
   instrumentSession: { proposalCode: "ab", proposalNumber: 12345, number: 6 },
