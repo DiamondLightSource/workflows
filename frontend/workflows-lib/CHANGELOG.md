@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.2...workflows-lib@v0.1.3) (2025-05-08)
+
+
+### Features
+
+* **dashboard:** add ui component tests ([6230a22](https://github.com/DiamondLightSource/workflows/commit/6230a22ee6c247135b2dffb18447beadfe4476f0))
+* **dashboard:** added navigation to header ([a396bab](https://github.com/DiamondLightSource/workflows/commit/a396bab8a82137806fc9610208aa5d5618ba3070))
+* **dashboard:** added templatecard component ([5db97d8](https://github.com/DiamondLightSource/workflows/commit/5db97d8093629d2cc7dc608b6341e54ed6203a56))
+* **frontend:** add workflow submission page ([d97f0ce](https://github.com/DiamondLightSource/workflows/commit/d97f0ced22a94471e86078434db8ebeb4580abfb))
+
+
+### Bug Fixes
+
+* **dashboard:** reduce height of expanded workflows accordian ([36024f1](https://github.com/DiamondLightSource/workflows/commit/36024f18db71da75ddf7b40d8f9988675f116863))
+* **dashboard:** removed all mention to title ([d5fd9d5](https://github.com/DiamondLightSource/workflows/commit/d5fd9d552b5dff37aec6a432ac2d597c59536b65))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.1...workflows-lib@v0.1.2) (2025-04-14)
 
 
