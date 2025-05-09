@@ -72,7 +72,7 @@ spec:
         - --output-dir
         - /outputs
       source: |
-        {{- .Files.Get "notebooks/test_notebook.ipynb" | fromJson | toPrettyJson | nindent 8 }}
+        {{- .Files.Get "notebooks/Lorenz.ipynb" | fromJson | toPrettyJson | nindent 8 }}
       volumeMounts:
         - name: outputs
           mountPath: /outputs
