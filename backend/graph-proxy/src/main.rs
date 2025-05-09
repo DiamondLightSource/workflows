@@ -117,7 +117,7 @@ async fn main() {
     }
 }
 
-/// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
+/// Creates an [`axum::Router`] serving GraphiQL and GraphQL (both HTTP and WebSocket)
 #[instrument(name = "graph_proxy_router_setup", skip(schema))]
 fn setup_router(
     schema: RootSchema,
@@ -138,12 +138,26 @@ fn setup_router(
         info!("CORS rules disabled. Allowing default origin.");
         AllowOrigin::default()
     };
+
+    let ws_path = format!("{}ws", prefix_path);
+    info!("GraphQL HTTP endpoint: {}", prefix_path);
+    info!("GraphQL WebSocket endpoint: {}", ws_path);
+
     Ok(Router::new()
         .route(
             prefix_path,
-            get(Html(GraphiQLSource::build().endpoint(prefix_path).finish()))
-                .post(graphql_handler)
-                .with_state(schema),
+            get(Html(
+                GraphiQLSource::build()
+                    .endpoint(prefix_path)
+                    .subscription_endpoint(&ws_path)
+                    .finish(),
+            ))
+            .post(graphql_handler)
+            .with_state(schema.clone()),
+        )
+        .route_service(
+            &ws_path,
+            async_graphql_axum::GraphQLSubscription::new(schema),
         )
         .layer(
             CorsLayer::new()

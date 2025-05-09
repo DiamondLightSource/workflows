@@ -6,12 +6,14 @@ use argo_workflows_openapi::{
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Enum, InputObject, Object, SimpleObject, Union,
+    Context, Enum, InputObject, Object, SimpleObject, Subscription, Union,
 };
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
-use std::{collections::HashMap, ops::Deref, path::Path};
+use futures_util::stream::{Stream, StreamExt};
+use std::{collections::HashMap, ops::Deref, path::Path, time::Duration};
+use tokio::time::interval;
 use tracing::{debug, instrument};
 use url::Url;
 
@@ -689,6 +691,83 @@ impl WorkflowsQuery {
                 Edge::new(cursor, workflow)
             }));
         Ok(connection)
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct WorkflowsSubscription;
+
+#[Subscription]
+impl WorkflowsSubscription {
+    /// Subscribe to a single [`Workflow`] by proposal, visit, and name
+    /// Updates are polled every 5 seconds
+    async fn workflow<'ctx>(
+        &self,
+        ctx: &'ctx Context<'_>,
+        visit: VisitInput,
+        name: String,
+    ) -> impl Stream<Item = Result<Workflow, async_graphql::Error>> + 'ctx {
+        let workflows_query = WorkflowsQuery;
+
+        // Create a stream that ticks every 5 seconds
+        let interval =
+            tokio_stream::wrappers::IntervalStream::new(interval(Duration::from_secs(5)));
+
+        // Map each tick to a query result
+        interval.then(move |_| {
+            let ctx = ctx.clone();
+            let visit = visit.clone();
+            let name = name.clone();
+            let query = workflows_query.clone();
+
+            async move {
+                match query.workflow(&ctx, visit, name).await {
+                    Ok(workflow) => Ok(workflow),
+                    Err(e) => Err(async_graphql::Error::new(e.to_string())),
+                }
+            }
+        })
+    }
+
+    /// Subscribe to a list of [`Workflow`]s for a visit
+    /// Updates are polled every 10 seconds
+    async fn workflows<'ctx>(
+        &self,
+        ctx: &'ctx Context<'_>,
+        visit: VisitInput,
+        cursor: Option<String>,
+        #[graphql(validator(minimum = 1, maximum = 30))] limit: Option<u32>,
+        filter: Option<WorkflowFilter>,
+    ) -> impl Stream<
+        Item = Result<
+            Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>,
+            async_graphql::Error,
+        >,
+    > + 'ctx {
+        let workflows_query = WorkflowsQuery;
+
+        // Create a stream that ticks every 10 seconds
+        let interval =
+            tokio_stream::wrappers::IntervalStream::new(interval(Duration::from_secs(10)));
+
+        // Map each tick to a query result
+        interval.then(move |_| {
+            let ctx = ctx.clone();
+            let visit = visit.clone();
+            let cursor = cursor.clone();
+            let filter = filter.clone();
+            let query = workflows_query.clone();
+
+            async move {
+                match query
+                    .workflows(&ctx, visit, cursor.clone(), limit, filter.clone())
+                    .await
+                {
+                    Ok(connection) => Ok(connection),
+                    Err(e) => Err(async_graphql::Error::new(e.to_string())),
+                }
+            }
+        })
     }
 }
 
