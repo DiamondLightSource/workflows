@@ -18,6 +18,7 @@ chrono = { workspace = true }
 clap = { workspace = true }
 derive_more = { workspace = true }
 dotenvy = { workspace = true }
+futures-util ={ version =  "0.3.31" }
 lazy_static = { version = "1.5.0" }
 mime_guess = "2.0.5"
 regex = "1.11.1"
@@ -27,6 +28,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 telemetry = { path = "../telemetry" }
 tokio = { workspace = true }
+tokio-stream = { version = "0.1.17" }
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = { workspace = true }
 url = { workspace = true }

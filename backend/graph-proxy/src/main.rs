@@ -9,7 +9,12 @@ mod graphql;
 mod s3client;
 
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
-use axum::{response::Html, routing::get, Router};
+use async_graphql_axum::GraphQLSubscription;
+use axum::{extract::State, response::Html, routing::get, Router};
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 use clap::Parser;
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
 use regex::Regex;
@@ -117,7 +122,7 @@ async fn main() {
     }
 }
 
-/// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
+/// Creates an [`axum::Router`] serving GraphiQL and GraphQL (both HTTP and WebSocket)
 #[instrument(name = "graph_proxy_router_setup", skip(schema))]
 fn setup_router(
     schema: RootSchema,
@@ -138,12 +143,34 @@ fn setup_router(
         info!("CORS rules disabled. Allowing default origin.");
         AllowOrigin::default()
     };
+
+    let schema_http = schema.clone();
+    let schema_ws = schema.clone();
+
     Ok(Router::new()
         .route(
             prefix_path,
             get(Html(GraphiQLSource::build().endpoint(prefix_path).finish()))
                 .post(graphql_handler)
-                .with_state(schema),
+                .with_state(schema_http),
+        )
+        .route(
+            &format!("{}_graphql_ws", prefix_path),
+            get(
+                |ws: axum::extract::ws::WebSocketUpgrade,
+                 State(schema): State<RootSchema>,
+                 auth_token_header: Option<TypedHeader<Authorization<Bearer>>>| async move {
+                    let auth_token = auth_token_header.map(|header| header.0);
+                    ws.on_upgrade(move |socket| {
+                        async_graphql_axum::GraphQLWebSocket::new(socket, schema, auth_token)
+                            .on_connection_init(|_value| async move {
+                                Ok(async_graphql::Data::default())
+                            })
+                            .serve()
+                    })
+                },
+            )
+            .with_state(schema_ws),
         )
         .layer(
             CorsLayer::new()
