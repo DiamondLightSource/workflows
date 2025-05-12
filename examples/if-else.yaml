@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: conditional-steps
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: conditional-steps
+    workflows.argoproj.io/description: |
+      Run steps based on conditions from previous outputs.
+spec:
+  entrypoint: workflow-entry
+
+  templates:
+  - name: pick-a-number
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        import random
+        print(random.randint(1,11))
+
+  - name: greater-than-five
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This runs when the value is greater than 5")
+
+  - name: less-than-five
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This runs when the value is less than or equal to 5")
+
+  - name: even
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This runs when the value is even")
+
+  - name: complex
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This is more complex")
+
+  - name: workflow-entry
+    dag:
+      tasks:
+      - name: pick-a-number
+        template: pick-a-number
+
+      - name: greater-than-5
+        template: greater-than-five
+        dependencies: [pick-a-number]
+        when: "{{tasks.pick-a-number.outputs.result}} > 5"
+
+      - name: less-than-5
+        template: less-than-five
+        dependencies: [pick-a-number]
+        when: "{{tasks.pick-a-number.outputs.result}} <= 5"
+
+      - name: even
+        template: even
+        dependencies: [pick-a-number]
+        when: "{{tasks.pick-a-number.outputs.result}} % 2 == 0"
+
+      - name: complex-condition
+        template: complex
+        dependencies: [pick-a-number]
+        when: >-
+          ( {{tasks.pick-a-number.outputs.result}} < 4 &&
+            {{tasks.pick-a-number.outputs.result}} > 1
+          ) ||
+          ( {{tasks.pick-a-number.outputs.result}} < 9 &&
+            {{tasks.pick-a-number.outputs.result}} > 6 )
