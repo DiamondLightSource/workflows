@@ -1,0 +1,162 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: looping-through-inputs
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: using-loops
+    workflows.argoproj.io/description: |
+      Use script step to transform inputs and dynamically create workflow steps.
+    workflows.diamond.ac.uk/parameter-schema.start: |
+      {
+        "type": "integer",
+        "default": 2
+      }
+    workflows.diamond.ac.uk/parameter-schema.stop: |
+      {
+        "type": "integer",
+        "default": 10
+      }
+    workflows.diamond.ac.uk/parameter-schema.number: |
+      {
+        "type": "integer",
+        "minimum": 1,
+        "default": 5
+      }
+    workflows.diamond.ac.uk/ui-schema: |
+      {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "scope": "#/properties/start",
+            "label": "Start"
+          },
+          {
+            "type": "Control",
+            "scope": "#/properties/stop",
+            "label": "Matrix Size"
+          },
+          {
+            "type": "Control",
+            "scope": "#/properties/number",
+            "label": "Number of outputs"
+          }
+        ]
+      }
+spec:
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: start
+        value: "2"
+      - name: stop
+        value: "10"
+      - name: number
+        value: "5"
+
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: local-path
+
+  templates:
+  - name: install-dependencies
+    script:
+      image: python:3.10
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: [bash]
+      source: |
+        python -m venv /tmp/venv
+        /tmp/venv/bin/pip install matplotlib numpy
+        mkdir /tmp/figs
+
+  - name: generate-runs
+    inputs:
+      parameters:
+        - name: start
+        - name: stop
+        - name: number
+    script:
+      image: python:3.10
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: [python]
+      source: |
+        import json
+        def linspace(start, stop, num):
+          if num == 1:
+              return [start]
+          step = (stop - start) / (num - 1)
+          return [int(start + step * i) for i in range(num)]
+
+        with open("/tmp/data.json", "w") as f:
+            json.dump(linspace({{inputs.parameters.start}},{{inputs.parameters.stop}},{{inputs.parameters.number}}), f)
+    outputs:
+      parameters:
+      - name: desireDataPoints
+        valueFrom:
+          path: /tmp/data.json
+
+
+  - name: plot-figure
+    inputs:
+      parameters:
+      - name: dataPoints
+      - name: path
+    script:
+      image: python:3.10
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: [/tmp/venv/bin/python]
+      source: |
+        import numpy as np
+        import matplotlib.pyplot as plt
+        x = np.linspace(0,10,{{ inputs.parameters.dataPoints }})
+        y = np.sin(x)
+        plt.plot(x,y)
+        plt.savefig("{{ inputs.parameters.path }}.{{inputs.parameters.dataPoints}}.png")
+    outputs:
+      artifacts:
+      - name: sin-figure
+        path: "{{ inputs.parameters.path }}.{{inputs.parameters.dataPoints}}.png"
+        archive:
+          none: { }
+
+  - name: workflow-entry
+    dag:
+      tasks:
+      - name: install-dependencies
+        template: install-dependencies
+
+      - name: generate-runs
+        template: generate-runs
+        arguments:
+          parameters:
+          - name: start
+            value: "{{workflow.parameters.start}}"
+          - name: stop
+            value: "{{workflow.parameters.stop}}"
+          - name: number
+            value: "{{workflow.parameters.number}}"
+
+      - name: plot-figures
+        template: plot-figure
+        dependencies: [install-dependencies, generate-runs]
+        arguments:
+          parameters:
+          - name: dataPoints
+            value: "{{item}}"
+          - name: path
+            value: "/tmp/figs/sin"
+        withParam: "{{tasks.generate-runs.outputs.parameters.desireDataPoints}}"
