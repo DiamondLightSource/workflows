@@ -3,13 +3,13 @@ import { Box } from "@mui/material";
 import { ReactFlow, ReactFlowInstance, getNodesBounds } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import TaskFlowNode, { TaskFlowNodeData } from "./TasksFlowNode";
+import TasksTable from "./TasksTable";
 import {
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
-} from "./TasksFlowUtils";
+} from "../../utils/tasksFlowUtils";
 import { Task } from "../../types";
-import TasksTable from "./TasksTable";
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 

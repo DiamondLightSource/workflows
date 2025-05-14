@@ -5,7 +5,7 @@ import {
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
-} from "../../lib/components/workflow/TasksFlowUtils";
+} from "../../lib/utils/tasksFlowUtils";
 import { ReactFlow } from "@xyflow/react";
 import { mockTasks } from "./data";
 
@@ -35,21 +35,18 @@ describe("TasksFlow Component", () => {
   ]);
 
   beforeEach(() => {
-    vi.mock(
-      "../../lib/components/workflow/TasksFlowUtils",
-      async (importOriginal) => ({
-        ...(await importOriginal()),
-        buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
-        generateNodesAndEdges: vi.fn().mockReturnValue({
-          nodes: mockNodes,
-          edges: mockEdges,
-        }),
-        applyDagreLayout: vi.fn().mockReturnValue({
-          nodes: mockLayoutedNodes,
-          edges: mockLayoutedEdges,
-        }),
-      })
-    );
+    vi.mock("../../lib/utils/tasksFlowUtils", async (importOriginal) => ({
+      ...(await importOriginal()),
+      buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
+      generateNodesAndEdges: vi.fn().mockReturnValue({
+        nodes: mockNodes,
+        edges: mockEdges,
+      }),
+      applyDagreLayout: vi.fn().mockReturnValue({
+        nodes: mockLayoutedNodes,
+        edges: mockLayoutedEdges,
+      }),
+    }));
   });
 
   beforeEach(() => {

@@ -8,13 +8,11 @@ import {
 import { useVisitInput } from "./utils";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 
-function WorkflowsSelect() {
+function WorkflowsSessionInputPage() {
   const { handleVisitSubmit } = useVisitInput();
   return (
     <ThemeProvider theme={DiamondTheme} defaultMode="light">
-      <WorkflowsNavbar
-        sessionInfo={"No Instrument Session Selected"}
-      />
+      <WorkflowsNavbar sessionInfo={"No Instrument Session Selected"} />
       <Breadcrumbs path={window.location.pathname} />
       <Container maxWidth="sm">
         <Box mt={5}>
@@ -25,4 +23,4 @@ function WorkflowsSelect() {
   );
 }
 
-export default WorkflowsSelect;
+export default WorkflowsSessionInputPage;

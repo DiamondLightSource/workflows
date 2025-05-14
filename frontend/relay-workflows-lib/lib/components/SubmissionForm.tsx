@@ -1,8 +1,8 @@
 import { useFragment } from "react-relay";
 import { SubmissionForm as SubmissionFormBase, Visit } from "workflows-lib";
 import { JsonSchema, UISchemaElement } from "@jsonforms/core";
-import { workflowTemplateFragment } from "./workflowTemplateFragment";
-import { workflowTemplateFragment$key } from "./__generated__/workflowTemplateFragment.graphql";
+import { workflowTemplateFragment$key } from "../graphql/__generated__/workflowTemplateFragment.graphql";
+import { workflowTemplateFragment } from "../graphql/workflowTemplateFragment";
 
 const SubmissionForm = (props: {
   template: workflowTemplateFragment$key;

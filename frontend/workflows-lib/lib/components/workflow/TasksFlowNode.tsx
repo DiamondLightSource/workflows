@@ -2,9 +2,8 @@ import { Box, Paper, Typography, useTheme, Tooltip } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { getTaskStatusIcon } from "../common/StatusIcons";
-import { Artifact, TaskStatus } from "../../types";
-import { Visit } from "../../types";
-import { visitToText } from "../common/utils";
+import { Artifact, TaskStatus, Visit } from "../../types";
+import { visitToText } from "../../utils/commonUtils";
 
 export interface TaskFlowNodeData {
   label: string;

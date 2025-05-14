@@ -1,14 +1,19 @@
 import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
 import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
-import { workflowFragment$key } from "./__generated__/workflowFragment.graphql";
-import { graphql } from "relay-runtime";
+import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { Visit } from "workflows-lib";
 import { useState, useCallback, useEffect, startTransition } from "react";
 import Pagination from "@mui/material/Pagination";
-import { FormControl, Select, MenuItem, SelectChangeEvent } from "@mui/material";
+import {
+  FormControl,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+} from "@mui/material";
+import { graphql } from "relay-runtime";
 
-const WorkflowsQuery = graphql`
+const workflowsQuery = graphql`
   query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!) {
     workflows(visit: $visit, cursor: $cursor, limit: $limit) {
       nodes {
@@ -34,7 +39,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedLimit, setSelectedLimit] = useState(10);
 
-  const data = useLazyLoadQuery<WorkflowsQueryType>(WorkflowsQuery, {
+  const data = useLazyLoadQuery<WorkflowsQueryType>(workflowsQuery, {
     visit,
     limit: selectedLimit,
     cursor,
@@ -107,10 +112,10 @@ export default function Workflows({ visit }: { visit: Visit }) {
   ));
 
   const limitChanged = (event: SelectChangeEvent) => {
-      setSelectedLimit(Number(event.target.value));
-      setCursorHistory({ 1: null });
-      setCurrentPage(1);
-      setCursor(null);
+    setSelectedLimit(Number(event.target.value));
+    setCursorHistory({ 1: null });
+    setCurrentPage(1);
+    setCursor(null);
   };
 
   return (
@@ -124,7 +129,15 @@ export default function Workflows({ visit }: { visit: Visit }) {
     >
       {workflowList}
 
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "1rem",
+          marginTop: "1rem",
+        }}
+      >
         <Pagination
           count={totalPages}
           page={currentPage}
@@ -135,13 +148,13 @@ export default function Workflows({ visit }: { visit: Visit }) {
         />
 
         <FormControl sx={{ width: 65 }}>
-            <Select
-              size="small"
-              labelId="setLimitSelector"
-              value={selectedLimit.toString()}
-              aria-label="Results Per Page"
-              onChange={limitChanged}
-            >
+          <Select
+            size="small"
+            labelId="setLimitSelector"
+            value={selectedLimit.toString()}
+            aria-label="Results Per Page"
+            onChange={limitChanged}
+          >
             <MenuItem value={5}>5</MenuItem>
             <MenuItem value={10}>10</MenuItem>
             <MenuItem value={20}>20</MenuItem>

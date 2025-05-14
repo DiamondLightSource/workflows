@@ -4,14 +4,14 @@ import "react-resizable/css/styles.css";
 
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
-import { workflowFragment$key } from "./__generated__/workflowFragment.graphql";
+import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { useNavigate } from "react-router-dom";
-import { workflowFragment } from "./workflowFragment";
+import { workflowFragment } from "../graphql/workflowFragment";
 
 interface WorkflowRelayProps {
-  workflow:   workflowFragment$key;
-  highlightedTaskName?: string
+  workflow: workflowFragment$key;
+  highlightedTaskName?: string;
   expanded?: boolean;
 }
 

@@ -1,6 +1,6 @@
 import dagre from "@dagrejs/dagre";
 import { Node, Edge } from "@xyflow/react";
-import { Task, TaskNode } from "../../types";
+import { Task, TaskNode } from "../types";
 
 export function applyDagreLayout(
   nodes: Node[],

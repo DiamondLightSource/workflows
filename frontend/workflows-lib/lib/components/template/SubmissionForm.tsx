@@ -38,7 +38,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
 
   const onClick = (visit: Visit, parameters?: object) => {
     if (errors.length === 0) {
-      onSubmit(visit, parameters?? {});
+      onSubmit(visit, parameters ?? {});
       setSubmitted(true);
     }
   };

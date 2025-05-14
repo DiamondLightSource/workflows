@@ -3,15 +3,13 @@ import { RelayEnvironment } from "./RelayEnvironment";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Dashboard from "./routes/Dashboard.tsx";
-import WorkflowsSelect from "./routes/workflows.tsx";
-import TemplatesList from "./routes/TemplatesList.tsx";
-import TemplateView from "./routes/templateview.tsx";
-import WorkflowsList from "./routes/workflowslist.tsx";
-import WorkflowView from "./routes/workflowview.tsx";
-import ErrorPage from "./errorpage.tsx";
-
-
+import Dashboard from "./routes/DashboardPage";
+import WorkflowsListPage from "./routes/WorkflowsListPage";
+import WorkflowsSessionInputPage from "./routes/WorkflowsSessionInputPage";
+import TemplatesListPage from "./routes/TemplatesListPage";
+import SingleTemplatePage from "./routes/SingleTemplatePage";
+import SingleWorkflowPage from "./routes/SingleWorkflowPage";
+import ErrorPage from "./ErrorPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -20,27 +18,27 @@ const router = createBrowserRouter([
   },
   {
     path: "workflows",
-    element: <WorkflowsSelect />,
+    element: <WorkflowsSessionInputPage />,
   },
   {
     path: "templates",
-    element: <TemplatesList />,
+    element: <TemplatesListPage />,
   },
   {
     path: "templates/:templateName",
-    element: <TemplateView />,
+    element: <SingleTemplatePage />,
   },
   {
     path: "workflows/:visitid",
-    element: <WorkflowsList />,
+    element: <WorkflowsListPage />,
   },
   {
     path: "workflows/:visitid/:workflowname",
-    element: <WorkflowView />,
+    element: <SingleWorkflowPage />,
   },
   {
     path: "workflows/:visitid/:workflowname/:taskname",
-    element: <WorkflowView />,
+    element: <SingleWorkflowPage />,
   },
 ]);
 
@@ -49,5 +47,5 @@ createRoot(document.getElementById("root") as Element).render(
     <StrictMode>
       <RouterProvider router={router} />
     </StrictMode>
-  </RelayEnvironmentProvider>
+  </RelayEnvironmentProvider>,
 );

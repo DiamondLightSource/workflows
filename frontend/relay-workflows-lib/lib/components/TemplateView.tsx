@@ -1,11 +1,11 @@
-import { graphql } from "react-relay";
 import { useLazyLoadQuery, useMutation } from "react-relay/hooks";
 import { Visit } from "workflows-lib";
 import SubmissionForm from "./SubmissionForm";
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
 import { TemplateViewMutation as TemplateViewMutationType } from "./__generated__/TemplateViewMutation.graphql";
+import { graphql } from "relay-runtime";
 
-const TemplateViewQuery = graphql`
+const templateViewQuery = graphql`
   query TemplateViewQuery($templateName: String!) {
     workflowTemplate(name: $templateName) {
       ...workflowTemplateFragment
@@ -13,7 +13,7 @@ const TemplateViewQuery = graphql`
   }
 `;
 
-const TemplateViewMutation = graphql`
+const templateViewMutation = graphql`
   mutation TemplateViewMutation(
     $templateName: String!
     $visit: VisitInput!
@@ -34,12 +34,12 @@ export default function TemplateView({
 }: {
   templateName: string;
 }) {
-  const data = useLazyLoadQuery<TemplateViewQueryType>(TemplateViewQuery, {
+  const data = useLazyLoadQuery<TemplateViewQueryType>(templateViewQuery, {
     templateName,
   });
 
   const [commitMutation] =
-    useMutation<TemplateViewMutationType>(TemplateViewMutation);
+    useMutation<TemplateViewMutationType>(templateViewMutation);
 
   function submitWorkflow(visit: Visit, parameters: object) {
     commitMutation({

@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Container, Box  } from "@mui/material";
+import { Container, Box } from "@mui/material";
 import {
   ThemeProvider,
   DiamondTheme,
@@ -9,7 +9,7 @@ import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavb
 import TemplateView from "relay-workflows-lib/lib/components/TemplateView";
 import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
 import { Suspense } from "react";
-const TemplatesView: React.FC = () => {
+const SingleTemplatePage: React.FC = () => {
   const { templateName } = useParams<{ templateName: string }>();
   return (
     <>
@@ -32,4 +32,4 @@ const TemplatesView: React.FC = () => {
   );
 };
 
-export default TemplatesView;
+export default SingleTemplatePage;
