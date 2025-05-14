@@ -1,4 +1,4 @@
-import { buildTaskTree } from "../../lib/components/workflow/TasksFlowUtils";
+import { buildTaskTree } from "../../lib/utils/tasksFlowUtils";
 import { Task, TaskNode, TaskStatus } from "../../lib/types";
 import { instrumentSession } from "../components/data";
 describe("buildTaskTree", () => {

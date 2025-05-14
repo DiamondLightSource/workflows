@@ -1,4 +1,4 @@
-import { generateNodesAndEdges } from "../../lib/components/workflow/TasksFlowUtils";
+import { generateNodesAndEdges } from "../../lib/utils/tasksFlowUtils";
 import { TaskNode, TaskStatus } from "../../lib/types";
 import { instrumentSession } from "../components/data";
 

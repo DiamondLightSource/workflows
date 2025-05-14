@@ -12,9 +12,9 @@ import {
 
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 import { useVisitInput } from "./utils";
-import { visitToText } from "workflows-lib/lib/components/common/utils";
+import { visitToText } from "workflows-lib/lib/utils/commonUtils";
 
-const WorkflowsList: React.FC = () => {
+const WorkflowsListPage: React.FC = () => {
   const { visitid } = useParams<{ visitid: string }>();
   const { visit, handleVisitSubmit } = useVisitInput(visitid);
 
@@ -22,7 +22,7 @@ const WorkflowsList: React.FC = () => {
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">
         <WorkflowsNavbar
-          sessionInfo={`Instrument Session ID is ${visitid?? ""}`}
+          sessionInfo={`Instrument Session ID is ${visitid ?? ""}`}
         />
         <Breadcrumbs path={window.location.pathname} />
         <Container maxWidth="sm">
@@ -56,4 +56,4 @@ const WorkflowsList: React.FC = () => {
   );
 };
 
-export default WorkflowsList;
+export default WorkflowsListPage;

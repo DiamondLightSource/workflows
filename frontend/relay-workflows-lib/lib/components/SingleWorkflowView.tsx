@@ -1,45 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Box, Container } from "@mui/material";
 import { graphql } from "relay-runtime";
-import {
-    workflowFragment$key,
-    workflowFragment$data,
-} from "./__generated__/workflowFragment.graphql";
+import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
 import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__generated__/SingleWorkflowViewQuery.graphql";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 
 import type { Artifact, Task, TaskStatus } from "workflows-lib";
 import { useLazyLoadQuery, useFragment } from "react-relay/hooks";
 import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
-import { workflowFragment } from "./workflowFragment";
+import { workflowFragment } from "../graphql/workflowFragment";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
+import { isWorkflowWithTasks } from "../utils";
 
-type WorkflowStatusType = NonNullable<  workflowFragment$data["status"]>;
-
-const SingleWorkflowViewQuery = graphql`
+const singleWorkflowViewQuery = graphql`
   query SingleWorkflowViewQuery($visit: VisitInput!, $workflowname: String!) {
     workflow(visit: $visit, name: $workflowname) {
-      ...  workflowFragment
+      ...workflowFragment
     }
   }
 `;
-
 interface SingleWorkflowViewProps {
   visit: Visit;
   workflowname: string;
   taskname?: string;
 }
 
-const isWorkflowWithTasks = (status: WorkflowStatusType) => {
-  return (
-    status.__typename === "WorkflowErroredStatus" ||
-    status.__typename === "WorkflowFailedStatus" ||
-    status.__typename === "WorkflowRunningStatus" ||
-    status.__typename === "WorkflowSucceededStatus"
-  );
-};
-
-export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
+const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
   visit,
   workflowname,
   taskname: initialTaskname,
@@ -48,17 +34,16 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
   const [taskname, setTaskname] = useState<string | undefined>(initialTaskname);
 
   const data = useLazyLoadQuery<SingleWorkflowViewQueryType>(
-    SingleWorkflowViewQuery,
+    singleWorkflowViewQuery,
     {
       visit,
       workflowname,
-    }
+    },
   );
   const workflowData = useFragment<workflowFragment$key>(
     workflowFragment,
-    data.workflow
+    data.workflow,
   );
-
 
   useEffect(() => {
     let fetchedTasks: Task[] = [];
@@ -94,10 +79,16 @@ export const SingleWorkflowInfo: React.FC<SingleWorkflowViewProps> = ({
           alignItems="center"
           marginTop="20px"
         >
-          <WorkflowRelay workflow={data.workflow} expanded={true} highlightedTaskName={taskname} />
+          <WorkflowRelay
+            workflow={data.workflow}
+            expanded={true}
+            highlightedTaskName={taskname}
+          />
           {taskname && <TaskInfo artifactList={artifactList}></TaskInfo>}
         </Box>
       </Container>
     </>
   );
 };
+
+export default SingleWorkflowView;

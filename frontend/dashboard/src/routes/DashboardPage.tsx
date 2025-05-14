@@ -114,7 +114,7 @@ const argoCdCard = (
   </React.Fragment>
 );
 
-function Dashboard() {
+function DashboardPage() {
   return (
     <ThemeProvider theme={DiamondTheme} defaultMode="light">
       <WorkflowsNavbar />
@@ -149,4 +149,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default DashboardPage;

@@ -1,4 +1,4 @@
-import { Visit } from "../../types";
+import { Visit } from "../types";
 
 export const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
 

@@ -1,4 +1,4 @@
-import { applyDagreLayout } from "../../lib/components/workflow/TasksFlowUtils";
+import { applyDagreLayout } from "../../lib/utils/tasksFlowUtils";
 import { Node, Edge } from "@xyflow/react";
 
 describe("applyDagreLayout", () => {

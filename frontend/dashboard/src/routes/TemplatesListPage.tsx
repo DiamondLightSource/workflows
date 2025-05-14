@@ -1,11 +1,15 @@
 import { Container, Box } from "@mui/material";
-import { ThemeProvider, DiamondTheme, Breadcrumbs } from "@diamondlightsource/sci-react-ui";
+import {
+  ThemeProvider,
+  DiamondTheme,
+  Breadcrumbs,
+} from "@diamondlightsource/sci-react-ui";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
-import Templates from "relay-workflows-lib/lib/components/templates";
+import TemplatesList from "relay-workflows-lib/lib/components/TemplatesList";
 import { Suspense } from "react";
 import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
 
-const TemplatesList: React.FC = () => {
+const TemplatesListPage: React.FC = () => {
   return (
     <>
       <ThemeProvider theme={DiamondTheme} defaultMode="light">
@@ -14,8 +18,13 @@ const TemplatesList: React.FC = () => {
         <Container maxWidth="sm">
           <WorkflowsErrorBoundary>
             <Suspense>
-              <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
-                <Templates />
+              <Box
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                mt={2}
+              >
+                <TemplatesList />
               </Box>
             </Suspense>
           </WorkflowsErrorBoundary>
@@ -25,4 +34,4 @@ const TemplatesList: React.FC = () => {
   );
 };
 
-export default TemplatesList;
+export default TemplatesListPage;
