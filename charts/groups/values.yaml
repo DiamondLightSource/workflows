@@ -38,3 +38,11 @@ groups:
     apps:
       - name: magnetic-materials
         repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
+  - name: spectroscopy-bluesky
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: spectroscopy-bluesky
+        repoURL: https://github.com/DiamondLightSource/spectroscopy-bluesky
+        path: workflows/helm
+        targetRevision: 8-move-i18-alignment-curve-fitting-to-ophyd-async
