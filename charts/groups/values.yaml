@@ -43,3 +43,10 @@ groups:
     apps:
       - name: magnetic-materials
         repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
+  - name: spectroscopy
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: spectroscopy-bluesky
+        repoURL: https://github.com/DiamondLightSource/spectroscopy-bluesky
+        path: workflows/helm
