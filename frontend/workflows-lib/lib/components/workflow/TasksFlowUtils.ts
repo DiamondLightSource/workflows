@@ -63,7 +63,8 @@ export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName
   const edges: Edge[] = [];
 
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
-    tasks.forEach((task) => {
+    const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
+    sortedTasks.forEach((task) => {
       if (!nodes.some((existingNode) => existingNode.id === task.id)) {
         nodes.push({
           id: task.id,
