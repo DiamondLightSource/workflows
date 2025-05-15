@@ -147,7 +147,9 @@ impl ArgumentSchema {
         let mut arguments_schema = ArgumentSchema::default();
         if let Some(arguments) = &spec.arguments {
             for parameter in arguments.parameters.clone() {
-                arguments_schema.add_parameter(&parameter, annotations)?;
+                if parameter.value_from.is_none() {
+                    arguments_schema.add_parameter(&parameter, annotations)?;
+                }
             }
         }
         if let Some(entrypoint) = &spec.entrypoint {
@@ -159,7 +161,9 @@ impl ArgumentSchema {
             }) {
                 if let Some(inputs) = &template.inputs {
                     for parameter in &inputs.parameters {
-                        arguments_schema.add_parameter(parameter, annotations)?;
+                        if parameter.value_from.is_none() {
+                            arguments_schema.add_parameter(parameter, annotations)?;
+                        }
                     }
                 }
             }
