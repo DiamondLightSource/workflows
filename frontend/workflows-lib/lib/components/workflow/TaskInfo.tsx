@@ -10,19 +10,31 @@ interface TaskInfoProps {
 
 export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
   return (
-    <>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: {
+          xs: "column",
+          sm: "row",
+        },
+        flexWrap: "wrap",
+        gap: 2,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: "300px" }}>
+        <ArtifactFilteredList artifactList={artifactList} />
+      </Box>
+
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "row",
-          p: 2,
+          flex: 1,
+          minWidth: "300px",
         }}
       >
-        <ArtifactFilteredList
-          artifactList={artifactList}
-        ></ArtifactFilteredList>
-        <ImageGallery artifactList={artifactList}></ImageGallery>
+        <ImageGallery artifactList={artifactList} />
       </Box>
-    </>
+    </Box>
   );
 };

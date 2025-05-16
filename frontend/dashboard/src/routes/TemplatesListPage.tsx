@@ -10,7 +10,7 @@ const TemplatesListPage: React.FC = () => {
     <>
       <WorkflowsNavbar />
       <Breadcrumbs path={window.location.pathname} />
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <WorkflowsErrorBoundary>
           <Suspense>
             <Box mt={2}>

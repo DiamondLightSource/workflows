@@ -24,7 +24,7 @@ function SingleWorkflowPage() {
       />
       <Breadcrumbs path={window.location.pathname} />
       {visit && workflowname ? (
-        <Container maxWidth="sm">
+        <Container maxWidth="lg">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
             <WorkflowsErrorBoundary>
               <Suspense>
