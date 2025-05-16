@@ -25,28 +25,15 @@ spec:
         storageClassName: local-path
 
   templates:
-  - name: install-requirements
-    script:
-      image: docker.io/library/python:bookworm
-      command: ["sh", "-c"]
-      args:
-        - |
-          cat <<EOF > /tmp/requirements.txt
-          {{- .Files.Get "notebooks/requirements.txt" | nindent 12 }}
-          EOF
-      volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-
   - name: nbconvert-install
     script:
       image: docker.io/library/python:bookworm
       command: [bash]
       source: |
-        mkdir -p /tmp/.config/matplotlib
-        mkdir -p /tmp/.ipython
+        # mkdir -p /tmp/.config/matplotlib
+        # mkdir -p /tmp/.ipython
         python -m venv /tmp/venv
-        /tmp/venv/bin/pip install -r /tmp/requirements.txt --no-cache-dir
+        /tmp/venv/bin/pip install numpy matplotlib pandas scipy nbconvert ipykernel ipython --no-cache-dir
         /tmp/venv/bin/python -m ipykernel install --prefix=/tmp/venv --name=venv
       volumeMounts:
         - name: outputs
@@ -86,11 +73,8 @@ spec:
   - name: notebook
     dag:
       tasks:
-      - name: requirements
-        template: install-requirements
       - name: install
         template: nbconvert-install
-        dependencies: [requirements]
       - name: convert
         template: convert
         dependencies: [install]
