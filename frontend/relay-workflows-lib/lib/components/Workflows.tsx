@@ -6,6 +6,7 @@ import { Visit } from "workflows-lib";
 import { useState, useCallback, useEffect, startTransition } from "react";
 import Pagination from "@mui/material/Pagination";
 import {
+  Box,
   FormControl,
   Select,
   MenuItem,
@@ -46,7 +47,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
   });
 
   const updateWorkflows = (
-    nodes: WorkflowsQueryType["response"]["workflows"]["nodes"]
+    nodes: WorkflowsQueryType["response"]["workflows"]["nodes"],
   ) => {
     setWorkflows([...nodes]);
   };
@@ -62,7 +63,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
         setTotalPages(currentPageCount);
       }
     },
-    [cursorHistory, currentPage]
+    [cursorHistory, currentPage],
   );
 
   useEffect(() => {
@@ -72,7 +73,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
-    page: number
+    page: number,
   ) => {
     const targetCursor = cursorHistory[page];
     if (
@@ -106,9 +107,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
   };
 
   const workflowList = workflows.map((node, index) => (
-    <div key={index} style={{ width: "1200px", height: "100%" }}>
-      <WorkflowRelay key={index} workflow={node} />
-    </div>
+    <WorkflowRelay key={index} workflow={node} />
   ));
 
   const limitChanged = (event: SelectChangeEvent) => {
@@ -129,13 +128,17 @@ export default function Workflows({ visit }: { visit: Visit }) {
     >
       {workflowList}
 
-      <div
-        style={{
+      <Box
+        sx={{
           display: "flex",
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
           justifyContent: "center",
           alignItems: "center",
-          gap: "1rem",
-          marginTop: "1rem",
+          gap: 2,
+          mt: 2,
         }}
       >
         <Pagination
@@ -147,7 +150,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
           boundaryCount={0}
         />
 
-        <FormControl sx={{ width: 65 }}>
+        <FormControl sx={{ width: 80 }}>
           <Select
             size="small"
             labelId="setLimitSelector"
@@ -161,7 +164,7 @@ export default function Workflows({ visit }: { visit: Visit }) {
             <MenuItem value={30}>30</MenuItem>
           </Select>
         </FormControl>
-      </div>
+      </Box>
     </div>
   );
 }

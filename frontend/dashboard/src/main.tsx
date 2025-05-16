@@ -10,6 +10,8 @@ import TemplatesListPage from "./routes/TemplatesListPage";
 import SingleTemplatePage from "./routes/SingleTemplatePage";
 import SingleWorkflowPage from "./routes/SingleWorkflowPage";
 import ErrorPage from "./ErrorPage";
+import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -45,7 +47,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root") as Element).render(
   <RelayEnvironmentProvider environment={RelayEnvironment}>
     <StrictMode>
-      <RouterProvider router={router} />
+      <ThemeProvider theme={DiamondTheme} defaultMode="light">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </StrictMode>
   </RelayEnvironmentProvider>,
 );

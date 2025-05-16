@@ -35,7 +35,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   const { nodes, edges } = generateNodesAndEdges(taskTree, highlightedTaskName);
   const { nodes: layoutedNodes, edges: layoutedEdges } = applyDagreLayout(
     nodes,
-    edges
+    edges,
   );
 
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
@@ -101,7 +101,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
           zoomOnScroll={false}
           zoomOnPinch={false}
           zoomOnDoubleClick={false}
-          panOnDrag={false}
+          panOnDrag={true}
           preventScrolling={false}
           defaultViewport={defaultViewport}
           fitView={true}

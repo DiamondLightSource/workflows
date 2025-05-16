@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import { graphql } from "relay-runtime";
 import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
 import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__generated__/SingleWorkflowViewQuery.graphql";
@@ -71,23 +71,19 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
   }, [initialTaskname]);
 
   return (
-    <>
-      <Container maxWidth="sm">
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          marginTop="20px"
-        >
-          <WorkflowRelay
-            workflow={data.workflow}
-            expanded={true}
-            highlightedTaskName={taskname}
-          />
-          {taskname && <TaskInfo artifactList={artifactList}></TaskInfo>}
+    <Box sx={{ width: "100%" }}>
+      <WorkflowRelay
+        workflow={data.workflow}
+        expanded={true}
+        highlightedTaskName={taskname}
+      />
+
+      {taskname && (
+        <Box sx={{ width: "100%" }}>
+          <TaskInfo artifactList={artifactList} />
         </Box>
-      </Container>
-    </>
+      )}
+    </Box>
   );
 };
 

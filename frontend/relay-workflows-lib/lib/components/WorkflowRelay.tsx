@@ -1,6 +1,7 @@
 import { useFragment } from "react-relay";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
+import { Box } from "@mui/material";
 
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
@@ -39,35 +40,53 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       : [];
 
   return (
-    <WorkflowAccordion
-      workflow={{
-        name: data.name,
-        status: statusText as WorkflowStatus,
+    <Box
+      sx={{
+        width: {
+          xl: "100%",
+          lg: "100%",
+          md: "90%",
+          sm: "80%",
+          xs: "70%",
+        },
+        maxWidth: "1200px",
+        height: "100%",
+        mx: "auto",
       }}
-      expanded={expanded}
     >
-      <ResizableBox
-        width={1150}
-        height={200}
-        resizeHandles={["se"]}
-        style={{
-          border: "2px dashed #ccc",
-          padding: "10px",
-          overflow: "auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+      <WorkflowAccordion
+        workflow={{
+          name: data.name,
+          status: statusText as WorkflowStatus,
         }}
+        expanded={expanded}
       >
-        <TasksFlow
-          tasks={tasks}
-          highlightedTaskName={highlightedTaskName}
-          onNavigate={(path: string) => {
-            void navigate(path);
+        <ResizableBox
+          width={Infinity}
+          height={200}
+          resizeHandles={["se"]}
+          style={{
+            width: "100%",
+            maxWidth: "1150px",
+            minWidth: "300px",
+            padding: "10px",
+            overflow: "auto",
+            border: "2px dashed #ccc",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        ></TasksFlow>
-      </ResizableBox>
-    </WorkflowAccordion>
+        >
+          <TasksFlow
+            tasks={tasks}
+            highlightedTaskName={highlightedTaskName}
+            onNavigate={(path: string) => {
+              void navigate(path);
+            }}
+          ></TasksFlow>
+        </ResizableBox>
+      </WorkflowAccordion>
+    </Box>
   );
 };
 

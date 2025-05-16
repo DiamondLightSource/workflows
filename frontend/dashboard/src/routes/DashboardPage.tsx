@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
-import { DiamondTheme, ThemeProvider } from "@diamondlightsource/sci-react-ui";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 
 const workflowsCard = (
@@ -116,7 +115,7 @@ const argoCdCard = (
 
 function DashboardPage() {
   return (
-    <ThemeProvider theme={DiamondTheme} defaultMode="light">
+    <>
       <WorkflowsNavbar />
       <Container maxWidth="sm" sx={{ mt: 5, mb: 4 }}>
         <Grid
@@ -145,7 +144,7 @@ function DashboardPage() {
           </Grid>
         </Grid>
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
 
