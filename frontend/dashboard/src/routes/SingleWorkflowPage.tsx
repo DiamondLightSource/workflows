@@ -3,11 +3,7 @@ import { useParams } from "react-router-dom";
 import { Suspense } from "react";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 import "react-resizable/css/styles.css";
-import {
-  ThemeProvider,
-  DiamondTheme,
-  Breadcrumbs,
-} from "@diamondlightsource/sci-react-ui";
+import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import SingleWorkflowView from "relay-workflows-lib/lib/components/SingleWorkflowView";
 import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
@@ -22,7 +18,7 @@ function SingleWorkflowPage() {
   const visit = visitTextToVisit(visitid);
 
   return (
-    <ThemeProvider theme={DiamondTheme} defaultMode="light">
+    <>
       <WorkflowsNavbar
         sessionInfo={`Instrument Session ID is ${visitid ?? ""}`}
       />
@@ -47,7 +43,7 @@ function SingleWorkflowPage() {
           {/* Go to instrumentSession or home page */}
         </Box>
       )}
-    </ThemeProvider>
+    </>
   );
 }
 

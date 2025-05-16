@@ -1,17 +1,12 @@
 import { Container, Box } from "@mui/material";
-import {
-  VisitInput,
-  ThemeProvider,
-  DiamondTheme,
-  Breadcrumbs,
-} from "@diamondlightsource/sci-react-ui";
+import { VisitInput, Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import { useVisitInput } from "./utils";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 
 function WorkflowsSessionInputPage() {
   const { handleVisitSubmit } = useVisitInput();
   return (
-    <ThemeProvider theme={DiamondTheme} defaultMode="light">
+    <>
       <WorkflowsNavbar sessionInfo={"No Instrument Session Selected"} />
       <Breadcrumbs path={window.location.pathname} />
       <Container maxWidth="sm">
@@ -19,7 +14,7 @@ function WorkflowsSessionInputPage() {
           <VisitInput onSubmit={handleVisitSubmit} />
         </Box>
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
 
