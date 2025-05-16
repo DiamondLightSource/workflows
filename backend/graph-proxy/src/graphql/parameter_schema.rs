@@ -177,7 +177,8 @@ mod tests {
     use super::{ArgumentSchema, Schema};
     use argo_workflows_openapi::{
         IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
-        IoArgoprojWorkflowV1alpha1WorkflowSpec,
+        IoArgoprojWorkflowV1alpha1ValueFrom, IoArgoprojWorkflowV1alpha1WorkflowSpec,
+        IoK8sApiCoreV1ConfigMapKeySelector,
     };
     use serde_json::json;
     use std::collections::HashMap;
@@ -519,6 +520,57 @@ mod tests {
                 "bar",
                 "baz",
                 "foo"
+            ]
+        });
+        assert_eq!(
+            Schema(expected),
+            Schema::from(ArgumentSchema::new(&spec, &annotations).unwrap())
+        )
+    }
+
+    #[test]
+    fn ignore_parameters_from_mounts() {
+        let configmap_selector = IoK8sApiCoreV1ConfigMapKeySelector::builder()
+            .name(Some("some-configmap".to_string()))
+            .key("some-key".to_string())
+            .optional(Some(false))
+            .try_into()
+            .unwrap();
+
+        let configmap_reference = IoArgoprojWorkflowV1alpha1ValueFrom::builder()
+            .config_map_key_ref(Some(configmap_selector))
+            .try_into()
+            .unwrap();
+
+        let spec = IoArgoprojWorkflowV1alpha1WorkflowSpec::builder()
+            .arguments(Some(
+                IoArgoprojWorkflowV1alpha1Arguments::builder()
+                    .parameters([
+                        IoArgoprojWorkflowV1alpha1Parameter::builder()
+                            .name("foo")
+                            .value_from(Some(configmap_reference))
+                            .try_into()
+                            .unwrap(),
+                        IoArgoprojWorkflowV1alpha1Parameter::builder()
+                            .name("bar")
+                            .try_into()
+                            .unwrap(),
+                    ])
+                    .try_into()
+                    .unwrap(),
+            ))
+            .try_into()
+            .unwrap();
+        let annotations = HashMap::new();
+        let expected = json!({
+            "type": "object",
+            "properties": {
+                "bar": {
+                    "type": "string",
+                }
+            },
+            "required": [
+                "bar"
             ]
         });
         assert_eq!(
