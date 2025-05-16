@@ -16,7 +16,7 @@ describe("TasksFlow Component", () => {
       async (importOriginal) => ({
         ...(await importOriginal()),
         TaskFlowNode: vi.fn().mockReturnValue(<div>CustomNode Mock</div>),
-      })
+      }),
     );
   });
 
@@ -62,7 +62,7 @@ describe("TasksFlow Component", () => {
 
   it("should render without crashing", () => {
     const { getByText } = render(
-      <TasksFlow tasks={mockTasks} onNavigate={() => {}} />
+      <TasksFlow tasks={mockTasks} onNavigate={() => {}} />,
     );
     expect(getByText("ReactFlow Mock")).toBeInTheDocument();
   });
@@ -74,7 +74,13 @@ describe("TasksFlow Component", () => {
   });
 
   it("should generate nodes and edges based on the task tree", () => {
-    render(<TasksFlow tasks={mockTasks} highlightedTaskName="node-1" onNavigate={() => {}} />);
+    render(
+      <TasksFlow
+        tasks={mockTasks}
+        highlightedTaskName="node-1"
+        onNavigate={() => {}}
+      />,
+    );
 
     expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree, "node-1");
   });
@@ -105,12 +111,12 @@ describe("TasksFlow Component", () => {
         zoomOnScroll: false,
         zoomOnPinch: false,
         zoomOnDoubleClick: false,
-        panOnDrag: false,
+        panOnDrag: true,
         preventScrolling: false,
         fitView: true,
         style: { width: "100%", overflow: "auto", height: "100%" },
       }),
-      {}
+      {},
     );
   });
 });
