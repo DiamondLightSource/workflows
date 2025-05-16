@@ -2,6 +2,7 @@ import { useLazyLoadQuery } from "react-relay/hooks";
 import { TemplatesListQuery } from "./__generated__/TemplatesListQuery.graphql";
 import { TemplateCard } from "workflows-lib";
 import { graphql } from "relay-runtime";
+import { Box } from "@mui/material";
 
 const templatesListQuery = graphql`
   query TemplatesListQuery($cursor: String, $limit: Int!) {
@@ -29,10 +30,10 @@ export default function TemplatesList() {
   });
 
   return (
-    <>
-      {data.workflowTemplates.nodes.map((node, index) => {
-        return <TemplateCard key={index} template={node} />;
-      })}
-    </>
+    <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+      {data.workflowTemplates.nodes.map((node, index) => (
+        <TemplateCard key={index} template={node} />
+      ))}
+    </Box>
   );
 }

@@ -7,7 +7,7 @@ function WorkflowsSessionInputPage() {
   const { handleVisitSubmit } = useVisitInput();
   return (
     <>
-      <WorkflowsNavbar sessionInfo={"No Instrument Session Selected"} />
+      <WorkflowsNavbar sessionInfo={"No Instrument Session"} />
       <Breadcrumbs path={window.location.pathname} />
       <Container maxWidth="sm">
         <Box mt={5}>

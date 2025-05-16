@@ -36,7 +36,7 @@ const WorkflowsListPage: React.FC = () => {
               </WorkflowsErrorBoundary>
             ) : (
               <Typography variant="h6" color="red" pt={1} gutterBottom>
-                Visit {visitid} is invalid
+                Instrument Session ID {visitid} is invalid
               </Typography>
             )}
           </Box>
