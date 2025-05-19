@@ -52,3 +52,7 @@ export interface Template {
   title: string | null | undefined;
   maintainer: string;
 }
+
+export interface WorkflowQueryFilter {
+  creator?: string,
+}

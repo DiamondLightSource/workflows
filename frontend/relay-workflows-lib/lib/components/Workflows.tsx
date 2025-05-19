@@ -2,7 +2,7 @@ import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
 import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
 import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
 import { useLazyLoadQuery } from "react-relay/hooks";
-import { Visit } from "workflows-lib";
+import { Visit, WorkflowQueryFilter } from "workflows-lib";
 import { useState, useCallback, useEffect, startTransition } from "react";
 import Pagination from "@mui/material/Pagination";
 import {
@@ -15,8 +15,8 @@ import {
 import { graphql } from "relay-runtime";
 
 const workflowsQuery = graphql`
-  query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!) {
-    workflows(visit: $visit, cursor: $cursor, limit: $limit) {
+  query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!, $filter: WorkflowFilter) {
+    workflows(visit: $visit, cursor: $cursor, limit: $limit, filter: $filter) {
       nodes {
         ...workflowFragment
       }
@@ -30,7 +30,7 @@ const workflowsQuery = graphql`
   }
 `;
 
-export default function Workflows({ visit }: { visit: Visit }) {
+export default function Workflows({ visit, filter }: { visit: Visit, filter?: WorkflowQueryFilter }) {
   const [cursor, setCursor] = useState<string | null>(null);
   const [workflows, setWorkflows] = useState<workflowFragment$key[]>([]);
   const [cursorHistory, setCursorHistory] = useState<{
@@ -40,10 +40,12 @@ export default function Workflows({ visit }: { visit: Visit }) {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedLimit, setSelectedLimit] = useState(10);
 
+
   const data = useLazyLoadQuery<WorkflowsQueryType>(workflowsQuery, {
     visit,
     limit: selectedLimit,
     cursor,
+    filter
   });
 
   const updateWorkflows = (
