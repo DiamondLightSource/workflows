@@ -41,7 +41,7 @@ jobs:
         uses: docker/setup-buildx-action@v3.10.0
 
       - name: Build Image
-        uses: docker/build-push-action@v6.16.0
+        uses: docker/build-push-action@v6.17.0
         with:
           build-args: ARGO_SERVER_SCHEMA_URL=https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
           context: backend
