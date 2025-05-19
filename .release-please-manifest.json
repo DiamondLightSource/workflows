@@ -2,7 +2,7 @@
   "+1": "0.0.0",
   "backend/graph-proxy": "0.1.3",
   "+2": "0.0.0",
-  "backend/sessionspaces": "0.1.1",
+  "backend/sessionspaces": "0.1.2",
   "+3": "0.0.0",
   "frontend/dashboard": "0.1.4",
   "+4": "0.0.0",
