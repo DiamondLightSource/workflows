@@ -14,8 +14,13 @@ import {
 import { graphql } from "relay-runtime";
 
 const workflowsQuery = graphql`
-  query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!) {
-    workflows(visit: $visit, cursor: $cursor, limit: $limit) {
+  query WorkflowsQuery(
+    $visit: VisitInput!
+    $cursor: String
+    $limit: Int!
+    $filter: WorkflowFilter
+  ) {
+    workflows(visit: $visit, cursor: $cursor, limit: $limit, filter: $filter) {
       nodes {
         ...workflowFragment
       }
@@ -29,7 +34,13 @@ const workflowsQuery = graphql`
   }
 `;
 
-export default function Workflows({ visit, filters }: { visit: Visit, filters?: WorkflowListFilter }) {
+export default function Workflows({
+  visit,
+  filter,
+}: {
+  visit: Visit;
+  filter?: WorkflowListFilter;
+}) {
   const [cursor, setCursor] = useState<string | null>(null);
   const [workflows, setWorkflows] = useState<workflowFragment$key[]>([]);
   const [cursorHistory, setCursorHistory] = useState<{
@@ -39,17 +50,17 @@ export default function Workflows({ visit, filters }: { visit: Visit, filters?: 
   const [totalPages, setTotalPages] = useState(1);
   const [selectedLimit, setSelectedLimit] = useState(10);
 
-  console.log("Filters: ", filters);
+  console.log("Filters: ", filter);
 
   const data = useLazyLoadQuery<WorkflowsQueryType>(workflowsQuery, {
     visit,
     limit: selectedLimit,
     cursor,
-    // filters
+    filter,
   });
 
   const updateWorkflows = (
-    nodes: WorkflowsQueryType["response"]["workflows"]["nodes"]
+    nodes: WorkflowsQueryType["response"]["workflows"]["nodes"],
   ) => {
     setWorkflows([...nodes]);
   };
@@ -65,7 +76,7 @@ export default function Workflows({ visit, filters }: { visit: Visit, filters?: 
         setTotalPages(currentPageCount);
       }
     },
-    [cursorHistory, currentPage]
+    [cursorHistory, currentPage],
   );
 
   useEffect(() => {
@@ -75,7 +86,7 @@ export default function Workflows({ visit, filters }: { visit: Visit, filters?: 
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
-    page: number
+    page: number,
   ) => {
     const targetCursor = cursorHistory[page];
     if (
