@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.3...graph-proxy@v0.1.4) (2025-05-19)
+
+
+### Features
+
+* **graph-proxy:** added filtering for workflow templates ([698622f](https://github.com/DiamondLightSource/workflows/commit/698622f41c354544123d3242f393dd1470e47089))
+
+
+### Bug Fixes
+
+* **graph-proxy:** expanded dev-container env ([bdee3ab](https://github.com/DiamondLightSource/workflows/commit/bdee3ab3730d7127ebe2edbd268a33175e259085))
+* **graph-proxy:** only show desired inputs when submitting to UI ([26d8028](https://github.com/DiamondLightSource/workflows/commit/26d80284f02137add10167a7cb174cfd86152643))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.2...graph-proxy@v0.1.3) (2025-04-24)
 
 
