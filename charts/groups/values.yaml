@@ -23,6 +23,7 @@ groups:
       - name: imaging-e02
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
         path: e02
+        sourceType: helm
       - name: imaging-i14
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
         path: i14
