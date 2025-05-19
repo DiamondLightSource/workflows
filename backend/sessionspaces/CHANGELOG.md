@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.1...sessionspaces@v0.1.2) (2025-05-19)
+
+
+### Bug Fixes
+
+* **sessionspaces:** instrument update_sessionspaces ([1105f8d](https://github.com/DiamondLightSource/workflows/commit/1105f8da9a5a0d15fc40c6c6a2931816e01d365c))
+* **sessionspaces:** name all instruments ([d8d90c5](https://github.com/DiamondLightSource/workflows/commit/d8d90c512ccc286676f290203a185bb93e69e8e1))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.0...sessionspaces@v0.1.1) (2025-03-21)
 
 
