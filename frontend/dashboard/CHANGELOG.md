@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.4...dashboard@v0.1.5) (2025-05-19)
+
+
+### Features
+
+* **frontend:** make frontend UI more responsive to screen size ([552b75c](https://github.com/DiamondLightSource/workflows/commit/552b75c60c1f4d90bbda39623a0a4d0300dd7a0a))
+
+
+### Bug Fixes
+
+* **dashboard:** add error boundary around templates list ([f2cab97](https://github.com/DiamondLightSource/workflows/commit/f2cab97dda6b1dc7fe707a4115fef71c2a203e7a))
+* **dashboard:** removed all mention to title ([d5fd9d5](https://github.com/DiamondLightSource/workflows/commit/d5fd9d552b5dff37aec6a432ac2d597c59536b65))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.3...dashboard@v0.1.4) (2025-04-30)
 
 
