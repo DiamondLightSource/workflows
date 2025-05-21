@@ -11,7 +11,7 @@ const SingleTemplatePage: React.FC = () => {
     <>
       <WorkflowsNavbar />
       <Breadcrumbs path={window.location.pathname} />
-      <Container maxWidth="md">
+      <Container maxWidth="xl">
         <Box
           display="flex"
           flexDirection="column"

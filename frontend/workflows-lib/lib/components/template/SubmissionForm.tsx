@@ -46,9 +46,15 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   const handleCloseSnackbar = () => {
     setSubmitted(false);
   };
+  const formWidth =
+    (parametersUISchema?.options?.formWidth as string | undefined) ?? "50%";
 
   return (
-    <Stack direction="column" spacing={theme.spacing(2)}>
+    <Stack
+      direction="column"
+      spacing={theme.spacing(2)}
+      sx={{ width: formWidth }}
+    >
       <Typography variant="h4" align="center">
         {title}
       </Typography>
