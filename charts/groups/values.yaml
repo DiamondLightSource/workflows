@@ -8,10 +8,10 @@ groups:
     apps:
       - name: example-manifests
         repoURL: https://github.com/DiamondLightSource/workflows
-        path: examples/manifests
+        path: examples/conventional-templates
       - name: example-helm
         repoURL: https://github.com/DiamondLightSource/workflows
-        path: examples/helm
+        path: examples/helm-based-templates
         sourceType: helm
   - name: imaging
     enabled: true
