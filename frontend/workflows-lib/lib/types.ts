@@ -58,7 +58,16 @@ export interface Template {
 }
 
 export interface WorkflowQueryFilter {
-  creator?: string;
+  creator?: string,
+  workflowStatusFilter?: WorkflowStatusBool,
+}
+
+export interface WorkflowStatusBool {
+  pending?: boolean,
+  running?: boolean,
+  succeeded?: boolean,
+  failed?: boolean,
+  error?: boolean,
 }
 
 export interface SubmissionSuccessMessage {
