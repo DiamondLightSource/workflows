@@ -21,9 +21,11 @@ pub(super) enum UiSchema {
     },
     HorizontalLayout {
         elements: Vec<UiSchema>,
+        options: Option<serde_json::Value>,
     },
     VerticalLayout {
         elements: Vec<UiSchema>,
+        options: Option<serde_json::Value>,
     },
     Group {
         label: String,
@@ -90,6 +92,7 @@ mod tests {
             .to_string(),
         )]);
         let expected = Some(UiSchema::HorizontalLayout {
+            options: None,
             elements: vec![
                 UiSchema::Control {
                     scope: "#/properties/foo".to_string(),
