@@ -1,0 +1,4 @@
+manifests:
+  - examples/conventional-templates
+charts:
+  - examples/helm-based-templates
