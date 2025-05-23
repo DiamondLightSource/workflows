@@ -1,0 +1,27 @@
+{
+    "name": "Action Dev Container",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "target": "build"
+    },
+    "remoteEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "1yib.rust-bundle",
+                "github.vscode-github-actions",
+                "tamasfe.even-better-toml",
+                "redhat.vscode-yaml",
+                "ryanluker.vscode-coverage-gutters",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "runArgs": [
+        "--net=host",
+        "--security-opt=label=disable"
+    ],
+    "workspaceMount": "source=${localWorkspaceFolder}/..,target=/workspaces,type=bind",
+}

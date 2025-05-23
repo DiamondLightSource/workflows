@@ -1,0 +1,5 @@
+manifests:
+  - examples/conventional-templates
+
+helmManifests:
+  - examples/helm-based-templates

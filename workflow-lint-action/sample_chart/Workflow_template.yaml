@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: using-cluster-templates
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: using-cluster-templates
+    workflows.argoproj.io/description: |
+      Use pre-exisiting cluster-workflows as steps in your workflow.
+    workflows.diamond.ac.uk/parameter-schema.size: |
+      {
+        "type": "integer",
+        "default": 2000
+      }
+    workflows.diamond.ac.uk/parameter-schema.memory: |
+      {
+        "type": "string",
+        "pattern": "^[0-9]+[GMK]i$",
+        "default": "20Gi"
+      }
+    workflows.diamond.ac.uk/ui-schema: |
+      {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "scope": "#/properties/memory",
+            "label": "Memory"
+          },
+          {
+            "type": "Control",
+            "scope": "#/properties/size",
+            "label": "Matrix Size"
+          }
+        ]
+      }
+spec:
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: memory
+        value: 20Gi
+
+  templates:
+  - name: workflow-entry
+    dag:
+      tasks:
+      - name: numpy
+        templateRef:
+          name: boilerplate-example 
+          template: install-dependencies
+          clusterScope: true
+        arguments:
+          parameters:
+          - name: size
+            value: "{{workflow.parameters.size}}"
+          - name: memory
+            value: "{{workflow.parameters.memory}}"
