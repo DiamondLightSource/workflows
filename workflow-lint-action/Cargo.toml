@@ -1,0 +1,9 @@
+[package]
+name = "workflows-linter"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.38", features = ["derive", "env"] }
+colored = "3.0.0"
+yaml-rust2 = "0.10.1"
