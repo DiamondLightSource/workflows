@@ -22,6 +22,7 @@ RUN mkdir argo-workflows-openapi/src \
     && mkdir telemetry/src \
     && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
+RUN cargo fetch
 RUN cargo build --release --package telemetry
 
 RUN touch --date @0 sessionspaces/src/main.rs \
