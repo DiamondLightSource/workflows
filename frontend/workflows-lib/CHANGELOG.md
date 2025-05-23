@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.3...workflows-lib@v0.1.4) (2025-05-23)
+
+
+### Features
+
+* **workflows-lib:** filter by creator ([833d61c](https://github.com/DiamondLightSource/workflows/commit/833d61c7ec5bf83dfcd8ed6eb68f391b1862a4b1))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.2...workflows-lib@v0.1.3) (2025-05-19)
 
 
