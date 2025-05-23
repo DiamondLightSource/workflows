@@ -1,0 +1,108 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: boilerplate-example
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: boiler-plate-example for docs
+    workflows.argoproj.io/description: |
+        This is an example demo-ing the boilerplate
+spec:
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: start
+        value: "2"
+      - name: stop
+        value: "10"
+      - name: step
+        value: "5"
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: local-path
+  templates:
+  - name: install-dependencies
+    script:
+      image: python:3.10
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: [bash]
+      source: |
+        python -m venv /tmp/venv
+        /tmp/venv/bin/pip install numpy matplotlib
+  - name: pre-processing
+    inputs:
+      parameters:
+        - name: start
+        - name: stop
+        - name: step
+    script:
+      image: python:3.10
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: [/tmp/venv/bin/python]
+      source: |
+        import numpy as np
+        import json
+        start = {{inputs.parameters.start}}
+        stop = {{inputs.parameters.stop}}
+        step = {{inputs.parameters.step}}
+        vals = np.arange(start,stop,step).tolist()
+        with open("/tmp/data.json", "w") as f:
+          json.dump(vals, f)
+    outputs:
+      artifacts:
+      - name: gridPoints
+        path: /tmp/data.json
+        archive:
+          none: { }
+  - name: plot-the-figure
+    script:
+      image: python:3.10
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: [/tmp/venv/bin/python]
+      source: |
+        import matplotlib.pyplot as plt
+        from math import sin
+        import json
+        with open("/tmp/data.json", "r") as f:
+          x = json.load(f)
+        y = [sin(val) for val in x]
+        plt.plot(x,y)
+        plt.savefig("/tmp/output_fig.png")
+    outputs:
+      artifacts:
+      - name: sin-figure
+        path: "/tmp/output_fig.png"
+        archive:
+          none: { }
+  - name: workflow-entry
+    dag:
+      tasks:
+      - name: install-dependencies
+        template: install-dependencies
+      - name: pre-processing
+        dependencies: [install-dependencies]
+        template: pre-processing
+        arguments:
+          parameters:
+          - name: start
+            value: "{{workflow.parameters.start}}"
+          - name: stop
+            value: "{{workflow.parameters.stop}}"
+          - name: step
+            value: "{{workflow.parameters.step}}"
+      - name: plot-figure
+        dependencies: [pre-processing]
+        template: plot-the-figure
