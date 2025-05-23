@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.5...dashboard@v0.1.6) (2025-05-23)
+
+
+### Features
+
+* **workflows-lib:** filter by creator ([833d61c](https://github.com/DiamondLightSource/workflows/commit/833d61c7ec5bf83dfcd8ed6eb68f391b1862a4b1))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.4...dashboard@v0.1.5) (2025-05-19)
 
 
