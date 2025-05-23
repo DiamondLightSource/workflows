@@ -19,8 +19,9 @@ WORKDIR /
 ENV KUBECONFIG="/kubeconfig.yaml"
 COPY container_utils/dummy_kubeconfig.yaml .
 
-COPY --from=build /app/argo /bin/
-COPY --from=build /app/helm /bin/
+ENV PATH="/"
+COPY --from=build /app/argo .
+COPY --from=build /app/helm .
 
 COPY --from=build /app/target/x86_64-unknown-linux-musl/release/workflows-linter .
 

@@ -198,6 +198,9 @@ fn helm_manifests(base_path: &Path, manifests: &[Yaml]) -> Vec<String> {
             manifest_path.display()
         );
 
+        if Command::new("which").arg("helm").output().map(|o| !o.status.success()).unwrap_or(true) {
+        clean_exit(&format!("{}", "[ERROR] `helm` not found in PATH.".red()))
+        }
         let output = Command::new("helm")
             .arg("template")
             .arg(manifest_path)
@@ -217,6 +220,7 @@ fn helm_manifests(base_path: &Path, manifests: &[Yaml]) -> Vec<String> {
             clean_exit(&format!("Something went wrong when running `helm template`\n{}", String::from_utf8(output.stderr).unwrap()))
         }
 
+        println!("Here");
         let utf8_string = String::from_utf8(output.stdout).unwrap();
         let split_manifests: Vec<&str> = utf8_string.split("---").filter(|s| !s.is_empty()).collect();
         if !fs::exists(dir_path).unwrap(){
