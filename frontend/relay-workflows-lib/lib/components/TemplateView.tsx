@@ -1,9 +1,18 @@
+import { useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay/hooks";
-import { Visit } from "workflows-lib";
+import { graphql } from "relay-runtime";
+import { Box } from "@mui/material";
+import {
+  SubmissionGraphQLErrorMessage,
+  SubmissionNetworkErrorMessage,
+  SubmissionSuccessMessage,
+  SubmittedMessagesList,
+  Visit,
+} from "workflows-lib";
+import { visitToText } from "workflows-lib/lib/utils/commonUtils";
 import SubmissionForm from "./SubmissionForm";
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
 import { TemplateViewMutation as TemplateViewMutationType } from "./__generated__/TemplateViewMutation.graphql";
-import { graphql } from "relay-runtime";
 
 const templateViewQuery = graphql`
   query TemplateViewQuery($templateName: String!) {
@@ -37,6 +46,13 @@ export default function TemplateView({
   const data = useLazyLoadQuery<TemplateViewQueryType>(templateViewQuery, {
     templateName,
   });
+  const [submissionResults, setSubmissionResults] = useState<
+    (
+      | SubmissionSuccessMessage
+      | SubmissionNetworkErrorMessage
+      | SubmissionGraphQLErrorMessage
+    )[]
+  >([]);
 
   const [commitMutation] =
     useMutation<TemplateViewMutationType>(templateViewMutation);
@@ -48,16 +64,50 @@ export default function TemplateView({
         visit: visit,
         parameters: parameters,
       },
+      onCompleted: (response, errors) => {
+        if (errors?.length) {
+          console.error("GraphQL errors:", errors);
+          setSubmissionResults((prev) => [
+            {
+              type: "graphQLError",
+              errors: errors,
+            },
+            ...prev,
+          ]);
+        } else {
+          const submittedName = response.submitWorkflowTemplate.name;
+          console.log("Successfully submitted:", submittedName);
+          setSubmissionResults((prev) => [
+            {
+              type: "success",
+              message: `${visitToText(visit)}/${submittedName}`,
+            },
+            ...prev,
+          ]);
+        }
+      },
+      onError: (err) => {
+        console.error("Submission failed:", err);
+        setSubmissionResults((prev) => [
+          {
+            type: "networkError",
+            error: err,
+          },
+          ...prev,
+        ]);
+      },
     });
   }
-
   return (
     <>
       {templateName ? (
-        <SubmissionForm
-          template={data.workflowTemplate}
-          onSubmit={submitWorkflow}
-        />
+        <Box>
+          <SubmissionForm
+            template={data.workflowTemplate}
+            onSubmit={submitWorkflow}
+          />
+          <SubmittedMessagesList submissionResults={submissionResults} />
+        </Box>
       ) : (
         <>No Template Name provided</>
       )}
