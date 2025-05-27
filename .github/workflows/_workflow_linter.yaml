@@ -1,0 +1,113 @@
+name: Workflow Lint Action
+
+on:
+  workflow_call:
+
+jobs:
+  workflow_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.2.2
+
+      - name: Lint workflows
+        uses: diamondlightsource/workflows@lint-action
+
+  test_action:
+    name: GitHub Actions Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Local Action
+        uses: ./
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.2.2
+
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1.12.0
+        with:
+          cache: false
+          components: clippy,rustfmt
+
+      - name: Cache Rust Build
+        uses: Swatinem/rust-cache@v2.7.8
+        with:
+          shared-key: workflow-lint-action
+          workspaces: workflow-lint-action
+
+      - name: Check Formatting
+        working-directory: workflow-lint-action
+        run: >
+          cargo fmt
+          --all
+          --check
+
+      - name: Lint with Clippy
+        working-directory: workflow-lint-action
+        run: >
+          cargo clippy
+          --all-targets
+          --all-features
+          --no-deps
+          --
+          --deny warnings
+
+  build_container:
+    name: Build action container
+    needs: test_action
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Generate Image Name
+        run: echo IMAGE_REPOSITORY=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '[_]' '[\-]')-workflow-lint-action >> $GITHUB_ENV
+
+      - name: Log in to GitHub Docker Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Version from Tag
+        id: tags
+        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT 
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5.7.0
+        with:
+          images: ${{ env.IMAGE_REPOSITORY }}
+          tags: |
+            type=raw,value=${{ steps.tags.outputs.version }}
+            type=raw,value=latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.10.0
+
+      - name: Build Image
+        uses: docker/build-push-action@v6.17.0
+        with:
+          context: ./workflow-lint-action
+          target: runtime
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/workflow-lint-action@') }}
+          load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/workflow-lint-action@')) }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+ 

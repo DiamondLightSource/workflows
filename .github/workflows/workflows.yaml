@@ -1,0 +1,15 @@
+name: Workflows Linter
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  public_linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4.2.2
+
+      - name: Lint workflows
+        uses: diamondlightsource/workflows@lint-action
