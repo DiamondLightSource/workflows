@@ -113,7 +113,7 @@ impl WorkflowTemplatesQuery {
         &self,
         ctx: &Context<'_>,
         cursor: Option<String>,
-        #[graphql(validator(minimum = 1, maximum = 10))] limit: Option<u32>,
+        #[graphql(validator(minimum = 1, maximum = 100))] limit: Option<u32>,
         filter: Option<WorkflowTemplatesFilter>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, WorkflowTemplate, EmptyFields, EmptyFields>>
     {
@@ -123,7 +123,7 @@ impl WorkflowTemplatesQuery {
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "cluster-workflow-templates"]);
-        let limit = limit.unwrap_or(10);
+        let limit = limit.unwrap_or(100);
         url.query_pairs_mut()
             .append_pair("listOptions.limit", &limit.to_string());
 
