@@ -1,3 +1,5 @@
+import { PayloadError } from "relay-runtime";
+
 export type TaskStatus =
   | "PENDING"
   | "RUNNING"
@@ -54,5 +56,20 @@ export interface Template {
 }
 
 export interface WorkflowQueryFilter {
-  creator?: string,
+  creator?: string;
 }
+
+export interface SubmissionSuccessMessage {
+  type: "success";
+  message: string;
+}
+
+export interface SubmissionNetworkErrorMessage {
+  type: "networkError";
+  error: Error;
+};
+
+export interface SubmissionGraphQLErrorMessage {
+  type: "graphQLError";
+  errors: PayloadError[];
+};
