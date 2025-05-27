@@ -1,0 +1,20 @@
+name: Lint Argo Workflows
+description: Lint Argo Workflows
+author: GitHub Actions
+
+inputs:
+  config_file:
+    description: The name of the config file. Defaults to `.workflows-lint.yaml`
+    required: false
+    default: .workflows-lint.yaml
+  base_path:
+    description: The path to the root of the repository. You are unlikely to need to change this in the action.
+    required: false
+    default: /github/workspace
+
+runs:
+  using: docker
+  image: workflow-lint-action/Dockerfile
+  env:
+    BASE_PATH: ${{ inputs.base_path }}
+    CONFIG_FILE: ${{ inputs.config_file }}
