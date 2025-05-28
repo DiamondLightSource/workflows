@@ -43,3 +43,5 @@ groups:
     apps:
       - name: magnetic-materials
         repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
+        targetRevision: workflow-modification
+        sourceType: helm
