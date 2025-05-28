@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.4...graph-proxy@v0.1.5) (2025-05-28)
+
+
+### Features
+
+* **graph-proxy:** add node type ([db6906d](https://github.com/DiamondLightSource/workflows/commit/db6906d9a7747a0c3a48a29e29c5dd765385eb38))
+* **graph-proxy:** add options to ui schema ([f9ad40c](https://github.com/DiamondLightSource/workflows/commit/f9ad40cb742deb9a81c5ad7465206213c6a9babd))
+
+
+### Bug Fixes
+
+* **graph-proxy:** increase limit for workflow templates ([d43d2e8](https://github.com/DiamondLightSource/workflows/commit/d43d2e8e88d677c87720612162184dbbd0ad9f16))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.3...graph-proxy@v0.1.4) (2025-05-19)
 
 
