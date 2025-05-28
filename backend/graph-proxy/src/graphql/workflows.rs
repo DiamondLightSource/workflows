@@ -435,6 +435,11 @@ impl Task {
             .map(|outputs| outputs.artifacts.iter().map(Artifact).collect::<Vec<_>>())
             .unwrap_or_default()
     }
+
+    /// Node type - Pod, DAG, etc
+    async fn step_type(&self) -> &str {
+        &self.node_status.type_
+    }
 }
 
 async fn fetch_missing_task_info(
