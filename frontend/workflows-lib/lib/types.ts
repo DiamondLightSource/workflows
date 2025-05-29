@@ -17,6 +17,7 @@ export interface Task {
   artifacts: Artifact[];
   workflow: string;
   instrumentSession: Visit;
+  stepType: string;
 }
 
 export interface Artifact {
