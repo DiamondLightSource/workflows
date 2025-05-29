@@ -41,6 +41,7 @@ export const mockTasks = [
     artifacts: [logArtifact],
     workflow: "workflow-test",
     instrumentSession: instrumentSession,
+    stepType: "POD"
   },
   {
     id: "task-2",
@@ -50,6 +51,7 @@ export const mockTasks = [
     workflow: "workflow-test",
     instrumentSession: instrumentSession,
     depends: ["task-1"],
+    stepType: "POD"
   },
   {
     id: "task-3",
@@ -58,5 +60,6 @@ export const mockTasks = [
     artifacts: [logArtifact],
     workflow: "workflow-test",
     instrumentSession: instrumentSession,
+    stepType: "POD"
   },
 ];

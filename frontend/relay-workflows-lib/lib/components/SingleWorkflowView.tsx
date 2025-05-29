@@ -56,6 +56,7 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
         artifacts: [...task.artifacts],
         workflow: workflowname,
         instrumentSession: visit,
+        stepType: task.stepType
       }));
     }
 
