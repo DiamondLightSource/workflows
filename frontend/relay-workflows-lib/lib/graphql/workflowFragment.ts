@@ -22,6 +22,7 @@ export const workflowFragment = graphql`
           status
           depends
           dependencies
+          stepType
           artifacts {
             name
             url
@@ -39,6 +40,7 @@ export const workflowFragment = graphql`
           status
           depends
           dependencies
+          stepType
           artifacts {
             name
             url
@@ -56,6 +58,7 @@ export const workflowFragment = graphql`
           status
           depends
           dependencies
+          stepType
           artifacts {
             name
             url
@@ -73,6 +76,7 @@ export const workflowFragment = graphql`
           status
           depends
           dependencies
+          stepType
           artifacts {
             name
             url
