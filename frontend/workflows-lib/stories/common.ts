@@ -21,6 +21,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "DAG",
   },
   {
     depends: ["task-1"],
@@ -30,6 +31,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     depends: ["task-1"],
@@ -39,6 +41,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     id: "task-4",
@@ -47,6 +50,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     depends: ["task-3"],
@@ -56,6 +60,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     depends: ["task-3"],
@@ -65,6 +70,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     depends: ["task-3"],
@@ -74,6 +80,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     depends: ["task-6"],
@@ -83,6 +90,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
   {
     depends: ["task-9"],
@@ -92,6 +100,7 @@ export const fakeTasksA: Task[] = [
     artifacts: [logArtifact],
     workflow: "workflow1",
     instrumentSession: instrumentSession,
+    stepType: "POD",
   },
 ];
 

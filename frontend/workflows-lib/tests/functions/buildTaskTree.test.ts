@@ -11,6 +11,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-1",
         instrumentSession: instrumentSession,
+        stepType: "DAG",
       },
       {
         id: "task-2",
@@ -20,6 +21,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-2",
         instrumentSession: instrumentSession,
+        stepType: "POD",
       },
       {
         id: "task-3",
@@ -28,6 +30,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-3",
         instrumentSession: instrumentSession,
+        stepType: "POD",
       },
       {
         id: "task-4",
@@ -37,6 +40,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-4",
         instrumentSession: instrumentSession,
+        stepType: "POD",
       },
       {
         id: "task-5",
@@ -46,6 +50,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-5",
         instrumentSession: instrumentSession,
+        stepType: "POD",
       },
     ];
 
@@ -54,18 +59,21 @@ describe("buildTaskTree", () => {
         id: "task-1",
         name: "task-1",
         status: "Pending" as TaskStatus,
+        stepType: "DAG",
         children: [
           {
             id: "task-2",
             name: "task-2",
             status: "Succeeded" as TaskStatus,
             depends: ["task-1"],
+            stepType: "POD",
             children: [
               {
                 id: "task-4",
                 name: "task-4",
                 status: "Succeeded" as TaskStatus,
                 depends: ["task-2"],
+                stepType: "POD",
                 children: [
                   {
                     id: "task-5",
@@ -76,6 +84,7 @@ describe("buildTaskTree", () => {
                     artifacts: [],
                     workflow: "workflow-5",
                     instrumentSession: instrumentSession,
+                    stepType: "POD",
                   },
                 ],
                 artifacts: [],
@@ -100,6 +109,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-3",
         instrumentSession: instrumentSession,
+        stepType: "POD"
       },
     ];
 
