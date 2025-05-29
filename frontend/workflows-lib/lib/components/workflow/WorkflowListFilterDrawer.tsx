@@ -16,6 +16,17 @@ import { WorkflowQueryFilter, WorkflowStatusBool } from "../../types";
 interface WorkflowListFilterDrawerProps {
   onApplyFilters: (filters: WorkflowQueryFilter) => void;
 }
+function formatStatusFilter(filter: string): string {
+  const formattedFilter = String(filter)
+    .replace(/[{}"]/g, "")
+    .replace(/: true/g, "");
+  return formattedFilter
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(", ");
+}
 
 export const WorkflowListFilterDisplay = ({ filter }: { filter?: WorkflowQueryFilter }) => (
   <Box sx={{ mb: 2 }}>
@@ -25,7 +36,16 @@ export const WorkflowListFilterDisplay = ({ filter }: { filter?: WorkflowQueryFi
           .filter(([, val]) => val)
           .map(([key, value], index) => (
             <div key={index}>
-              <strong>{key}:</strong> {JSON.stringify(value, null, 2)}
+              <strong>
+                {
+                JSON.stringify(key)
+                .replace(/workflowStatusFilter/g, "Status")
+                .replace(/creator/g, "FedID")
+                }:
+              </strong>
+              {key === "workflowStatusFilter"
+                ? " " + formatStatusFilter(JSON.stringify(value, null, 2))
+                : " " + JSON.stringify(value, null, 2)}
             </div>
           ))
       ) : (
