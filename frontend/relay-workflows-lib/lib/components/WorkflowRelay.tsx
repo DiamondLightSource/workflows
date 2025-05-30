@@ -13,12 +13,14 @@ import { workflowFragment } from "../graphql/workflowFragment";
 interface WorkflowRelayProps {
   workflow: workflowFragment$key;
   highlightedTaskName?: string;
+  workflowLink?: boolean;
   expanded?: boolean;
 }
 
 const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   workflow,
   highlightedTaskName,
+  workflowLink,
   expanded,
 }) => {
   const data = useFragment(workflowFragment, workflow);
@@ -59,6 +61,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           name: data.name,
           status: statusText as WorkflowStatus,
         }}
+        workflowLink={workflowLink}
         expanded={expanded}
       >
         <ResizableBox
