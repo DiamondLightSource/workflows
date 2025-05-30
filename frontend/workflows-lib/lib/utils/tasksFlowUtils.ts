@@ -55,6 +55,10 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
   return roots;
 }
 
+export function isRootDag(task: TaskNode){
+  return task.stepType === "DAG" && (!task.depends || task.depends.length === 0);
+}
+
 export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName?: string): {
   nodes: Node[];
   edges: Edge[];
@@ -65,7 +69,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
     sortedTasks.forEach((task) => {
-      if (!nodes.some((existingNode) => existingNode.id === task.id)) {
+      if (!nodes.some((existingNode) => existingNode.id === task.id) && !isRootDag(task)) {
         nodes.push({
           id: task.id,
           type: "custom",

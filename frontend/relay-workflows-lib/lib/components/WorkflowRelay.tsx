@@ -36,6 +36,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           artifacts: [...task.artifacts],
           workflow: data.name,
           instrumentSession: data.visit as Visit,
+          stepType: task.stepType,
         }))
       : [];
 
