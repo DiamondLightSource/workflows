@@ -109,7 +109,7 @@ export default function Workflows({ visit, filter }: { visit: Visit, filter?: Wo
   };
 
   const workflowList = workflows.map((node, index) => (
-    <WorkflowRelay key={index} workflow={node} />
+    <WorkflowRelay key={index} workflow={node} workflowLink={true} />
   ));
 
   const limitChanged = (event: SelectChangeEvent) => {

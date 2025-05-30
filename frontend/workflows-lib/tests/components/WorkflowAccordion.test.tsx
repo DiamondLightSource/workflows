@@ -1,5 +1,6 @@
 import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { MemoryRouter } from "react-router-dom";
 import { WorkflowAccordion } from "../../lib/main";
 import { TaskStatus, WorkflowStatus } from "../../lib/types";
 
@@ -21,9 +22,11 @@ describe("WorkflowAccordion Component", () => {
   const MockChildComponent = <div>Mocked ChildComponent</div>;
   it("should render the workflow name and status icon", () => {
     const { getByText } = render(
-      <WorkflowAccordion workflow={mockWorkflow}>
-        {MockChildComponent}
-      </WorkflowAccordion>
+      <MemoryRouter>
+        <WorkflowAccordion workflow={mockWorkflow}>
+          {MockChildComponent}
+        </WorkflowAccordion>
+      </MemoryRouter>,
     );
     expect(getByText("Test Workflow")).toBeInTheDocument();
     expect(getByText("Mocked WorkflowStatusIcon")).toBeInTheDocument();
@@ -31,9 +34,11 @@ describe("WorkflowAccordion Component", () => {
 
   it("should expand the accordion and render children when clicked", () => {
     const { getByText } = render(
-      <WorkflowAccordion workflow={mockWorkflow}>
-        {MockChildComponent}
-      </WorkflowAccordion>
+      <MemoryRouter>
+        <WorkflowAccordion workflow={mockWorkflow}>
+          {MockChildComponent}
+        </WorkflowAccordion>
+      </MemoryRouter>,
     );
     const accordionSummary = getByText("Test Workflow");
     expect(getByText("Mocked ChildComponent")).not.toBeVisible();

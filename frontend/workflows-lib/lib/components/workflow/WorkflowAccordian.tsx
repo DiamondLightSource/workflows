@@ -1,12 +1,22 @@
 import React from "react";
-import { Typography, Accordion, AccordionSummary, styled } from "@mui/material";
+import { Link, useResolvedPath } from "react-router-dom";
+import {
+  Accordion,
+  AccordionSummary,
+  Box,
+  styled,
+  Typography,
+} from "@mui/material";
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
 import { Workflow } from "../../types";
 
 interface WorkflowProps {
   workflow: Workflow;
   children: React.ReactNode;
+  workflowLink?: boolean;
   expanded?: boolean;
 }
 
@@ -19,19 +29,22 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 const WorkflowAccordion: React.FC<WorkflowProps> = ({
   workflow,
   children,
+  workflowLink = false,
   expanded = false,
 }) => {
+  const resolvedPath = useResolvedPath(workflow.name);
   return (
     <Accordion key={workflow.name} defaultExpanded={expanded}>
-      <AccordionSummary
-        expandIcon={getWorkflowStatusIcon(workflow.status)}
-        sx={{
-          "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
-            transform: "none",
-          },
-        }}
-      >
-        <Typography>{workflow.name}</Typography>
+      <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+        <Box sx={{ display: "flex", flexGrow: 1, gap: 2 }}>
+          {getWorkflowStatusIcon(workflow.status)}
+          {workflowLink && (
+            <Link to={resolvedPath}>
+              <OpenInNewIcon />
+            </Link>
+          )}
+          <Typography>{workflow.name}</Typography>
+        </Box>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
