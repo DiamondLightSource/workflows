@@ -93,7 +93,7 @@ spec:
 
 The mounted volume will be shared throughout a workflow run, so multiple steps can share files through `/tmp`.
 
-Adding the task as below to the worklfow will read the file written in the previous step, and output the content.
+Adding the task as below to the workflow will read the file written in the previous step, and output the content.
 
 ```yaml
       - name: read-shared-file
