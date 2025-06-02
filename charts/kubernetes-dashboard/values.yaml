@@ -76,7 +76,7 @@ oauth2-proxy:
         upstreams:
           - id: kubernetes-dashboard-kong-proxy
             path: /
-            uri: https://{{ .Release.Name }}-kong-proxy:443
+            uri: http://{{ .Release.Name }}-kong-proxy:443
     configData:
       injectRequestHeaders:
         - name: Authorization
