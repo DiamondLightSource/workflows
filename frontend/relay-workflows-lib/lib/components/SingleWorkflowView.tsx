@@ -21,13 +21,13 @@ const singleWorkflowViewQuery = graphql`
 `;
 interface SingleWorkflowViewProps {
   visit: Visit;
-  workflowname: string;
+  workflowName: string;
   taskname?: string;
 }
 
 const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
   visit,
-  workflowname,
+  workflowName,
   taskname: initialTaskname,
 }) => {
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
@@ -37,7 +37,7 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
     singleWorkflowViewQuery,
     {
       visit,
-      workflowname,
+      workflowname: workflowName,
     },
   );
   const workflowData = useFragment<workflowFragment$key>(
@@ -54,7 +54,7 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
         status: task.status as TaskStatus,
         depends: [...task.depends],
         artifacts: [...task.artifacts],
-        workflow: workflowname,
+        workflow: workflowName,
         instrumentSession: visit,
       }));
     }
@@ -64,7 +64,7 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
       const artifacts: Artifact[] = filteredTask?.artifacts ?? [];
       setArtifactList(artifacts);
     }
-  }, [data, taskname, workflowname, visit, workflowData.status]);
+  }, [data, taskname, workflowName, visit, workflowData.status]);
 
   useEffect(() => {
     setTaskname(initialTaskname);
@@ -77,7 +77,6 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
         expanded={true}
         highlightedTaskName={taskname}
       />
-
       {taskname && (
         <Box sx={{ width: "100%" }}>
           <TaskInfo artifactList={artifactList} />

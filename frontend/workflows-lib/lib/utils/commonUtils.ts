@@ -1,6 +1,7 @@
 import { Visit } from "../types";
 
 export const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
+export const visitWithTemplateRegex = new RegExp(`${visitRegex.source}-(.+)$`);
 
 export const visitToText = (visit?: Visit): string => {
   return visit
@@ -26,4 +27,14 @@ export function visitTextToVisit(visitid?: string): Visit | null {
     }
   }
   return null;
+}
+
+export function parseVisitAndTemplate(input: string): [Visit, string] | null {
+  const match = visitWithTemplateRegex.exec(input);
+  if (!match) return null;
+
+  const visit = regexToVisit(match);
+  const templateName = match[4];
+
+  return [visit, templateName];
 }

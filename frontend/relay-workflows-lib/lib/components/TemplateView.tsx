@@ -3,6 +3,7 @@ import { useLazyLoadQuery, useMutation } from "react-relay/hooks";
 import { graphql } from "relay-runtime";
 import { Box } from "@mui/material";
 import {
+  JSONObject,
   SubmissionGraphQLErrorMessage,
   SubmissionNetworkErrorMessage,
   SubmissionSuccessMessage,
@@ -40,8 +41,12 @@ const templateViewMutation = graphql`
 
 export default function TemplateView({
   templateName,
+  visit,
+  prepopulatedParameters,
 }: {
   templateName: string;
+  visit?: Visit;
+  prepopulatedParameters?: JSONObject;
 }) {
   const data = useLazyLoadQuery<TemplateViewQueryType>(templateViewQuery, {
     templateName,
@@ -104,6 +109,8 @@ export default function TemplateView({
         <Box>
           <SubmissionForm
             template={data.workflowTemplate}
+            prepopulatedParameters={prepopulatedParameters}
+            visit={visit}
             onSubmit={submitWorkflow}
           />
           <SubmittedMessagesList submissionResults={submissionResults} />

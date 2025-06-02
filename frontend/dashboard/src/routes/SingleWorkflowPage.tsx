@@ -9,9 +9,9 @@ import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/Workfl
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
 
 function SingleWorkflowPage() {
-  const { visitid, workflowname, taskname } = useParams<{
+  const { visitid, workflowName, taskname } = useParams<{
     visitid: string;
-    workflowname: string;
+    workflowName: string;
     taskname?: string;
   }>();
 
@@ -23,14 +23,14 @@ function SingleWorkflowPage() {
         sessionInfo={`Instrument Session ID is ${visitid ?? ""}`}
       />
       <Breadcrumbs path={window.location.pathname} />
-      {visit && workflowname ? (
+      {visit && workflowName ? (
         <Container maxWidth="lg">
           <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
             <WorkflowsErrorBoundary>
               <Suspense>
                 <SingleWorkflowView
                   visit={visit}
-                  workflowname={workflowname}
+                  workflowName={workflowName}
                   taskname={taskname}
                 />
               </Suspense>

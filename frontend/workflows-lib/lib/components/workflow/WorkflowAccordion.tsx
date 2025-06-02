@@ -11,13 +11,17 @@ import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
-import { Workflow } from "../../types";
+import { Visit, Workflow } from "../../types";
 
 interface WorkflowProps {
   workflow: Workflow;
   children: React.ReactNode;
   workflowLink?: boolean;
   expanded?: boolean;
+  retriggerComponent?: React.ComponentType<{
+    instrumentSession: Visit;
+    workflowName: string;
+  }>;
 }
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
@@ -31,6 +35,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   children,
   workflowLink = false,
   expanded = false,
+  retriggerComponent,
 }) => {
   const resolvedPath = useResolvedPath(workflow.name);
   return (
@@ -43,6 +48,11 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
               <OpenInNewIcon />
             </Link>
           )}
+          {retriggerComponent &&
+            React.createElement(retriggerComponent, {
+              instrumentSession: workflow.instrumentSession,
+              workflowName: workflow.name,
+            })}
           <Typography>{workflow.name}</Typography>
         </Box>
       </AccordionSummary>
