@@ -7,7 +7,7 @@ import { JsonForms } from "@jsonforms/react";
 import React, { useState } from "react";
 import { Divider, Snackbar, Stack, Typography, useTheme } from "@mui/material";
 import { ErrorObject } from "ajv";
-import { Visit } from "../../types";
+import { JSONObject, Visit } from "../../types";
 import { VisitInput } from "@diamondlightsource/sci-react-ui";
 
 interface TemplateSubmissionFormProps {
@@ -16,6 +16,7 @@ interface TemplateSubmissionFormProps {
   description?: string;
   parametersSchema: JsonSchema;
   parametersUISchema?: UISchemaElement;
+  prepopulatedParameters?: JSONObject;
   visit?: Visit;
   onSubmit: (visit: Visit, parameters: object) => void;
 }
@@ -26,12 +27,14 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   description,
   parametersSchema,
   parametersUISchema,
+  prepopulatedParameters,
   visit,
   onSubmit,
 }) => {
   const theme = useTheme();
-  const validator = createAjv({ useDefaults: true });
-  const [parameters, setParameters] = useState({});
+  const validator = createAjv({ useDefaults: true, coerceTypes: true });
+
+  const [parameters, setParameters] = useState(prepopulatedParameters ?? {});
   const [errors, setErrors] = useState<ErrorObject[]>([]);
 
   const [submitted, setSubmitted] = useState(false);
@@ -47,7 +50,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
     setSubmitted(false);
   };
   const formWidth =
-    (parametersUISchema?.options?.formWidth as string | undefined) ?? "50%";
+    (parametersUISchema?.options?.formWidth as string | undefined) ?? "100%";
 
   return (
     <Stack
@@ -73,7 +76,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
         cells={materialCells}
         ajv={validator}
         onChange={({ data, errors }) => {
-          setParameters(data as object);
+          setParameters(data as JSONObject);
           setErrors(errors ? errors : []);
         }}
         data-testid="paramters-form"

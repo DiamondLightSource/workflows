@@ -9,6 +9,7 @@ import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { useNavigate } from "react-router-dom";
 import { workflowFragment } from "../graphql/workflowFragment";
+import RetriggerWorkflow from "./RetriggerWorkflow";
 
 interface WorkflowRelayProps {
   workflow: workflowFragment$key;
@@ -60,10 +61,12 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       <WorkflowAccordion
         workflow={{
           name: data.name,
+          instrumentSession: data.visit as Visit,
           status: statusText as WorkflowStatus,
         }}
         workflowLink={workflowLink}
         expanded={expanded}
+        retriggerComponent={RetriggerWorkflow}
       >
         <ResizableBox
           width={Infinity}

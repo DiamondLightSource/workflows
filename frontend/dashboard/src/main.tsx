@@ -31,15 +31,19 @@ const router = createBrowserRouter([
     element: <SingleTemplatePage />,
   },
   {
+    path: "templates/:templateName/:prepopulate",
+    element: <SingleTemplatePage />,
+  },
+  {
     path: "workflows/:visitid",
     element: <WorkflowsListPage />,
   },
   {
-    path: "workflows/:visitid/:workflowname",
+    path: "workflows/:visitid/:workflowName",
     element: <SingleWorkflowPage />,
   },
   {
-    path: "workflows/:visitid/:workflowname/:taskname",
+    path: "workflows/:visitid/:workflowName/:taskname",
     element: <SingleWorkflowPage />,
   },
 ]);

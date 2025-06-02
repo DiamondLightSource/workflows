@@ -8,3 +8,4 @@ export const isWorkflowWithTasks = (status: WorkflowStatusType) => {
       status.__typename === "WorkflowSucceededStatus"
     );
   };
+

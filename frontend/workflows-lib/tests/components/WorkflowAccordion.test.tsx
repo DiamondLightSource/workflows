@@ -3,6 +3,7 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { WorkflowAccordion } from "../../lib/main";
 import { TaskStatus, WorkflowStatus } from "../../lib/types";
+import { Visit } from "@diamondlightsource/sci-react-ui";
 
 describe("WorkflowAccordion Component", () => {
   beforeAll(() => {
@@ -14,6 +15,11 @@ describe("WorkflowAccordion Component", () => {
   const mockWorkflow = {
     name: "Test Workflow",
     status: "Running" as WorkflowStatus,
+    instrumentSession: {
+      proposalCode: "ab",
+      proposalNumber: 7295,
+      number: 5,
+    } as Visit,
     tasks: [
       { id: "Task-1", name: "Task 1", status: "Succeeded" as TaskStatus },
     ],

@@ -40,6 +40,7 @@ export type WorkflowStatus =
 
 export interface Workflow {
   name: string;
+  instrumentSession: Visit;
   status: WorkflowStatus;
 }
 
@@ -74,3 +75,7 @@ export interface SubmissionGraphQLErrorMessage {
   type: "graphQLError";
   errors: PayloadError[];
 };
+
+
+export type JSONValue = string | number | boolean | null | JSONObject | JSONValue[];
+export interface JSONObject { [key: string]: JSONValue }
