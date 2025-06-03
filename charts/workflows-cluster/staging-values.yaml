@@ -60,6 +60,7 @@ vcluster:
           byName:
             "/letsencrypt-argo-cd-staging-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-argo-workflows-staging-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
+            "/argo-server-sso": "workflows/argo-server-sso"
 
 ingress:
   secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk
