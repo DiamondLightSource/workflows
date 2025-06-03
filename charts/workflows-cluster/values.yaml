@@ -119,7 +119,7 @@ vcluster:
             "/argocd-oauth": "argocd/argocd-oauth"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
-            "/s3-artifact": "workflows/s3-artifact"
+            "/s3-artifact": "workflows/artifact-s3"
   rbac:
     clusterRole:
       enabled: false
