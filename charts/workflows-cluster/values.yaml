@@ -117,6 +117,7 @@ vcluster:
             "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
             "/argocd-oauth": "argocd/argocd-oauth"
+            "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/s3-artifact": "workflows/s3-artifact"
   rbac:
     clusterRole:

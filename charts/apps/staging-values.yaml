@@ -37,7 +37,7 @@ kyverno:
           memory: 1Gi
 
 sessionspaces:
-  enabled: false
+  enabled: true
   targetRevision: staging
   extraValueFiles:
     - staging-values.yaml
