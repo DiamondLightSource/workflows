@@ -30,6 +30,8 @@ argo-cd:
         g, max.herbert@diamond.ac.uk, role:admin
         g, thomas.thomas@diamond.ac.uk, role:admin
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
+        g, david.hadley@diamond.ac.uk, role:admin
+        g, jacob.williamson@diamond.ac.uk, role:admin
 
 ingress:
   enabled: true
