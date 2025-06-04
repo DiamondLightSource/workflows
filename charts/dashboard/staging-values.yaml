@@ -1,0 +1,13 @@
+image:
+  repository: maxherbs/workflows-dashboard
+  tag: 0.1.2
+ingress:
+  hosts:
+    - host: staging.workflows.diamond.ac.uk
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls: true
+  secretName: staging-tls-cert
+  host: staging.workflows.diamond.ac.uk
