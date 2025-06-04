@@ -39,6 +39,12 @@ spec:
           selector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
+      exclude:
+        resources:
+          kinds:
+            - Namespace
+          names:
+            - workflows
       generate:
         synchronize: true
         apiVersion: v1
