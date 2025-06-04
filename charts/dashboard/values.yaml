@@ -30,7 +30,7 @@ service:
 ingress:
   create: true
   className: nginx
-  tls: []
+  tls: false
   hosts:
     - host: workflows.diamond.ac.uk
       paths:

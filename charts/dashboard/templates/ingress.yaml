@@ -14,14 +14,11 @@ spec:
   {{- with $.Values.ingress.className }}
   ingressClassName: {{ . }}
   {{- end }}
-  {{- with $.Values.ingress.tls }}
+  {{- if $.Values.ingress.tls }}
   tls:
-    {{- range . }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-    {{- end }}
+    - secretName: {{ .Values.ingress.secretName }}
+      hosts:
+        - {{ .Values.ingress.host }}
   {{- end }}
   rules:
     {{- range $.Values.ingress.hosts }}
