@@ -1,0 +1,14 @@
+argoServerUrl: https://argo-workflows.staging.workflows.diamond.ac.uk
+
+s3:
+  url: https://sci-nas-s3.diamond.ac.uk
+  forcePathStyle: true
+  bucket: k8s-workflows-staging
+
+ingress:
+  hosts:
+    - host: staging.workflows.diamond.ac.uk
+      paths:
+        - path: /graphql
+          pathType: Exact
+
