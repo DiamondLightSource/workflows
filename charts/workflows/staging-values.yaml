@@ -1,3 +1,8 @@
+argo-workflows:
+  artifactRepository:
+    s3:
+      bucket: k8s-workflows-staging
+
 oauth2-proxy:
   alphaConfig:
     configData:
