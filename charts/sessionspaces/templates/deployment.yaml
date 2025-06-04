@@ -40,8 +40,8 @@ spec:
               {{- else }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ default (printf "%s-ispyb" (include "common.names.fullname" $)) $.Values.database.password.secretName }}
-                  key: {{ default "password" $.Values.database.password.secretKey }}
+                  name: sessionspaces-ispyb
+                  key: password
               {{- end }}
             - name: DATABASE_URL
             {{- if $.Values.database.create }}
