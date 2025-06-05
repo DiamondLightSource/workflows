@@ -5,14 +5,8 @@ import { graphql } from "relay-runtime";
 import { Box } from "@mui/material";
 
 const templatesListQuery = graphql`
-  query TemplatesListQuery($cursor: String, $limit: Int!) {
-    workflowTemplates(cursor: $cursor, limit: $limit) {
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-      }
+  query TemplatesListQuery {
+    workflowTemplates {
       nodes {
         name
         description
@@ -24,10 +18,7 @@ const templatesListQuery = graphql`
 `;
 
 export default function TemplatesList() {
-  const data = useLazyLoadQuery<TemplatesListQuery>(templatesListQuery, {
-    limit: 10,
-    cursor: null,
-  });
+  const data = useLazyLoadQuery<TemplatesListQuery>(templatesListQuery, {});
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" width="100%">

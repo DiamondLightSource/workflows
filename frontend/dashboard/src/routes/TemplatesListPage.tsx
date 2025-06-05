@@ -13,7 +13,7 @@ const TemplatesListPage: React.FC = () => {
       <Container maxWidth="md">
         <WorkflowsErrorBoundary>
           <Suspense>
-            <Box mt={2}>
+            <Box mt={2} mb={2}>
               <TemplatesList />
             </Box>
           </Suspense>
