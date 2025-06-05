@@ -96,6 +96,7 @@ oauth2-proxy:
             userIDClaim: fedid
   extraArgs:
     - --cookie-refresh=55s
+    - --pass-access-token=true
   extraVolumes:
     - name: secret
       secret:
