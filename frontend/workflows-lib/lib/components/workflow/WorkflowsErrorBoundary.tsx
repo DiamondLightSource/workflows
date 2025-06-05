@@ -2,6 +2,7 @@ import React, { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -27,8 +28,11 @@ class WorkflowsErrorBoundary extends Component<
   }
 
   render(): ReactNode {
-    if (this.state.hasError) {
-      return <h3>{this.state.error?.message}</h3>;
+    const { fallback } = this.props;
+    const { hasError, error } = this.state;
+
+    if (hasError) {
+      return fallback ?? <h3>{error?.message}</h3>;
     }
 
     return this.props.children;
