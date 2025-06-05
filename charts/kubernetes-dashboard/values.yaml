@@ -36,6 +36,7 @@ kubernetes-dashboard:
     - --auth-header=Authorization
     - --auth-skip-login=true
     - --auth-skip-logout=true
+    - --enable-insecure-login
 
 ingress:
   enabled: true
@@ -68,7 +69,7 @@ oauth2-proxy:
         upstreams:
           - id: kubernetes-dashboard-kong-proxy
             path: /
-            uri: http://{{ .Release.Name }}-web:8000
+            uri: http://{{ .Release.Name }}-kong-proxy:443
     configData:
       injectRequestHeaders:
         - name: Authorization
