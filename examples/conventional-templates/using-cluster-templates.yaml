@@ -59,3 +59,8 @@ spec:
             value: "{{workflow.parameters.size}}"
           - name: memory
             value: "{{workflow.parameters.memory}}"
+      - name: multi-step
+        templateRef:
+          name: conditional-steps 
+          template: multi-step-workflow
+          clusterScope: true
