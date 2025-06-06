@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: notebook-with-input
+spec:
+  entrypoint: notebook
+  arguments:
+    parameters:
+      - name: beamline
+        value: i10-1
+      - name: a
+        value: 1
+      - name: b
+        value: 2.3
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: local-path
+
+  templates:
+  - name: mount-files
+    script:
+      image: docker.io/library/python:bookworm
+      command: [bash]
+      source: |
+        echo '{{ .Files.Get "notebooks/notebook-input.ipynb" | b64enc }}' | base64 -d > /tmp/notebook.ipynb
+        echo '{{ .Files.Get "notebooks/requirements.txt" | b64enc }}' | base64 -d > /tmp/requirements.txt
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+  - name: convert-notebook
+    script:
+      image: docker.io/library/python:bookworm
+      command: [bash]
+      source: |
+        python -m venv /tmp/venv
+        /tmp/venv/bin/pip install -r /tmp/requirements.txt
+        /tmp/venv/bin/python -m ipykernel install --prefix=/tmp/venv --name=venv
+        /tmp/venv/bin/python -m papermill /tmp/notebook.ipynb /tmp/notebook-parametrized.ipynb \
+          -p beamline '{{`{{workflow.parameters.beamline}}`}}' \
+          -p a '{{`{{workflow.parameters.a}}`}}' \
+          -p b '{{`{{workflow.parameters.b}}`}}'
+        /tmp/venv/bin/python -m jupyter nbconvert --execute --allow-errors --to html --output notebook --output-dir /tmp /tmp/notebook-parametrized.ipynb
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+    outputs:
+      artifacts:
+      - name: notebook
+        path: /tmp/notebook.html
+        archive:
+          none: {}
+
+  - name: notebook
+    dag:
+      tasks:
+      - name: files
+        template: mount-files
+      - name: convert
+        template: convert-notebook
+        dependencies: [files]
