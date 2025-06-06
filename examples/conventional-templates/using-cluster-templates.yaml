@@ -37,6 +37,15 @@ metadata:
       }
 spec:
   entrypoint: workflow-entry
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: local-path
   arguments:
     parameters:
       - name: size
@@ -59,3 +68,11 @@ spec:
             value: "{{workflow.parameters.size}}"
           - name: memory
             value: "{{workflow.parameters.memory}}"
+      - name: mount
+        templateRef:
+          name: mount-tmpdir
+          template: workflow-entry
+          clusterScope: true
+          volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
