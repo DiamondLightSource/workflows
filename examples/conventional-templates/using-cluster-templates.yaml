@@ -61,6 +61,7 @@ spec:
             value: "{{workflow.parameters.memory}}"
       - name: multi-step
         templateRef:
-          name: conditional-steps 
-          template: multi-step-workflow
+          name: conditional-steps
+          template: conditional-steps
           clusterScope: true
+        dependencies: [numpy]

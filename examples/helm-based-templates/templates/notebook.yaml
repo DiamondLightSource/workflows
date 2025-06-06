@@ -52,4 +52,4 @@ spec:
         template: mount-files 
       - name: convert-notebook
         template: convert-notebook
-        dependencies: [files]
+        dependencies: [mount-files]
