@@ -6,9 +6,12 @@ import {
   Box,
   Stack,
   Divider,
+  MenuItem,
+  Select,
+  InputLabel,
 } from "@mui/material";
 import { useState } from "react";
-import { WorkflowQueryFilter } from "../../types";
+import { WorkflowQueryFilter, WorkflowStatusBool } from "../../types";
 
 interface WorkflowListFilterDrawerProps {
   onApplyFilters: (filters: WorkflowQueryFilter) => void;
@@ -18,12 +21,24 @@ export const WorkflowListFilterDisplay = ({ filter }: { filter?: WorkflowQueryFi
   <Box sx={{ mb: 2 }}>
     <Typography pt={2} variant="body2">
       {filter ? (
-        Object.entries(filter)
+        Object.entries(filter as Record<string, unknown>)
           .filter(([, val]) => val)
           .map(([key, value], index) => (
-            <div key={index}>
-              <strong>{key}:</strong> {JSON.stringify(value, null, 2)}
-            </div>
+            <Typography component={"div"} pt={2} variant="body2" key={index}>
+              <strong>
+                {key
+                  .replace(/workflowStatusFilter/g, "Workflow Status")
+                  .replace(/creator/g, "FedID")}
+                :{" "}
+              </strong>
+              {typeof value === "object" && value !== null ? (
+                Object.entries(value as Record<string, unknown>)
+                  .map(([subKey]) => subKey.charAt(0).toUpperCase() + subKey.slice(1))
+                  .join(", ")
+              ) : (
+                String(value)
+              )}
+            </Typography>
           ))
       ) : (
         <span>No active filters</span>
@@ -37,6 +52,7 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
   const [open, setOpen] = useState(false);
   const [creator, setCreator] = useState<string>("");
   const [errors, setErrors] = useState<{ creator?: boolean }>({});
+  const [status, setStatus] = useState<WorkflowStatusBool | undefined>(undefined);
 
   const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
 
@@ -45,6 +61,20 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
 
     const isValid = value === "" || /^[a-z]+[0-9]+$/.test(value);
     setErrors((prev) => ({ ...prev, creator: !isValid }));
+  };
+
+  const handleStatusChange = (value: string[]) => {
+    if (value.length === 0) {
+      setStatus(undefined);
+      return;
+    }
+    const statusOptions = ["pending", "running", "succeeded", "failed", "error"] as const;
+    const newStatus: WorkflowStatusBool = Object.fromEntries(
+      statusOptions
+        .filter((k) => value.includes(k))
+        .map((k) => [k, true])
+    );
+    setStatus(newStatus);
   };
 
   const handleApply = () => {
@@ -62,27 +92,19 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
     filter: WorkflowQueryFilter;
     validation: { valid: boolean; errors: Record<string, boolean> };
   } {
-    const rawFilter = { creator };
+    const rawFilter =
+    {
+      creator,
+      workflowStatusFilter: status,
+    };
     const filter = normaliseFilter(rawFilter);
     const validation = validateFilter(filter);
     return { filter, validation };
   }
 
   function normaliseFilter(filter: WorkflowQueryFilter): WorkflowQueryFilter {
-    const normalisedFilter: WorkflowQueryFilter = {};
-
-    Object.keys(filter).forEach((key) => {
-      const value = filter[key as keyof WorkflowQueryFilter];
-
-      if (typeof value === "string") {
-        normalisedFilter[key as keyof WorkflowQueryFilter] =
-          value.trim() === "" ? undefined : value;
-      } else {
-        normalisedFilter[key as keyof WorkflowQueryFilter] = value;
-      }
-    });
-
-    return normalisedFilter;
+    filter.creator = filter.creator?.trim() === "" ? undefined: filter.creator;
+    return filter;
   }
 
   function validateFilter(filter: WorkflowQueryFilter): {
@@ -133,6 +155,29 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
             error={!!errors.creator}
             onChange={(e) => { handleChangeCreator(e.target.value); }}
           />
+
+          <InputLabel id="status-label">Workflow Status</InputLabel>
+          <Select
+            labelId="status-label"
+            id="status"
+            multiple
+            value={
+              status
+                ? Object.entries(status)
+                    .filter(([, v]) => v)
+                    .map(([k]) => k)
+                : []
+            }
+            onChange={(e) => { handleStatusChange(e.target.value as string[]); }}
+            label="Status"
+          >
+            <MenuItem value={"pending"}>Pending</MenuItem>
+            <MenuItem value={"running"}>Running</MenuItem>
+            <MenuItem value={"succeeded"}>Succeeded</MenuItem>
+            <MenuItem value={"failed"}>Failed</MenuItem>
+            <MenuItem value={"error"}>Error</MenuItem>
+          </Select>
+
 
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
             <Button variant="outlined" onClick={toggleDrawer(false)}>
