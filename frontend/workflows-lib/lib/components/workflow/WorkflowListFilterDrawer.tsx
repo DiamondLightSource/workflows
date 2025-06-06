@@ -21,12 +21,24 @@ export const WorkflowListFilterDisplay = ({ filter }: { filter?: WorkflowQueryFi
   <Box sx={{ mb: 2 }}>
     <Typography pt={2} variant="body2">
       {filter ? (
-        Object.entries(filter)
+        Object.entries(filter as Record<string, unknown>)
           .filter(([, val]) => val)
           .map(([key, value], index) => (
-            <div key={index}>
-              <strong>{key}:</strong> {JSON.stringify(value, null, 2)}
-            </div>
+            <Typography component={"div"} pt={2} variant="body2" key={index}>
+              <strong>
+                {key
+                  .replace(/workflowStatusFilter/g, "Workflow Status")
+                  .replace(/creator/g, "FedID")}
+                :{" "}
+              </strong>
+              {typeof value === "object" && value !== null ? (
+                Object.entries(value as Record<string, unknown>)
+                  .map(([subKey]) => subKey.charAt(0).toUpperCase() + subKey.slice(1))
+                  .join(", ")
+              ) : (
+                String(value)
+              )}
+            </Typography>
           ))
       ) : (
         <span>No active filters</span>
