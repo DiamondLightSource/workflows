@@ -45,7 +45,7 @@ spec:
         /tmp/venv/bin/python -m papermill /tmp/notebook.ipynb /tmp/notebook-parametrized.ipynb \
           -p name '{{`{{workflow.parameters.name}}`}}' \
           -p a '{{`{{workflow.parameters.a}}`}}' \
-          -p b '{{`{{workflow.parameters.b}}``}}'
+          -p b '{{`{{workflow.parameters.b}}`}}'
         /tmp/venv/bin/python -m jupyter nbconvert --execute --allow-errors --to html --output notebook --output-dir /tmp /tmp/notebook-parametrized.ipynb
       volumeMounts:
         - name: tmp
