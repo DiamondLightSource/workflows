@@ -13,7 +13,7 @@ groups:
       - name: example-helm
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples/helm-based-templates
-        targetRevision: papermill-example
+        targetRevision: workflow-examples-for-presentation
         sourceType: helm
   - name: imaging
     enabled: true
