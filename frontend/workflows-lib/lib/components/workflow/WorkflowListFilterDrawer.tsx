@@ -17,24 +17,48 @@ interface WorkflowListFilterDrawerProps {
   onApplyFilters: (filters: WorkflowQueryFilter) => void;
 }
 
-export const WorkflowListFilterDisplay = ({ filter }: { filter?: WorkflowQueryFilter }) => (
-  <Box sx={{ mb: 2 }}>
-    <Typography pt={2} variant="body2">
-      {filter ? (
-        Object.entries(filter)
-          .filter(([, val]) => val)
-          .map(([key, value], index) => (
-            <div key={index}>
-              <strong>{key}:</strong> {JSON.stringify(value, null, 2)}
-            </div>
-          ))
-      ) : (
-        <span>No active filters</span>
+type LabelValueRowProps = {
+  label: string;
+  value: string;
+}
+
+export function LabelValueRow({ label, value }: LabelValueRowProps) {
+  return (
+    <Stack direction="row" spacing={1}>
+      <Typography sx={{ fontWeight: "bold" }}>{label}:</Typography>
+      <Typography>{value}</Typography>
+    </Stack>
+  );
+}
+
+function WorkflowStatusToString(status?: WorkflowStatusBool): string | null {
+  if (!status) return null;
+
+  const result = Object.entries(status)
+    .filter(([, value]) => value === true)
+    .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+    .join(", ");
+
+    return result.length > 0 ? result : null;
+}
+
+export function WorkflowListFilterDisplay({
+  filter,
+}: {
+  filter: WorkflowQueryFilter;
+}) {
+  const statusString = WorkflowStatusToString(filter.workflowStatusFilter);
+  const creator = filter.creator;
+  return (
+    <Box sx={{ mb: 2 }}>
+      {creator && <LabelValueRow label="FedID" value={creator} />}
+      {statusString && (
+        <LabelValueRow label="Workflow Status" value={statusString} />
       )}
-    </Typography>
-    <Divider sx={{ borderBottomWidth: 3 }} />
-  </Box>
-);
+      <Divider sx={{ borderBottomWidth: 3 }} />
+      </Box>
+      );
+    }
 
 function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerProps) {
   const [open, setOpen] = useState(false);
