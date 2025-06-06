@@ -48,8 +48,8 @@ spec:
   - name: notebook
     dag:
       tasks:
-      - name: files
+      - name: mount-files
         template: mount-files 
-      - name: convert
+      - name: convert-notebook
         template: convert-notebook
-        dependencies: [files]
+        dependencies: [mount-files]
