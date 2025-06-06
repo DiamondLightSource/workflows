@@ -9,9 +9,11 @@ groups:
       - name: example-manifests
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples/conventional-templates
+        targetRevision: workflow-examples-for-presentation
       - name: example-helm
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples/helm-based-templates
+        targetRevision: papermill-example
         sourceType: helm
   - name: imaging
     enabled: true
