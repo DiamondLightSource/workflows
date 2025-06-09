@@ -14,7 +14,7 @@
     "@diamondlightsource/sci-react-ui": "^0.1.0",
     "keycloak-js": "^26.2.0",
     "react-relay": "18.2.0",
-    "react-router-dom": "^7.6.1",
+    "react-router-dom": "^7.6.2",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
