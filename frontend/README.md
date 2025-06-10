@@ -10,3 +10,13 @@ in frontend/relay-workflows-lib
     - VITE_KEYCLOAK_REALM
     - VITE_KEYCLOAK_CLIENT
 5. yarn dev in frontend/dashboard
+
+## Linting, Compiling and Testing
+
+You can use the following commands for linting, compiling and testing
+
+- `yarn lint`
+- `yarn tsc`
+- `yarn test`
+
+To combine linting, compiling and testing in one command use `yarn precommit`
