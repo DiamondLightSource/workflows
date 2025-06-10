@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "eslint",
     "tsc": "tsc --build",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "precommit": "eslint && tsc --build && vitest --run"
   },
   "dependencies": {
     "@dagrejs/dagre": "1.1.4",
