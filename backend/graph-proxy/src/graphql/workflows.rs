@@ -6,7 +6,7 @@ use argo_workflows_openapi::{
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Enum, InputObject, Object, SimpleObject, Union,
+    Context, Enum, InputObject, Object, SimpleObject, Union, ID,
 };
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
@@ -67,6 +67,11 @@ impl Workflow {
 
 #[Object]
 impl Workflow {
+    /// The ID derived from the name given to the workflow, unique within a given visit
+    async fn id(&self) -> ID {
+        ID::from(&self.metadata.name)
+    }
+
     /// The name given to the workflow, unique within a given visit
     async fn name(&self) -> &str {
         &self.metadata.name
