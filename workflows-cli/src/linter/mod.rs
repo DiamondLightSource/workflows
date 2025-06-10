@@ -1,272 +1,175 @@
-/// General Utilities
-mod utils;
-use std::ops::Deref;
-use std::path::Path;
-use utils::clean_exit;
+mod common;
+use crate::command_runner::{self, CommandFactory, get_command_factory};
+use common::lint_path;
+use std::fs::{read_dir, read_to_string};
+use std::path::{Path, PathBuf};
 
-use crate::LintArgs;
-use colored::*;
-use std::process::Command;
-use std::{fs, path::PathBuf};
+use clap::ValueEnum;
 use yaml_rust2::YamlLoader;
 
-/// Linter processing for workflows
+use crate::LintArgs;
+
+#[derive(Debug, Clone, ValueEnum)]
+#[clap(rename_all = "lower")]
+pub enum ManifestType {
+    Manifest,
+    Helm,
+}
+
+#[derive(Debug)]
+struct LintResult {
+    name: String,
+    errors: Vec<String>,
+}
+
+impl LintResult {
+    fn new(name: String, errors: Vec<String>) -> Self {
+        Self { name, errors }
+    }
+}
+
+/// Linter entrypoint
 pub fn lint(args: LintArgs) {
-    println!("{}", "-------------------------------".blue());
-    println!("{}", "-------- STARTING LINTER ------".blue().bold());
-    println!("{}", "-------------------------------".blue());
-
-    let config_path = args.base_path.join(&args.config_file);
-    println!(
-        "{} {}",
-        "[INFO] Using config file:".blue(),
-        config_path.display()
-    );
-
-    let config_str = fs::read_to_string(&config_path).unwrap_or_else(|err| {
-        clean_exit(&format!(
-            "{}",
-            format!("[ERROR] Failed to read config file: {}", err).red()
-        ))
-    });
-
-    let configs = YamlLoader::load_from_str(&config_str).unwrap_or_else(|err| {
-        clean_exit(&format!(
-            "{}",
-            format!("[ERROR] Invalid YAML syntax: {}", err).red()
-        ))
-    });
-
-    let config = configs
-        .first()
-        .unwrap_or_else(|| clean_exit(&format!("{}", "[ERROR] Config file is empty.".red())));
-
-    let mut manifest_errors = match config["manifests"].as_vec() {
-        Some(manifest_paths) => {
-            println!(
-                "{} {}",
-                "[INFO] Found manifests/folders to lint:".blue(),
-                manifest_paths.len()
-            );
-            let manifest_names = manifest_paths
-                .iter()
-                .map(|yaml| yaml.as_str().unwrap())
-                .collect();
-            conventional_manifests(&args.base_path, manifest_names)
-        }
-        None => {
-            println!(
-                "{}",
-                "[WARN] No manifests defined in config... Skipping linting.".yellow()
-            );
-            Vec::new()
-        }
-    };
-
-    let helm_errors = match config["helmManifests"].as_vec() {
-        Some(manifest_paths) => {
-            println!("----------------------------------------------");
-            println!(
-                "{} {}",
-                "[INFO] Found helm chart to lint:".blue(),
-                manifest_paths.len()
-            );
-            let manifest_names: Vec<&str> = manifest_paths
-                .iter()
-                .map(|yaml| yaml.as_str().unwrap())
-                .collect();
-            helm_manifests(&args.base_path, manifest_names)
-        }
-        None => {
-            println!(
-                "{}",
-                "[WARN] No manifests defined in config... Skipping linting.".yellow()
-            );
-            Vec::new()
-        }
-    };
-    manifest_errors.extend(helm_errors.iter().cloned());
-
-    if !manifest_errors.is_empty() {
-        println!(
-            "\n{}",
-            "[ERROR] Linting completed with issues:".red().bold()
-        );
-        for error in manifest_errors {
-            println!("  {} {}", "•".red(), error);
-        }
-        clean_exit(&format!(
-            "{}",
-            "[FAIL] Linting failed due to errors.".red().bold()
-        ))
+    let results = if let Some(config_file) = &args.config_file {
+        lint_from_config(config_file)
     } else {
-        println!(
-            "\n{}",
-            "[SUCCESS] All manifests linted successfully. No issues found."
-                .green()
-                .bold()
-        );
+        match &args.manifest_type {
+            ManifestType::Manifest => lint_from_manifest(&args.file_name, args.all),
+            ManifestType::Helm => lint_from_helm(&args.file_name, args.all),
+        }
+    };
+
+    println!("Results:\n{:#?}", results);
+
+    match results.iter().any(|result| !result.errors.is_empty()) {
+        true => std::process::exit(1),
+        false => std::process::exit(0),
     }
 }
 
-/// Run the linter against conventional, non-helm-based workflows
-fn conventional_manifests(base_path: &Path, manifests: Vec<&str>) -> Vec<String> {
-    println!("{}", "[INFO] Beginning linting for each manifest...".blue());
+fn lint_from_config(_config_file: &PathBuf) -> Vec<LintResult> {
+    vec![]
+}
 
-    manifests.iter().for_each(|manifest| {
-        println!("  {} {}", "→".cyan(), manifest.cyan());
-    });
+fn lint_from_helm(target: &PathBuf, all: bool) -> Vec<LintResult> {
+    let tmp_dir = Path::new("/tmp/argo-lint");
 
-    let abs_manifest_paths: Vec<PathBuf> = manifests
-        .iter()
-        .map(|manifest| base_path.join(manifest))
-        .collect();
-
-    let mut errors = Vec::new();
-
-    for manifest_path in &abs_manifest_paths {
-        println!(
-            "{} {}",
-            "[INFO] Running `argo lint` on:".blue(),
-            manifest_path.display()
-        );
-
-        let output = Command::new("argo")
-            .arg("lint")
-            .arg(manifest_path)
-            .arg("--offline")
-            .arg("--output")
-            .arg("simple")
-            .output()
-            .unwrap_or_else(|err| {
-                clean_exit(&format!(
-                    "{}",
-                    format!(
-                        "[ERROR] Failed to execute `argo lint` on {}: {}",
-                        manifest_path.display(),
-                        err
-                    )
-                    .red()
-                ))
+    if all {
+        if let Ok(mut files) = read_dir(target) {
+            let has_chart = files.any(|f| {
+                f.ok()
+                    .and_then(|entry| entry.file_name().to_str().map(|name| name == "Chart.yaml"))
+                    .unwrap_or(false)
             });
 
-        if output.status.success() {
-            println!("  {} {}", "[PASS]".green(), manifest_path.display());
-        } else {
-            let err_msg = String::from_utf8_lossy(&output.stdout);
-            let sub_errors: Vec<String> = err_msg
-                .lines()
-                .filter(|msg| {
-                    if msg.contains("couldn't find cluster workflow template") {
-                        println!(
-                            "  {} External template reference skipped:",
-                            "[WARN]".yellow(),
-                        );
-                        println!("     {}", msg.yellow());
-                        false
-                    } else {
-                        true
-                    }
-                })
-                .map(str::to_owned)
+            if !has_chart {
+                let err = format!("Could not find 'Chart.yaml' in {} ", target.display());
+                return vec![LintResult::new(
+                    target.to_str().unwrap().to_string(),
+                    vec![err],
+                )];
+            }
+
+            let helm_out = get_command_factory()
+                .new_command("helm")
+                .arg("template")
+                .arg(target.to_str().unwrap())
+                .output();
+            let charts = match helm_out {
+                Ok(helm) => helm,
+                Err(e) => {
+                    let err = format!("Could not build helm templates. {}", e);
+                    return vec![LintResult::new(
+                        target.to_str().unwrap().to_string(),
+                        vec![err],
+                    )];
+                }
+            };
+
+            let manifests: Vec<String> = String::from_utf8_lossy(&charts.stdout)
+                .split("---")
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
                 .collect();
 
-            if !sub_errors.is_empty() {
-                println!("  {} {}", "[FAIL]".red(), manifest_path.display());
-                errors.extend(sub_errors);
+            if let Err(e) = write_to_clean_folder(tmp_dir, manifests) {
+                let err = format!("Error writing to /tmp: {}", e);
+                return vec![LintResult::new(
+                    target.to_str().unwrap().to_string(),
+                    vec![err],
+                )];
             }
+
+            let tmp_path  = tmp_dir.into();
+            return lint_from_manifest(&tmp_path, true)
+            
+
+        } else {
+            let err = format!(
+                "Could not build helm templates. {} should be a directory with chart.yaml in it.",
+                target.display()
+            );
+            return vec![LintResult::new(
+                target.to_str().unwrap().to_string(),
+                vec![err],
+            )];
         }
     }
 
-    errors
+    vec![]
 }
 
-/// Lint helm-style workflows
-fn helm_manifests(base_path: &Path, manifests: Vec<&str>) -> Vec<String> {
-    println!(
-        "{}",
-        "[INFO] Beginning linting for helm manifests...".blue()
-    );
-    let dir_path = Path::new("/tmp/argo-lint");
-
-    manifests.iter().for_each(|manifest| {
-        println!("  {} {}", "→".cyan(), manifest.cyan());
-    });
-
-    let abs_manifest_paths: Vec<PathBuf> = manifests
-        .iter()
-        .map(|manifest| base_path.join(manifest))
-        .collect();
-
-    let mut results = Vec::new();
-    for manifest_path in &abs_manifest_paths {
-        println!(
-            "{} {}",
-            "[INFO] Templating helm charts at:".blue(),
-            manifest_path.display()
-        );
-
-        if Command::new("which")
-            .arg("helm")
-            .output()
-            .map(|o| !o.status.success())
-            .unwrap_or(true)
-        {
-            clean_exit(&format!("{}", "[ERROR] `helm` not found in PATH.".red()))
-        }
-        let output = Command::new("helm")
-            .arg("template")
-            .arg(manifest_path)
-            .output()
-            .unwrap_or_else(|err| {
-                clean_exit(&format!(
-                    "{}",
-                    format!(
-                        "[ERROR] Failed to execute `helm template` on {}: {}",
-                        manifest_path.display(),
-                        err
-                    )
-                    .red()
-                ))
-            });
-        if !output.status.success() {
-            clean_exit(&format!(
-                "Something went wrong when running `helm template`\n{}",
-                String::from_utf8(output.stderr).unwrap()
-            ))
-        }
-
-        let utf8_string = String::from_utf8(output.stdout).unwrap();
-        let split_manifests: Vec<&str> =
-            utf8_string.split("---").filter(|s| !s.is_empty()).collect();
-        if !fs::exists(dir_path).unwrap() {
-            fs::create_dir(dir_path).unwrap()
-        }
-
-        let output_manifests: Vec<String> = split_manifests
-            .iter()
-            .enumerate()
-            .map(|(i, template_content)| {
-                let file_path = format!("{}/template_{}.yaml", dir_path.display(), i);
-                fs::write(&file_path, template_content).unwrap();
-                file_path
-            })
-            .collect();
-        println!("Helm template created {} manifests.", {
-            output_manifests.len()
-        });
-        let borrowed_manifest = output_manifests.iter().map(|file| file.deref()).collect();
-
-        let resp = conventional_manifests(Path::new("/"), borrowed_manifest);
-
-        for entry in fs::read_dir(dir_path).unwrap() {
-            let path = entry.unwrap().path();
-            if path.is_file() {
-                let _ = fs::remove_file(path);
+fn lint_from_manifest(target: &PathBuf, all: bool) -> Vec<LintResult> {
+    let paths = if all {
+        match read_dir(target) {
+            Ok(entries) => entries
+                .filter_map(Result::ok)
+                .map(|entry| entry.path())
+                .collect(),
+            Err(e) => {
+                let msg = format!("Error reading directory {}: {}", target.display(), e);
+                let result = LintResult::new(target.to_str().unwrap().to_string(), vec![msg]);
+                return vec![result];
             }
         }
+    } else {
+        vec![target.clone()]
+    };
 
-        results.extend(resp);
+    paths
+        .iter()
+        .map(|path| match lint_path(path) {
+            Ok(result) => result,
+            Err(error) => LintResult::new(path.to_str().unwrap().to_string(), vec![error]),
+        })
+        .collect()
+}
+
+
+
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+
+fn write_to_clean_folder(path: &Path, contents: Vec<String>) -> std::io::Result<()> {
+    if !path.exists() {
+        fs::create_dir_all(path)?;
     }
-    results
+
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let entry_path = entry.path();
+        if entry_path.is_file() {
+            fs::remove_file(entry_path)?;
+        } else if entry_path.is_dir() {
+            fs::remove_dir_all(entry_path)?;
+        }
+    }
+
+    for (i, content) in contents.iter().enumerate() {
+        let file_path = path.join(format!("workflow_{}.yaml", i));
+        let mut file = File::create(file_path)?;
+        file.write_all(content.as_bytes())?;
+    }
+    Ok(())
 }
