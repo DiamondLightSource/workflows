@@ -34,13 +34,7 @@ const renderSubmittedMessage = (
           <AccordionSummary>
             <Typography>
               Successfully submitted{" "}
-              <Link
-                to={`/workflows/${r.message}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {r.message}
-              </Link>
+              <Link to={`/workflows/${r.message}`}>{r.message}</Link>
             </Typography>
           </AccordionSummary>
         </Accordion>
