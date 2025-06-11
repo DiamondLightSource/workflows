@@ -1,4 +1,4 @@
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
@@ -26,7 +26,7 @@ const SingleTemplatePage: React.FC = () => {
   return (
     <>
       <WorkflowsNavbar />
-      <Breadcrumbs path={window.location.pathname} />
+      <Breadcrumbs path={window.location.pathname} linkComponent={Link} />
       <Container maxWidth="xl">
         <Box
           display="flex"
@@ -38,9 +38,9 @@ const SingleTemplatePage: React.FC = () => {
           {workflowName && (
             <Typography align="center" mb={5}>
               Using initial parameters from{" "}
-              <NavLink to={`/workflows/${visitToText(visit)}/${workflowName}`}>
+              <Link to={`/workflows/${visitToText(visit)}/${workflowName}`}>
                 {workflowName}
-              </NavLink>
+              </Link>
             </Typography>
           )}
           {templateName && (
