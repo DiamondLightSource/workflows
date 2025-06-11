@@ -10,7 +10,7 @@ import {
   SubmittedMessagesList,
   Visit,
 } from "workflows-lib";
-import { visitToText } from "workflows-lib/lib/utils/commonUtils";
+import { visitToText } from "@diamondlightsource/sci-react-ui";
 import SubmissionForm from "./SubmissionForm";
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
 import { TemplateViewMutation as TemplateViewMutationType } from "./__generated__/TemplateViewMutation.graphql";

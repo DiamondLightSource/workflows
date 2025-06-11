@@ -11,7 +11,6 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "@diamondlightsource/sci-react-ui": "^0.2.0",
     "keycloak-js": "^26.2.0",
     "react-relay": "18.2.0",
     "react-router-dom": "^7.6.2",

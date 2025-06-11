@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { Container, Box } from "@mui/material";
 import { VisitInput, Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-
-import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
+import { WorkflowsNavbar } from "workflows-lib";
 import { useVisitInput } from "./utils";
 
 function WorkflowsSessionInputPage() {

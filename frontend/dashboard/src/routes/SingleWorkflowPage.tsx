@@ -3,11 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import { Suspense } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-
-import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 import SingleWorkflowView from "relay-workflows-lib/lib/components/SingleWorkflowView";
-import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
-import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
+import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
+import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
 function SingleWorkflowPage() {
   const { visitid, workflowName, taskname } = useParams<{
