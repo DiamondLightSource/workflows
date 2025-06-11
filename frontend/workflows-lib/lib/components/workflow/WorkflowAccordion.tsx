@@ -10,8 +10,9 @@ import {
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Visit } from "@diamondlightsource/sci-react-ui";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
-import { Visit, Workflow } from "../../types";
+import { Workflow } from "../../types";
 
 interface WorkflowProps {
   workflow: Workflow;

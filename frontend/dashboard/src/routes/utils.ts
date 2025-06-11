@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Visit } from "workflows-lib";
-import { visitToText, visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
+import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
+import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
 export const useVisitInput = (initialVisitId?: string) => {
   const navigate = useNavigate();

@@ -1,16 +1,11 @@
+import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
-import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
+import { Breadcrumbs, visitToText } from "@diamondlightsource/sci-react-ui";
 import TemplateView from "relay-workflows-lib/lib/components/TemplateView";
 import TemplateViewRetrigger from "relay-workflows-lib/lib/components/TemplateViewRetrigger";
-
-import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
-import { Suspense } from "react";
-import {
-  parseVisitAndTemplate,
-  visitToText,
-} from "workflows-lib/lib/utils/commonUtils";
+import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
+import { parseVisitAndTemplate } from "workflows-lib/lib/utils/commonUtils";
 
 const SingleTemplatePage: React.FC = () => {
   const { templateName, prepopulate } = useParams<{

@@ -1,9 +1,9 @@
 import { Box, Paper, Typography, useTheme, Tooltip } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
+import { visitToText, Visit } from "@diamondlightsource/sci-react-ui";
 import { getTaskStatusIcon } from "../common/StatusIcons";
-import { Artifact, TaskStatus, Visit } from "../../types";
-import { visitToText } from "../../utils/commonUtils";
+import { Artifact, TaskStatus } from "../../types";
 
 export interface TaskFlowNodeData {
   label: string;
@@ -11,7 +11,7 @@ export interface TaskFlowNodeData {
   details: Artifact[];
   workflow: string;
   instrumentSession: Visit;
-  highlighted: boolean
+  highlighted: boolean;
 }
 
 interface TaskFlowNodeProps {
@@ -24,7 +24,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
   const handleOpenTaskPage = () => {
     const instrumentSessionId = visitToText(data.instrumentSession);
     onNavigate(
-      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`
+      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`,
     );
   };
 

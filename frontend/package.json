@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "1.1.4",
+    "@diamondlightsource/sci-react-ui": "^0.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@jsonforms/core": "^3.5.1",
@@ -49,5 +50,6 @@
     "typescript-eslint": "^8.33.1",
     "vite": "^6.3.5",
     "vitest": "^3.2.2"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

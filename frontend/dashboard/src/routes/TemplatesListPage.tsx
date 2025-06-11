@@ -2,9 +2,7 @@ import { Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Container, Box } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-
-import WorkflowsNavbar from "workflows-lib/lib/components/workflow/WorkflowsNavbar";
-import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
+import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
 import TemplatesList from "relay-workflows-lib/lib/components/TemplatesList";
 
 const TemplatesListPage: React.FC = () => {
