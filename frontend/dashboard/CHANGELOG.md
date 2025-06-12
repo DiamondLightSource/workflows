@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.5...dashboard@v0.1.6) (2025-06-12)
+
+
+### Features
+
+* **dashboard:** allow template width to be set in ui schema ([f18791e](https://github.com/DiamondLightSource/workflows/commit/f18791e02a3490c3061cd3f7e5df4d3cac36f277))
+* **frontend:** add rerun template from submitted workflow ([bfed855](https://github.com/DiamondLightSource/workflows/commit/bfed8555dac852e6386d6b0ad5c08b043c4faebd))
+* **frontend:** report errors/success on template submission ([22c3f09](https://github.com/DiamondLightSource/workflows/commit/22c3f09c78cecb4e0d28d107360e4ff40b6c1532))
+* **workflows-lib:** filter by creator ([833d61c](https://github.com/DiamondLightSource/workflows/commit/833d61c7ec5bf83dfcd8ed6eb68f391b1862a4b1))
+
+
+### Bug Fixes
+
+* **frontend:** return all templates without limit ([363840d](https://github.com/DiamondLightSource/workflows/commit/363840da45b3ed870b0c727ed110229932854fcf))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.4...dashboard@v0.1.5) (2025-05-19)
 
 
