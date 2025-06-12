@@ -1,8 +1,8 @@
 use crate::command_runner::{CommandFactory, get_command_factory};
 
 use super::LintResult;
-use std::fs::{read_dir, read_to_string};
-use std::path::{Path, PathBuf};
+use std::fs::read_to_string;
+use std::path::PathBuf;
 
 use yaml_rust2::YamlLoader;
 

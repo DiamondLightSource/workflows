@@ -6,13 +6,13 @@
 
 /// Argo workflows linter wrapper
 mod linter;
-use std::{os::unix::process, path::PathBuf};
+use std::path::PathBuf;
 
 mod command_runner;
 
 use clap::Parser;
 
-use crate::{command_runner::get_command_factory, linter::ManifestType};
+use crate::linter::ManifestType;
 
 /// Workflows Tool
 #[derive(Debug, Parser)]
