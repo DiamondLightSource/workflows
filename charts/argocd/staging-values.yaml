@@ -1,0 +1,18 @@
+argo-cd:
+  configs:
+    cm:
+      url: https://argo-cd.staging.workflows.diamond.ac.uk
+      oidc.config: |
+        name: Keycloak
+        issuer: https://authn.diamond.ac.uk/realms/master
+        clientID: workflows-argocd-staging
+        clientSecret: $argocd-oauth:oidc.keycloak.clientSecret
+        requestedScopes:
+          - openid
+          - profile
+          - email
+
+ingress:
+  enabled: true
+  host: argo-cd.staging.workflows.diamond.ac.uk
+

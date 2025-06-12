@@ -1,3 +1,5 @@
+secrets:
+  cluster: dev
 vcluster:
   controlPlane:
     distro:
@@ -151,6 +153,10 @@ vcluster:
                   automated:
                     prune: true
                     selfHeal: true
+  sync:
+    fromHost:
+      secrets:
+        enabled: false
 
 ingress:
   enabled: false

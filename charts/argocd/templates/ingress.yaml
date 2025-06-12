@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: argo-cd.workflows.diamond.ac.uk
+    - host: {{ .Values.ingress.host }}
       http:
         paths:
           - path: /
@@ -22,7 +22,7 @@ spec:
                 port:
                   name: https
   tls:
-    - secretName: {{ include "common.names.dependency.fullname" (dict "chartName" "vcluster" "chartValues" (index .Values "argo-cd") "context" $) }}-ingress-tls
+    - secretName: {{ .Values.ingress.secretName }}
       hosts:
-        - argo-cd.workflows.diamond.ac.uk
+        - {{ .Values.ingress.host }}
 {{- end }}
