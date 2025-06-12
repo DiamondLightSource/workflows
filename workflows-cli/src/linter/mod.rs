@@ -3,9 +3,10 @@ mod helm;
 use clap::ValueEnum;
 use common::lint_path;
 use std::fs::read_dir;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::LintArgs;
+use crate::linter::helm::{fetch_all_helm_manifests, write_to_clean_folder};
 
 #[derive(Debug, Clone, ValueEnum)]
 #[clap(rename_all = "lower")]
@@ -48,9 +49,35 @@ fn lint_from_config(_config_file: &PathBuf) -> Result<Vec<LintResult>, String> {
 }
 
 fn lint_from_helm(target: &PathBuf, all: bool) -> Result<Vec<LintResult>, String> {
-    
+    let tmp_dir = Path::new("/tmp/argo-lint");
 
-    Ok(vec![])
+    let select_template = match all {
+        true => None,
+        false => Some(target.file_name().unwrap().to_str().unwrap()),
+    };
+
+    let chart_root = match all {
+        true => target,
+        false => target
+            .ancestors()
+            .find(|path| path.join("Chart.yaml").exists())
+            .ok_or_else(|| "Could not find a parent directory containing Chart.yaml".to_string())?,
+    };
+
+    let manifests = fetch_all_helm_manifests(chart_root, select_template)?;
+
+    if manifests.is_empty() {
+        return Err(
+            "Found no workflows/templates. Either the path was wrong or the templates are broken."
+                .to_string(),
+        );
+    }
+
+    write_to_clean_folder(tmp_dir, manifests)
+        .map_err(|e| "Couldn't create temporary file for helm templates.")?;
+
+    let path_buf = tmp_dir.to_path_buf();
+    return lint_from_manifest(&path_buf, true);
 }
 
 fn lint_from_manifest(target: &PathBuf, all: bool) -> Result<Vec<LintResult>, String> {
@@ -79,6 +106,16 @@ fn lint_from_manifest(target: &PathBuf, all: bool) -> Result<Vec<LintResult>, St
 }
 
 fn print_and_exit(results: Vec<LintResult>) {
+    results.iter().for_each(|result| {
+        print!("Template Name: {} - ", result.name);
+
+        if result.errors.is_empty() {
+            println!("No errors");
+        } else {
+            println!("Errors found");
+            result.errors.iter().for_each(|e| println!("  - {}", e));
+        }
+    });
     match results.iter().any(|result| !result.errors.is_empty()) {
         true => std::process::exit(1),
         false => std::process::exit(0),

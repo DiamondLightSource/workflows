@@ -48,6 +48,13 @@ pub fn lint_template(target: &PathBuf) -> Result<Vec<String>, String> {
         .lines()
         .filter(|msg| !msg.contains("couldn't find cluster workflow template"))
         .filter(|msg| !msg.contains("no linting errors"))
+        .map(|msg| {
+            if let Some((_, remainder)) = msg.split_once(":") {
+                remainder.trim_start()
+            } else {
+                msg
+            }
+        })
         .map(str::to_string)
         .collect();
     Ok(errs)

@@ -1,15 +1,22 @@
+use std::fs;
 use std::fs::{File, read_dir};
 use std::io::Write;
 use std::path::Path;
-use std::fs;
 
 use crate::command_runner::get_command_factory;
 
-pub fn helm_template(target: &Path) -> Result<Vec<String>, String> {
-    let output = get_command_factory()
-        .new_command("helm")
-        .arg("template")
-        .arg(target.to_str().unwrap())
+pub fn helm_template(target: &Path, template: Option<&str>) -> Result<Vec<String>, String> {
+    let mut base_command = get_command_factory().new_command("helm");
+    base_command.arg("template").arg(target.to_str().unwrap());
+
+    if let Some(template) = template {
+        let target_template = Path::new("templates").join(template);
+        base_command
+            .arg("-s")
+            .arg(target_template.to_str().unwrap());
+    }
+
+    let output = base_command
         .output()
         .map_err(|e| "Failed to run 'helm'. Is it installed?")?;
 
@@ -20,9 +27,10 @@ pub fn helm_template(target: &Path) -> Result<Vec<String>, String> {
         .collect())
 }
 
-fn fetch_all_helm_manifests(target: &Path) -> Result<Vec<String>, String> {
-    let tmp_dir = Path::new("/tmp/argo-lint");
-
+pub fn fetch_all_helm_manifests(
+    target: &Path,
+    template: Option<&str>,
+) -> Result<Vec<String>, String> {
     let mut files = read_dir(target).map_err(|e| {
         format!(
             "Failed to build helm templates. Does {} have chart.yaml in it?",
@@ -43,11 +51,11 @@ fn fetch_all_helm_manifests(target: &Path) -> Result<Vec<String>, String> {
         ));
     }
 
-    let manifests = helm_template(target)?;
+    let manifests = helm_template(target, template)?;
     Ok(manifests)
 }
 
-fn write_to_clean_folder(path: &Path, contents: Vec<String>) -> std::io::Result<()> {
+pub fn write_to_clean_folder(path: &Path, contents: Vec<String>) -> std::io::Result<()> {
     if !path.exists() {
         fs::create_dir_all(path)?;
     }
