@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.2...relay-workflows-lib@v0.1.3) (2025-06-12)
+
+
+### Features
+
+* **frontend:** add client-side pagination to templates list ([c7b9c6c](https://github.com/DiamondLightSource/workflows/commit/c7b9c6c7d791ec225a744e9c09b5bfcdf27b3e2b))
+* **frontend:** add link to single workflow from accordion ([967cf32](https://github.com/DiamondLightSource/workflows/commit/967cf32a933e5166fb6eaf623618e13f9c050698))
+* **frontend:** add rerun template from submitted workflow ([bfed855](https://github.com/DiamondLightSource/workflows/commit/bfed8555dac852e6386d6b0ad5c08b043c4faebd))
+* **frontend:** report errors/success on template submission ([22c3f09](https://github.com/DiamondLightSource/workflows/commit/22c3f09c78cecb4e0d28d107360e4ff40b6c1532))
+* **workflows-lib:** exclude root DAG from flow ([ad68b83](https://github.com/DiamondLightSource/workflows/commit/ad68b832b9c91b0a2ac69bce1fdd54bdf7f7306e))
+* **workflows-lib:** filter by creator ([833d61c](https://github.com/DiamondLightSource/workflows/commit/833d61c7ec5bf83dfcd8ed6eb68f391b1862a4b1))
+
+
+### Bug Fixes
+
+* **frontend:** add ErrorBoundary fallback for retrigger ([68ee397](https://github.com/DiamondLightSource/workflows/commit/68ee397ea64c7e8dcef691879c9292b3955345e1))
+* **frontend:** return all templates without limit ([363840d](https://github.com/DiamondLightSource/workflows/commit/363840da45b3ed870b0c727ed110229932854fcf))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.1...relay-workflows-lib@v0.1.2) (2025-05-19)
 
 
