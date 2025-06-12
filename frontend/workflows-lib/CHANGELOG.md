@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.3...workflows-lib@v0.1.4) (2025-06-12)
+
+
+### Features
+
+* **dashboard:** allow template width to be set in ui schema ([f18791e](https://github.com/DiamondLightSource/workflows/commit/f18791e02a3490c3061cd3f7e5df4d3cac36f277))
+* **frontend:** add link to single workflow from accordion ([967cf32](https://github.com/DiamondLightSource/workflows/commit/967cf32a933e5166fb6eaf623618e13f9c050698))
+* **frontend:** add rerun template from submitted workflow ([bfed855](https://github.com/DiamondLightSource/workflows/commit/bfed8555dac852e6386d6b0ad5c08b043c4faebd))
+* **frontend:** added workflow status select component to workflow filter drawer ([348defb](https://github.com/DiamondLightSource/workflows/commit/348defbd7d3f541e6f046c7bf23125d3c700ad68))
+* **frontend:** report errors/success on template submission ([22c3f09](https://github.com/DiamondLightSource/workflows/commit/22c3f09c78cecb4e0d28d107360e4ff40b6c1532))
+* **frontend:** use react-router for sci-react-ui links ([a3c90ec](https://github.com/DiamondLightSource/workflows/commit/a3c90ec9b256e17e43bc17aef8b631367f7ec5db))
+* **workflows-lib:** exclude root DAG from flow ([ad68b83](https://github.com/DiamondLightSource/workflows/commit/ad68b832b9c91b0a2ac69bce1fdd54bdf7f7306e))
+* **workflows-lib:** filter by creator ([833d61c](https://github.com/DiamondLightSource/workflows/commit/833d61c7ec5bf83dfcd8ed6eb68f391b1862a4b1))
+
+
+### Bug Fixes
+
+* **frontend:** add ErrorBoundary fallback for retrigger ([68ee397](https://github.com/DiamondLightSource/workflows/commit/68ee397ea64c7e8dcef691879c9292b3955345e1))
+
+
+### Reverts
+
+* undo storyboard bump ([9adb79a](https://github.com/DiamondLightSource/workflows/commit/9adb79a91da6435aa2d324e8d73ed8b5d2530103))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.2...workflows-lib@v0.1.3) (2025-05-19)
 
 
