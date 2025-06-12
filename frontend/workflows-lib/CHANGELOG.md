@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.4...workflows-lib@v0.1.5) (2025-06-12)
+
+
+### Bug Fixes
+
+* **frontend:** use modified visitRegex in template regex ([1a9950a](https://github.com/DiamondLightSource/workflows/commit/1a9950a38a71de19cb2c5e51d01ebf970f4e6af5))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.3...workflows-lib@v0.1.4) (2025-06-12)
 
 
