@@ -13,6 +13,10 @@ groups:
         repoURL: https://github.com/DiamondLightSource/workflows
         path: examples/helm-based-templates
         sourceType: helm
+      - name: away-day
+        repoURL: https://github.com/maxherbs/away-day-demo
+        path: workflows
+        targetRevision: workflows
   - name: imaging
     enabled: true
     permittedRepos: []
