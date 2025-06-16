@@ -4656,10 +4656,19 @@ relay-compiler@19.0.0, relay-compiler@^19.0.0:
   resolved "https://registry.yarnpkg.com/relay-compiler/-/relay-compiler-19.0.0.tgz#3f6d4c030883cbac6472ac185df4c921ff87b659"
   integrity sha512-DwyNWPUkzdggT3oBuNTS18bL6KCU3Sg/oSW/q+pqOQNHLo+RUZOWAx44ALy5XoBrsXjQVBr0EiNqJ4A8G1skOw==
 
-relay-runtime@18.2.0, relay-runtime@^18.0.0:
+relay-runtime@18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-18.2.0.tgz#36e2c88be6e13dcdf987d32a3063e3e491aafa43"
   integrity sha512-r4FYWlx1dPwFW+KQnuF1ugwVKR4toIFduCGheEf2paRc6nEEcCIgd2p2Jx2gRF+4niO3mCbRZvqdCoKaznUDzg==
+  dependencies:
+    "@babel/runtime" "^7.25.0"
+    fbjs "^3.0.2"
+    invariant "^2.2.4"
+
+relay-runtime@^20.0.0:
+  version "20.0.0"
+  resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-20.0.0.tgz#dfed50c7836efd25786c81dd69a9a1ff8493dd5a"
+  integrity sha512-GwS4WbJZSxfut1nJRCcUVWfOwl6TZ2dWFlb4s8vX0S6/EBLlAKxi5YKOejFe302JVCGp/YbXhezYAY21L6AsGw==
   dependencies:
     "@babel/runtime" "^7.25.0"
     fbjs "^3.0.2"
