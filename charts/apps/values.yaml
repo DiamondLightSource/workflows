@@ -25,6 +25,9 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     admissionController:
+      featuresOverride:
+        admissionReports:
+          backPressureThreshold: 10000
       replicas: 3
       container:
         resources:
@@ -37,8 +40,8 @@ kyverno:
     backgroundController:
       extraArgs:
         genWorkers: 50
-        clientRateLimitBurst: 500
-        clientRateLimitQPS: 500
+        clientRateLimitBurst: 1000
+        clientRateLimitQPS: 1000
       replicas: 2
       resources:
         limits:
