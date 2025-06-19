@@ -25,7 +25,7 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     config:
-      updateRequestThreshold: 10000
+      updateRequestThreshold: 20000
     admissionController:
       featuresOverride:
         admissionReports:
