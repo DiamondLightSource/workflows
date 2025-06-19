@@ -80,7 +80,7 @@ impl MockCommand {
         let mappings: HashMap<String, Vec<MockEntry>> =
             serde_yaml::from_str(&yaml_str).expect("Failed to parse YAML");
 
-        let target_mapping = env::var("RUST_TEST_ACTIVE_MAPPING").unwrap();
+        let target_mapping = env::var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING").unwrap();
         let active_mapping = mappings.get(&target_mapping).unwrap();
 
         Self {
@@ -93,6 +93,7 @@ impl MockCommand {
     /// Lookup command in the mapping table
     fn get_response(&self) -> (String, i32) {
         let full_command = format!("{} {}", self.cmd, self.args.join(" "));
+        println!("MOCK COMMAND: {}", full_command);
         let entry = self
             .mappings
             .iter()
@@ -136,7 +137,7 @@ impl CommandFactory for MockCommandFactory {
 
 /// Get an instance of the CLI builder
 pub fn get_command_factory() -> Box<dyn CommandFactory> {
-    match env::var("MOCK_COMMAND") {
+    match env::var("WORKFLOWS_CLI_TEST_ENABLE_MOCK_COMMAND") {
         Ok(val) if val == "1" => Box::new(MockCommandFactory),
         _ => Box::new(RealCommandFactory),
     }
