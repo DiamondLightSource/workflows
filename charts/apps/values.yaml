@@ -34,15 +34,15 @@ kyverno:
       container:
         resources:
           limits:
-            cpu: 2
+            cpu: 4
             memory: 8Gi
           requests:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
     backgroundController:
       extraArgs:
         backgroundScanWorkers: 5
-        genWorkers: 100
+        genWorkers: 50
         clientRateLimitBurst: 1000
         clientRateLimitQPS: 1000
       replicas: 2
