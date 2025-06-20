@@ -3,7 +3,7 @@ name: workflows-cluster
 description: A virtual cluster for Data Analysis workflows
 type: application
 
-version: 0.9.9
+version: 0.9.10
 
 dependencies:
   - name: common
