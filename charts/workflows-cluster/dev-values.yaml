@@ -1,3 +1,6 @@
+secrets:
+  enabled: false
+
 vcluster:
   controlPlane:
     distro:
