@@ -51,3 +51,11 @@ groups:
       - name: spectroscopy-bluesky
         repoURL: https://github.com/DiamondLightSource/spectroscopy-bluesky
         path: workflows/helm
+  - name: crystallography
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: i15-1
+        repoURL: https://github.com/DiamondLightSource/crystallography-workflows
+        path: I15-1_workflows
+        sourceType: helm
