@@ -7,6 +7,10 @@
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "packages": {
+    "workflows-cli": {
+      "release-type": "rust",
+      "package-name": "workflows-cli"
+    },
     "backend/graph-proxy": {
       "release-type": "rust",
       "extra-files": [
