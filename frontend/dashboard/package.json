@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@types/react-relay": "18.2.0",
-    "babel-plugin-relay": "18.2.0",
+    "babel-plugin-relay": "20.0.0",
     "relay-compiler": "19.0.0",
     "vite-plugin-relay": "2.1.0"
   },
