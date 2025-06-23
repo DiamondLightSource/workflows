@@ -13,7 +13,7 @@
     "precommit": "eslint && tsc --build && vitest --run"
   },
   "dependencies": {
-    "@dagrejs/dagre": "1.1.4",
+    "@dagrejs/dagre": "1.1.5",
     "@diamondlightsource/sci-react-ui": "^0.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -36,8 +36,8 @@
     "@types/node": "^22.15.30",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.5.2",
-    "@vitest/eslint-plugin": "^1.2.5",
+    "@vitejs/plugin-react": "^4.6.0",
+    "@vitest/eslint-plugin": "^1.2.7",
     "eslint": "^9.29.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
@@ -47,9 +47,9 @@
     "identity-obj-proxy": "^3.0.0",
     "jsdom": "^26.1.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0",
+    "typescript-eslint": "^8.34.1",
     "vite": "^6.3.5",
-    "vitest": "^3.2.3"
+    "vitest": "^3.2.4"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
