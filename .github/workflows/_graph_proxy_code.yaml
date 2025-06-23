@@ -18,11 +18,10 @@ jobs:
           cache: false
           components: clippy,rustfmt
 
-      - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.8
+      - uses: actions/cache@v4.2.3
         with:
-          shared-key: backend/graph-proxy
-          workspaces: backend
+          path: ./backend/target
+          key: graph-proxy-lint
 
       - name: Create argo workflows openapi types file
         run: |
@@ -65,11 +64,10 @@ jobs:
           cache: false
           components: rustfmt
 
-      - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.8
+      - uses: actions/cache@v4.2.3
         with:
-          shared-key: backend/graph-proxy
-          workspaces: backend
+          path: ./backend/target
+          key: graph-proxy-test
 
       - name: Run Tests
         working-directory: backend/graph-proxy
