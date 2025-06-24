@@ -1,0 +1,36 @@
+name: Lint Workflows
+description: Lint Workflows
+
+inputs:
+  config-file-path:
+    description: File describing lint configuration.
+    required: false
+    default: "./.workflows-lint.yaml"
+
+runs:
+  using: composite
+  steps:
+    - name: Install argo CLI
+      shell: bash
+      run: |
+        curl -sLO "https://github.com/argoproj/argo-workflows/releases/download/v3.7.0-rc2/argo-linux-amd64.gz"
+        gunzip "argo-linux-amd64.gz"
+        chmod +x "argo-linux-amd64"
+        mv "./argo-linux-amd64" /usr/local/bin/argo
+
+    - name: Install helm
+      shell: bash
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Install Workflows CLI
+      shell: bash
+      run: |
+        curl -OL https://github.com/DiamondLightSource/workflows/releases/download/workflows-cli%40v0.1.0/workflows-cli.zip 
+        unzip workflows-cli.zip
+        mv workflows /usr/local/bin/workflows
+
+    - name: Lint Workflows
+      shell: bash
+      run: |
+        workflows lint-config ${{ inputs.config-file-path }}
