@@ -7,4 +7,5 @@ export { default as SubmittedMessagesList } from "./components/workflow/Submitte
 export { default as WorkflowsErrorBoundary } from "./components/workflow/WorkflowsErrorBoundary";
 export { default as WorkflowListFilterDrawer } from "./components/workflow/WorkflowListFilterDrawer";
 export { default as WorkflowsNavbar } from "./components/workflow/WorkflowsNavbar";
+export { default as PaginationControls } from "./components/common/PaginationControls";
 export * from "./types";
