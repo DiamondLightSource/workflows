@@ -1,24 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { Box } from "@mui/material";
-import { graphql } from "relay-runtime";
-import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
-import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__generated__/SingleWorkflowViewQuery.graphql";
+import { useCallback, useEffect } from "react";
+import { graphql, useQueryLoader } from "react-relay";
 import { Visit } from "@diamondlightsource/sci-react-ui";
+import { SingleWorkflowViewQuery } from "./__generated__/SingleWorkflowViewQuery.graphql";
+import SingleWorkflowContent from "./SingleWorkflowContent";
 
-import type { Artifact, Task, TaskStatus } from "workflows-lib";
-import { useLazyLoadQuery, useFragment } from "react-relay/hooks";
-import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
-import { workflowFragment } from "../graphql/workflowFragment";
-import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
-import { isWorkflowWithTasks } from "../utils";
-
-const singleWorkflowViewQuery = graphql`
+export const singleWorkflowViewQuery = graphql`
   query SingleWorkflowViewQuery($visit: VisitInput!, $workflowname: String!) {
     workflow(visit: $visit, name: $workflowname) {
       ...workflowFragment
     }
   }
 `;
+
 interface SingleWorkflowViewProps {
   visit: Visit;
   workflowName: string;
@@ -28,62 +21,39 @@ interface SingleWorkflowViewProps {
 const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
   visit,
   workflowName,
-  taskname: initialTaskname,
+  taskname,
 }) => {
-  const [artifactList, setArtifactList] = useState<Artifact[]>([]);
-  const [taskname, setTaskname] = useState<string | undefined>(initialTaskname);
-
-  const data = useLazyLoadQuery<SingleWorkflowViewQueryType>(
+  const [queryReference, loadQuery] = useQueryLoader<SingleWorkflowViewQuery>(
     singleWorkflowViewQuery,
-    {
-      visit,
-      workflowname: workflowName,
-    },
-  );
-  const workflowData = useFragment<workflowFragment$key>(
-    workflowFragment,
-    data.workflow,
   );
 
-  useEffect(() => {
-    let fetchedTasks: Task[] = [];
-    if (workflowData.status && isWorkflowWithTasks(workflowData.status)) {
-      fetchedTasks = workflowData.status.tasks.map((task) => ({
-        id: task.id,
-        name: task.name,
-        status: task.status as TaskStatus,
-        depends: [...task.depends],
-        artifacts: [...task.artifacts],
-        workflow: workflowName,
-        instrumentSession: visit,
-        stepType: task.stepType
-      }));
-    }
-
-    if (taskname) {
-      const filteredTask = fetchedTasks.find((task) => task.name === taskname);
-      const artifacts: Artifact[] = filteredTask?.artifacts ?? [];
-      setArtifactList(artifacts);
-    }
-  }, [data, taskname, workflowName, visit, workflowData.status]);
+  const load = useCallback(() => {
+    loadQuery(
+      { visit, workflowname: workflowName },
+      { fetchPolicy: "store-and-network" },
+    );
+  }, [visit, workflowName, loadQuery]);
 
   useEffect(() => {
-    setTaskname(initialTaskname);
-  }, [initialTaskname]);
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      load();
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [load]);
+
+  if (!queryReference) return <div>Loading workflow</div>;
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <WorkflowRelay
-        workflow={data.workflow}
-        expanded={true}
-        highlightedTaskName={taskname}
-      />
-      {taskname && (
-        <Box sx={{ width: "100%" }}>
-          <TaskInfo artifactList={artifactList} />
-        </Box>
-      )}
-    </Box>
+    <SingleWorkflowContent
+      queryReference={queryReference}
+      taskname={taskname}
+    />
   );
 };
 

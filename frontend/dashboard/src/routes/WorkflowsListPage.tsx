@@ -14,7 +14,7 @@ import {
   WorkflowsNavbar,
 } from "workflows-lib";
 import { WorkflowListFilterDisplay } from "workflows-lib/lib/components/workflow/WorkflowListFilterDrawer";
-import { useVisitInput } from "./utils";
+import { useVisitInput, ScrollRestorer } from "./utils";
 
 const WorkflowsListPage: React.FC = () => {
   const { visitid } = useParams<{ visitid: string }>();
@@ -53,6 +53,7 @@ const WorkflowsListPage: React.FC = () => {
             {visit ? (
               <WorkflowsErrorBoundary key={JSON.stringify(workflowQueryFilter)}>
                 <Suspense>
+                  <ScrollRestorer />
                   <Workflows visit={visit} filter={workflowQueryFilter} />
                 </Suspense>
               </WorkflowsErrorBoundary>
