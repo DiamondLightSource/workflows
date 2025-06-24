@@ -52,7 +52,12 @@ describe("TasksFlow", () => {
     console.log("Mock Tasks:", mockTasks);
 
     render(
-      <TasksFlow tasks={mockTasks} isDynamic={true} onNavigate={() => {}} />
+      <TasksFlow
+        workflowName="mockWorkflowA"
+        tasks={mockTasks}
+        isDynamic={true}
+        onNavigate={() => {}}
+      />,
     );
     expect(screen.getByTestId("reactflow-mock")).toBeInTheDocument();
     expect(screen.queryByTestId("taskstable-mock")).not.toBeInTheDocument();
@@ -76,7 +81,12 @@ describe("TasksFlow", () => {
     console.log("Mock Tasks:", mockTasks);
 
     render(
-      <TasksFlow tasks={mockTasks} isDynamic={true} onNavigate={() => {}} />
+      <TasksFlow
+        workflowName="mockWorkflowA"
+        tasks={mockTasks}
+        isDynamic={true}
+        onNavigate={() => {}}
+      />,
     );
     expect(screen.getByTestId("taskstable-mock")).toBeInTheDocument();
     expect(screen.queryByTestId("reactflow-mock")).not.toBeInTheDocument();
@@ -86,13 +96,18 @@ describe("TasksFlow", () => {
     const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
 
     const { unmount } = render(
-      <TasksFlow tasks={mockTasks} isDynamic={true} onNavigate={() => {}} />
+      <TasksFlow
+        workflowName="mockWorkflowA"
+        tasks={mockTasks}
+        isDynamic={true}
+        onNavigate={() => {}}
+      />,
     );
     unmount();
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       "resize",
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 });
