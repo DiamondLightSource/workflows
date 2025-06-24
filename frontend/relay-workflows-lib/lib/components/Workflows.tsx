@@ -1,24 +1,21 @@
-import WorkflowRelay from "relay-workflows-lib/lib/components/WorkflowRelay";
-import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
-import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
-import { useLazyLoadQuery } from "react-relay/hooks";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { graphql } from "react-relay";
+import { useQueryLoader } from "react-relay/hooks";
 import { Visit, WorkflowQueryFilter } from "workflows-lib";
-import { useState, useCallback, useEffect, startTransition } from "react";
-import Pagination from "@mui/material/Pagination";
-import {
-  Box,
-  FormControl,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-} from "@mui/material";
-import { graphql } from "relay-runtime";
+import { WorkflowsQuery } from "./__generated__/WorkflowsQuery.graphql";
+import WorkflowsContent from "./WorkflowsContent";
+import { useServerSidePagination } from "./useServerSidePagination";
 
-const workflowsQuery = graphql`
-  query WorkflowsQuery($visit: VisitInput!, $cursor: String, $limit: Int!, $filter: WorkflowFilter) {
+export const workflowsQuery = graphql`
+  query WorkflowsQuery(
+    $visit: VisitInput!
+    $cursor: String
+    $limit: Int!
+    $filter: WorkflowFilter
+  ) {
     workflows(visit: $visit, cursor: $cursor, limit: $limit, filter: $filter) {
       nodes {
-        ...workflowFragment
+        name
       }
       pageInfo {
         endCursor
@@ -30,143 +27,67 @@ const workflowsQuery = graphql`
   }
 `;
 
-export default function Workflows({ visit, filter }: { visit: Visit, filter?: WorkflowQueryFilter }) {
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [workflows, setWorkflows] = useState<workflowFragment$key[]>([]);
-  const [cursorHistory, setCursorHistory] = useState<{
-    [page: number]: string | null;
-  }>({ 1: null });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [selectedLimit, setSelectedLimit] = useState(10);
-
-
-  const data = useLazyLoadQuery<WorkflowsQueryType>(workflowsQuery, {
-    visit,
-    limit: selectedLimit,
+export default function Workflows({
+  visit,
+  filter,
+}: {
+  visit: Visit;
+  filter?: WorkflowQueryFilter;
+}) {
+  const {
     cursor,
-    filter
-  });
+    currentPage,
+    totalPages,
+    selectedLimit,
+    goToPage,
+    changeLimit,
+    updatePageInfo,
+  } = useServerSidePagination();
 
-  const updateWorkflows = (
-    nodes: WorkflowsQueryType["response"]["workflows"]["nodes"],
-  ) => {
-    setWorkflows([...nodes]);
-  };
+  const [queryReference, loadQuery] =
+    useQueryLoader<WorkflowsQuery>(workflowsQuery);
 
-  const updateTotalPages = useCallback(
-    (pageInfo: WorkflowsQueryType["response"]["workflows"]["pageInfo"]) => {
-      const hasNextPage = pageInfo.hasNextPage;
-      const currentPageCount = Object.keys(cursorHistory).length;
+  const [isPaginated, setIsPaginated] = useState(false);
+  const lastPage = useRef(currentPage);
+  const lastLimit = useRef(selectedLimit);
 
-      if (hasNextPage && !cursorHistory[currentPage + 1]) {
-        setTotalPages(currentPageCount + 1);
-      } else {
-        setTotalPages(currentPageCount);
-      }
-    },
-    [cursorHistory, currentPage],
-  );
+  const load = useCallback(() => {
+    loadQuery(
+      { visit, limit: selectedLimit, cursor, filter },
+      { fetchPolicy: "store-and-network" },
+    );
+  }, [visit, selectedLimit, cursor, filter, loadQuery]);
 
   useEffect(() => {
-    updateWorkflows(data.workflows.nodes);
-    updateTotalPages(data.workflows.pageInfo);
-  }, [data, cursorHistory, updateTotalPages]);
+    load();
+  }, [load]);
 
-  const handlePageChange = (
-    _event: React.ChangeEvent<unknown>,
-    page: number,
-  ) => {
-    const targetCursor = cursorHistory[page];
+  useEffect(() => {
     if (
-      !targetCursor &&
-      page === currentPage + 1 &&
-      data.workflows.pageInfo.hasNextPage
+      currentPage !== lastPage.current ||
+      selectedLimit !== lastLimit.current
     ) {
-      loadMore();
-    } else {
-      startTransition(() => {
-        setCursor(targetCursor);
-        setCurrentPage(page);
-      });
+      setIsPaginated(true);
+      lastPage.current = currentPage;
+      lastLimit.current = selectedLimit;
     }
-  };
+  }, [currentPage, selectedLimit]);
 
-  const loadMore = () => {
-    if (data.workflows.pageInfo.hasNextPage) {
-      startTransition(() => {
-        const newCursor = data.workflows.pageInfo.endCursor ?? null;
-        if (!Object.values(cursorHistory).includes(newCursor)) {
-          setCursorHistory((prevCursorHistory) => ({
-            ...prevCursorHistory,
-            [currentPage + 1]: newCursor,
-          }));
-        }
-        setCursor(newCursor);
-        setCurrentPage(currentPage + 1);
-      });
-    }
-  };
-
-  const workflowList = workflows.map((node, index) => (
-    <WorkflowRelay key={index} workflow={node} workflowLink={true} />
-  ));
-
-  const limitChanged = (event: SelectChangeEvent) => {
-    setSelectedLimit(Number(event.target.value));
-    setCursorHistory({ 1: null });
-    setCurrentPage(1);
-    setCursor(null);
-  };
+  if (!queryReference) return <div>Loading workflows</div>;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
+    <WorkflowsContent
+      queryReference={queryReference}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      selectedLimit={selectedLimit}
+      onPageChange={(page, endCursor, hasNextPage) => {
+        goToPage(page, endCursor, hasNextPage);
       }}
-    >
-      {workflowList}
-
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: {
-            xs: "column",
-            sm: "row",
-          },
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 2,
-          mt: 2,
-        }}
-      >
-        <Pagination
-          count={totalPages}
-          page={currentPage}
-          onChange={handlePageChange}
-          showFirstButton
-          siblingCount={1}
-          boundaryCount={0}
-        />
-
-        <FormControl sx={{ width: 80 }}>
-          <Select
-            size="small"
-            labelId="setLimitSelector"
-            value={selectedLimit.toString()}
-            aria-label="Results Per Page"
-            onChange={limitChanged}
-          >
-            <MenuItem value={5}>5</MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-    </div>
+      onLimitChange={changeLimit}
+      updatePageInfo={updatePageInfo}
+      isPaginated={isPaginated}
+      visit={visit}
+    />
   );
 }

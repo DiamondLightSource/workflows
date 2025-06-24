@@ -19,6 +19,7 @@ interface WorkflowProps {
   children: React.ReactNode;
   workflowLink?: boolean;
   expanded?: boolean;
+  onChange?: () => void;
   retriggerComponent?: React.ComponentType<{
     instrumentSession: Visit;
     workflowName: string;
@@ -36,11 +37,16 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   children,
   workflowLink = false,
   expanded = false,
+  onChange,
   retriggerComponent,
 }) => {
   const resolvedPath = useResolvedPath(workflow.name);
   return (
-    <Accordion key={workflow.name} defaultExpanded={expanded}>
+    <Accordion
+      key={workflow.name}
+      defaultExpanded={expanded}
+      onChange={onChange}
+    >
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
         <Box sx={{ display: "flex", flexGrow: 1, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}
