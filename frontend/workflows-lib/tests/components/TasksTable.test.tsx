@@ -15,7 +15,7 @@ describe("TaskTable Component", () => {
           .mockReturnValueOnce(<span>Pending Icon</span>)
           .mockReturnValueOnce(<span>Completed Icon</span>)
           .mockReturnValueOnce(<span>In-Progress Icon</span>),
-      })
+      }),
     );
   });
 
@@ -25,7 +25,11 @@ describe("TaskTable Component", () => {
 
   it("should render without crashing", () => {
     const { getByText } = render(
-      <TasksTable tasks={mockTasks} onNavigate={() => {}} />
+      <TasksTable
+        workflowName="mockWorkflowA"
+        tasks={mockTasks}
+        onNavigate={() => {}}
+      />,
     );
     expect(getByText("task-1")).toBeInTheDocument();
     expect(getByText("task-2")).toBeInTheDocument();
@@ -33,7 +37,13 @@ describe("TaskTable Component", () => {
   });
 
   it("should call getStatusIcon for each task", () => {
-    render(<TasksTable tasks={mockTasks} onNavigate={() => {}} />);
+    render(
+      <TasksTable
+        workflowName="mockWorkflowA"
+        tasks={mockTasks}
+        onNavigate={() => {}}
+      />,
+    );
     expect(getTaskStatusIcon).toHaveBeenCalledWith("Pending");
     expect(getTaskStatusIcon).toHaveBeenCalledWith("Succeeded");
     expect(getTaskStatusIcon).toHaveBeenCalledWith("Running");
