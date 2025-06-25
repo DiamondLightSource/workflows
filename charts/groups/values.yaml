@@ -31,6 +31,10 @@ groups:
       - name: imaging-i14
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
         path: i14
+      - name: imaging-nxstacker
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: nxstacker
+        sourceType: helm
   - name: mx
     enabled: true
     permittedRepos: []
