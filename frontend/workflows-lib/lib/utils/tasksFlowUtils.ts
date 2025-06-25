@@ -1,10 +1,11 @@
+import { useCallback } from "react";
 import dagre from "@dagrejs/dagre";
-import { Node, Edge } from "@xyflow/react";
+import { Node, Edge, Viewport } from "@xyflow/react";
 import { Task, TaskNode } from "../types";
 
 export function applyDagreLayout(
   nodes: Node[],
-  edges: Edge[]
+  edges: Edge[],
 ): { nodes: Node[]; edges: Edge[] } {
   const graph = new dagre.graphlib.Graph();
 
@@ -55,11 +56,16 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
   return roots;
 }
 
-export function isRootDag(task: TaskNode){
-  return task.stepType === "DAG" && (!task.depends || task.depends.length === 0);
+export function isRootDag(task: TaskNode) {
+  return (
+    task.stepType === "DAG" && (!task.depends || task.depends.length === 0)
+  );
 }
 
-export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName?: string): {
+export function generateNodesAndEdges(
+  taskNodes: TaskNode[],
+  highlightedTaskName?: string,
+): {
   nodes: Node[];
   edges: Edge[];
 } {
@@ -69,7 +75,10 @@ export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
     sortedTasks.forEach((task) => {
-      if (!nodes.some((existingNode) => existingNode.id === task.id) && !isRootDag(task)) {
+      if (
+        !nodes.some((existingNode) => existingNode.id === task.id) &&
+        !isRootDag(task)
+      ) {
         nodes.push({
           id: task.id,
           type: "custom",
@@ -105,4 +114,25 @@ export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName
 
   traverse(taskNodes);
   return { nodes, edges };
+}
+
+export function usePersistentViewport(workflowName: string) {
+  const viewport_key = `${workflowName}Viewport`;
+  const saveViewport = useCallback(
+    (viewport: Viewport) => {
+      sessionStorage.setItem(viewport_key, JSON.stringify(viewport));
+    },
+    [viewport_key],
+  );
+
+  const loadViewport = useCallback((): Viewport | null => {
+    const stored = sessionStorage.getItem(viewport_key);
+    return stored ? (JSON.parse(stored) as Viewport) : null;
+  }, [viewport_key]);
+
+  const clearViewport = useCallback(() => {
+    sessionStorage.removeItem(viewport_key);
+  }, [viewport_key]);
+
+  return { saveViewport, loadViewport, clearViewport };
 }

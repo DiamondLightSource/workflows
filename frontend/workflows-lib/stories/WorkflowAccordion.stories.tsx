@@ -16,7 +16,12 @@ export const Accordion: Story = {
   args: {
     workflow: fakeWorkflowA,
     children: (
-      <TasksFlow tasks={fakeTasksA} isDynamic={true} onNavigate={() => {}} />
+      <TasksFlow
+        workflowName={fakeWorkflowA.name}
+        tasks={fakeTasksA}
+        isDynamic={true}
+        onNavigate={() => {}}
+      />
     ),
   },
 };
