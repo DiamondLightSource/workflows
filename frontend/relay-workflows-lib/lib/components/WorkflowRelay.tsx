@@ -7,7 +7,7 @@ import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import { workflowFragment$key } from "../graphql/__generated__/workflowFragment.graphql";
 import { Visit } from "@diamondlightsource/sci-react-ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { workflowFragment } from "../graphql/workflowFragment";
 import RetriggerWorkflow from "./RetriggerWorkflow";
 import React, { useState } from "react";
@@ -25,6 +25,12 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   workflowLink,
   expanded,
 }) => {
+
+  const { visitid, workflowName } = useParams<{
+    visitid: string;
+    workflowName: string;
+  }>();
+
   const data = useFragment(workflowFragment, workflow);
   const navigate = useNavigate();
 
@@ -46,22 +52,29 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
         }))
       : [];
   
-  const onNavigate = React.useCallback((path: string, event?: React.MouseEvent) =>
-    {
+  const onNavigate = React.useCallback(
+    (path: string, event?: React.MouseEvent) => {
       const taskName = String(path.split("/").filter(Boolean).pop());
       const isShift = event?.shiftKey;
 
       setSelectedTaskNames((prev) => {
+        let updatedTasks: string[];
+
         if (isShift) {
-          return prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
+          updatedTasks = prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
         } else {
-          return [taskName];
+          updatedTasks = [taskName];
         }
-        
+
+        const basePath = `/workflows/${visitid}/${workflowName}`
+        const newPath = updatedTasks.length 
+          ? `${basePath}/${updatedTasks.join(",")}`
+          : basePath;
+
+        void navigate(newPath);
+        return updatedTasks
       });
-      ;
-      void navigate(path);
-    }, [navigate])
+    }, [navigate, visitid, workflowName])
   
   
   return (

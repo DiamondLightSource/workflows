@@ -8,10 +8,10 @@ import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
 function SingleWorkflowPage() {
-  const { visitid, workflowName, taskname } = useParams<{
+  const { visitid, workflowName, tasknames } = useParams<{
     visitid: string;
     workflowName: string;
-    taskname?: string;
+    tasknames?: string;
   }>();
 
   const visit = visitTextToVisit(visitid);
@@ -30,7 +30,7 @@ function SingleWorkflowPage() {
                 <SingleWorkflowView
                   visit={visit}
                   workflowName={workflowName}
-                  tasknames={taskname? [taskname]: []}
+                  tasknames={tasknames? tasknames.split(","): []}
                 />
               </Suspense>
             </WorkflowsErrorBoundary>
