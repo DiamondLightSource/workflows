@@ -43,6 +43,8 @@ pub(super) enum WorkflowParsingError {
     MissingS3Bucket,
     #[error("invalid presigned s3 url")]
     InvalidPresignedS3Url,
+    #[error("No authorisation token was provided")]
+    MissingAuthToken,
 }
 
 /// A Workflow consisting of one or more [`Task`]s

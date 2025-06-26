@@ -1,72 +1,108 @@
-use async_graphql::{Context, Object, Subscription};
-use kube::{
-    api::{DynamicObject, GroupVersionKind},
-    discovery,
-    runtime::{watcher, WatchStreamExt},
-    Api, Client, Config,
+use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowWatchEvent;
+use async_graphql::{Context, Subscription};
+use axum_extra::headers::{authorization::Bearer, Authorization};
+use eventsource_stream::Eventsource;
+use futures_util::{Stream, StreamExt};
+use serde::Deserialize;
+use std::ops::Deref;
+
+use crate::{
+    graphql::{
+        workflows::{Workflow, WorkflowParsingError},
+        VisitInput,
+    },
+    ArgoServerUrl,
 };
 
-use futures_util::Stream;
-use secrecy::SecretString;
-use std::ops::Deref;
-use tokio_stream::StreamExt;
-
-use crate::{graphql::VisitInput, KubernetesApiUrl};
-
-/// Subscriptions relating to the Workflow object
+/// Subscriptions relating to the LiveWorkflow object
 #[derive(Debug, Clone, Default)]
 pub struct SubscribeWorkflows;
 
 #[Subscription]
 impl SubscribeWorkflows {
     /// Processing to subscribe to data for all workflows in a session
-    async fn workflows(
+    async fn workflow(
         &self,
         ctx: &Context<'_>,
-        session: VisitInput,
-    ) -> anyhow::Result<impl Stream<Item = WorkflowChange>> {
-        let token = ctx.data_unchecked::<Option<String>>();
-        let token = if let Some(token) = token {
-            token.clone().into_boxed_str()
-        } else {
-            return Err(anyhow::anyhow!("No authentication token provided"));
-        };
+        visit: VisitInput,
+        name: String,
+    ) -> anyhow::Result<impl Stream<Item = Result<Workflow, String>>> {
+        let auth_token = ctx
+            .data_unchecked::<Option<Authorization<Bearer>>>()
+            .as_ref()
+            .ok_or(WorkflowParsingError::MissingAuthToken)?;
 
-        let kube_api_url = ctx.data_unchecked::<KubernetesApiUrl>().deref();
+        let session = visit.to_string();
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let mut url = server_url.clone();
 
-        let mut cfg = Config::new(kube_api_url.to_owned());
-        cfg.default_namespace = session.to_string();
-        cfg.auth_info.token = Some(SecretString::new(token));
-        let client = Client::try_from(cfg)?;
+        url.path_segments_mut().expect("Invalid base URL").extend([
+            "api",
+            "v1",
+            "workflow-events",
+            &session,
+        ]);
 
-        let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "Workflow");
-        let (resource, _capabilities) = discovery::pinned_kind(&client, &gvk).await?;
-        let workflows: Api<DynamicObject> =
-            Api::namespaced_with(client, &session.to_string(), &resource);
-        let wc = watcher::Config::default();
+        url.query_pairs_mut().append_pair(
+            "listOptions.fieldSelector",
+            &format!("metadata.name={name},metadata.namespace={visit}"),
+        );
 
-        let stream = watcher(workflows, wc).applied_objects().filter_map(|wf| {
-            let resp = &wf
-                .unwrap()
-                .metadata
-                .name
-                .expect("Workflow is missing a name.");
-            Some(WorkflowChange { name: resp.clone() })
+        let client = reqwest::Client::new();
+        let response = client
+            .get(url)
+            .bearer_auth(auth_token.token())
+            .header("Accept", "text/event-stream")
+            .send()
+            .await?
+            .bytes_stream()
+            .eventsource();
+
+        let stream = response.then(move |event_result| {
+            let session_clone = visit.clone();
+            async move {
+                match event_result {
+                    Ok(event) => {
+                        let watch_event: WatchEvent =
+                            serde_json::from_str(&event.data).map_err(|e| e.to_string())?;
+
+                        match (watch_event.result, watch_event.error) {
+                            (Some(result), None) => {
+                                if let Some(workflow) = result.object {
+                                    Ok(Workflow::new(workflow, session_clone.into()))
+                                } else {
+                                    Err("No workflow object returned".to_string())
+                                }
+                            }
+                            (None, Some(err)) => Err(err.message),
+                            (None, None) => Err("Missing result and error in event".to_string()),
+                            (Some(_), Some(_)) => {
+                                Err("Conflicting result and error in event".to_string())
+                            }
+                        }
+                    }
+                    Err(_err) => Err("Failed to read event from stream".to_string()),
+                }
+            }
         });
 
         Ok(stream)
     }
 }
 
-/// Workflow data accessible via the graph
-struct WorkflowChange {
-    /// The name of the workflow
-    name: String,
+#[derive(Debug, Deserialize)]
+struct StreamError {
+    /// The message associated with the error
+    message: String,
 }
 
-#[Object]
-impl WorkflowChange {
-    async fn name(&self) -> &str {
-        &self.name
-    }
+/// Succees/fail events from Workflows API
+#[derive(Debug, Deserialize)]
+struct WatchEvent {
+    /// Successful event
+    result: Option<IoArgoprojWorkflowV1alpha1WorkflowWatchEvent>,
+    /// Error returned by API
+    error: Option<StreamError>,
 }
+
+// TODO! Write tests for this

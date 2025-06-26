@@ -34,6 +34,7 @@ use axum::{
     response::IntoResponse,
     Error,
 };
+use axum_extra::headers::Authorization;
 use futures_util::{
     future,
     future::BoxFuture,
@@ -135,11 +136,20 @@ where
                                 .get("Authorization")
                                 .and_then(|value| value.as_str())
                                 .and_then(|token| token.strip_prefix("Bearer "))
-                                .map(str::to_string);
+                                .map(str::to_string)
+                                .ok_or(async_graphql::Error::new("No auth token was provided"))?;
 
-                            let mut data = Data::default();
-                            data.insert(token);
-                            Ok(data)
+                            let auth_header = Authorization::bearer(&token);
+                            match auth_header {
+                                Ok(header) => {
+                                    let mut data = Data::default();
+                                    data.insert(Some(header));
+                                    Ok(data)
+                                }
+                                Err(_e) => {
+                                    Err(async_graphql::Error::new("No auth token was provided"))
+                                }
+                            }
                         });
 
                     websocket.serve()
