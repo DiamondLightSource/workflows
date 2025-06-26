@@ -7,9 +7,17 @@ mod workflow_templates;
 /// GraphQL operations related to workflows
 mod workflows;
 
+/// GraphQL operations requiring subscriptions
+mod subscription;
+
+/// Axum-specific websocket handling to support subscriptions
+pub mod subscription_integration;
+
+use crate::graphql::subscription::SubscribeWorkflows;
+
 use self::{workflow_templates::WorkflowTemplatesQuery, workflows::WorkflowsQuery};
 use async_graphql::{
-    EmptySubscription, InputObject, MergedObject, Schema, SchemaBuilder, SimpleObject,
+    InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder, SimpleObject,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::extract::State;
@@ -22,11 +30,16 @@ use std::fmt::Display;
 use workflow_templates::WorkflowTemplatesMutation;
 
 /// The root schema of the service
-pub type RootSchema = Schema<Query, Mutation, EmptySubscription>;
+pub type RootSchema = Schema<Query, Mutation, Subscription>;
 
 /// A schema builder for the service
-pub fn root_schema_builder() -> SchemaBuilder<Query, Mutation, EmptySubscription> {
-    Schema::build(Query::default(), Mutation::default(), EmptySubscription).enable_federation()
+pub fn root_schema_builder() -> SchemaBuilder<Query, Mutation, Subscription> {
+    Schema::build(
+        Query::default(),
+        Mutation::default(),
+        Subscription::default(),
+    )
+    .enable_federation()
 }
 
 /// The root query of the service
@@ -36,6 +49,10 @@ pub struct Query(WorkflowsQuery, WorkflowTemplatesQuery);
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedObject)]
 pub struct Mutation(WorkflowTemplatesMutation);
+
+/// The root mutation of the service
+#[derive(Debug, Clone, Default, MergedSubscription)]
+pub struct Subscription(SubscribeWorkflows);
 
 /// Handles HTTP requests as GraphQL according to the provided [`Schema`]
 pub async fn graphql_handler(
