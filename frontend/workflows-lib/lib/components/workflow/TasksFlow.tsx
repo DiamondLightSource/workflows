@@ -29,7 +29,7 @@ const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 interface TasksFlowProps {
   workflowName: string;
   tasks: Task[];
-  highlightedTaskName?: string;
+  highlightedTaskNames?: string[];
   onNavigate: (s: string) => void;
   isDynamic?: boolean;
 }
@@ -37,21 +37,22 @@ interface TasksFlowProps {
 const TasksFlow: React.FC<TasksFlowProps> = ({
   workflowName,
   tasks,
-  highlightedTaskName,
+  highlightedTaskNames,
   onNavigate,
   isDynamic,
 }) => {
   const previousTaskCount = useRef<number>(tasks.length);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  const nodeTypes = {
+  const nodeTypes = useMemo(() => ({
     custom: (props: { data: TaskFlowNodeData }) => (
       <TaskFlowNode onNavigate={onNavigate} {...props} />
     ),
-  };
+  }), [onNavigate]);
+
   const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
   const { nodes, edges } = useMemo(
-    () => generateNodesAndEdges(taskTree, highlightedTaskName),
-    [taskTree, highlightedTaskName],
+    () => generateNodesAndEdges(taskTree, highlightedTaskNames),
+    [taskTree, highlightedTaskNames],
   );
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () => applyDagreLayout(nodes, edges),

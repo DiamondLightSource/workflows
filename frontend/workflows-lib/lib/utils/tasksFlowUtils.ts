@@ -64,7 +64,7 @@ export function isRootDag(task: TaskNode) {
 
 export function generateNodesAndEdges(
   taskNodes: TaskNode[],
-  highlightedTaskName?: string,
+  highlightedTaskNames?: string[],
 ): {
   nodes: Node[];
   edges: Edge[];
@@ -88,7 +88,7 @@ export function generateNodesAndEdges(
             details: task.artifacts,
             workflow: task.workflow,
             instrumentSession: task.instrumentSession,
-            highlighted: task.name === highlightedTaskName,
+            highlighted: highlightedTaskNames?.includes(task.name) ?? false,
           },
           position: { x: 0, y: 0 },
         });
