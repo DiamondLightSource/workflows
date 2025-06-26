@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.5...graph-proxy@v0.1.6) (2025-06-26)
+
+
+### Features
+
+* **graph-proxy:** add id to Workflow to allow refetchable fragments ([45f70f5](https://github.com/DiamondLightSource/workflows/commit/45f70f5e24005482131e415e6222131ffe355d3e))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.4...graph-proxy@v0.1.5) (2025-05-28)
 
 
