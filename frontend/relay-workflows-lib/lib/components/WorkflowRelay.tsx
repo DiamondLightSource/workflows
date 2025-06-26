@@ -13,14 +13,14 @@ import RetriggerWorkflow from "./RetriggerWorkflow";
 
 interface WorkflowRelayProps {
   workflow: workflowFragment$key;
-  highlightedTaskName?: string;
+  highlightedTaskNames?: string[];
   workflowLink?: boolean;
   expanded?: boolean;
 }
 
 const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   workflow,
-  highlightedTaskName,
+  highlightedTaskNames,
   workflowLink,
   expanded,
 }) => {
@@ -86,7 +86,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
         >
           <TasksFlow
             tasks={tasks}
-            highlightedTaskName={highlightedTaskName}
+            highlightedTaskNames={highlightedTaskNames}
             onNavigate={(path: string) => {
               void navigate(path);
             }}

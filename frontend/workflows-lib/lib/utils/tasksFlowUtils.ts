@@ -59,7 +59,7 @@ export function isRootDag(task: TaskNode){
   return task.stepType === "DAG" && (!task.depends || task.depends.length === 0);
 }
 
-export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName?: string): {
+export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskNames?: string[]): {
   nodes: Node[];
   edges: Edge[];
 } {
@@ -79,7 +79,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[], highlightedTaskName
             details: task.artifacts,
             workflow: task.workflow,
             instrumentSession: task.instrumentSession,
-            highlighted: task.name === highlightedTaskName,
+            highlighted: highlightedTaskNames?.includes(task.name) ?? false,
           },
           position: { x: 0, y: 0 },
         });

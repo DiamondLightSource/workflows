@@ -22,16 +22,16 @@ const singleWorkflowViewQuery = graphql`
 interface SingleWorkflowViewProps {
   visit: Visit;
   workflowName: string;
-  taskname?: string;
+  tasknames?: string[];
 }
 
 const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
   visit,
   workflowName,
-  taskname: initialTaskname,
+  tasknames: initialTasknames,
 }) => {
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
-  const [taskname, setTaskname] = useState<string | undefined>(initialTaskname);
+  const [tasknames, setTasknames] = useState<string[] | undefined>(initialTasknames);
 
   const data = useLazyLoadQuery<SingleWorkflowViewQueryType>(
     singleWorkflowViewQuery,
@@ -60,25 +60,25 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
       }));
     }
 
-    if (taskname) {
-      const filteredTask = fetchedTasks.find((task) => task.name === taskname);
+    if (tasknames) {
+      const filteredTask = fetchedTasks.find((task) => tasknames.includes(task.name));
       const artifacts: Artifact[] = filteredTask?.artifacts ?? [];
       setArtifactList(artifacts);
     }
-  }, [data, taskname, workflowName, visit, workflowData.status]);
+  }, [data, tasknames, workflowName, visit, workflowData.status]);
 
   useEffect(() => {
-    setTaskname(initialTaskname);
-  }, [initialTaskname]);
+    setTasknames(initialTasknames);
+  }, [initialTasknames]);
 
   return (
     <Box sx={{ width: "100%" }}>
       <WorkflowRelay
         workflow={data.workflow}
         expanded={true}
-        highlightedTaskName={taskname}
+        highlightedTaskNames={tasknames}
       />
-      {taskname && (
+      {tasknames && (
         <Box sx={{ width: "100%" }}>
           <TaskInfo artifactList={artifactList} />
         </Box>
