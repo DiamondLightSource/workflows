@@ -9,6 +9,8 @@ import { Visit } from "@diamondlightsource/sci-react-ui";
 import { useNavigate } from "react-router-dom";
 import RetriggerWorkflow from "./RetriggerWorkflow";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
+import { useState } from "react";
+import React from "react";
 
 export const workflowRelayQuery = graphql`
   query WorkflowRelayQuery($visit: VisitInput!, $name: String!) {
@@ -103,7 +105,7 @@ export const workflowRelayQuery = graphql`
 interface WorkflowRelayProps {
   visit: Visit;
   workflowName: string;
-  highlightedTaskName?: string;
+  highlightedTaskNames?: string[];
   workflowLink?: boolean;
   expanded?: boolean;
   onChange?: () => void;
@@ -112,7 +114,7 @@ interface WorkflowRelayProps {
 const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   visit,
   workflowName,
-  highlightedTaskName,
+  highlightedTaskNames,
   workflowLink,
   expanded,
   onChange,
@@ -124,6 +126,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   const navigate = useNavigate();
 
   const statusText = data.workflow.status?.__typename ?? "Unknown";
+
+  const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(highlightedTaskNames ?? [])
 
   const tasks: Task[] =
     data.workflow.status && "tasks" in data.workflow.status
@@ -138,7 +142,25 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           stepType: task.stepType,
         }))
       : [];
+  
+  const onNavigate = React.useCallback((path: string, event?: React.MouseEvent) =>
+    {
+      const taskName = String(path.split("/").filter(Boolean).pop());
+      const isCtrl = event?.ctrlKey || event?.metaKey;
 
+      setSelectedTaskNames((prev) => {
+        if (isCtrl) {
+          return prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
+        } else {
+          return [taskName];
+        }
+        
+      });
+      ;
+      void navigate(path);
+    }, [navigate])
+  
+  
   return (
     <Box
       sx={{
@@ -184,10 +206,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           <TasksFlow
             workflowName={data.workflow.name}
             tasks={tasks}
-            highlightedTaskName={highlightedTaskName}
-            onNavigate={(path: string) => {
-              void navigate(path);
-            }}
+            highlightedTaskNames={selectedTaskNames}
+            onNavigate={onNavigate}
           ></TasksFlow>
         </ResizableBox>
       </WorkflowAccordion>

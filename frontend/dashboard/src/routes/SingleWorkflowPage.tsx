@@ -30,7 +30,7 @@ function SingleWorkflowPage() {
                 <SingleWorkflowView
                   visit={visit}
                   workflowName={workflowName}
-                  taskname={taskname}
+                  tasknames={taskname? [taskname]: []}
                 />
               </Suspense>
             </WorkflowsErrorBoundary>

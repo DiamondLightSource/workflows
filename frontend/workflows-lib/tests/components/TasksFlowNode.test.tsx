@@ -47,7 +47,7 @@ describe("TaskFlowNode", () => {
     );
     fireEvent.click(screen.getByText("TaskA"));
     expect(mockedNavigator).toHaveBeenCalledWith(
-      "/workflows/ab12345-6/Workflow1/TaskA/"
+      "/workflows/ab12345-6/Workflow1/TaskA/", expect.any(Object)
     );
   });
 

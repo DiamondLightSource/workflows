@@ -10,13 +10,13 @@ import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/Wo
 interface SingleWorkflowViewProps {
   visit: Visit;
   workflowName: string;
-  taskname?: string;
+  tasknames?: string[];
 }
 
 export default function SingleWorkflowView({
   visit,
   workflowName,
-  taskname,
+  tasknames,
 }: SingleWorkflowViewProps) {
   const data = useLazyLoadQuery<WorkflowRelayQueryType>(workflowRelayQuery, {
     visit: visit,
@@ -28,14 +28,14 @@ export default function SingleWorkflowView({
 
   useEffect(() => {
     if (
-      taskname &&
+      tasknames &&
       data.workflow.status &&
       isWorkflowWithTasks(data.workflow.status)
     ) {
-      const task = data.workflow.status.tasks.find((t) => t.name === taskname);
+      const task = data.workflow.status.tasks.find((t) => t.name === tasknames);
       setArtifactList([...(task?.artifacts ?? [])]);
     }
-  }, [workflow, taskname, data.workflow.status]);
+  }, [workflow, tasknames, data.workflow.status]);
 
   return (
     <>
@@ -45,9 +45,9 @@ export default function SingleWorkflowView({
         workflowName={workflowName}
         workflowLink
         expanded={true}
-        highlightedTaskName={taskname}
+        highlightedTaskNames={tasknames}
       />
-      {taskname && (
+      {tasknames && (
         <div style={{ width: "100%", marginTop: "1rem" }}>
           <TaskInfo artifactList={artifactList} />
         </div>
