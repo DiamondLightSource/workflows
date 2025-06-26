@@ -10,6 +10,7 @@ import { Visit } from "@diamondlightsource/sci-react-ui";
 import { useNavigate } from "react-router-dom";
 import { workflowFragment } from "../graphql/workflowFragment";
 import RetriggerWorkflow from "./RetriggerWorkflow";
+import React, { useState } from "react";
 
 interface WorkflowRelayProps {
   workflow: workflowFragment$key;
@@ -29,6 +30,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 
   const statusText = data.status?.__typename ?? "Unknown";
 
+  const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(highlightedTaskNames ?? [])
+
   const tasks: Task[] =
     data.status && "tasks" in data.status
       ? data.status.tasks.map((task) => ({
@@ -42,7 +45,25 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           stepType: task.stepType,
         }))
       : [];
+  
+  const onNavigate = React.useCallback((path: string, event?: React.MouseEvent) =>
+    {
+      const taskName = String(path.split("/").filter(Boolean).pop());
+      const isShift = event?.shiftKey;
 
+      setSelectedTaskNames((prev) => {
+        if (isShift) {
+          return prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
+        } else {
+          return [taskName];
+        }
+        
+      });
+      ;
+      void navigate(path);
+    }, [navigate])
+  
+  
   return (
     <Box
       sx={{
@@ -86,10 +107,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
         >
           <TasksFlow
             tasks={tasks}
-            highlightedTaskNames={highlightedTaskNames}
-            onNavigate={(path: string) => {
-              void navigate(path);
-            }}
+            highlightedTaskNames={selectedTaskNames}
+            onNavigate={onNavigate}
           ></TasksFlow>
         </ResizableBox>
       </WorkflowAccordion>

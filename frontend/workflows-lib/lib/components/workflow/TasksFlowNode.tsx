@@ -16,15 +16,15 @@ export interface TaskFlowNodeData {
 
 interface TaskFlowNodeProps {
   data: TaskFlowNodeData;
-  onNavigate: (path: string) => void;
+  onNavigate: (path: string, e?: React.MouseEvent) => void;
 }
 
 const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
   const theme = useTheme();
-  const handleOpenTaskPage = () => {
+  const handleOpenTaskPage = (e: React.MouseEvent) => {
     const instrumentSessionId = visitToText(data.instrumentSession);
     onNavigate(
-      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`,
+      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`, e
     );
   };
 

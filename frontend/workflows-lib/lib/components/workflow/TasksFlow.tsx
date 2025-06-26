@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect, useState } from "react";
+import React, { useRef, useCallback, useEffect, useState, useMemo } from "react";
 import { Box } from "@mui/material";
 import { ReactFlow, ReactFlowInstance, getNodesBounds } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -26,11 +26,12 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   onNavigate,
   isDynamic,
 }) => {
-  const nodeTypes = {
+  const nodeTypes = useMemo(() => ({
     custom: (props: { data: TaskFlowNodeData }) => (
       <TaskFlowNode onNavigate={onNavigate} {...props} />
     ),
-  };
+  }), [onNavigate]);
+
   const taskTree = buildTaskTree(tasks);
   const { nodes, edges } = generateNodesAndEdges(taskTree, highlightedTaskNames);
   const { nodes: layoutedNodes, edges: layoutedEdges } = applyDagreLayout(
