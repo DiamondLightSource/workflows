@@ -61,8 +61,9 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
     }
 
     if (tasknames) {
-      const filteredTask = fetchedTasks.find((task) => tasknames.includes(task.name));
-      const artifacts: Artifact[] = filteredTask?.artifacts ?? [];
+      const filteredTasks = fetchedTasks.filter((task) => tasknames.includes(task.name));
+      const artifacts: Artifact[] = filteredTasks
+        ? filteredTasks.flatMap(task => task.artifacts) : [];
       setArtifactList(artifacts);
     }
   }, [data, tasknames, workflowName, visit, workflowData.status]);
