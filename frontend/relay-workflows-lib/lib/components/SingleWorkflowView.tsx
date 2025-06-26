@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
-import { Artifact } from "workflows-lib/lib/types";
+import { Artifact, Task, TaskStatus } from "workflows-lib/lib/types";
 import WorkflowRelay, { workflowRelayQuery } from "./WorkflowRelay";
 import { isWorkflowWithTasks } from "../utils";
 import { Visit } from "@diamondlightsource/sci-react-ui";
@@ -27,13 +27,27 @@ export default function SingleWorkflowView({
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
 
   useEffect(() => {
-    if (
-      tasknames &&
-      data.workflow.status &&
-      isWorkflowWithTasks(data.workflow.status)
-    ) {
-      const task = data.workflow.status.tasks.find((t) => t.name === tasknames);
-      setArtifactList([...(task?.artifacts ?? [])]);
+    let fetchedTasks: Task[] = [];
+    if (data.workflow.status && isWorkflowWithTasks(data.workflow.status)) {
+      fetchedTasks = data.workflow.status.tasks.map((task) => ({
+        id: task.id,
+        name: task.name,
+        status: task.status as TaskStatus,
+        artifacts: task.artifacts.map((artifact) => ({
+          ...artifact, parentTask: task.name, key: `${task.name}-${artifact.name}`,
+        })),
+        workflow: workflowName,
+        instrumentSession: visit,
+        stepType: task.stepType
+      }));
+    }
+
+    if (tasknames) {
+      const filteredTasks = tasknames
+        .map(name => fetchedTasks.find(task => task.name === name))
+        .filter((task): task is Task => !!task);
+      const artifacts: Artifact[] = filteredTasks.flatMap(task => task.artifacts);
+      setArtifactList(artifacts);
     }
   }, [workflow, tasknames, data.workflow.status]);
 

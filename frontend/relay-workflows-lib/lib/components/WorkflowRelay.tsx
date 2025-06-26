@@ -6,7 +6,7 @@ import { Box } from "@mui/material";
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import { Visit } from "@diamondlightsource/sci-react-ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import RetriggerWorkflow from "./RetriggerWorkflow";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { useState } from "react";
@@ -126,6 +126,10 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 
   const navigate = useNavigate();
 
+  const { visitid, } = useParams<{
+    visitid: string;
+  }>();
+
   const statusText = data.workflow.status?.__typename ?? "Unknown";
 
   const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(highlightedTaskNames ?? [])
@@ -137,7 +141,9 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           name: task.name,
           status: task.status as TaskStatus,
           depends: [...task.depends],
-          artifacts: [...task.artifacts],
+          artifacts: task.artifacts.map((artifact) => ({
+            ...artifact, parentTask: task.name, key: `${task.name}-${artifact.name}`,
+          })),
           workflow: data.workflow.name,
           instrumentSession: data.workflow.visit as Visit,
           stepType: task.stepType,
@@ -158,8 +164,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           updatedTasks = [taskName];
         }
 
-        const basePath = `/workflows/${visit}/${workflowName}`
-        const newPath = updatedTasks.length 
+        const basePath = `/workflows/${visitid || ""}/${workflowName || ""}`;
+        const newPath = updatedTasks.length
           ? `${basePath}/${updatedTasks.join(",")}`
           : basePath;
 
