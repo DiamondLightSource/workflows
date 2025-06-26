@@ -123,6 +123,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     visit: visit,
     name: workflowName,
   });
+
   const navigate = useNavigate();
 
   const statusText = data.workflow.status?.__typename ?? "Unknown";
@@ -146,22 +147,29 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
         }))
       : [];
   
-  const onNavigate = React.useCallback((path: string, event?: React.MouseEvent) =>
-    {
+  const onNavigate = React.useCallback(
+    (path: string, event?: React.MouseEvent) => {
       const taskName = String(path.split("/").filter(Boolean).pop());
       const isCtrl = event?.ctrlKey || event?.metaKey;
 
       setSelectedTaskNames((prev) => {
+        let updatedTasks: string[];
+
         if (isCtrl) {
-          return prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
+          updatedTasks = prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
         } else {
-          return [taskName];
+          updatedTasks = [taskName];
         }
-        
+
+        const basePath = `/workflows/${visit}/${workflowName}`
+        const newPath = updatedTasks.length 
+          ? `${basePath}/${updatedTasks.join(",")}`
+          : basePath;
+
+        void navigate(newPath);
+        return updatedTasks
       });
-      ;
-      void navigate(path);
-    }, [navigate])
+    }, [navigate, visit, workflowName])
   
   
   return (

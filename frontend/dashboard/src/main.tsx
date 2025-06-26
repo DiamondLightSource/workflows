@@ -43,7 +43,7 @@ const router = createBrowserRouter([
     element: <SingleWorkflowPage />,
   },
   {
-    path: "workflows/:visitid/:workflowName/:taskname",
+    path: "workflows/:visitid/:workflowName/:tasknames",
     element: <SingleWorkflowPage />,
   },
 ]);
