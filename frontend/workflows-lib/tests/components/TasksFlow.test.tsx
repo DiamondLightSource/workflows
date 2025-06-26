@@ -89,12 +89,12 @@ describe("TasksFlow Component", () => {
       <TasksFlow
         workflowName="mockWorkflowA"
         tasks={mockTasks}
-        highlightedTaskName="node-1"
+        highlightedTaskNames={["node-1"]}
         onNavigate={() => {}}
       />,
     );
 
-    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree, "node-1");
+    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree, ["node-1"]);
   });
 
   it("should apply the dagre layout", () => {
