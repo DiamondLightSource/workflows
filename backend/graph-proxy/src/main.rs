@@ -49,6 +49,9 @@ struct ServeArgs {
     /// The base URL of the Argo Server from which data is to be retrieved
     #[arg(long, env = "ARGO_SERVER_URL")]
     argo_server_url: Url,
+    /// The URL of the kubernetes API hosting the workflows
+    #[arg(long, env = "KUBERNETES_API_URL")]
+    kubernetes_api_url: Uri,
     /// The host IP to bind the service to
     #[arg(long, env="HOST", default_value_t=IpAddr::V4(Ipv4Addr::UNSPECIFIED))]
     host: IpAddr,
@@ -84,10 +87,17 @@ struct SchemaArgs {
 #[derive(Debug, Clone, derive_more::Deref)]
 pub struct ArgoServerUrl(Url);
 
+/// The URL of the kubernetes API
+#[derive(Debug, Clone, derive_more::Deref)]
+pub struct KubernetesApiUrl(Uri);
+
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
     let args = Cli::parse();
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .expect("Failed to install rust TLS cryptography");
 
     match args {
         Cli::Serve(args) => {
@@ -96,6 +106,7 @@ async fn main() {
             let s3_client = Client::from(args.s3_client);
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
+                .data(KubernetesApiUrl(args.kubernetes_api_url))
                 .data(s3_client)
                 .data(args.s3_bucket)
                 .finish();
