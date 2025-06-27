@@ -31,9 +31,11 @@ pub(super) enum UiSchema {
     Group {
         label: String,
         elements: Vec<UiSchema>,
+        options: Option<serde_json::Value>,
     },
     Categorization {
         elements: Vec<UiSchemaCategory>,
+        options: Option<serde_json::Value>,
     },
 }
 
@@ -116,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn annotation_with_control_with_options() {
+    fn annotation_with_control() {
         let annotations = HashMap::from([(
             "workflows.diamond.ac.uk/ui-schema".to_string(),
             json!({
@@ -133,6 +135,35 @@ mod tests {
             label: None,
             options: Some(json!({"detail" : "DEFAULT"}))
             });
+        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn annotation_with_group() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                "type": "Group",
+                "label": "foo",
+                "elements": [
+                    {
+                    "type": "Control",
+                    "scope": "#/properties/bar"
+                    },
+                ],
+                "options": {
+                    "collapsible": true,
+                }
+            })
+            .to_string(),
+        )]);
+        let control = UiSchema::Control {
+            scope: "#/properties/bar".into(),
+            label: None,
+            options: None,
+            };
+        let expected = Some(UiSchema::Group { label: "foo".into(), elements: vec![control], options: Some(json!({"collapsible":true})) });
         let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
         assert_eq!(expected, actual);
     }
