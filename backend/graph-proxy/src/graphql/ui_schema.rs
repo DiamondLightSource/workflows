@@ -18,6 +18,7 @@ pub(super) enum UiSchema {
         scope: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         label: Option<String>,
+        options: Option<serde_json::Value>,
     },
     HorizontalLayout {
         elements: Vec<UiSchema>,
@@ -97,10 +98,12 @@ mod tests {
                 UiSchema::Control {
                     scope: "#/properties/foo".to_string(),
                     label: Some("Foo".to_string()),
+                    options: None,
                 },
                 UiSchema::Control {
                     scope: "#/properties/bar".to_string(),
                     label: None,
+                    options: None,
                 },
             ],
         });
@@ -111,4 +114,27 @@ mod tests {
     fn no_annotation_is_none() {
         assert_eq!(None, UiSchema::new(&HashMap::new()).unwrap());
     }
+
+    #[test]
+    fn annotation_with_control_with_options() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                        "type": "Control",
+                        "scope": "#/properties/foo",
+                        "options": {
+                            "detail" : "DEFAULT"
+                        }
+            })
+            .to_string(),
+        )]);
+        let expected = Some(UiSchema::Control {
+            scope: "#/properties/foo".into(),
+            label: None,
+            options: Some(json!({"detail" : "DEFAULT"}))
+            });
+        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
+        assert_eq!(expected, actual);
+    }
 }
+
