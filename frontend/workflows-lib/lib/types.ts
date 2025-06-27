@@ -24,6 +24,7 @@ export interface Artifact {
   name: string;
   url: string;
   mimeType: string;
+  parentTask: string;
 }
 
 export interface TaskNode extends Task {

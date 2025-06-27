@@ -48,7 +48,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
         return artifactList;
     }
   }, [artifactFilter, artifactList, imageArtifacts]);
-
+  console.log(`listedArtifacts ${listedArtifacts.length}`)
   return (
     <>
       <Box
@@ -79,24 +79,39 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           </ToggleButton>
         </ToggleButtonGroup>
         <List
-          sx={{ paddingRight: "200px", width: "400px", paddingTop: 0 }}
+          sx={{ paddingRight: "200px", width: "450px", paddingTop: 0 }}
           subheader={<ListSubheader>Artifacts</ListSubheader>}
         >
           {listedArtifacts.map((artifact) => (
-            <Tooltip title={artifact.name} enterDelay={400} key={artifact.name}>
+            <Tooltip title={artifact.name} enterDelay={400} key={`${artifact.parentTask}-${artifact.name}`}>
               <ListItemButton
                 onClick={() => window.open(artifact.url, "_blank")}
               >
-                <Typography
-                  noWrap
-                  sx={{
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {artifact.name}
-                </Typography>
+                <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" width="100%">
+                  <Typography
+                    noWrap
+                    sx={{
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {artifact.name}
+                  </Typography>
+                  {artifact.parentTask && (
+                    <Typography
+                      noWrap
+                      color="#777"
+                      sx={{
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {artifact.parentTask}
+                    </Typography>
+                  )}
+                </Box>
               </ListItemButton>
             </Tooltip>
           ))}

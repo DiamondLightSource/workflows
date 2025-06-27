@@ -53,7 +53,9 @@ const SingleWorkflowView: React.FC<SingleWorkflowViewProps> = ({
         name: task.name,
         status: task.status as TaskStatus,
         depends: [...task.depends],
-        artifacts: [...task.artifacts],
+        artifacts: task.artifacts.map((artifact) => ({
+          ...artifact, parentTask: task.name, key: `${task.name}-${artifact.name}`,
+        })),
         workflow: workflowName,
         instrumentSession: visit,
         stepType: task.stepType

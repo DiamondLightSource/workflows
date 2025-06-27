@@ -9,6 +9,7 @@ interface TaskInfoProps {
 }
 
 export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
+  console.log({artifactList})
   return (
     <Box
       sx={{
