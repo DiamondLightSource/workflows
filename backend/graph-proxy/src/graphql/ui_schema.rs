@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::missing_docs_in_private_items)]
@@ -34,6 +34,7 @@ pub(super) enum UiSchema {
     Categorization {
         elements: Vec<UiSchemaCategory>,
     },
+    Category(UiSchemaCategory),
 }
 
 impl UiSchema {
@@ -52,22 +53,14 @@ impl UiSchema {
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[allow(clippy::missing_docs_in_private_items)]
 pub(super) struct UiSchemaCategory {
-    #[serde(serialize_with = "UiSchemaCategory::r#type")]
-    r#type: (),
     label: String,
     elements: Vec<UiSchema>,
-}
-
-impl UiSchemaCategory {
-    #[allow(clippy::missing_docs_in_private_items)]
-    fn r#type<S: Serializer>(_: &(), s: S) -> Result<S::Ok, S::Error> {
-        s.serialize_str("category")
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::UiSchema;
+    use super::UiSchemaCategory;
     use serde_json::json;
     use std::collections::HashMap;
 
@@ -110,5 +103,64 @@ mod tests {
     #[test]
     fn no_annotation_is_none() {
         assert_eq!(None, UiSchema::new(&HashMap::new()).unwrap());
+    }
+
+    #[test]
+    fn annotation_with_categorization() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                "type": "Categorization",
+                "elements": [
+                    {
+                    "type": "Category",
+                    "label": "foo",
+                    "elements": [],
+                    },
+                ],
+            })
+            .to_string(),
+        )]);
+        let category = UiSchemaCategory {
+            label: "foo".into(),
+            elements: vec![],
+        };
+        let expected = Some(UiSchema::Categorization {
+            elements: vec![category],
+        });
+        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
+
+        let serialized =
+            serde_json::to_string(&actual).expect("Failed to serialize Categorization");
+        let deserialized = serde_json::from_str::<UiSchema>(&serialized).ok();
+
+        assert_eq!(expected, actual);
+        assert_eq!(expected, deserialized);
+    }
+
+    #[test]
+    fn annotation_with_category() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                    "type": "Category",
+                    "label": "foo",
+                    "elements": []
+            })
+            .to_string(),
+        )]);
+        let category = UiSchemaCategory {
+            label: "foo".into(),
+            elements: vec![],
+        };
+        let expected = Some(UiSchema::Category(category));
+        let actual =
+            UiSchema::new(&annotations).expect("Failed to parse valid JSON forms Category.");
+
+        let serialized = serde_json::to_string(&actual).expect("Failed to serialize Category");
+        let deserialized = serde_json::from_str::<UiSchema>(&serialized).ok();
+
+        assert_eq!(expected, actual);
+        assert_eq!(expected, deserialized);
     }
 }
