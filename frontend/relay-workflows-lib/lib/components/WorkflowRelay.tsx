@@ -85,6 +85,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           }}
         >
           <TasksFlow
+            workflowName={data.name}
             tasks={tasks}
             highlightedTaskName={highlightedTaskName}
             onNavigate={(path: string) => {
