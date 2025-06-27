@@ -70,6 +70,8 @@ impl UiSchemaCategory {
 
 #[cfg(test)]
 mod tests {
+    use crate::graphql::ui_schema::UiSchemaCategory;
+
     use super::UiSchema;
     use serde_json::json;
     use std::collections::HashMap;
@@ -164,6 +166,35 @@ mod tests {
             options: None,
             };
         let expected = Some(UiSchema::Group { label: "foo".into(), elements: vec![control], options: Some(json!({"collapsible":true})) });
+        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn annotation_with_categorization() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                "type": "Categorization",
+                "elements": [
+                    {
+                    "type": "Category",
+                    "label": "foo",
+                    "elements": [],
+                    },
+                ],
+                "options": {
+                    "variant": "stepper"
+                }
+            })
+            .to_string(),
+        )]);
+        let category = UiSchemaCategory {
+            r#type: (),
+            label: "foo".into(),
+            elements: vec![],
+            };
+        let expected = Some(UiSchema::Categorization { elements: vec![category], options: Some(json!({"variant":"stepper"})) });
         let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
         assert_eq!(expected, actual);
     }
