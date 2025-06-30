@@ -93,8 +93,7 @@ export default function WorkflowsContent({
           variant="contained"
           sx={{ margin: "1rem" }}
         >
-          Show {newWorkflows.length} New Workflow
-          {newWorkflows.length > 1 ? "s" : ""}
+          Show New Workflows
         </Button>
       )}
 
