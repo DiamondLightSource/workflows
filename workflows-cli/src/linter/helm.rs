@@ -129,7 +129,7 @@ pub fn write_to_clean_folder(path: &Path, contents: Vec<String>) -> std::io::Res
     }
 
     for (i, content) in contents.iter().enumerate() {
-        let file_path = path.join(format!("workflow_{}.yaml", i));
+        let file_path = path.join(format!("workflow_{i}.yaml"));
         let mut file = File::create(file_path)?;
         file.write_all(content.as_bytes())?;
     }

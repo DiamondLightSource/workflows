@@ -50,7 +50,7 @@ fn main() {
     let args = Cli::parse();
 
     if let Err(err) = ensure_cli() {
-        eprintln!("Error: {}", err);
+        eprintln!("Error: {err}");
         std::process::exit(1)
     }
 

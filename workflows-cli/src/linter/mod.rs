@@ -44,7 +44,7 @@ pub fn lint(args: LintArgs) {
 
     match results {
         Ok(results) => print_and_exit(results),
-        Err(e) => println!("Something went wrong while linting:\n{}", e),
+        Err(e) => println!("Something went wrong while linting:\n{e}"),
     }
 }
 
@@ -56,7 +56,7 @@ fn print_and_exit(results: Vec<LintResult>) {
             println!("No errors");
         } else {
             eprintln!("Errors found");
-            result.errors.iter().for_each(|e| println!("  - {}", e));
+            result.errors.iter().for_each(|e| println!("  - {e}"));
         }
     });
     match results.iter().any(|result| !result.errors.is_empty()) {
@@ -109,7 +109,7 @@ mod tests {
 
         let mut expected_result = vec![LintResult::new("template1".to_string(), vec![])];
 
-        println!("Response: {:?}", result);
+        println!("Response: {result:?}");
         assert!(have_same_elements(&mut result, &mut expected_result));
         assert_eq!(result, expected_result);
     }
@@ -128,7 +128,7 @@ mod tests {
             LintResult::new("template3".to_string(), vec![]),
         ];
 
-        println!("Response: {:?}", result);
+        println!("Response: {result:?}");
         assert!(have_same_elements(&mut result, &mut expected_result));
     }
 
@@ -146,8 +146,7 @@ mod tests {
         let err_msg = result.unwrap_err();
         assert!(
             err_msg.contains("Error reading directory"),
-            "Unexpected error message: {}",
-            err_msg
+            "Unexpected error message: {err_msg}"
         );
     }
 
