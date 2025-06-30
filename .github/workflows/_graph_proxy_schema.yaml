@@ -19,7 +19,7 @@ jobs:
           components: rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.7.8
+        uses: Swatinem/rust-cache@v2.8.0
         with:
           shared-key: backend/graph-proxy
           workspaces: backend
