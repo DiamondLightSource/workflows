@@ -8,8 +8,14 @@ mod graphql;
 /// S3 client
 mod s3client;
 
+use crate::graphql::subscription_integration::GraphQLSubscription;
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
-use axum::{response::Html, routing::get, Router};
+use axum::{
+    http::Uri,
+    response::Html,
+    routing::{get, get_service},
+    Router,
+};
 use clap::Parser;
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
 use regex::Regex;
@@ -141,10 +147,17 @@ fn setup_router(
     Ok(Router::new()
         .route(
             prefix_path,
-            get(Html(GraphiQLSource::build().endpoint(prefix_path).finish()))
-                .post(graphql_handler)
-                .with_state(schema),
+            get(Html(
+                GraphiQLSource::build()
+                    .endpoint(prefix_path)
+                    .subscription_endpoint("/ws")
+                    .finish(),
+            ))
+            .post(graphql_handler)
+            .with_state(schema.clone()),
         )
+        .route_service("/ws", get_service(GraphQLSubscription::new(schema.clone())))
+        .with_state(schema.clone())
         .layer(
             CorsLayer::new()
                 .allow_methods([Method::GET, Method::POST])
