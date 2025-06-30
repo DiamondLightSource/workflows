@@ -120,6 +120,6 @@ jobs:
 
       - name: Release CLI
         if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/workflows-cli@'))
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: workflows-cli.zip
