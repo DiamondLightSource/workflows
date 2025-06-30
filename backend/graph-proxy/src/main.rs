@@ -111,7 +111,7 @@ async fn main() {
                 file.write_all(schema_string.as_bytes()).unwrap();
                 info!("Schema written to {:#?}", path);
             } else {
-                println!("{}", schema_string);
+                println!("{schema_string}");
             }
         }
     }

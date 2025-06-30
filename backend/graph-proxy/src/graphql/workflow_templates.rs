@@ -270,7 +270,7 @@ impl WorkflowTemplatesFilter {
         let mut label_selectors = Vec::new();
 
         if let Some(group) = &self.science_group {
-            let this_label = format!("workflows.diamond.ac.uk/science-group={}", group);
+            let this_label = format!("workflows.diamond.ac.uk/science-group={group}");
             label_selectors.push(this_label);
         }
 
