@@ -18,6 +18,7 @@ pub(super) enum UiSchema {
         scope: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         label: Option<String>,
+        options: Option<serde_json::Value>,
     },
     HorizontalLayout {
         elements: Vec<UiSchema>,
@@ -30,9 +31,11 @@ pub(super) enum UiSchema {
     Group {
         label: String,
         elements: Vec<UiSchema>,
+        options: Option<serde_json::Value>,
     },
     Categorization {
         elements: Vec<UiSchemaCategory>,
+        options: Option<serde_json::Value>,
     },
     Category(UiSchemaCategory),
 }
@@ -55,10 +58,12 @@ impl UiSchema {
 pub(super) struct UiSchemaCategory {
     label: String,
     elements: Vec<UiSchema>,
+    options: Option<serde_json::Value>,
 }
 
 #[cfg(test)]
 mod tests {
+
     use super::UiSchema;
     use super::UiSchemaCategory;
     use serde_json::json;
@@ -90,10 +95,12 @@ mod tests {
                 UiSchema::Control {
                     scope: "#/properties/foo".to_string(),
                     label: Some("Foo".to_string()),
+                    options: None,
                 },
                 UiSchema::Control {
                     scope: "#/properties/bar".to_string(),
                     label: None,
+                    options: None,
                 },
             ],
         });
@@ -103,6 +110,61 @@ mod tests {
     #[test]
     fn no_annotation_is_none() {
         assert_eq!(None, UiSchema::new(&HashMap::new()).unwrap());
+    }
+
+    #[test]
+    fn annotation_with_control() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                        "type": "Control",
+                        "scope": "#/properties/foo",
+                        "options": {
+                            "detail" : "DEFAULT"
+                        }
+            })
+            .to_string(),
+        )]);
+        let expected = Some(UiSchema::Control {
+            scope: "#/properties/foo".into(),
+            label: None,
+            options: Some(json!({"detail" : "DEFAULT"})),
+        });
+        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form Control.");
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn annotation_with_group() {
+        let annotations = HashMap::from([(
+            "workflows.diamond.ac.uk/ui-schema".to_string(),
+            json!({
+                "type": "Group",
+                "label": "foo",
+                "elements": [
+                    {
+                    "type": "Control",
+                    "scope": "#/properties/bar"
+                    },
+                ],
+                "options": {
+                    "collapsible": true,
+                }
+            })
+            .to_string(),
+        )]);
+        let control = UiSchema::Control {
+            scope: "#/properties/bar".into(),
+            label: None,
+            options: None,
+        };
+        let expected = Some(UiSchema::Group {
+            label: "foo".into(),
+            elements: vec![control],
+            options: Some(json!({"collapsible":true})),
+        });
+        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form Group.");
+        assert_eq!(expected, actual);
     }
 
     #[test]
@@ -118,17 +180,23 @@ mod tests {
                     "elements": [],
                     },
                 ],
+                "options": {
+                    "variant": "stepper"
+                }
             })
             .to_string(),
         )]);
         let category = UiSchemaCategory {
             label: "foo".into(),
             elements: vec![],
+            options: None,
         };
         let expected = Some(UiSchema::Categorization {
             elements: vec![category],
+            options: Some(json!({"variant": "stepper"})),
         });
-        let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form.");
+        let actual =
+            UiSchema::new(&annotations).expect("Failed to parse valid JSON form Categorization.");
 
         let serialized =
             serde_json::to_string(&actual).expect("Failed to serialize Categorization");
@@ -152,6 +220,7 @@ mod tests {
         let category = UiSchemaCategory {
             label: "foo".into(),
             elements: vec![],
+            options: None,
         };
         let expected = Some(UiSchema::Category(category));
         let actual =
