@@ -148,8 +148,8 @@ mod tests {
             .await;
         let base_url = server.url();
         let config = TelemetryConfig {
-            metrics_endpoint: Some(Url::parse(&format!("{}/v1/metrics", base_url)).unwrap()),
-            tracing_endpoint: Some(Url::parse(&format!("{}/v1/traces", base_url)).unwrap()),
+            metrics_endpoint: Some(Url::parse(&format!("{base_url}/v1/metrics")).unwrap()),
+            tracing_endpoint: Some(Url::parse(&format!("{base_url}/v1/traces")).unwrap()),
             telemetry_level: Level::INFO,
         };
         {
