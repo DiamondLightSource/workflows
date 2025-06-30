@@ -13,7 +13,7 @@
   "dependencies": {
     "keycloak-js": "^26.2.0",
     "react-relay": "18.2.0",
-    "react-router-dom": "^7.6.2",
+    "react-router-dom": "^7.6.3",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
