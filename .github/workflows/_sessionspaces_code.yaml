@@ -21,7 +21,7 @@ jobs:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.13.0
@@ -71,7 +71,7 @@ jobs:
       DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.13.0
