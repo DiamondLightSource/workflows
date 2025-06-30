@@ -543,10 +543,8 @@ impl WorkflowFilter {
         }
 
         if let Some(creator) = &self.creator {
-            let creator_label = format!(
-                "workflows.argoproj.io/creator-preferred-username={}",
-                creator
-            );
+            let creator_label =
+                format!("workflows.argoproj.io/creator-preferred-username={creator}");
             label_selectors.push(creator_label);
         }
 
@@ -721,7 +719,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -771,7 +769,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -835,7 +833,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -899,7 +897,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -963,7 +961,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1025,7 +1023,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1076,7 +1074,7 @@ mod tests {
         multiple_workflows_response_file_path.push("get-workflows.json");
 
         let workflows_endpoint = server
-            .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
             .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
                 "listOptions.limit".to_string(),
                 limit.to_string(),
@@ -1148,7 +1146,7 @@ mod tests {
         workflow_two_response_file_path.push("get-workflow-n6jsg.json");
 
         let workflows_endpoint = server
-            .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
             .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
                 "listOptions.limit".to_string(),
                 limit.to_string(),
@@ -1243,7 +1241,7 @@ mod tests {
         multiple_workflows_response_file_path.push("get-workflows.json");
 
         let workflows_endpoint = server
-            .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
             .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
                 "listOptions.limit".to_string(),
                 expected_default_limit.to_string(),
@@ -1291,7 +1289,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1308,7 +1306,7 @@ mod tests {
             s3_region: Some("us-west-2".to_string()),
         };
         let s3_client = Client::from(s3_client_args.clone());
-        let artifact_key = format!("{}/{}/main.log", workflow_name, workflow_name);
+        let artifact_key = format!("{workflow_name}/{workflow_name}/main.log");
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
@@ -1387,7 +1385,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1453,7 +1451,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1501,7 +1499,7 @@ mod tests {
         workflows_response_file_path.push("get-workflows.json");
 
         let workflows_endpoint = server
-            .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
             .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
                 "listOptions.labelSelector".to_string(),
                 "workflows.argoproj.io/phase in (Error),workflows.argoproj.io/creator-preferred-username=enu43627".to_string(),
@@ -1537,7 +1535,7 @@ mod tests {
         workflows_endpoint.assert_async().await;
 
         let workflows_endpoint2 = server
-            .mock("GET", &format!("/api/v1/workflows/{}", visit)[..])
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
             .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
                 "listOptions.labelSelector".to_string(),
                 "workflows.argoproj.io/phase in (Failed, Error)".to_string(),
@@ -1583,7 +1581,7 @@ mod tests {
         let workflow_endpoint = server
             .mock(
                 "GET",
-                &format!("/api/v1/workflows/{}/{}", visit, workflow_name)[..],
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
