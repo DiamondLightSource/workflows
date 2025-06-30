@@ -93,7 +93,7 @@ impl MockCommand {
     /// Lookup command in the mapping table
     fn get_response(&self) -> (String, i32) {
         let full_command = format!("{} {}", self.cmd, self.args.join(" "));
-        println!("MOCK COMMAND: {}", full_command);
+        println!("MOCK COMMAND: {full_command}");
         let entry = self
             .mappings
             .iter()

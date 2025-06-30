@@ -45,8 +45,8 @@ fn get_yaml(target: &Path) -> Result<String, String> {
 
 fn get_template_name(path: &Path) -> Result<String, String> {
     let yaml = get_yaml(path)?;
-    let docs = YamlLoader::load_from_str(&yaml)
-        .map_err(|e| format!("Manifest is not valid YAML: {}", e))?;
+    let docs =
+        YamlLoader::load_from_str(&yaml).map_err(|e| format!("Manifest is not valid YAML: {e}"))?;
 
     let doc = docs.first().ok_or("YAML document is empty")?;
 
@@ -68,11 +68,11 @@ fn lint_template(target: &Path) -> Result<Vec<String>, String> {
         .arg("--output")
         .arg("simple")
         .output()
-        .map_err(|e| format!("Failed to run Argo CLI: {}", e))?;
+        .map_err(|e| format!("Failed to run Argo CLI: {e}"))?;
 
     let stdout = String::from_utf8_lossy(&command.stdout);
     let stderr = String::from_utf8_lossy(&command.stderr);
-    let combined = format!("{}\n{}", stdout, stderr);
+    let combined = format!("{stdout}\n{stderr}");
 
     let errs = combined
         .lines()
