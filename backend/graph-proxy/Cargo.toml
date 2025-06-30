@@ -33,6 +33,10 @@ url = { workspace = true }
 tower-service = "0.3.3"
 futures-util = "0.3.31"
 tokio-stream = "0.1.17"
+k8s-openapi = { workspace = true }
+kube = { workspace = true }
+secrecy = "0.10.3"
+rustls = "0.23.28"
 
 [dev-dependencies]
 mockito = { workspace = true }
