@@ -19,6 +19,7 @@ updates:
       - /backend/
       - /backend/sessionspaces/.devcontainer/
       - /backend/graph-proxy/.devcontainer/
+      - /workflows-cli/.devcontainer/
     schedule:
       interval: weekly
     groups:
@@ -62,3 +63,15 @@ updates:
           - vitest
     commit-message:
       prefix: "chore(deps)"
+  - package-ecosystem: cargo
+    directories:
+      - /workflows-cli/
+    schedule:
+      interval: weekly
+    groups:
+      patch:
+        update-types:
+          - patch
+    commit-message:
+      prefix: "chore(deps)"
+
