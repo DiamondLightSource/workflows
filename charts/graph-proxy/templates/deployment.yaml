@@ -38,6 +38,8 @@ spec:
           env:
             - name: ARGO_SERVER_URL
               value: {{ $.Values.argoServerUrl }}
+            - name: KUBERNETES_API_URL
+              value: {{ $.Values.kubernetesApiUrl }}
             - name: PREFIX_PATH
               value: {{ $.Values.prefixPath }}
             - name: TELEMETRY_LEVEL
