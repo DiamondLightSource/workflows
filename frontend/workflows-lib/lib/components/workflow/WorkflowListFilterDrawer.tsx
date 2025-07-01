@@ -6,10 +6,11 @@ import {
   Box,
   Stack,
   Divider,
-  MenuItem,
-  Select,
-  InputLabel,
+  Autocomplete,
+  IconButton,
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
+import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { WorkflowQueryFilter, WorkflowStatusBool } from "../../types";
 
@@ -64,29 +65,23 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
   const [open, setOpen] = useState(false);
   const [creator, setCreator] = useState<string>("");
   const [errors, setErrors] = useState<{ creator?: boolean }>({});
-  const [status, setStatus] = useState<WorkflowStatusBool | undefined>(undefined);
+  const [status, setStatus] = useState<{ label: string; value: string }[]>([]);
 
-  const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpen(newOpen);
+  };
+
+  const clearAllFilters = () => () => {
+    setCreator("");
+    setStatus([]);
+    setErrors({});
+  };
 
   const handleChangeCreator = (value: string) => {
     setCreator(value);
 
     const isValid = value === "" || /^[a-z]+[0-9]+$/.test(value);
     setErrors((prev) => ({ ...prev, creator: !isValid }));
-  };
-
-  const handleStatusChange = (value: string[]) => {
-    if (value.length === 0) {
-      setStatus(undefined);
-      return;
-    }
-    const statusOptions = ["pending", "running", "succeeded", "failed", "error"] as const;
-    const newStatus: WorkflowStatusBool = Object.fromEntries(
-      statusOptions
-        .filter((k) => value.includes(k))
-        .map((k) => [k, true])
-    );
-    setStatus(newStatus);
   };
 
   const handleApply = () => {
@@ -104,11 +99,22 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
     filter: WorkflowQueryFilter;
     validation: { valid: boolean; errors: Record<string, boolean> };
   } {
-    const rawFilter =
-    {
+    const selectedValues = status.map((opt) => opt.value);
+
+    const workflowStatusFilter: WorkflowStatusBool | undefined =
+      selectedValues.length > 0
+        ? Object.fromEntries(
+            ["pending", "running", "succeeded", "failed", "error"]
+              .filter((k) => selectedValues.includes(k))
+              .map((k) => [k, true]),
+          )
+        : undefined;
+
+    const rawFilter = {
       creator,
-      workflowStatusFilter: status,
+      workflowStatusFilter,
     };
+
     const filter = normaliseFilter(rawFilter);
     const validation = validateFilter(filter);
     return { filter, validation };
@@ -154,10 +160,19 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
             gap: 2,
           }}
         >
+          <IconButton
+            onClick={toggleDrawer(false)}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
           <Typography variant="h6" color="primary" gutterBottom>
-            Select Your Filters
+            Select Filters
           </Typography>
-
           <TextField
             fullWidth
             id="Creator"
@@ -165,37 +180,54 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
             variant="outlined"
             value={creator}
             error={!!errors.creator}
-            onChange={(e) => { handleChangeCreator(e.target.value); }}
+            onChange={(e) => {
+              handleChangeCreator(e.target.value);
+            }}
+            slotProps={{
+              input: {
+                endAdornment: creator ? (
+                  <IconButton
+                    onClick={() => {
+                      handleChangeCreator("");
+                    }}
+                  >
+                    <ClearIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                ) : undefined,
+              },
+            }}
           />
-
-          <InputLabel id="status-label">Workflow Status</InputLabel>
-          <Select
-            labelId="status-label"
-            id="status"
+          <Autocomplete
             multiple
-            value={
-              status
-                ? Object.entries(status)
-                    .filter(([, v]) => v)
-                    .map(([k]) => k)
-                : []
+            options={[
+              { label: "Pending", value: "pending" },
+              { label: "Running", value: "running" },
+              { label: "Succeeded", value: "succeeded" },
+              { label: "Failed", value: "failed" },
+              { label: "Error", value: "error" },
+            ]}
+            value={status}
+            onChange={(_e, val) => {
+              setStatus(val);
+            }}
+            getOptionLabel={(option) => option.label}
+            isOptionEqualToValue={(option, value) =>
+              option.value === value.value
             }
-            onChange={(e) => { handleStatusChange(e.target.value as string[]); }}
-            label="Status"
-          >
-            <MenuItem value={"pending"}>Pending</MenuItem>
-            <MenuItem value={"running"}>Running</MenuItem>
-            <MenuItem value={"succeeded"}>Succeeded</MenuItem>
-            <MenuItem value={"failed"}>Failed</MenuItem>
-            <MenuItem value={"error"}>Error</MenuItem>
-          </Select>
-
-
+            renderInput={(params) => <TextField {...params} label="Status" />}
+            slotProps={{
+              popupIndicator: { sx: { display: "none" } },
+            }}
+          />
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
-            <Button variant="outlined" onClick={toggleDrawer(false)}>
-              Cancel
+            <Button variant="outlined" onClick={clearAllFilters()}>
+              Clear
             </Button>
-            <Button variant="contained" onClick={handleApply} disabled={isApplyDisabled}>
+            <Button
+              variant="contained"
+              onClick={handleApply}
+              disabled={isApplyDisabled}
+            >
               Apply
             </Button>
           </Stack>
