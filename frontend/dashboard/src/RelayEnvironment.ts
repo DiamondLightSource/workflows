@@ -7,7 +7,7 @@ import {
 } from "relay-runtime";
 import keycloak from "./keycloak";
 
-const HTTP_ENDPOINT = "https://workflows.diamond.ac.uk/graphql";
+const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 
 keycloak.onTokenExpired = () => {
   console.log("JWT expired");
