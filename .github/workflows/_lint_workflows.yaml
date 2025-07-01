@@ -7,8 +7,5 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
-
       - name: Lint Workflows
         uses: diamondlightsource/workflows@main
