@@ -1,3 +1,10 @@
+configuration:
+  keycloakUrl: https://authn.diamond.ac.uk
+  keycloakRealm: master
+  keycloakClient: workflows-dashboard
+  graphUrl: https://workflows.diamond.ac.uk/graphql
+  sourceDir: "/usr/share/nginx/html"
+
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-dashboard

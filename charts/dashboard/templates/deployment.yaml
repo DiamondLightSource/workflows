@@ -51,6 +51,17 @@ spec:
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
+          env:
+            - name: KEYCLOAK_URL
+              value: {{ .Values.configuration.keycloakUrl }}
+            - name: KEYCLOAK_REALM
+              value: {{ .Values.configuration.keycloakRealm }}
+            - name: KEYCLOAK_CLIENT
+              value: {{ .Values.configuration.keycloakClient }}
+            - name: GRAPH_URL
+              value: {{ .Values.configuration.graphUrl }}
+            - name: SOURCE_DIR
+              value: {{ .Values.configuration.sourceDir }}
           livenessProbe:
             httpGet:
               path: /healthcheck

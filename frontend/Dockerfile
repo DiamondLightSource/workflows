@@ -19,7 +19,11 @@ FROM docker.io/library/nginx:1.23.3-alpine-slim as nginx
 
 WORKDIR /app
 
+COPY ./configure.sh .
 COPY --from=build /app/dashboard/dist /usr/share/nginx/html
 COPY ./container_utils/default.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
+
+ENTRYPOINT ["sh"]
+CMD ["/app/configure.sh"]
