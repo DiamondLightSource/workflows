@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PreloadedQuery, usePreloadedQuery } from "react-relay";
-import { workflowsQuery } from "./Workflows";
-import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
-import { PaginationControls } from "workflows-lib";
-import { Box, Button } from "@mui/material";
-import { updateWorkflowsState } from "../utils";
+import { Box, Button, FormControlLabel, Switch, useTheme } from "@mui/material";
 import { Visit } from "@diamondlightsource/sci-react-ui";
+import { PaginationControls } from "workflows-lib";
+import { workflowsQuery } from "./Workflows";
 import WorkflowRelay from "./WorkflowRelay";
+import { updateWorkflowsState } from "../utils";
+import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
 
 interface WorkflowsContentProps {
   queryReference: PreloadedQuery<WorkflowsQueryType>;
@@ -21,6 +21,7 @@ interface WorkflowsContentProps {
   onLimitChange: (limit: number) => void;
   updatePageInfo: (hasNextPage: boolean, endCursor: string | null) => void;
   isPaginated: boolean;
+  setIsPaginated: (b: boolean) => void;
   visit: Visit;
 }
 
@@ -33,41 +34,63 @@ export default function WorkflowsContent({
   onLimitChange,
   updatePageInfo,
   isPaginated,
+  setIsPaginated,
   visit,
 }: WorkflowsContentProps) {
+  const theme = useTheme();
   const data = usePreloadedQuery(workflowsQuery, queryReference);
   const pageInfo = data.workflows.pageInfo;
   const fetchedWorkflows = data.workflows.nodes.map(
     (wf: { readonly name: string }) => wf.name,
   );
+  const prevFetchedRef = useRef<string[]>([]);
+
   const [visibleWorkflows, setVisibleWorkflows] =
     useState<string[]>(fetchedWorkflows);
   const [newWorkflows, setNewWorkflows] = useState<string[]>([]);
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(
     new Set(),
   );
+  const [liveUpdate, setLiveUpdate] = useState(false);
   useEffect(() => {
     updatePageInfo(pageInfo.hasNextPage, pageInfo.endCursor ?? null);
   }, [pageInfo, updatePageInfo]);
 
   useEffect(() => {
-    if (isPaginated) {
+    const fetchedChanged = prevFetchedRef.current !== fetchedWorkflows;
+
+    if ((isPaginated || liveUpdate) && fetchedChanged) {
       setVisibleWorkflows(fetchedWorkflows);
       setNewWorkflows([]);
       setExpandedWorkflows(new Set());
-    } else {
+      prevFetchedRef.current = fetchedWorkflows;
+
+      if (isPaginated) {
+        setTimeout(() => {
+          setIsPaginated(false);
+        }, 0);
+      }
+    } else if (fetchedChanged) {
       updateWorkflowsState(
         fetchedWorkflows,
         visibleWorkflows,
         newWorkflows,
-        setVisibleWorkflows,
         setNewWorkflows,
       );
+      prevFetchedRef.current = fetchedWorkflows;
     }
-  }, [isPaginated, fetchedWorkflows, newWorkflows, visibleWorkflows]);
-
+  }, [
+    isPaginated,
+    fetchedWorkflows,
+    newWorkflows,
+    visibleWorkflows,
+    liveUpdate,
+    setIsPaginated,
+  ]);
   const handleShowNewWorkflows = () => {
-    setVisibleWorkflows([...newWorkflows, ...visibleWorkflows]);
+    const combined = [...new Set([...newWorkflows, ...visibleWorkflows])];
+    const trimmed = combined.slice(0, selectedLimit);
+    setVisibleWorkflows(trimmed);
     setNewWorkflows([]);
   };
 
@@ -83,11 +106,32 @@ export default function WorkflowsContent({
     });
   };
 
+  const toggleLiveUpdate = () => {
+    setLiveUpdate((prev) => !prev);
+  };
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {newWorkflows.length > 0 && (
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "flex-end",
+          pr: 2,
+        }}
+      >
+        <FormControlLabel
+          control={<Switch sx={{ color: theme.palette.primary.dark }} />}
+          label="Live Update"
+          sx={{ position: "right" }}
+          value={liveUpdate}
+          onChange={toggleLiveUpdate}
+        />
+      </Box>
+
+      {!liveUpdate && currentPage === 1 && newWorkflows.length > 0 && (
         <Button
           onClick={handleShowNewWorkflows}
           variant="contained"

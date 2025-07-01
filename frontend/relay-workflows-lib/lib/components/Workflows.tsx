@@ -91,6 +91,7 @@ export default function Workflows({
       onLimitChange={changeLimit}
       updatePageInfo={updatePageInfo}
       isPaginated={isPaginated}
+      setIsPaginated={setIsPaginated}
       visit={visit}
     />
   );

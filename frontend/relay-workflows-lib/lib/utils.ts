@@ -89,45 +89,18 @@ export function workflowsAreEqual(
         return false;
       }
     }
-
     return true;
   }
-
   return false;
-}
-
-function partitionWorkflows(
-  fetchedNames: string[],
-  visibleNames: string[],
-): [string[], string[]] {
-  return fetchedNames.reduce<[string[], string[]]>(
-    ([updated, added], n) => {
-      if (visibleNames.includes(n)) {
-        updated.push(n);
-      } else {
-        added.push(n);
-      }
-      return [updated, added];
-    },
-    [[], []],
-  );
 }
 
 export function updateWorkflowsState(
   fetched: string[],
   visible: string[],
   currentNew: string[],
-  setVisible: (w: string[]) => void,
   setNew: (w: string[]) => void,
 ) {
-  const [updated, added] = partitionWorkflows(fetched, visible);
-
-  const namesChanged =
-    updated.length !== visible.length ||
-    updated.some((name, i) => name !== visible[i]);
-  if (namesChanged) {
-    setVisible(updated);
-  }
+  const added = fetched.filter((name) => !visible.includes(name));
 
   const combined = [...new Set([...currentNew, ...added])];
   const newChanged =
