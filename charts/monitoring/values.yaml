@@ -16,7 +16,7 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
-          url: "http://monitoring-prometheus-server:9090"
+          url: "https://prometheus.workflows.diamond.ac.uk"
           isDefault: true
 
   dashboardProviders:
@@ -149,8 +149,6 @@ prometheus:
     enabled: false
   podSecurityPolicy:
     enabled: false
-  rbac:
-    create: false
   alertmanager:
     serviceAccount:
       create: true
