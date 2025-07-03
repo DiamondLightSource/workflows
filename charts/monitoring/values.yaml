@@ -18,7 +18,6 @@ grafana:
           type: prometheus
           url: "https://prometheus.workflows.diamond.ac.uk"
           isDefault: true
-
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -57,89 +56,6 @@ grafana:
       use_pkce: true
       use_refresh_token: true
       email_attribute_path: id
-
-thanos:
-  existingObjstoreSecret: 'thanos-s3'
-  serviceAccount:
-    create: true
-  query:
-    enabled: true
-    ingress:
-      enabled: true
-      pathType: Prefix
-      hostname: thanos-query.workflows.diamond.ac.uk
-      extraTls:
-        - hosts:
-            - thanos-query.workflows.diamond.ac.uk
-          secretName: letsencrypt-thanos-query-workflows-diamond-ac-uk
-    persistence:
-      enabled: false
-    resources:
-      limits:
-        cpu: 250m
-        memory: 2Gi
-    networkPolicy:
-      enabled: false
-  queryFrontend:
-    ingress:
-      enabled: false
-    resources:
-      limits:
-        cpu: 250m
-        memory: 2Gi
-    networkPolicy:
-      enabled: false
-  storegateway:
-    enabled: true
-    persistence:
-      enabled: false
-    resources:
-      limits:
-        cpu: 250m
-        memory: 2Gi
-    networkPolicy:
-      enabled: false
-  receive:
-    enabled: true
-    tsdbRetention: 1d
-    persistence:
-      enabled: false
-    service:
-      type: LoadBalancer
-    ingress:
-      enabled: false
-    resources:
-      requests:
-        cpu: '2'
-        memory: 32Gi
-      limits:
-        cpu: '4'
-        memory: 64Gi
-    networkPolicy:
-      enabled: false
-  compactor:
-    enabled: true
-    replicaCount: 1
-    retentionResolutionRaw: 30d
-    retentionResolution5m: 30d
-    retentionResolution1h: 30d
-    consistencyDelay: 30m
-    autoscaling:
-      enabled: false
-    persistence:
-      enabled: false
-    resources:
-      requests:
-        cpu: '1'
-        memory: 16Gi
-        ephemeral-storage: 4Gi
-      limits:
-        cpu: '2'
-        memory: 16Gi
-        ephemeral-storage: 8Gi
-    networkPolicy:
-      enabled: false
-
 prometheus:
   kube-state-metrics:
     enabled: false
@@ -150,60 +66,16 @@ prometheus:
   podSecurityPolicy:
     enabled: false
   alertmanager:
-    serviceAccount:
-      create: true
-      annotations: {}
-    ingress:
-      enabled: true
-      hosts:
-        - host: alertmanager.workflows.diamond.ac.uk
-          paths:
-            - path: /
-              pathType: Prefix
-      tls:
-        - hosts:
-            - alertmanager.workflows.diamond.ac.uk
-          secretName: letsencrypt-alertmanager-workflows-diamond-ac-uk
-    resources:
-      limits:
-        cpu: 250m
-        memory: 2Gi
-    extraArgs:
-      web.external-url: https://alertmanager.workflows.diamond.ac.uk
-    configmapReload:
-      enabled: true
-      resources:
-        limits:
-          cpu: 250m
-          memory: 400Mi
-  configmapReload:
-    prometheus:
-      resources:
-        limits:
-          cpu: 250m
-          memory: 400Mi
-
+    enabled: false
   server:
     baseURL: https://prometheus.workflows.diamond.ac.uk
-    remoteWrite:
-      - url: "http://{{ .Release.Name }}-thanos-receive.{{ .Release.Namespace }}.svc.cluster.local:19291/api/v1/receive"
     resources:
       requests:
         cpu: '2'
-        memory: 32Gi
+        memory: 8Gi
       limits:
         cpu: '4'
-        memory: 64Gi
-    affinity:
-      podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - prometheus
-            topologyKey: kubernetes.io/hostname
+        memory: 16Gi
     ingress:
       enabled: true
       hosts:
@@ -216,63 +88,12 @@ prometheus:
     persistentVolume:
       enabled: false
     replicaCount: 1
-    retention: 7d
     statefulSet:
       enabled: true
-    alertmanagers:
-      - kubernetes_sd_configs:
-          - role: pod
-            namespaces:
-              own_namespace: true
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_namespace]
-            regex: <namespace>
-            action: keep
-          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
-            regex: <release-name>
-            action: keep
-          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
-            regex: alertmanager
-            action: keep
-          - source_labels: [__meta_kubernetes_pod_container_port_number]
-            regex: "9093"
-            action: keep
-    livenessProbe:
-      httpGet:
-        path: /-/healthy
-        port: 9090
-      initialDelaySeconds: 15
-      periodSeconds: 10
-    readinessProbe:
-      httpGet:
-        path: /-/ready
-        port: 9090
-      initialDelaySeconds: 15
-      periodSeconds: 10
-  serviceAccounts:
-    prometheus-node-exporter:
-      annotations: {}
-      create: true
-    pushgateway:
-      annotations: {}
-      create: true
-    server:
-      annotations: {}
-      create: true
-  # serverFiles:
-  #   prometheus.yml:
-  #     scrape_configs:
-  #       - job_name: prometheus
-  #         static_configs:
-  #           - targets:
-  #               - localhost:9090
   extraScrapeConfigs: |
     - job_name: 'otel-collector'
+      metrics_path: /metrics
       scrape_interval: 30s
-      scrape_timeout: 30s
       static_configs:
         - targets:
             - "monitoring-opentelemetry-collector.monitoring.svc.cluster.local:9090"
@@ -291,14 +112,6 @@ opentelemetry-collector:
       containerPort: 9090
       servicePort: 9090
       protocol: TCP
-    jaeger-compact:
-      enabled: false
-    jaeger-thrift:
-      enabled: false
-    jaeger-grpc:
-      enabled: false
-    zipkin:
-      enabled: false
   ingress:
     enabled: true
     annotations:
@@ -316,11 +129,11 @@ opentelemetry-collector:
           - otelcollector.workflows.diamond.ac.uk
   resources:
     requests:
-      cpu: '8'
-      memory: 24Gi
+      cpu: '4'
+      memory: 8Gi
     limits:
-      cpu: '12'
-      memory: 24Gi
+      cpu: '8'
+      memory: 16Gi
   config:
     receivers:
       prometheus:
@@ -357,7 +170,20 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_pod_phase]
                   regex: Pending|Succeeded|Failed|Completed
                   action: drop
-            - job_name: kubernetes-service-endpoints
+            - job_name: 'kubernetes-deployments'
+              kubernetes_sd_configs:
+                - role: pod
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+                  regex: deployment
+                  action: keep
+                - source_labels: [__meta_kubernetes_namespace]
+                  action: replace
+                  target_label: namespace
+                - source_labels: [__meta_kubernetes_pod_name]
+                  action: replace
+                  target_label: pod
+            - job_name: 'kubernetes-services'
               kubernetes_sd_configs:
                 - role: endpoints
               relabel_configs:
@@ -376,10 +202,7 @@ opentelemetry-collector:
                   target_label: __metrics_path__
                   regex: (.+)
                 - source_labels:
-                    [
-                      __address__,
-                      __meta_kubernetes_service_annotation_prometheus_io_port,
-                    ]
+                    [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
                   action: replace
                   target_label: __address__
                   regex: (.+?)(?::\d+)?;(\d+)
@@ -395,43 +218,16 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_service_name]
                   action: replace
                   target_label: service
-                - source_labels: [__meta_kubernetes_pod_node_name]
-                  action: replace
-                  target_label: node
-      otlp:
-        protocols:
-          grpc:
-            endpoint: 0.0.0.0:4317
-          http:
-            endpoint: 0.0.0.0:4318
     exporters:
       prometheus:
-        endpoint: 0.0.0.0:9090
-      otlphttp:
-        endpoint: "https://otel.tracing.diamond.ac.uk:4318"
-        timeout: 30s
-        retry_on_failure:
-          enabled: true
-          initial_interval: 5s
-          max_interval: 30s
-          max_elapsed_time: 5m
+        endpoint: "0.0.0.0:9090"
     service:
       pipelines:
         metrics:
           receivers:
             - prometheus
-            - otlp
           processors:
-            - memory_limiter
             - batch
           exporters:
             - prometheus
-            - otlphttp
-        traces:
-          receivers:
-            - otlp
-          processors:
-            - memory_limiter
-            - batch
-          exporters:
-            - otlphttp
+
