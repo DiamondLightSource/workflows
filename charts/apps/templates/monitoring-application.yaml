@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ include "common.names.fullname" . }}-monitoring
+  name: monitoring
   namespace: {{ .Release.Namespace }}
 spec:
   destination:

@@ -81,3 +81,9 @@ dashboard:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}

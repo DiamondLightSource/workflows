@@ -70,3 +70,6 @@ dashboard:
   targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
+
+monitoring:
+  enabled: disabled
