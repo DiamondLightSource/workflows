@@ -1,8 +1,4 @@
 grafana:
-  rbac:
-    create: false
-    pspEnabled: false
-    pspUseAppArmor: false
   serviceAccount:
     create: true
   ingress:
@@ -20,26 +16,23 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
-          url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
+          url: "http://monitoring-prometheus-server:9090"
           isDefault: true
 
-  default:
-    workload-by-namespace:
-      gnetId: 12118
-      revision: 1
-      datasource: Prometheus
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
       providers:
-        - name: default
+        - name: 'default'
           orgId: 1
-          folder: ""
+          folder: ''
           type: file
           disableDeletion: false
-          editable: false
+          editable: true
           options:
             path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: grafana-dashboards
 
 
   extraSecretMounts:
@@ -191,6 +184,11 @@ prometheus:
         limits:
           cpu: 250m
           memory: 400Mi
+  prometheus.yml:
+    service:
+      sericePort: 9090
+
+
   server:
     baseURL: https://prometheus.workflows.diamond.ac.uk
     remoteWrite:
