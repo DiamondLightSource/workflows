@@ -119,6 +119,14 @@ vcluster:
             "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
+
+            "/letsencrypt-alertmanager-workflows-diamond-ac-uk": "monitoring/letsencrypt-alertmanager-workflows-diamond-ac-uk"
+            "/letsencrypt-grafana-workflows-diamond-ac-uk": "monitoring/letsencrypt-grafana-workflows-diamond-ac-uk"
+            "/letsencrypt-prometheus-workflows-diamond-ac-uk": "monitoring/letsencrypt-prometheus-workflows-diamond-ac-uk"
+            "/letsencrypt-thanos-query-workflows-diamond-ac-uk": "monitoring/letsencrypt-thanos-query-workflows-diamond-ac-uk"
+            "/monitoring-thanos-s3": "monitoring/thanos-s3"
+            "/grafana-oauth": "monitoring/grafana-oauth"
+
   rbac:
     clusterRole:
       enabled: false

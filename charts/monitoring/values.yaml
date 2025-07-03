@@ -46,7 +46,7 @@ grafana:
       email_attribute_path: id
 
 thanos:
-  existingObjstoreSecret: '{{ include "common.names.fullname" . }}-s3'
+  existingObjstoreSecret: 'thanos-s3'
   serviceAccount:
     create: true
   query:
@@ -109,7 +109,7 @@ thanos:
     replicaCount: 1
     retentionResolutionRaw: 30d
     retentionResolution5m: 30d
-    retentionResolution1h: 1y
+    retentionResolution1h: 30d
     consistencyDelay: 30m
     autoscaling:
       enabled: false
