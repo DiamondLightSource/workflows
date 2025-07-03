@@ -275,7 +275,7 @@ prometheus:
       scrape_timeout: 30s
       static_configs:
         - targets:
-            - "{{ .Release.Name }}-opentelemetry-collector.{{ .Release.Namespace }}.svc.cluster.local:9090"
+            - "monitoring-opentelemetry-collector.monitoring.svc.cluster.local:9090"
 
 opentelemetry-collector:
   enabled: true

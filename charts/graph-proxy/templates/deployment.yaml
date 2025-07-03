@@ -18,6 +18,8 @@ spec:
     metadata:
       {{- with $.Values.deployment.podAnnotations }}
       annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
         {{- . | toYaml | nindent 8 }}
       {{- end }}
       labels:
