@@ -59,6 +59,13 @@ impl WorkflowTemplate {
             .get("workflows.argoproj.io/description")
     }
 
+    /// The repository storing the code associated with this template.
+    async fn repository(&self) -> Option<&String> {
+        self.metadata
+            .annotations
+            .get("workflows.diamond.ac.uk/repository")
+    }
+
     /// A JSON Schema describing the arguments of a Workflow Template
     async fn arguments(&self) -> Result<Json<Value>, WorkflowTemplateParsingError> {
         Ok(Json(
@@ -275,5 +282,61 @@ impl WorkflowTemplatesFilter {
         }
 
         label_selectors.join(",")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+
+    use super::WorkflowTemplatesQuery;
+
+    #[tokio::test]
+    async fn workflow_template_query() -> anyhow::Result<()> {
+        let workflow_template_name = "numpy-benchmark";
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-template.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/cluster-workflow-templates/{workflow_template_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(
+                None::<
+                    axum_extra::headers::Authorization<axum_extra::headers::authorization::Bearer>,
+                >,
+            )
+            .finish();
+        let response = schema
+            .execute(format!(
+                "{{ workflowTemplate(name: \"{workflow_template_name}\") {{ name repository }} }}"
+            ))
+            .await;
+        let response = response.into_result().expect("Invalid response");
+        workflow_endpoint.assert_async().await;
+
+        let actual = response.data.into_json().unwrap();
+        let expected = serde_json::json!(
+            { "workflowTemplate":
+                {
+                    "name": "numpy-benchmark",
+                    "repository": "https://github.com/DiamondLightSource/workflows"
+                }
+            }
+        );
+        assert_eq!(expected, actual);
+        Ok(())
     }
 }
