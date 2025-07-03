@@ -262,13 +262,13 @@ prometheus:
     server:
       annotations: {}
       create: true
-  serverFiles:
-    prometheus.yml:
-      scrape_configs:
-        - job_name: prometheus
-          static_configs:
-            - targets:
-                - localhost:9090
+  # serverFiles:
+  #   prometheus.yml:
+  #     scrape_configs:
+  #       - job_name: prometheus
+  #         static_configs:
+  #           - targets:
+  #               - localhost:9090
   extraScrapeConfigs: |
     - job_name: 'otel-collector'
       scrape_interval: 30s
