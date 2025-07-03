@@ -184,10 +184,6 @@ prometheus:
         limits:
           cpu: 250m
           memory: 400Mi
-  prometheus.yml:
-    service:
-      sericePort: 9090
-
 
   server:
     baseURL: https://prometheus.workflows.diamond.ac.uk
