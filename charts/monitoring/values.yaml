@@ -22,6 +22,26 @@ grafana:
           type: prometheus
           url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
           isDefault: true
+
+  default:
+    workload-by-namespace:
+      gnetId: 12118
+      revision: 1
+      datasource: Prometheus
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: false
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+
   extraSecretMounts:
     - name: oauth-provider
       secretName: grafana-oauth
