@@ -329,8 +329,6 @@ opentelemetry-collector:
             - job_name: 'kubernetes-pods'
               kubernetes_sd_configs:
                 - role: pod
-                  namespaces:
-                    own_namespace: true
               relabel_configs:
                 - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
                   action: replace
@@ -362,8 +360,6 @@ opentelemetry-collector:
             - job_name: kubernetes-service-endpoints
               kubernetes_sd_configs:
                 - role: endpoints
-                  namespaces:
-                    own_namespace: true
               relabel_configs:
                 - source_labels:
                     [__meta_kubernetes_service_annotation_prometheus_io_scrape]
