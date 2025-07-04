@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.3...relay-workflows-lib@v0.1.4) (2025-07-04)
+
+
+### Features
+
+* **frontend:** add workflows live update switch ([eab7124](https://github.com/DiamondLightSource/workflows/commit/eab712461f5e260800000f0ee8dfacc643192ec1))
+* **frontend:** poll workflow names every 5 seconds ([11842a7](https://github.com/DiamondLightSource/workflows/commit/11842a738415f929e38f7a20b53061c18e30bd37))
+
+
+### Bug Fixes
+
+* **frontend:** persist tasks flow viewport & add reset button ([c6260b2](https://github.com/DiamondLightSource/workflows/commit/c6260b2a73410b8e12e578470b91087a1c2a80ba))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.2...relay-workflows-lib@v0.1.3) (2025-06-12)
 
 
