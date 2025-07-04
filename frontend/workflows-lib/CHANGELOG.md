@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.4...workflows-lib@v0.1.5) (2025-07-04)
+
+
+### Features
+
+* **frontend:** add clear all filters button ([535be52](https://github.com/DiamondLightSource/workflows/commit/535be5257641d2cd167e51ecba2f7a84f2e016f0))
+
+
+### Bug Fixes
+
+* **frontend:** fix Accordion story with MemoryRouter ([45d72ed](https://github.com/DiamondLightSource/workflows/commit/45d72ed620c6b175bc12067cd056bdbf270a6919))
+* **frontend:** persist tasks flow viewport & add reset button ([c6260b2](https://github.com/DiamondLightSource/workflows/commit/c6260b2a73410b8e12e578470b91087a1c2a80ba))
+* **frontend:** use modified visitRegex in template regex ([1a9950a](https://github.com/DiamondLightSource/workflows/commit/1a9950a38a71de19cb2c5e51d01ebf970f4e6af5))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.3...workflows-lib@v0.1.4) (2025-06-12)
 
 
