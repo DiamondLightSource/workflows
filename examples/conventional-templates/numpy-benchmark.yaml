@@ -10,6 +10,7 @@ metadata:
       Runs a numpy script in a python container.
       The script finds the normal of the dot product of two random matrices.
       Matrix sizes are specified by the input parameter "size".
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.diamond.ac.uk/parameter-schema.size: |
       {
         "type": "integer",

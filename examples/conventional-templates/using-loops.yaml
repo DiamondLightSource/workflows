@@ -8,6 +8,7 @@ metadata:
     workflows.argoproj.io/title: using-loops
     workflows.argoproj.io/description: |
       Use script step to transform inputs and dynamically create workflow steps.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.diamond.ac.uk/parameter-schema.start: |
       {
         "type": "integer",
