@@ -8,6 +8,7 @@ metadata:
     workflows.argoproj.io/title: conditional-steps
     workflows.argoproj.io/description: |
       Run steps based on conditions from previous outputs.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 spec:
   entrypoint: workflow-entry
 

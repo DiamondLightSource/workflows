@@ -8,6 +8,7 @@ metadata:
     workflows.argoproj.io/title: using-cluster-templates
     workflows.argoproj.io/description: |
       Use pre-exisiting cluster-workflows as steps in your workflow.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.diamond.ac.uk/parameter-schema.size: |
       {
         "type": "integer",
