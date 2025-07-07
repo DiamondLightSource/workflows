@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.5...graph-proxy@v0.1.6) (2025-07-07)
+
+
+### Features
+
+* **graph-proxy:** add id to Workflow to allow refetchable fragments ([45f70f5](https://github.com/DiamondLightSource/workflows/commit/45f70f5e24005482131e415e6222131ffe355d3e))
+* **graph-proxy:** add optional repository field to workflow template ([77fcd20](https://github.com/DiamondLightSource/workflows/commit/77fcd207ce9d2fb837eb706e77391c3d93e7dafa))
+* **graph-proxy:** add support for subscriptions ([0851293](https://github.com/DiamondLightSource/workflows/commit/0851293d5df92b6001471d8ce3040606cb63450b))
+* **graph-proxy:** impliment basic workflow subscription ([3e6e7a0](https://github.com/DiamondLightSource/workflows/commit/3e6e7a0bacad5fcaa310bec7e841b89894925e7b))
+* **graph-proxy:** json forms serializer accepts options field ([b70c5b5](https://github.com/DiamondLightSource/workflows/commit/b70c5b5625c147c35b9ea8cd221acbe5d81d3ce6))
+
+
+### Bug Fixes
+
+* **graph-proxy:** json forms categorization incorrectly de-serialized ([7e0e17b](https://github.com/DiamondLightSource/workflows/commit/7e0e17b9173e6bbb6256f670dd50b2af0eb05b09))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.4...graph-proxy@v0.1.5) (2025-05-28)
 
 
