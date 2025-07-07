@@ -8,5 +8,6 @@ export const workflowTemplateFragment = graphql`
     description
     arguments
     uiSchema
+    repository
   }
 `;
