@@ -14,6 +14,7 @@ const templatesListQuery = graphql`
         description
         title
         maintainer
+        repository
       }
     }
   }

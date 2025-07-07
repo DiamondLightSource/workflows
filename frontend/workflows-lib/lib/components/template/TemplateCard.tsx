@@ -4,7 +4,7 @@ import CardActionArea from "@mui/material/CardActionArea";
 import Typography from "@mui/material/Typography";
 import { Template } from "../../types";
 import React from "react";
-import { Container, Box } from "@mui/material";
+import { Container, Box, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface TemplateCardProps {
@@ -20,7 +20,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
     (navigate(`/${path}/${templateName}`) as Promise<void>).catch(
       (error: unknown) => {
         console.error("Navigation error:", error);
-      }
+      },
     );
   };
 
@@ -34,22 +34,40 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
             }}
           >
             <CardContent>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography gutterBottom variant="h5" component="div">
-                  {template.title ?? template.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Maintainer: {template.maintainer}
-                </Typography>
-              </Box>
-              <Typography gutterBottom>{template.name}</Typography>
-              <Typography variant="caption" gutterBottom>
-                {template.description ?? ""}
-              </Typography>
+              <Stack spacing={1}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="h5">
+                    {template.title ?? template.name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Maintainer: {template.maintainer}
+                  </Typography>
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>{template.name}</Typography>
+                  {template.repository && (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      Repository: {template.repository}
+                    </Typography>
+                  )}
+                </Box>
+                {template.description && (
+                  <Typography variant="caption">
+                    {template.description}
+                  </Typography>
+                )}
+              </Stack>
             </CardContent>
           </CardActionArea>
         </Card>

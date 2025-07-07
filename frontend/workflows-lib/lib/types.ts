@@ -52,22 +52,23 @@ export interface Visit {
 
 export interface Template {
   name: string;
-  description: string | null | undefined;
-  title: string | null | undefined;
+  description?: string | null;
+  title?: string | null;
   maintainer: string;
+  repository?: string | null;
 }
 
 export interface WorkflowQueryFilter {
-  creator?: string,
-  workflowStatusFilter?: WorkflowStatusBool,
+  creator?: string;
+  workflowStatusFilter?: WorkflowStatusBool;
 }
 
 export interface WorkflowStatusBool {
-  pending?: boolean,
-  running?: boolean,
-  succeeded?: boolean,
-  failed?: boolean,
-  error?: boolean,
+  pending?: boolean;
+  running?: boolean;
+  succeeded?: boolean;
+  failed?: boolean;
+  error?: boolean;
 }
 
 export interface SubmissionSuccessMessage {
