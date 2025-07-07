@@ -30,29 +30,29 @@ kyverno:
       featuresOverride:
         admissionReports:
           backPressureThreshold: 10000
-      replicas: 3
+      replicas: 10
       container:
         resources:
           limits:
-            cpu: 4
-            memory: 8Gi
+            cpu: 16
+            memory: 64Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 8
+            memory: 32Gi
     backgroundController:
       extraArgs:
         backgroundScanWorkers: 5
-        genWorkers: 50
-        clientRateLimitBurst: 1000
-        clientRateLimitQPS: 1000
-      replicas: 2
+        genWorkers: 1000
+        clientRateLimitBurst: 5000
+        clientRateLimitQPS: 5000
+      replicas: 5
       resources:
         limits:
-          cpu: 4
-          memory: 32Gi
+          cpu: 16
+          memory: 64Gi
         requests:
-          cpu: 2
-          memory: 16Gi
+          cpu: 8
+          memory: 32Gi
     cleanupController:
       enabled: false
     reportsController:
