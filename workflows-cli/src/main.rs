@@ -4,7 +4,9 @@
 
 /// Argo workflows linter wrapper
 mod linter;
-use std::path::PathBuf;
+
+/// Submit workflows and templates
+mod submit_workflow;
 
 /// Wraps command to allow mocking
 mod command_runner;
@@ -14,6 +16,7 @@ mod helm_integration;
 use helm_integration::ManifestType;
 
 use clap::Parser;
+use std::path::PathBuf;
 use std::process::Command;
 
 /// Workflows Tool
@@ -24,6 +27,8 @@ enum Cli {
     Lint(LintArgs),
     /// Lint from a config file
     LintConfig(LintConfigArgs),
+    /// Submit workflows and templates
+    Submit(SubmitArgs),
 }
 
 /// Arguments for linting from a configfile
@@ -48,6 +53,21 @@ struct LintArgs {
     file_name: PathBuf,
 }
 
+/// Test workflow templates
+#[derive(Debug, Parser)]
+struct SubmitArgs {
+    /// Type of template. Either manifest or helm
+    #[arg(long, default_value = "manifest")]
+    manifest_type: ManifestType,
+
+    /// Target session to run the workflow
+    #[arg(long, short)]
+    session: String,
+
+    /// Path to workflow template being linted
+    file_path: PathBuf,
+}
+
 fn main() {
     let args = Cli::parse();
 
@@ -62,6 +82,9 @@ fn main() {
         }
         Cli::LintConfig(args) => {
             linter::config_lint(args);
+        }
+        Cli::Submit(args) => {
+            submit_workflow::submit(args);
         }
     }
 }

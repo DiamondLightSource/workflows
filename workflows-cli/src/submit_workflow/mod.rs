@@ -2,9 +2,9 @@ use serde_yaml::{self, Value};
 use std::fs;
 use std::path::Path;
 
+use crate::SubmitArgs;
 use crate::command_runner::get_command_factory;
 use crate::helm_integration::{ManifestType, helm_to_manifest};
-use crate::SubmitArgs;
 
 pub fn submit(args: SubmitArgs) {
     let result = match args.manifest_type {
