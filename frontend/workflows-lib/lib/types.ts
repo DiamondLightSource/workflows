@@ -79,13 +79,31 @@ export interface SubmissionSuccessMessage {
 export interface SubmissionNetworkErrorMessage {
   type: "networkError";
   error: Error;
-};
+}
 
 export interface SubmissionGraphQLErrorMessage {
   type: "graphQLError";
   errors: PayloadError[];
-};
+}
 
+export interface UploadedFile {
+  fileName: string;
+  content: string | ArrayBuffer | null;
+  type: string;
+}
 
-export type JSONValue = string | number | boolean | null | JSONObject | JSONValue[];
-export interface JSONObject { [key: string]: JSONValue }
+export interface FileUploadButtonProps {
+  name: string;
+  handleChange: (path: string, value: UploadedFile) => void;
+}
+
+export type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JSONObject
+  | JSONValue[];
+export interface JSONObject {
+  [key: string]: JSONValue;
+}
