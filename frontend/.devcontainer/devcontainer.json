@@ -1,6 +1,8 @@
 {
   "name": "workflow-UI",
-  "image": "docker.io/library/node:22.12-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2.4.2": {
       "username": "none",

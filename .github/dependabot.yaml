@@ -20,6 +20,8 @@ updates:
       - /backend/sessionspaces/.devcontainer/
       - /backend/graph-proxy/.devcontainer/
       - /workflows-cli/.devcontainer/
+      - /frontend/
+      - /frontend/.devcontainer/
     schedule:
       interval: weekly
     groups:
@@ -64,4 +66,3 @@ updates:
           - vitest
     commit-message:
       prefix: "chore(deps)"
-
