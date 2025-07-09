@@ -8,4 +8,6 @@ export { default as WorkflowsErrorBoundary } from "./components/workflow/Workflo
 export { default as WorkflowListFilterDrawer } from "./components/workflow/WorkflowListFilterDrawer";
 export { default as WorkflowsNavbar } from "./components/workflow/WorkflowsNavbar";
 export { default as PaginationControls } from "./components/common/PaginationControls";
+export { default as FileUploadButton } from "./components/template/controls/FileUploadButton";
+export { default as JsonFormsFileUploadRenderer } from "./components/template/jsonforms/JsonFormsFileUploadRenderer";
 export * from "./types";
