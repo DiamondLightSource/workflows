@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemoryRouter } from "react-router-dom";
 import { fakeWorkflowA } from "./common";
 import WorkflowAccordion from "../lib/components/workflow/WorkflowAccordion";

@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import TemplateSubmissionForm from "../lib/components/template/SubmissionForm";
 
 const meta: Meta<typeof TemplateSubmissionForm> = {

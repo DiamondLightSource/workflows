@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fakeTasksA } from "./common";
 import TasksTable from "../lib/components/workflow/TasksTable";
 
