@@ -132,7 +132,10 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           name: task.name,
           status: task.status as TaskStatus,
           depends: [...task.depends],
-          artifacts: [...task.artifacts],
+          artifacts: task.artifacts.map ((artifact) => ({
+            ...artifact,
+            parentTask: task.name
+          })),
           workflow: data.workflow.name,
           instrumentSession: data.workflow.visit as Visit,
           stepType: task.stepType,

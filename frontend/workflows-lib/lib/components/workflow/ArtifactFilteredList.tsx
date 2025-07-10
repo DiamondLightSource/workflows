@@ -83,7 +83,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           subheader={<ListSubheader>Artifacts</ListSubheader>}
         >
           {listedArtifacts.map((artifact) => (
-            <Tooltip title={artifact.name} enterDelay={400} key={artifact.name}>
+            <Tooltip title={artifact.name} enterDelay={400} key={`${artifact.parentTask}-${artifact.name}`}>
               <ListItemButton
                 onClick={() => window.open(artifact.url, "_blank")}
               >
