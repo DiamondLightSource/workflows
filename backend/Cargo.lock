@@ -2491,7 +2491,7 @@ dependencies = [
  "backon",
  "educe",
  "futures",
- "hashbrown 0.15.2",
+ "hashbrown",
  "hostname",
  "json-patch",
  "k8s-openapi",

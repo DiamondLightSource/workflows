@@ -440,6 +440,16 @@ impl Task {
     async fn step_type(&self) -> &str {
         &self.node_status.type_
     }
+
+    /// Start time for a task on a workflow
+    async fn start_time(&self) -> Option<DateTime<Utc>> {
+        self.node_status.started_at.as_ref().map(|time| **time)
+    }
+
+    /// End time for a task on a workflow
+    async fn end_time(&self) -> Option<DateTime<Utc>> {
+        self.node_status.finished_at.as_ref().map(|time| **time)
+    }
 }
 
 async fn fetch_missing_task_info(
