@@ -34,21 +34,22 @@ export default function SingleWorkflowView({
         name: task.name,
         status: task.status as TaskStatus,
         artifacts: task.artifacts.map((artifact) => ({
-          ...artifact, parentTask: task.name, key: `${task.name}-${artifact.name}`,
+          ...artifact,
+          parentTask: task.name,
+          key: `${task.name}-${artifact.name}`,
         })),
         workflow: workflowName,
         instrumentSession: visit,
-        stepType: task.stepType
+        stepType: task.stepType,
       }));
     }
 
-    if (tasknames) {
-      const filteredTasks = tasknames
-        .map(name => fetchedTasks.find(task => task.name === name))
-        .filter((task): task is Task => !!task);
-      const artifacts: Artifact[] = filteredTasks.flatMap(task => task.artifacts);
-      setArtifactList(artifacts);
-    }
+    const filteredTasks = tasknames?.length
+      ? tasknames
+          .map((name) => fetchedTasks.find((task) => task.name === name))
+          .filter((task): task is Task => !!task)
+      : fetchedTasks;
+    setArtifactList(filteredTasks.flatMap((task) => task.artifacts));
   }, [workflow, tasknames, data.workflow.status]);
 
   return (
