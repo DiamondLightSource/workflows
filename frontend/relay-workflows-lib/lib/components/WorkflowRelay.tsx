@@ -6,10 +6,10 @@ import { Box } from "@mui/material";
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import { Visit } from "@diamondlightsource/sci-react-ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import RetriggerWorkflow from "./RetriggerWorkflow";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 
 export const workflowRelayQuery = graphql`
@@ -126,6 +126,11 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 
   const navigate = useNavigate();
 
+  const { visitid, tasknames, } = useParams<{
+    visitid: string;
+    tasknames?: string;
+  }>();
+
   const statusText = data.workflow.status?.__typename ?? "Unknown";
 
   const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(highlightedTaskNames ?? [])
@@ -151,26 +156,29 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     (path: string, event?: React.MouseEvent) => {
       const taskName = String(path.split("/").filter(Boolean).pop());
       const isCtrl = event?.ctrlKey || event?.metaKey;
+      const prev = tasknames? tasknames.split(","): []
 
-      setSelectedTaskNames((prev) => {
-        let updatedTasks: string[];
+      let updatedTasks: string[];
+      
+      if (isCtrl) {
+        updatedTasks = prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
+      } else {
+        updatedTasks = [taskName];
+      }
 
-        if (isCtrl) {
-          updatedTasks = prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
-        } else {
-          updatedTasks = [taskName];
-        }
+      const basePath = `/workflows/${visitid || ""}/${workflowName || ""}`;
+      const newPath = updatedTasks.length
+        ? `${basePath}/${updatedTasks.join(",")}`
+        : basePath;
 
-        const basePath = `/workflows/${visit}/${workflowName}`
-        const newPath = updatedTasks.length 
-          ? `${basePath}/${updatedTasks.join(",")}`
-          : basePath;
+      void navigate(newPath);
 
-        void navigate(newPath);
-        return updatedTasks
-      });
-    }, [navigate, visit, workflowName])
-  
+    }, [navigate, visitid, workflowName, tasknames])
+
+  useEffect(() => {
+    const taskList = tasknames? tasknames.split(","): []
+    setSelectedTaskNames(taskList)
+  }, [tasknames])
   
   return (
     <Box
