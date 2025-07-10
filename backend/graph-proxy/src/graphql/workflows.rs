@@ -994,6 +994,8 @@ mod tests {
                             message
                             tasks {{
                                 id
+                                startTime
+                                endTime
                             }}
                         }}
                     }}
@@ -1010,7 +1012,13 @@ mod tests {
                 "status": {
                     "startTime": "2025-01-22T12:29:45+00:00",
                     "message": null,
-                    "tasks": [{"id": workflow_name}]
+                    "tasks": [
+                        {
+                            "id": workflow_name,
+                            "startTime": "2025-01-22T12:29:45+00:00",
+                            "endTime": null
+                        }
+                    ]
                 }
             }
         });
