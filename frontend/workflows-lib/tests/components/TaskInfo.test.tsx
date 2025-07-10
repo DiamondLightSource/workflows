@@ -23,8 +23,18 @@ describe('TaskInfo', () => {
 
   it('does not render ImageGallery if there are no image artifacts', () => {
     const noImageArtifacts: Artifact[] = [
-      { name: 'main.log', mimeType: 'text/plain', url: 'fakepath/to/main.log' },
-      { name: 'textfile.txt', mimeType: 'text/plain', url: 'fakepath/to/textfile.txt' },
+      { 
+        name: 'main.log',
+        mimeType: 'text/plain',
+        url: 'fakepath/to/main.log',
+        parentTask: 'task1',
+      },
+      {
+        name: 'textfile.txt',
+        mimeType: 'text/plain',
+        url: 'fakepath/to/textfile.txt',
+        parentTask: 'task2',
+      },
     ];
     render(<TaskInfo artifactList={noImageArtifacts} />);
     expect(screen.queryByAltText('Gallery Image 1')).not.toBeInTheDocument();

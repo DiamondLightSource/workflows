@@ -28,12 +28,19 @@ export default function SingleWorkflowView({
 
   useEffect(() => {
     if (
-      taskname &&
       data.workflow.status &&
       isWorkflowWithTasks(data.workflow.status)
     ) {
-      const task = data.workflow.status.tasks.find((t) => t.name === taskname);
-      setArtifactList([...(task?.artifacts ?? [])]);
+      const tasks = data.workflow.status.tasks.map((task) => ({
+        ...task,
+        artifacts: task.artifacts.map((artifact) => ({
+          ...artifact,
+          parentTask: task.name,
+        })),  
+      }))
+      const task = taskname ? tasks.find((t) => t.name === taskname) : null;
+      const artifacts: Artifact[] = task ? [...task.artifacts] : tasks.flatMap((t) => t.artifacts);
+      setArtifactList(artifacts);
     }
   }, [workflow, taskname, data.workflow.status]);
 
@@ -47,11 +54,9 @@ export default function SingleWorkflowView({
         expanded={true}
         highlightedTaskName={taskname}
       />
-      {taskname && (
-        <div style={{ width: "100%", marginTop: "1rem" }}>
-          <TaskInfo artifactList={artifactList} />
-        </div>
-      )}
+      <div style={{ width: "100%", marginTop: "1rem" }}>
+        <TaskInfo artifactList={artifactList} />
+      </div>
     </>
   );
 }

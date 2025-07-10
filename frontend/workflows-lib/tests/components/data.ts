@@ -5,6 +5,7 @@ export const logArtifact: Artifact = {
   name: "main.log",
   url: "fakepath/to/main.log",
   mimeType: "text/plain",
+  parentTask: "task"
 };
 
 export const mockArtifacts: Artifact[] = [
@@ -13,17 +14,20 @@ export const mockArtifacts: Artifact[] = [
     name: "image1.png",
     mimeType: "image/png",
     url: "fakepath/to/image1.png",
+    parentTask: "task1"
   },
 
   {
     name: "textfile.txt",
     mimeType: "text/plain",
     url: "fakepath/to/textfile.txt",
+    parentTask: "task2"
   },
   {
     name: "image2.png",
     mimeType: "image/png",
     url: "fakepath/to/image2.png",
+    parentTask: "task3"
   },
 ];
 
