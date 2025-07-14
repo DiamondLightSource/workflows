@@ -4592,16 +4592,16 @@ react-refresh@^0.17.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.17.0.tgz#b7e579c3657f23d04eccbe4ad2e58a8ed51e7e53"
   integrity sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==
 
-react-relay@18.2.0, react-relay@^18.2.0:
-  version "18.2.0"
-  resolved "https://registry.yarnpkg.com/react-relay/-/react-relay-18.2.0.tgz#c18dca79c0b88f1bea2787939c4c25c8e7543c26"
-  integrity sha512-/yHlv4pj3IQQPtDzYLfVk6P4wrOSvYPu/5ySPcRp4xV3pn9xoVOHVczSLcZkRVf72lJu8CIjoT8rn3roaGoFyQ==
+react-relay@20.0.0, react-relay@^20.0.0:
+  version "20.0.0"
+  resolved "https://registry.yarnpkg.com/react-relay/-/react-relay-20.0.0.tgz#1e93cade5751202ec2c9c6512f1efcef67dce7ff"
+  integrity sha512-4Fm3xs8TmCh0B8zargSIWjU6Mdf3AFf4epTboZBHwyN0xDynF53PsiiCgbP5WRAd63oC54T+TF4MrTXdc4VYIw==
   dependencies:
     "@babel/runtime" "^7.25.0"
     fbjs "^3.0.2"
     invariant "^2.2.4"
     nullthrows "^1.1.1"
-    relay-runtime "18.2.0"
+    relay-runtime "20.0.0"
 
 react-resizable@^3.0.5:
   version "3.0.5"
@@ -4701,16 +4701,7 @@ relay-compiler@19.0.0, relay-compiler@^19.0.0:
   resolved "https://registry.yarnpkg.com/relay-compiler/-/relay-compiler-19.0.0.tgz#3f6d4c030883cbac6472ac185df4c921ff87b659"
   integrity sha512-DwyNWPUkzdggT3oBuNTS18bL6KCU3Sg/oSW/q+pqOQNHLo+RUZOWAx44ALy5XoBrsXjQVBr0EiNqJ4A8G1skOw==
 
-relay-runtime@18.2.0:
-  version "18.2.0"
-  resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-18.2.0.tgz#36e2c88be6e13dcdf987d32a3063e3e491aafa43"
-  integrity sha512-r4FYWlx1dPwFW+KQnuF1ugwVKR4toIFduCGheEf2paRc6nEEcCIgd2p2Jx2gRF+4niO3mCbRZvqdCoKaznUDzg==
-  dependencies:
-    "@babel/runtime" "^7.25.0"
-    fbjs "^3.0.2"
-    invariant "^2.2.4"
-
-relay-runtime@^20.0.0:
+relay-runtime@20.0.0, relay-runtime@^20.0.0:
   version "20.0.0"
   resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-20.0.0.tgz#dfed50c7836efd25786c81dd69a9a1ff8493dd5a"
   integrity sha512-GwS4WbJZSxfut1nJRCcUVWfOwl6TZ2dWFlb4s8vX0S6/EBLlAKxi5YKOejFe302JVCGp/YbXhezYAY21L6AsGw==

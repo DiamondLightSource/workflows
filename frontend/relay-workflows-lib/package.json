@@ -11,7 +11,7 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "react-relay": "^18.2.0",
+    "react-relay": "^20.0.0",
     "workflows-lib": "*"
   },
   "devDependencies": {
