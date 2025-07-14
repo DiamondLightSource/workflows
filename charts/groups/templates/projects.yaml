@@ -23,11 +23,14 @@ spec:
   namespaceResourceWhitelist:
     - group: argoproj.io
       kind: WorkflowTemplate
+    - group: argoproj.io
+      kind: Applications
   roles:
     - name: member
       description: "Members of the {{ .name }} group"
       policies:
         - "p, proj:{{ .name }}:member, applications, *, {{ .name }}-group/*, allow"
+        - "p, proj:{{ .name }}:member, applications, *, groups/*, allow"
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
