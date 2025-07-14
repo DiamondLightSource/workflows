@@ -60,6 +60,7 @@ spec:
       description: "Members of the {{ .name }} group"
       policies:
         - "p, proj:{{ .name }}:member, applications, *, {{ .name }}-group/*, allow"
+        - "p, proj:{{ .name }}:member, applications, *, groups/*, allow"
 ---
 {{- end }}
 {{- end }}
