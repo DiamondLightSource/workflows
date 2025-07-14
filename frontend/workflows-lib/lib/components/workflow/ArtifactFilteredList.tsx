@@ -48,7 +48,6 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
         return artifactList;
     }
   }, [artifactFilter, artifactList, imageArtifacts]);
-
   return (
     <>
       <Box
@@ -79,7 +78,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           </ToggleButton>
         </ToggleButtonGroup>
         <List
-          sx={{ paddingRight: "200px", width: "400px", paddingTop: 0 }}
+          sx={{ paddingRight: "200px", width: "450px", paddingTop: 0 }}
           subheader={<ListSubheader>Artifacts</ListSubheader>}
         >
           {listedArtifacts.map((artifact) => (
@@ -87,16 +86,31 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
               <ListItemButton
                 onClick={() => window.open(artifact.url, "_blank")}
               >
-                <Typography
-                  noWrap
-                  sx={{
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {artifact.name}
-                </Typography>
+                <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" width="100%">
+                  <Typography
+                    noWrap
+                    sx={{
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {artifact.name}
+                  </Typography>
+                  {artifact.parentTask && (
+                    <Typography
+                      noWrap
+                      color="#777"
+                      sx={{
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {artifact.parentTask}
+                    </Typography>
+                  )}
+                </Box>
               </ListItemButton>
             </Tooltip>
           ))}
