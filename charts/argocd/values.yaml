@@ -1,6 +1,8 @@
 argo-cd:
   enabled: true
   configs:
+    params:
+      application.namespaces: "*"
     cm:
       admin.enabled: "false"
       url: https://argo-cd.workflows.diamond.ac.uk
