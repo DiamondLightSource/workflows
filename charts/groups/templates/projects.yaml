@@ -6,6 +6,8 @@ metadata:
   name: {{ .name }}
 spec:
   description: "WorkflowTemplates for the {{ .name }} group"
+  sourceNamespaces:
+    - groups
   sourceRepos:
     {{- if .permittedRepos }}
     {{ .permittedRepos | toYaml | nindent 4 }}
@@ -21,6 +23,8 @@ spec:
     - group: argoproj.io
       kind: ClusterWorkflowTemplate
   namespaceResourceWhitelist:
+    - group: argoproj.io
+      kind: Application
     - group: argoproj.io
       kind: WorkflowTemplate
   roles:

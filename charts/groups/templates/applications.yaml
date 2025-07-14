@@ -7,6 +7,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: "{{ .name }}-group"
+  namespace: groups
 spec:
   destination:
     namespace: "{{ $group.name }}-group"
@@ -25,6 +26,8 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
 ---
 {{- end }}
 {{- end }}
