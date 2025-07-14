@@ -53,6 +53,8 @@ spec:
   namespaceResourceWhitelist:
     - group: argoproj.io
       kind: WorkflowTemplate
+    - group: argoproj.io
+      kind: Applications
   roles:
     - name: member
       description: "Members of the {{ .name }} group"
