@@ -29,5 +29,35 @@ spec:
       policies:
         - "p, proj:{{ .name }}:member, applications, *, {{ .name }}-group/*, allow"
 ---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  namespace: groups
+  name: {{ .name }}
+spec:
+  description: "WorkflowTemplates for the {{ .name }} group"
+  sourceRepos:
+    {{- if .permittedRepos }}
+    {{ .permittedRepos | toYaml | nindent 4 }}
+    {{- end }}
+    {{- range .apps }}
+    - {{ .repoURL }}
+    {{- end }}
+  destinations:
+    - namespace: "{{ .name }}-group"
+      name: {{ $.Values.destination.name }}
+      server: {{ $.Values.destination.server }}
+  clusterResourceWhitelist:
+    - group: argoproj.io
+      kind: ClusterWorkflowTemplate
+  namespaceResourceWhitelist:
+    - group: argoproj.io
+      kind: WorkflowTemplate
+  roles:
+    - name: member
+      description: "Members of the {{ .name }} group"
+      policies:
+        - "p, proj:{{ .name }}:member, applications, *, {{ .name }}-group/*, allow"
+---
 {{- end }}
 {{- end }}
