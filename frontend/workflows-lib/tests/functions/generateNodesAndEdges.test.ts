@@ -63,7 +63,7 @@ describe("generateNodesAndEdges", () => {
       },
     ];
 
-    const { nodes, edges } = generateNodesAndEdges(taskTree, "task-1");
+    const { nodes, edges } = generateNodesAndEdges(taskTree, ["task-1"]);
 
     expect(nodes).toEqual([
       {
@@ -214,7 +214,7 @@ describe("Ensure root dag is dropped", () => {
 
     let nodes, edges;
     // Dependencies undefined
-    ({ nodes, edges } = generateNodesAndEdges(taskTree, "task-1"));
+    ({ nodes, edges } = generateNodesAndEdges(taskTree, []));
 
     expect(nodes).toEqual([
       {
@@ -244,7 +244,7 @@ describe("Ensure root dag is dropped", () => {
 
     // Dependencies empty list
     taskTree[0].depends = [];
-    ({ nodes, edges } = generateNodesAndEdges(taskTree, "task-1"));
+    ({ nodes, edges } = generateNodesAndEdges(taskTree, []));
 
     expect(nodes).toEqual([
       {
@@ -274,7 +274,7 @@ describe("Ensure root dag is dropped", () => {
 
     // Some dependencies
     taskTree[0].depends = ["parent"];
-    ({ nodes, edges } = generateNodesAndEdges(taskTree, "task-1"));
+    ({ nodes, edges } = generateNodesAndEdges(taskTree, ["task-1"]));
 
     expect(nodes).toEqual([
       {
