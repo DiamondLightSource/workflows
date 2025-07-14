@@ -1,6 +1,6 @@
 import { Container, Box, Typography } from "@mui/material";
-import { useParams, Link } from "react-router-dom";
-import { Suspense } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
+import { Suspense, useMemo } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import SingleWorkflowView from "relay-workflows-lib/lib/components/SingleWorkflowView";
@@ -8,11 +8,22 @@ import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
 function SingleWorkflowPage() {
-  const { visitid, workflowName, tasknames } = useParams<{
+  const { visitid, workflowName } = useParams<{
     visitid: string;
     workflowName: string;
-    tasknames?: string;
   }>();
+
+  const [searchParams] = useSearchParams();
+  const taskParam = searchParams.get("tasks")
+
+  const tasknames = useMemo(() => {
+    if (!taskParam) return [];
+    try {
+      return JSON.parse(taskParam) as string[];
+    } catch {
+      return [];
+    }
+  }, [taskParam]);
 
   const visit = visitTextToVisit(visitid);
 
@@ -30,7 +41,7 @@ function SingleWorkflowPage() {
                 <SingleWorkflowView
                   visit={visit}
                   workflowName={workflowName}
-                  tasknames={tasknames? tasknames.split(","): []}
+                  tasknames={tasknames}
                 />
               </Suspense>
             </WorkflowsErrorBoundary>

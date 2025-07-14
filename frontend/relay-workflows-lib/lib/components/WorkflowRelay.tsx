@@ -6,10 +6,10 @@ import { Box } from "@mui/material";
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import { Visit } from "@diamondlightsource/sci-react-ui";
-import { useNavigate, useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import RetriggerWorkflow from "./RetriggerWorkflow";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import React from "react";
 
 export const workflowRelayQuery = graphql`
@@ -124,16 +124,23 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     name: workflowName,
   });
 
-  const navigate = useNavigate();
-
-  const { visitid, tasknames, } = useParams<{
-    visitid: string;
-    tasknames?: string;
-  }>();
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const statusText = data.workflow.status?.__typename ?? "Unknown";
-
   const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(highlightedTaskNames ?? [])
+
+  const taskParam = searchParams.get("tasks")
+  const tasknames = useMemo(() => {
+    if (!taskParam) return [];
+    try {
+      return JSON.parse(taskParam) as string[];
+    } catch {
+      return [];
+    }
+  }, [taskParam]);
+
+  useEffect(() => {
+    setSelectedTaskNames(tasknames);
+  }, [tasknames]);
 
   const tasks: Task[] =
     data.workflow.status && "tasks" in data.workflow.status
@@ -156,29 +163,23 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     (path: string, event?: React.MouseEvent) => {
       const taskName = String(path.split("/").filter(Boolean).pop());
       const isCtrl = event?.ctrlKey || event?.metaKey;
-      const prev = tasknames? tasknames.split(","): []
 
       let updatedTasks: string[];
       
       if (isCtrl) {
-        updatedTasks = prev.includes(taskName) ? prev.filter(name => name !== taskName) : [...prev, taskName];
+        updatedTasks = tasknames.includes(taskName) ? tasknames.filter(name => name !== taskName) : [...tasknames, taskName];
       } else {
         updatedTasks = [taskName];
       }
 
-      const basePath = `/workflows/${visitid || ""}/${workflowName || ""}`;
-      const newPath = updatedTasks.length
-        ? `${basePath}/${updatedTasks.join(",")}`
-        : basePath;
-
-      void navigate(newPath);
-
-    }, [navigate, visitid, workflowName, tasknames])
-
-  useEffect(() => {
-    const taskList = tasknames? tasknames.split(","): []
-    setSelectedTaskNames(taskList)
-  }, [tasknames])
+      const params = new URLSearchParams(searchParams);
+      if (updatedTasks.length > 0) {
+        params.set("tasks", JSON.stringify(updatedTasks));
+      } else {
+        params.delete("tasks");
+      }
+      setSearchParams(params)
+    }, [tasknames, searchParams, setSearchParams])
   
   return (
     <Box
