@@ -1,3 +1,4 @@
+### LINT
 passing_manifest:
   - command: argo lint ./tests/manifests/workflow1.yaml --offline --output simple
     response: no linting errors found!
@@ -66,6 +67,8 @@ failing_helm:
         name: template2
       data:
         key: value
+
+### TEST
 lint_one_helm_chart:
   - command: argo lint /tmp/argo-lint/workflow_0.yaml --offline --output simple
     response: no linting errors found!
@@ -79,3 +82,44 @@ lint_one_helm_chart:
         name: template1
       data:
         key: value
+submit_workflow:
+  - command: argo submit - -n SESSION
+    response: |
+      Name:                conditional-steps-40
+      Namespace:           SESSION
+      ServiceAccount:      unset (will run with the default ServiceAccount)
+      Status:              Pending
+      Created:             Thu Jul 10 16:05:20 +0100 (now)
+      Progress:
+    code: 0
+  - command: helm template ././tests/charts -s templates/workflow1.yaml
+    response: |
+      ---
+      # Source: base-apps/templates/workflow1.yaml
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+      data:
+        key: value
+    code: 0
+submit_workflow_failing:
+  - command: helm template ././tests/charts -s templates/workflow1.yaml
+    response: |
+      ---
+      # Source: base-apps/templates/workflow1.yaml
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+      data:
+        key: value
+      ---
+      # Source: base-apps/templates/workflow1.yaml
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+      data:
+        key: value
+    code: 0

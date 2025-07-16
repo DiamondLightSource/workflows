@@ -112,3 +112,66 @@ fn read_manifest(target: &Path) -> Result<String, String> {
     fs::read_to_string(target).map_err(|e| format!("Failed to read file {e}"))
 }
 
+#[cfg(test)]
+mod tests {
+    // Theses tests use the MockCommand runner, rather than the real Command library.
+    // This lets us mock the output of argo/helm/etc in tests so the actual binaries
+    // and sample workflows aren't needed for unit testing.
+
+    // By default, the real Command library will be used, but for testing you should
+    // switch to the Mock version by setting WORKFLOWS_CLI_TEST_ENABLE_MOCK_COMMAND=1.
+    // The mock command runner will lookup the intended command in the mock_commands
+    // list (found in tests/mock_commands.yaml), and then return a configured response,
+    // bypassing the need to have the underlying CLI installed, and making tests
+    // repeatable.
+
+    // Each test will set an active_mapping, which dictates which corresponds to a key
+    // in mock_commands.yaml that the command outputs will be taken from.
+
+    // Usage: WORKFLOWS_CLI_TEST_ENABLE_MOCK_COMMAND=1 cargo test
+
+    use std::env;
+    use std::path::Path;
+
+    use serial_test::serial;
+
+    use crate::submit_workflow::{submit_helm, submit_manifest};
+
+    #[test]
+    #[serial]
+    fn test_submit_manifest() {
+        unsafe {
+            env::set_var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING", "submit_workflow");
+        }
+        let path = Path::new("./tests/manifests/workflow1.yaml");
+        let result = submit_manifest(path, "SESSION").unwrap();
+        assert_eq!(result, "conditional-steps-40");
+    }
+
+    #[test]
+    #[serial]
+    fn test_submit_helm() {
+        unsafe {
+            env::set_var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING", "submit_workflow");
+        }
+        let path = Path::new("./tests/charts/templates/workflow1.yaml");
+        let result = submit_helm(path, "SESSION").unwrap();
+        assert_eq!(result, "conditional-steps-40");
+    }
+
+    #[test]
+    #[serial]
+    fn multiple_templates() {
+        unsafe {
+            env::set_var(
+                "WORKFLOW_CLI_TEST_ACTIVE_MAPPING",
+                "submit_workflow_failing",
+            );
+        }
+        let path = Path::new("./tests/charts/templates/workflow1.yaml");
+        let result = submit_helm(path, "SESSION").err();
+
+        let expected_err = Some("Found more than one template in ./tests/charts/templates/workflow1.yaml. Templates can only be tested one at a time.".to_string());
+        assert_eq!(expected_err, result);
+    }
+}
