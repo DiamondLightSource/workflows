@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.6...dashboard@v0.1.7) (2025-07-16)
+
+
+### Features
+
+* **dashboard:** determine config at runtime ([a1bfb9c](https://github.com/DiamondLightSource/workflows/commit/a1bfb9c902d2cb70472df51db41bb0b6e83395f2))
+* **dashboard:** parameterise graph endpoint ([29f8fd0](https://github.com/DiamondLightSource/workflows/commit/29f8fd0df36cd7ffe731cc710ddb3ff87b234bd2))
+* **frontend:** ctrl click to select multiple tasks ([242d322](https://github.com/DiamondLightSource/workflows/commit/242d322f644bf9c897d13d7ca403cb7b788962ba))
+* **frontend:** store multiple tasks in url ([eddc779](https://github.com/DiamondLightSource/workflows/commit/eddc7799fe88a68f988fe539448e2c96c248a60b))
+* **frontend:** use query parameters for selected tasks ([4f5c4e9](https://github.com/DiamondLightSource/workflows/commit/4f5c4e9d8cc29b00d06a2845fba8433dddd8f8ea))
+
 ## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.5...dashboard@v0.1.6) (2025-06-12)
 
 
