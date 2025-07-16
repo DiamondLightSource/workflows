@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::io;
+use std::io::Write;
 use std::os::unix::process::ExitStatusExt;
+use std::process::Stdio;
 use std::process::{Command, Output};
 
 /// Underlying traits used to run/mock CLI commands
@@ -12,6 +14,8 @@ pub trait CommandLike {
     fn arg(&mut self, arg: &str) -> &mut dyn CommandLike;
     /// Execute command
     fn output(&mut self) -> io::Result<Output>;
+
+    fn output_with_stdin(&mut self, input: &[u8]) -> io::Result<Output>;
 }
 
 /// Real command runner
@@ -29,6 +33,21 @@ impl CommandLike for RealCommand {
 
     fn output(&mut self) -> io::Result<Output> {
         self.cmd.output()
+    }
+
+    fn output_with_stdin(&mut self, input: &[u8]) -> io::Result<Output> {
+        let mut child = self
+            .cmd
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin.write_all(input)?;
+        }
+
+        child.wait_with_output()
     }
 }
 
@@ -122,6 +141,10 @@ impl CommandLike for MockCommand {
             stdout: response.0.as_bytes().to_vec(),
             stderr: vec![],
         })
+    }
+
+    fn output_with_stdin(&mut self, _input: &[u8]) -> io::Result<Output> {
+        self.output()
     }
 }
 

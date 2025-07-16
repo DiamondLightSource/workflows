@@ -84,7 +84,7 @@ fn submit_from_str(raw_manifest: &str, session: &str) -> Result<String, String> 
         .arg("-")
         .arg("-n")
         .arg(session)
-        .output_with_stdin(&yaml.as_bytes());
+        .output_with_stdin(yaml.as_bytes());
 
     let response = command.map_err(|e| format!("Failed to run argo command: {e}"))?;
 
