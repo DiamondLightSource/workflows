@@ -8,6 +8,7 @@ import { Visit } from "@diamondlightsource/sci-react-ui";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { Box, ToggleButton } from "@mui/material";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
+import { useSelectedTasks } from "./workflowRelayUtils";
 
 interface SingleWorkflowViewProps {
   visit: Visit;
@@ -26,16 +27,19 @@ export default function SingleWorkflowView({
   });
 
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
-  const [outputSelected, setOutputSelected] = useState<boolean>(false);
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
-  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
+  const [selectedTasks, setSelectedTasks] = useSelectedTasks();
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
 
   const handleSelectOutput = () => {
-    setOutputSelected(!outputSelected);
+    setSelectedTasks(outputTasks);
   };
+
+  useEffect(() => {
+    setSelectedTasks(tasknames ? tasknames : []);
+  }, [tasknames]);
 
   useEffect(() => {
     if (data.workflow.status && isWorkflowWithTasks(data.workflow.status)) {
@@ -65,6 +69,7 @@ export default function SingleWorkflowView({
           .filter((task): task is Task => !!task)
       : fetchedTasks;
     setArtifactList(filteredTasks.flatMap((task) => task.artifacts));
+    setSelectedTasks(selectedTasks);
   }, [selectedTasks, fetchedTasks]);
 
   useEffect(() => {
@@ -89,14 +94,6 @@ export default function SingleWorkflowView({
     setOutputTasks(newOutputTasks);
   }, [taskTree]);
 
-  useEffect(() => {
-    if (outputSelected) {
-      setSelectedTasks(outputTasks);
-    } else {
-      setSelectedTasks(tasknames ? tasknames : []);
-    }
-  }, [outputTasks, outputSelected, tasknames]);
-
   return (
     <>
       <Box
@@ -120,20 +117,16 @@ export default function SingleWorkflowView({
           <ToggleButton
             value="output"
             aria-label="output"
-            selected={outputSelected}
             onClick={handleSelectOutput}
             sx={{ position: "absolute", left: "-100px" }}
           >
             OUTPUT
           </ToggleButton>
           <WorkflowRelay
-            key={workflowName}
-            visit={visit}
-            workflowName={workflowName}
-            fetchedTasks={fetchedTasks}
+            workflowName={data.workflow.name}
+            visit={data.workflow.visit as Visit}
             workflowLink
             expanded={true}
-            highlightedTaskNames={selectedTasks}
           />
         </Box>
       </Box>
