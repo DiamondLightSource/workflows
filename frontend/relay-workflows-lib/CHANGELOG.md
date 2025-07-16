@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.3...relay-workflows-lib@v0.1.4) (2025-07-16)
+
+
+### Features
+
+* **frontend:** add workflows live update switch ([eab7124](https://github.com/DiamondLightSource/workflows/commit/eab712461f5e260800000f0ee8dfacc643192ec1))
+* **frontend:** ctrl click to select multiple tasks ([242d322](https://github.com/DiamondLightSource/workflows/commit/242d322f644bf9c897d13d7ca403cb7b788962ba))
+* **frontend:** display all artifacts when no task selected ([354da73](https://github.com/DiamondLightSource/workflows/commit/354da7339c7fe4666bc35d4a494ea6532e1f097d))
+* **frontend:** poll workflow names every 5 seconds ([11842a7](https://github.com/DiamondLightSource/workflows/commit/11842a738415f929e38f7a20b53061c18e30bd37))
+* **frontend:** show repo for template list and form ([d9aadab](https://github.com/DiamondLightSource/workflows/commit/d9aadabf2b063482e5d897c954b09497550d6c14))
+* **frontend:** store multiple tasks in url ([eddc779](https://github.com/DiamondLightSource/workflows/commit/eddc7799fe88a68f988fe539448e2c96c248a60b))
+* **frontend:** use query parameters for selected tasks ([4f5c4e9](https://github.com/DiamondLightSource/workflows/commit/4f5c4e9d8cc29b00d06a2845fba8433dddd8f8ea))
+
+
+### Bug Fixes
+
+* **frontend:** fix task highlighting with breadcrumbs ([2077128](https://github.com/DiamondLightSource/workflows/commit/2077128aacea2587f4087876830627f5cdfbc28f))
+* **frontend:** persist tasks flow viewport & add reset button ([c6260b2](https://github.com/DiamondLightSource/workflows/commit/c6260b2a73410b8e12e578470b91087a1c2a80ba))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.2...relay-workflows-lib@v0.1.3) (2025-06-12)
 
 
