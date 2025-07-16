@@ -13,15 +13,17 @@ pub(super) enum ParameterSchemaError {
         annotation: String,
         err: serde_json::Error,
     },
+    #[error("Malformed parameter schema")]
+    MalformParameterSchema,
 }
 
 /// A JSON Schema, contents are expected to match Draft 2020-12
 #[derive(Debug, PartialEq, Eq, Clone, From, Into, Deref, DerefMut, Serialize, Deserialize)]
-pub(super) struct Schema(Value);
+pub(super) struct Schema(pub Value);
 
 /// A JSON Schema describing the arguments of a Workflow Template
 #[derive(Debug, Default)]
-pub(super) struct ArgumentSchema(BTreeMap<String, Schema>);
+pub(super) struct ArgumentSchema(pub BTreeMap<String, Schema>);
 
 impl Schema {
     /// Updates references within the schema to use a specified path prefix
