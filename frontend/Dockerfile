@@ -21,7 +21,7 @@ WORKDIR /app
 
 COPY ./configure.sh .
 COPY --from=build /app/dashboard/dist /usr/share/nginx/html
-COPY ./container_utils/default.conf.template /etc/nginx/templates/default.conf.template
+COPY ./container_utils/default.conf.template /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
