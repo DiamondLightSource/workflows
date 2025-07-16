@@ -7,17 +7,10 @@ mod helm;
 use helm::lint_from_helm;
 mod config_linting;
 
-use clap::ValueEnum;
-
-use crate::{LintArgs, LintConfigArgs, linter::config_linting::lint_from_config};
-
-/// Supported manifest
-#[derive(Debug, Clone, ValueEnum)]
-#[clap(rename_all = "lower")]
-pub enum ManifestType {
-    Manifest,
-    Helm,
-}
+use crate::{
+    LintArgs, LintConfigArgs, helm_integration::ManifestType,
+    linter::config_linting::lint_from_config,
+};
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
 struct LintResult {
