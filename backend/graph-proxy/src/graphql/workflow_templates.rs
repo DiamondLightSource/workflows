@@ -12,7 +12,7 @@ use async_graphql::{
     Context, InputObject, Json, Object,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 use url::Url;
@@ -26,6 +26,8 @@ enum WorkflowTemplateParsingError {
     ParameterSchemaError(#[from] ParameterSchemaError),
     #[error("Could not parse UI schema")]
     UiSchemaError(#[from] UiSchemaError),
+    #[error("Could not parse parameter schema {0}")]
+    MalformParameterSchema(#[from] serde_json::Error),
 }
 
 /// A Template which specifies how to produce a [`Workflow`]
@@ -68,9 +70,54 @@ impl WorkflowTemplate {
 
     /// A JSON Schema describing the arguments of a Workflow Template
     async fn arguments(&self) -> Result<Json<Value>, WorkflowTemplateParsingError> {
-        Ok(Json(
-            Schema::from(ArgumentSchema::new(&self.spec, &self.metadata.annotations)?).into(),
-        ))
+        let generated_schema =
+            Schema::from(ArgumentSchema::new(&self.spec, &self.metadata.annotations)?);
+
+        if let Some(schema) = self
+            .0
+            .metadata
+            .annotations
+            .get("workflows.diamond.ac.uk/parameter-schema")
+        {
+            let mut full_schema: Value = serde_json::from_str(schema)
+                .map_err(WorkflowTemplateParsingError::MalformParameterSchema)?;
+            let obj = full_schema
+                .as_object_mut()
+                .ok_or(ParameterSchemaError::MalformParameterSchema)?;
+
+            let default_args = generated_schema
+                .get("properties")
+                .and_then(|properties| properties.as_object())
+                .ok_or(ParameterSchemaError::MalformParameterSchema)?;
+            let properties = obj
+                .entry("properties")
+                .or_insert_with(|| Value::Object(Map::new()))
+                .as_object_mut()
+                .ok_or(ParameterSchemaError::MalformParameterSchema)?;
+            for (property, schema) in default_args {
+                properties.entry(property).or_insert(schema.clone());
+            }
+
+            let required = obj
+                .entry("required")
+                .or_insert_with(|| Value::Array(vec![]))
+                .as_array_mut()
+                .unwrap();
+
+            if let Some(default_required) =
+                generated_schema.get("required").and_then(|v| v.as_array())
+            {
+                for var_name in default_required {
+                    if !required.iter().any(|v| v == var_name) {
+                        required.push(var_name.clone());
+                    }
+                }
+            }
+
+            Ok(Json(full_schema))
+        } else {
+            Ok(Json(generated_schema.into()))
+        }
     }
 
     /// A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
@@ -287,7 +334,10 @@ impl WorkflowTemplatesFilter {
 
 #[cfg(test)]
 mod tests {
+    use anyhow::Ok;
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+    use axum_extra::headers::{authorization::Bearer, Authorization};
+    use serde_json::json;
 
     use super::WorkflowTemplatesQuery;
 
@@ -336,6 +386,99 @@ mod tests {
                 }
             }
         );
+        assert_eq!(expected, actual);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn query_full_schema() -> anyhow::Result<()> {
+        let workflow_template_name = "numpy-benchmark";
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-template-full-param-schema.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/cluster-workflow-templates/{workflow_template_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let response = schema
+            .execute(format!(
+                "{{ workflowTemplate(name: \"{workflow_template_name}\") {{ name repository arguments }} }}"
+            ))
+            .await;
+        let response = response.into_result().expect("Invalid response");
+        workflow_endpoint.assert_async().await;
+
+        let actual = response.data.into_json().unwrap();
+
+        let arguments = json!({
+            "$defs": {
+                "Quiet": {
+                    "title": "Quiet",
+                    "type": "object",
+                    "properties": {
+                        "active": {
+                            "default": true,
+                            "description": "",
+                            "title": "Quiet mode",
+                            "type": "boolean"
+                        }
+                    }
+                }
+            },
+            "description": "This is the description of the main model",
+            "properties": {
+                "experiment-type": {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "null" }
+                    ],
+                    "default": null,
+                    "description": "",
+                    "title": "Experiment Type"
+                },
+                "memory": {
+                    "default": "20Gi",
+                    "type": "string"
+                },
+                "size": {
+                    "default": "2000",
+                    "type": "string"
+                },
+                "quiet": {
+                    "$ref": "#/$defs/Quiet"
+                }
+            },
+            "required": ["quiet", "memory", "size"],
+            "title": "Main",
+            "type": "object"
+        });
+        let expected = serde_json::json!(
+            { "workflowTemplate":
+                {
+                    "name": "numpy-benchmark",
+                    "repository": "https://github.com/DiamondLightSource/workflows",
+                    "arguments": arguments
+                }
+            }
+        );
+
+        println!("Returned: {:#?}", actual);
+        println!("Expected: {:#?}", expected);
+
         assert_eq!(expected, actual);
         Ok(())
     }

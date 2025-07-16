@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "name": "numpy-benchmark",
+    "uid": "72d5a8fa-3b6b-4979-be52-50fbeb9cdd0a",
+    "resourceVersion": "516245397",
+    "generation": 1,
+    "creationTimestamp": "2025-05-19T15:59:06Z",
+    "labels": {
+      "argocd.argoproj.io/instance": "example-manifests-group",
+      "workflows.diamond.ac.uk/science-group": "workflows-examples"
+    },
+    "annotations": {
+      "workflows.argoproj.io/description": "Runs a numpy script in a python container.\nThe script finds the normal of the dot product of two random matrices.\nMatrix sizes are specified by the input parameter \"size\".\n",
+      "workflows.argoproj.io/title": "Numpy Benchmark",
+      "workflows.diamond.ac.uk/repository": "https://github.com/DiamondLightSource/workflows",
+      "workflows.diamond.ac.uk/parameter-schema": "{\n  \"$defs\": {\n    \"Quiet\": {\n      \"properties\": {\n        \"active\": {\n          \"default\": true,\n          \"description\": \"\",\n          \"title\": \"Quiet mode\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"Quiet\",\n      \"type\": \"object\"\n    }\n  },\n  \"description\": \"This is the description of the main model\",\n  \"properties\": {\n    \"quiet\": {\n      \"$ref\": \"#/$defs/Quiet\"\n    },\n    \"experiment-type\": {\n      \"anyOf\": [\n        {\n          \"type\": \"string\"\n        },\n        {\n          \"type\": \"null\"\n        }\n      ],\n      \"default\": null,\n      \"description\": \"\",\n      \"title\": \"Experiment Type\"\n    }\n  },\n  \"required\": [\n    \"quiet\"\n  ],\n  \"title\": \"Main\",\n  \"type\": \"object\"\n}",
+      "workflows.diamond.ac.uk/ui-schema": "{\n  \"type\": \"VerticalLayout\",\n  \"elements\": [\n    {\n      \"type\": \"Control\",\n      \"scope\": \"#/properties/memory\",\n      \"label\": \"Memory\"\n    },\n    {\n      \"type\": \"Control\",\n      \"scope\": \"#/properties/size\",\n      \"label\": \"Matrix Size\"\n    }\n  ]\n}\n"
+    },
+    "managedFields": [
+      {
+        "manager": "argocd-controller",
+        "operation": "Update",
+        "apiVersion": "argoproj.io/v1alpha1",
+        "time": "2025-05-21T11:19:45Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              ".": {},
+              "f:kubectl.kubernetes.io/last-applied-configuration": {},
+              "f:workflows.argoproj.io/description": {},
+              "f:workflows.argoproj.io/title": {},
+              "f:workflows.diamond.ac.uk/parameter-schema.memory": {},
+              "f:workflows.diamond.ac.uk/parameter-schema.size": {},
+              "f:workflows.diamond.ac.uk/ui-schema": {}
+            },
+            "f:labels": {
+              ".": {},
+              "f:argocd.argoproj.io/instance": {},
+              "f:workflows.diamond.ac.uk/science-group": {}
+            }
+          },
+          "f:spec": {}
+        }
+      }
+    ]
+  },
+  "spec": {
+    "templates": [
+      {
+        "name": "numpy-test",
+        "inputs": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "2000"
+            },
+            {
+              "name": "memory",
+              "value": "20Gi"
+            }
+          ]
+        },
+        "outputs": {},
+        "metadata": {},
+        "script": {
+          "name": "",
+          "image": "gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1",
+          "command": ["python"],
+          "env": [
+            {
+              "name": "MKL_NUM_THREADS",
+              "value": "1"
+            },
+            {
+              "name": "NUMEXPR_NUM_THREADS",
+              "value": "1"
+            },
+            {
+              "name": "OMP_NUM_THREADS",
+              "value": "1"
+            }
+          ],
+          "resources": {},
+          "source": "import numpy as np\nimport time\n\nn = int(\"{{ inputs.parameters.size }}\")\nA = np.random.randn(n,n).astype('float64')\nB = np.random.randn(n,n).astype('float64')\nstart_time = time.time()\nnrm = np.linalg.norm(A@B)\nprint(\" took {} seconds \".format(time.time() - start_time))\nprint(\" norm = \",nrm)\nprint(np.__config__.show())\n"
+        },
+        "podSpecPatch": "containers:\n- name: main\n  resources:\n    requests:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n    limits:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n"
+      }
+    ],
+    "entrypoint": "numpy-test",
+    "arguments": {}
+  }
+}
