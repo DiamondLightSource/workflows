@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.4...workflows-lib@v0.1.5) (2025-07-16)
+
+
+### Features
+
+* **frontend:** add clear all filters button ([535be52](https://github.com/DiamondLightSource/workflows/commit/535be5257641d2cd167e51ecba2f7a84f2e016f0))
+* **frontend:** add file upload component ([183e0c3](https://github.com/DiamondLightSource/workflows/commit/183e0c3c899cc7e3de98e7f9ecf40e7da996a2dc))
+* **frontend:** ctrl click to select multiple tasks ([242d322](https://github.com/DiamondLightSource/workflows/commit/242d322f644bf9c897d13d7ca403cb7b788962ba))
+* **frontend:** display all artifacts when no task selected ([354da73](https://github.com/DiamondLightSource/workflows/commit/354da7339c7fe4666bc35d4a494ea6532e1f097d))
+* **frontend:** display task name next to artifact ([9e10592](https://github.com/DiamondLightSource/workflows/commit/9e10592c332646f906bd6d38daf9638a5e33f30a))
+* **frontend:** show repo for template list and form ([d9aadab](https://github.com/DiamondLightSource/workflows/commit/d9aadabf2b063482e5d897c954b09497550d6c14))
+* **frontend:** use query parameters for selected tasks ([4f5c4e9](https://github.com/DiamondLightSource/workflows/commit/4f5c4e9d8cc29b00d06a2845fba8433dddd8f8ea))
+
+
+### Bug Fixes
+
+* **frontend:** fix Accordion story with MemoryRouter ([45d72ed](https://github.com/DiamondLightSource/workflows/commit/45d72ed620c6b175bc12067cd056bdbf270a6919))
+* **frontend:** persist tasks flow viewport & add reset button ([c6260b2](https://github.com/DiamondLightSource/workflows/commit/c6260b2a73410b8e12e578470b91087a1c2a80ba))
+* **frontend:** use modified visitRegex in template regex ([1a9950a](https://github.com/DiamondLightSource/workflows/commit/1a9950a38a71de19cb2c5e51d01ebf970f4e6af5))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.3...workflows-lib@v0.1.4) (2025-06-12)
 
 
