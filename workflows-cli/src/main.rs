@@ -9,10 +9,12 @@ use std::path::PathBuf;
 /// Wraps command to allow mocking
 mod command_runner;
 
+/// Common structs and functions between CLI options
+mod helm_integration;
+use helm_integration::ManifestType;
+
 use clap::Parser;
 use std::process::Command;
-
-use crate::linter::{ManifestType, config_lint};
 
 /// Workflows Tool
 #[derive(Debug, Parser)]
@@ -20,7 +22,7 @@ use crate::linter::{ManifestType, config_lint};
 enum Cli {
     /// Lint the templates
     Lint(LintArgs),
-    ///Lint from a config file
+    /// Lint from a config file
     LintConfig(LintConfigArgs),
 }
 
@@ -59,7 +61,7 @@ fn main() {
             linter::lint(args);
         }
         Cli::LintConfig(args) => {
-            config_lint(args);
+            linter::config_lint(args);
         }
     }
 }
