@@ -4,13 +4,13 @@ import "react-resizable/css/styles.css";
 import { Box } from "@mui/material";
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
-import type { Task, WorkflowStatus } from "workflows-lib";
-import { useSearchParams } from "react-router-dom";
+import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
 import RetriggerWorkflow from "./RetriggerWorkflow";
+import React, { useEffect, useState } from "react";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
-import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import React from "react";
+import { isWorkflowWithTasks } from "../utils";
+import { useSelectedTasks } from "./workflowRelayUtils";
 
 export const workflowRelayQuery = graphql`
   query WorkflowRelayQuery($visit: VisitInput!, $name: String!) {
@@ -105,8 +105,6 @@ export const workflowRelayQuery = graphql`
 interface WorkflowRelayProps {
   visit: Visit;
   workflowName: string;
-  fetchedTasks: Task[];
-  highlightedTaskNames?: string[];
   workflowLink?: boolean;
   expanded?: boolean;
   onChange?: () => void;
@@ -115,8 +113,6 @@ interface WorkflowRelayProps {
 const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   visit,
   workflowName,
-  fetchedTasks,
-  highlightedTaskNames,
   workflowLink,
   expanded,
   onChange,
@@ -132,29 +128,31 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 
   const navigate = useNavigate();
 
-  const [searchParams, setSearchParams] = useSearchParams();
   const statusText = data.workflow.status?.__typename ?? "Unknown";
-  const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(
-    highlightedTaskNames ?? []
-  );
 
-  const taskParam = searchParams.get("tasks");
-  const tasknames = useMemo(() => {
-    if (!taskParam) return [];
-    try {
-      return JSON.parse(taskParam) as string[];
-    } catch {
-      return [];
+  const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
+  const [selectedTasks, setSelectedTasks] = useSelectedTasks();
+
+  useEffect(() => {
+    if (data.workflow.status && isWorkflowWithTasks(data.workflow.status)) {
+      setFetchedTasks(
+        data.workflow.status.tasks.map((task) => ({
+          id: task.id,
+          name: task.name,
+          status: task.status as TaskStatus,
+          depends: [...task.depends],
+          artifacts: task.artifacts.map((artifact) => ({
+            ...artifact,
+            parentTask: task.name,
+            key: `${task.name}-${artifact.name}`,
+          })),
+          workflow: workflowName,
+          instrumentSession: visit,
+          stepType: task.stepType,
+        }))
+      );
     }
-  }, [taskParam]);
-
-  useEffect(() => {
-    setSelectedTaskNames(tasknames);
-  }, [tasknames]);
-
-  useEffect(() => {
-    setSelectedTaskNames(highlightedTaskNames ? highlightedTaskNames : []);
-  }, [highlightedTaskNames]);
+  }, [data.workflow.status]);
 
   const onNavigate = React.useCallback(
     (path: string, event?: React.MouseEvent) => {
@@ -164,25 +162,18 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       let updatedTasks: string[];
 
       if (isCtrl) {
-        updatedTasks = tasknames.includes(taskName)
-          ? tasknames.filter((name) => name !== taskName)
-          : [...tasknames, taskName];
+        updatedTasks = selectedTasks.includes(taskName)
+          ? selectedTasks.filter((name) => name !== taskName)
+          : [...selectedTasks, taskName];
       } else {
         updatedTasks = [taskName];
-      }
-
-      const params = new URLSearchParams(searchParams);
-      if (updatedTasks.length > 0) {
-        params.set("tasks", JSON.stringify(updatedTasks));
-      } else {
-        params.delete("tasks");
       }
       if (workflowNameURL !== workflowName) {
         void navigate(`/workflows/${visitToText(visit)}/${workflowName}`);
       }
-      setSearchParams(params);
+      setSelectedTasks(updatedTasks);
     },
-    [tasknames, searchParams, setSearchParams]
+    [selectedTasks]
   );
 
   return (
@@ -202,8 +193,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     >
       <WorkflowAccordion
         workflow={{
-          name: data.workflow.name,
-          instrumentSession: data.workflow.visit as Visit,
+          name: workflowName,
+          instrumentSession: visit,
           status: statusText as WorkflowStatus,
         }}
         workflowLink={workflowLink}
@@ -228,9 +219,9 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           }}
         >
           <TasksFlow
-            workflowName={data.workflow.name}
+            workflowName={workflowName}
             tasks={fetchedTasks}
-            highlightedTaskNames={selectedTaskNames}
+            highlightedTaskNames={selectedTasks}
             onNavigate={onNavigate}
           ></TasksFlow>
         </ResizableBox>
