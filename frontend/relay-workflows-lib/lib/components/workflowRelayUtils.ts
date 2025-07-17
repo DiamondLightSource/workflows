@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 export function updateSearchParamsWithTasks(
@@ -36,9 +36,12 @@ export function useSelectedTasks(): [string[], (tasks: string[]) => void] {
     [searchParams]
   );
 
-  const setSelectedTasks = (tasks: string[]) => {
-    updateSearchParamsWithTasks(tasks, searchParams, setSearchParams);
-  };
+  const setSelectedTasks = useCallback(
+    (tasks: string[]) => {
+      updateSearchParamsWithTasks(tasks, searchParams, setSearchParams);
+    },
+    [searchParams, setSearchParams]
+  );
 
   return [selectedTasks, setSelectedTasks];
 }

@@ -37,9 +37,13 @@ export default function SingleWorkflowView({
     setSelectedTasks(outputTasks);
   };
 
+  const handleSelectClear = () => {
+    setSelectedTasks([]);
+  };
+
   useEffect(() => {
     setSelectedTasks(tasknames ? tasknames : []);
-  }, [tasknames]);
+  }, [tasknames, setSelectedTasks]);
 
   useEffect(() => {
     if (data.workflow.status && isWorkflowWithTasks(data.workflow.status)) {
@@ -60,20 +64,19 @@ export default function SingleWorkflowView({
         }))
       );
     }
-  }, [data.workflow.status]);
+  }, [data.workflow.status, setFetchedTasks, visit, workflowName]);
 
   useEffect(() => {
-    const filteredTasks = selectedTasks?.length
+    const filteredTasks = selectedTasks.length
       ? selectedTasks
           .map((name) => fetchedTasks.find((task) => task.name === name))
           .filter((task): task is Task => !!task)
       : fetchedTasks;
     setArtifactList(filteredTasks.flatMap((task) => task.artifacts));
-    setSelectedTasks(selectedTasks);
   }, [selectedTasks, fetchedTasks]);
 
   useEffect(() => {
-    let newOutputTasks: string[] = [];
+    const newOutputTasks: string[] = [];
     const traverse = (tasks: TaskNode[]) => {
       const sortedTasks = [...tasks].sort((a, b) =>
         a.name.localeCompare(b.name)
@@ -114,17 +117,31 @@ export default function SingleWorkflowView({
             gap: 2,
           }}
         >
-          <ToggleButton
-            value="output"
-            aria-label="output"
-            onClick={handleSelectOutput}
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap={1}
             sx={{ position: "absolute", left: "-100px" }}
           >
-            OUTPUT
-          </ToggleButton>
+            <ToggleButton
+              value="output"
+              aria-label="output"
+              onClick={handleSelectOutput}
+            >
+              OUTPUT
+            </ToggleButton>
+            <ToggleButton
+              value="output"
+              aria-label="output"
+              onClick={handleSelectClear}
+            >
+              CLEAR
+            </ToggleButton>
+          </Box>
+
           <WorkflowRelay
             workflowName={data.workflow.name}
-            visit={data.workflow.visit as Visit}
+            visit={data.workflow.visit}
             workflowLink
             expanded={true}
           />
