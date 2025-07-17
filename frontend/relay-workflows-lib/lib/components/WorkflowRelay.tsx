@@ -4,13 +4,12 @@ import "react-resizable/css/styles.css";
 import { Box } from "@mui/material";
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
-import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
+import type { WorkflowStatus } from "workflows-lib";
 import RetriggerWorkflow from "./RetriggerWorkflow";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { useParams, useNavigate } from "react-router-dom";
-import { isWorkflowWithTasks } from "../utils";
-import { useSelectedTasks } from "./workflowRelayUtils";
+import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
 
 export const workflowRelayQuery = graphql`
   query WorkflowRelayQuery($visit: VisitInput!, $name: String!) {
@@ -130,29 +129,8 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 
   const statusText = data.workflow.status?.__typename ?? "Unknown";
 
-  const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
+  const fetchedTasks = useFetchedTasks(data, visit, workflowName);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
-
-  useEffect(() => {
-    if (data.workflow.status && isWorkflowWithTasks(data.workflow.status)) {
-      setFetchedTasks(
-        data.workflow.status.tasks.map((task) => ({
-          id: task.id,
-          name: task.name,
-          status: task.status as TaskStatus,
-          depends: [...task.depends],
-          artifacts: task.artifacts.map((artifact) => ({
-            ...artifact,
-            parentTask: task.name,
-            key: `${task.name}-${artifact.name}`,
-          })),
-          workflow: workflowName,
-          instrumentSession: visit,
-          stepType: task.stepType,
-        }))
-      );
-    }
-  }, [data.workflow.status, visit, workflowName]);
 
   const onNavigate = React.useCallback(
     (path: string, event?: React.MouseEvent) => {
@@ -173,7 +151,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       }
       setSelectedTasks(updatedTasks);
     },
-    [selectedTasks, setFetchedTasks]
+    [selectedTasks, setSelectedTasks, visit, workflowName, workflowNameURL]
   );
 
   return (

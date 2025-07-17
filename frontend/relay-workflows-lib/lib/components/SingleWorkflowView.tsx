@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
-import { Artifact, Task, TaskNode, TaskStatus } from "workflows-lib/lib/types";
+import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
 import WorkflowRelay, { workflowRelayQuery } from "./WorkflowRelay";
-import { isWorkflowWithTasks } from "../utils";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { Box, ToggleButton } from "@mui/material";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
-import { useSelectedTasks } from "./workflowRelayUtils";
+import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
 
 interface SingleWorkflowViewProps {
   visit: Visit;
@@ -28,7 +27,7 @@ export default function SingleWorkflowView({
 
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
-  const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
+  const fetchedTasks = useFetchedTasks(data, visit, workflowName);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
@@ -44,27 +43,6 @@ export default function SingleWorkflowView({
   useEffect(() => {
     setSelectedTasks(tasknames ? tasknames : []);
   }, [tasknames, setSelectedTasks]);
-
-  useEffect(() => {
-    if (data.workflow.status && isWorkflowWithTasks(data.workflow.status)) {
-      setFetchedTasks(
-        data.workflow.status.tasks.map((task) => ({
-          id: task.id,
-          name: task.name,
-          status: task.status as TaskStatus,
-          depends: [...task.depends],
-          artifacts: task.artifacts.map((artifact) => ({
-            ...artifact,
-            parentTask: task.name,
-            key: `${task.name}-${artifact.name}`,
-          })),
-          workflow: workflowName,
-          instrumentSession: visit,
-          stepType: task.stepType,
-        }))
-      );
-    }
-  }, [data.workflow.status, setFetchedTasks, visit, workflowName]);
 
   useEffect(() => {
     const filteredTasks = selectedTasks.length
