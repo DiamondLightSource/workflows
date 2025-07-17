@@ -152,7 +152,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
         }))
       );
     }
-  }, [data.workflow.status]);
+  }, [data.workflow.status, visit, workflowName]);
 
   const onNavigate = React.useCallback(
     (path: string, event?: React.MouseEvent) => {
@@ -173,7 +173,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       }
       setSelectedTasks(updatedTasks);
     },
-    [selectedTasks]
+    [selectedTasks, setFetchedTasks]
   );
 
   return (
