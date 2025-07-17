@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.6...graph-proxy@v0.1.7) (2025-07-17)
+
+
+### Features
+
+* **graph-proxy:** add start and end time to task ([f212c5e](https://github.com/DiamondLightSource/workflows/commit/f212c5e6eec3195f5d2ed71e171e34c1447c05a3))
+* **graph-proxy:** implement basic workflow subscription ([d016eca](https://github.com/DiamondLightSource/workflows/commit/d016eca1b869c45ed8a7a2a33b7ac98325ff013f))
+
 ## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.5...graph-proxy@v0.1.6) (2025-07-07)
 
 
