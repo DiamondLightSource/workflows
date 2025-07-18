@@ -12,11 +12,11 @@ import {
 import type { Artifact } from "workflows-lib";
 
 interface ArtifactFilteredListProps {
-  artifactList: Artifact[];
+  artifactList: Artifact[], onArtifactHover?: (artifactName: Artifact | null) => void;
 }
 
 export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
-  artifactList,
+  artifactList, onArtifactHover
 }) => {
   const [artifactFilter, setArtifactFilter] = useState<string>("all");
 
@@ -82,11 +82,23 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           subheader={<ListSubheader>Artifacts</ListSubheader>}
         >
           {listedArtifacts.map((artifact) => (
-            <Tooltip title={artifact.name} enterDelay={400} key={`${artifact.parentTask}-${artifact.name}`}>
+            <Tooltip
+              title={artifact.name}
+              enterDelay={400}
+              key={`${artifact.parentTask}-${artifact.name}`}
+            >
               <ListItemButton
+                onMouseEnter={() => onArtifactHover?.(artifact)}
+                onMouseLeave={() => onArtifactHover?.(null)}
                 onClick={() => window.open(artifact.url, "_blank")}
               >
-                <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" width="100%">
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  width="100%"
+                >
                   <Typography
                     noWrap
                     sx={{
