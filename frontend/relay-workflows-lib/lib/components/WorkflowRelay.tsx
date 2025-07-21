@@ -5,11 +5,12 @@ import { Box } from "@mui/material";
 
 import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import type { Task, TaskStatus, WorkflowStatus } from "workflows-lib";
-import { Visit } from "@diamondlightsource/sci-react-ui";
+import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import { useSearchParams } from "react-router-dom";
 import RetriggerWorkflow from "./RetriggerWorkflow";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import React from "react";
 
 export const workflowRelayQuery = graphql`
@@ -124,6 +125,12 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     name: workflowName,
   });
 
+  const { workflowName: workflowNameURL } = useParams<{
+    workflowName: string;
+  }>();
+
+  const navigate = useNavigate();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const statusText = data.workflow.status?.__typename ?? "Unknown";
   const [selectedTaskNames, setSelectedTaskNames] = useState<string[]>(highlightedTaskNames ?? [])
@@ -177,6 +184,9 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
         params.set("tasks", JSON.stringify(updatedTasks));
       } else {
         params.delete("tasks");
+      }
+      if (workflowNameURL !== workflowName) {
+        void navigate(`/workflows/${visitToText(visit)}/${workflowName}`);
       }
       setSearchParams(params)
     }, [tasknames, searchParams, setSearchParams])
