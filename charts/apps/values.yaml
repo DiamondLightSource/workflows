@@ -29,10 +29,10 @@ kyverno:
       container:
         resources:
           limits:
-            cpu: 2
+            cpu: 6
             memory: 8Gi
           requests:
-            cpu: 1
+            cpu: 5
             memory: 4Gi
     backgroundController:
       extraArgs:
@@ -42,10 +42,10 @@ kyverno:
       replicas: 2
       resources:
         limits:
-          cpu: 4
+          cpu: 6
           memory: 32Gi
         requests:
-          cpu: 2
+          cpu: 5
           memory: 16Gi
     cleanupController:
       enabled: false
