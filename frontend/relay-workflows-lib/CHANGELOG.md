@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.4...relay-workflows-lib@v0.1.5) (2025-07-22)
+
+
+### Bug Fixes
+
+* **relay-workflows-lib:** fix task click behaviour in workflows search page ([5f78f6f](https://github.com/DiamondLightSource/workflows/commit/5f78f6feac7b3465720f9276d6653cc5ea3840ef))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.3...relay-workflows-lib@v0.1.4) (2025-07-16)
 
 
