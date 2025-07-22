@@ -5,7 +5,7 @@ import { Task, TaskNode } from "../types";
 
 export function applyDagreLayout(
   nodes: Node[],
-  edges: Edge[],
+  edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } {
   const graph = new dagre.graphlib.Graph();
 
@@ -65,13 +65,13 @@ export function isRootDag(task: TaskNode) {
 export function generateNodesAndEdges(
   taskNodes: TaskNode[],
   highlightedTaskNames?: string[],
+  filledTaskName?: string | null,
 ): {
   nodes: Node[];
   edges: Edge[];
 } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
     sortedTasks.forEach((task) => {
@@ -89,6 +89,7 @@ export function generateNodesAndEdges(
             workflow: task.workflow,
             instrumentSession: task.instrumentSession,
             highlighted: highlightedTaskNames?.includes(task.name) ?? false,
+            filled: filledTaskName === task.name,
           },
           position: { x: 0, y: 0 },
         });
@@ -124,7 +125,7 @@ export function usePersistentViewport(workflowName: string) {
         sessionStorage.setItem(viewport_key, JSON.stringify(viewport));
       }
     },
-    [viewport_key],
+    [viewport_key]
   );
 
   const loadViewport = useCallback((): Viewport | null => {
