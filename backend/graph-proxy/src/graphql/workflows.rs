@@ -529,6 +529,7 @@ struct WorkflowFilter {
     workflow_status_filter: Option<WorkflowStatusFilter>,
     /// The creator of the workflow
     creator: Option<String>,
+    template: Option<String>,
 }
 
 impl WorkflowFilter {
