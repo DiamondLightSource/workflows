@@ -8,10 +8,10 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-anyhow = { version = "1.0.97" }
+anyhow = { version = "1.0.98" }
 built = { version = "0.7.5" }
-clap = { version = "4.5.35", features = ["derive", "env"] }
-chrono = { version = "0.4.40" }
+clap = { version = "4.5.41", features = ["derive", "env"] }
+chrono = { version = "0.4.41" }
 derive_more = { version = "2.0.1" , features = [
     "deref",
     "deref_mut",
@@ -28,10 +28,10 @@ reqwest = { version = "0.12.15", default-features = false, features = [
     "stream"
 ] }
 serde = { version = "1.0.219", features = ["derive"] }
-serde_json = { version = "1.0.140" }
+serde_json = { version = "1.0.141" }
 thiserror = { version = "2.0.12" }
 tracing = { version = "0.1.41" }
-tokio = { version = "1.46.0", features = [
+tokio = { version = "1.46.1", features = [
     "macros",
     "time",
     "net",
