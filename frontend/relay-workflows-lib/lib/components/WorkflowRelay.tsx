@@ -105,6 +105,7 @@ interface WorkflowRelayProps {
   visit: Visit;
   workflowName: string;
   workflowLink?: boolean;
+  filledTaskName?: string | null;
   expanded?: boolean;
   onChange?: () => void;
 }
@@ -113,6 +114,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   visit,
   workflowName,
   workflowLink,
+  filledTaskName,
   expanded,
   onChange,
 }) => {
@@ -199,8 +201,9 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
           <TasksFlow
             workflowName={workflowName}
             tasks={fetchedTasks}
-            highlightedTaskNames={selectedTasks}
             onNavigate={onNavigate}
+            highlightedTaskNames={selectedTasks}
+            filledTaskName={filledTaskName ? filledTaskName : null}
           ></TasksFlow>
         </ResizableBox>
       </WorkflowAccordion>

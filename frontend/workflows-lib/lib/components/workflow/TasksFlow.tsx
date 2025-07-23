@@ -29,34 +29,39 @@ const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 interface TasksFlowProps {
   workflowName: string;
   tasks: Task[];
-  highlightedTaskNames?: string[];
   onNavigate: (s: string) => void;
+  highlightedTaskNames?: string[];
+  filledTaskName?: string | null;
   isDynamic?: boolean;
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
   workflowName,
   tasks,
-  highlightedTaskNames,
   onNavigate,
+  highlightedTaskNames,
+  filledTaskName,
   isDynamic,
 }) => {
   const previousTaskCount = useRef<number>(tasks.length);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  const nodeTypes = useMemo(() => ({
-    custom: (props: { data: TaskFlowNodeData }) => (
-      <TaskFlowNode onNavigate={onNavigate} {...props} />
-    ),
-  }), [onNavigate]);
+  const nodeTypes = useMemo(
+    () => ({
+      custom: (props: { data: TaskFlowNodeData }) => (
+        <TaskFlowNode onNavigate={onNavigate} {...props} />
+      ),
+    }),
+    [onNavigate]
+  );
 
   const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
   const { nodes, edges } = useMemo(
-    () => generateNodesAndEdges(taskTree, highlightedTaskNames),
-    [taskTree, highlightedTaskNames],
+    () => generateNodesAndEdges(taskTree, highlightedTaskNames, filledTaskName),
+    [taskTree, highlightedTaskNames, filledTaskName]
   );
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () => applyDagreLayout(nodes, edges),
-    [nodes, edges],
+    [nodes, edges]
   );
 
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
@@ -70,7 +75,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     (viewport: Viewport) => {
       saveViewport(viewport);
     },
-    [saveViewport],
+    [saveViewport]
   );
 
   const hasInitialized = useRef(false);
@@ -88,7 +93,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         hasInitialized.current = true;
       }
     },
-    [loadViewport],
+    [loadViewport]
   );
 
   const resetView = () => {
