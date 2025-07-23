@@ -9,6 +9,7 @@ in frontend/relay-workflows-lib
     - VITE_KEYCLOAK_URL
     - VITE_KEYCLOAK_REALM
     - VITE_KEYCLOAK_CLIENT
+    - VITE_GRAPH_URL
 5. yarn dev in frontend/dashboard
 
 ## Linting, Compiling and Testing
