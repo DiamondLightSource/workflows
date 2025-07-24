@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { PreloadedQuery, usePreloadedQuery } from "react-relay";
 import { Box, Button, FormControlLabel, Switch, useTheme } from "@mui/material";
 import { Visit } from "@diamondlightsource/sci-react-ui";
@@ -40,9 +40,10 @@ export default function WorkflowsContent({
   const theme = useTheme();
   const data = usePreloadedQuery(workflowsQuery, queryReference);
   const pageInfo = data.workflows.pageInfo;
-  const fetchedWorkflows = data.workflows.nodes.map(
+  const fetchedWorkflows = useMemo(() => { 
+    return data.workflows.nodes.map(
     (wf: { readonly name: string }) => wf.name,
-  );
+  )}, [data.workflows.nodes]);
   const prevFetchedRef = useRef<string[]>([]);
 
   const [visibleWorkflows, setVisibleWorkflows] =
