@@ -24,6 +24,7 @@ groups:
       - name: imaging-httomo
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
         path: httomo
+        sourceType: helm
       - name: imaging-e02
         repoURL: https://github.com/DiamondLightSource/imaging-workflows
         path: e02
