@@ -119,11 +119,11 @@ thanos:
       requests:
         cpu: '1'
         memory: 16Gi
-        ephemeral-storage: 4Gi
+        ephemeral-storage: 8Gi
       limits:
         cpu: '2'
         memory: 16Gi
-        ephemeral-storage: 8Gi
+        ephemeral-storage: 16Gi
     networkPolicy:
       enabled: false
 
