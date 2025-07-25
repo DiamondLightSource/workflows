@@ -119,11 +119,15 @@ thanos:
       requests:
         cpu: '1'
         memory: 16Gi
-        ephemeral-storage: 4Gi
+        # NOTE: ephemeral-storage is limited in size
+        # we may need to migrate to persistent storage
+        # if this limit needs to be increased in future
+        # see: https://jira.diamond.ac.uk/browse/AP-807
+        ephemeral-storage: 8Gi
       limits:
         cpu: '2'
         memory: 16Gi
-        ephemeral-storage: 8Gi
+        ephemeral-storage: 16Gi
     networkPolicy:
       enabled: false
 
