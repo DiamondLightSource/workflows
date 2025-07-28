@@ -15,6 +15,7 @@ const mockData: TaskFlowNodeData = {
   label: "TaskA",
   status: "SUCCEEDED",
   highlighted: false,
+  filled: false,
   details: [],
   workflow: "Workflow1",
   instrumentSession: { proposalCode: "ab", proposalNumber: 12345, number: 6 },

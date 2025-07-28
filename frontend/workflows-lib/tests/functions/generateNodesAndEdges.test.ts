@@ -1,4 +1,8 @@
-import { generateNodesAndEdges, isRedundantStep } from "../../lib/utils/tasksFlowUtils";
+import {
+  addHighlightsAndFills,
+  generateNodesAndEdges,
+  isRedundantStep,
+} from "../../lib/utils/tasksFlowUtils";
 import { TaskNode, TaskStatus } from "../../lib/types";
 import { instrumentSession } from "../components/data";
 
@@ -34,7 +38,7 @@ describe("generateNodesAndEdges", () => {
                     artifacts: [],
                     workflow: "workflow-5",
                     instrumentSession: instrumentSession,
-                    stepType: "POD"
+                    stepType: "POD",
                   },
                 ],
                 artifacts: [],
@@ -59,11 +63,11 @@ describe("generateNodesAndEdges", () => {
         artifacts: [],
         workflow: "workflow-3",
         instrumentSession: instrumentSession,
-        stepType: "POD"
+        stepType: "POD",
       },
     ];
 
-    const { nodes, edges } = generateNodesAndEdges(taskTree, ["task-1"]);
+    const { nodes, edges } = generateNodesAndEdges(taskTree);
 
     expect(nodes).toEqual([
       {
@@ -72,12 +76,16 @@ describe("generateNodesAndEdges", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflowA", label: "task-2", status: "Succeeded" },
+          workflow: "workflowA",
+          label: "task-2",
+          status: "Succeeded",
+        },
         position: { x: 0, y: 0 },
       },
       {
@@ -86,12 +94,16 @@ describe("generateNodesAndEdges", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflow-4", label: "task-4", status: "Succeeded" },
+          workflow: "workflow-4",
+          label: "task-4",
+          status: "Succeeded",
+        },
         position: { x: 0, y: 0 },
       },
       {
@@ -100,12 +112,16 @@ describe("generateNodesAndEdges", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflow-5", label: "task-5", status: "Succeeded" },
+          workflow: "workflow-5",
+          label: "task-5",
+          status: "Succeeded",
+        },
         position: { x: 0, y: 0 },
       },
       {
@@ -114,12 +130,16 @@ describe("generateNodesAndEdges", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflow-3", label: "task-3", status: "Running" },
+          workflow: "workflow-3",
+          label: "task-3",
+          status: "Running",
+        },
         position: { x: 0, y: 0 },
       },
     ]);
@@ -147,33 +167,31 @@ describe("generateNodesAndEdges", () => {
   });
 });
 
-
 describe("check isRootDag behaviour", () => {
-  it("test tast", () =>{
-    const task: TaskNode =
-      {
-        id: "task-1",
-        name: "task-1",
-        status: "Pending" as TaskStatus,
-        stepType: "DAG",
-        depends: undefined,
-        children: [
-          {
-            id: "task-2",
-            name: "task-2",
-            status: "Succeeded" as TaskStatus,
-            depends: ["task-1"],
-            stepType: "POD",
-            children: [],
-            artifacts: [],
-            workflow: "workflowA",
-            instrumentSession: instrumentSession,
-          },
-        ],
-        artifacts: [],
-        workflow: "workflowB",
-        instrumentSession: instrumentSession,
-      };
+  it("test tast", () => {
+    const task: TaskNode = {
+      id: "task-1",
+      name: "task-1",
+      status: "Pending" as TaskStatus,
+      stepType: "DAG",
+      depends: undefined,
+      children: [
+        {
+          id: "task-2",
+          name: "task-2",
+          status: "Succeeded" as TaskStatus,
+          depends: ["task-1"],
+          stepType: "POD",
+          children: [],
+          artifacts: [],
+          workflow: "workflowA",
+          instrumentSession: instrumentSession,
+        },
+      ],
+      artifacts: [],
+      workflow: "workflowB",
+      instrumentSession: instrumentSession,
+    };
 
     expect(isRedundantStep(task)).toBe(true);
     task.depends = [];
@@ -198,7 +216,7 @@ describe("Ensure root dag is dropped", () => {
             status: "Succeeded" as TaskStatus,
             depends: ["task-1"],
             stepType: "POD",
-            children: [ ],
+            children: [],
             artifacts: [],
             workflow: "workflowA",
             instrumentSession: instrumentSession,
@@ -210,11 +228,9 @@ describe("Ensure root dag is dropped", () => {
       },
     ];
 
-
-
     let nodes, edges;
     // Dependencies undefined
-    ({ nodes, edges } = generateNodesAndEdges(taskTree, []));
+    ({ nodes, edges } = generateNodesAndEdges(taskTree));
 
     expect(nodes).toEqual([
       {
@@ -223,12 +239,16 @@ describe("Ensure root dag is dropped", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflowA", label: "task-2", status: "Succeeded" },
+          workflow: "workflowA",
+          label: "task-2",
+          status: "Succeeded",
+        },
         position: { x: 0, y: 0 },
       },
     ]);
@@ -244,7 +264,7 @@ describe("Ensure root dag is dropped", () => {
 
     // Dependencies empty list
     taskTree[0].depends = [];
-    ({ nodes, edges } = generateNodesAndEdges(taskTree, []));
+    ({ nodes, edges } = generateNodesAndEdges(taskTree));
 
     expect(nodes).toEqual([
       {
@@ -253,12 +273,16 @@ describe("Ensure root dag is dropped", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflowA", label: "task-2", status: "Succeeded" },
+          workflow: "workflowA",
+          label: "task-2",
+          status: "Succeeded",
+        },
         position: { x: 0, y: 0 },
       },
     ]);
@@ -274,7 +298,7 @@ describe("Ensure root dag is dropped", () => {
 
     // Some dependencies
     taskTree[0].depends = ["parent"];
-    ({ nodes, edges } = generateNodesAndEdges(taskTree, ["task-1"]));
+    ({ nodes, edges } = generateNodesAndEdges(taskTree));
 
     expect(nodes).toEqual([
       {
@@ -282,13 +306,17 @@ describe("Ensure root dag is dropped", () => {
         type: "custom",
         data: {
           details: [],
-          highlighted: true,
+          highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflowB", label: "task-1", status: "Pending" },
+          workflow: "workflowB",
+          label: "task-1",
+          status: "Pending",
+        },
         position: { x: 0, y: 0 },
       },
       {
@@ -297,12 +325,16 @@ describe("Ensure root dag is dropped", () => {
         data: {
           details: [],
           highlighted: false,
+          filled: false,
           instrumentSession: {
             number: 1,
             proposalCode: "xx",
             proposalNumber: 98765,
           },
-          workflow: "workflowA", label: "task-2", status: "Succeeded" },
+          workflow: "workflowA",
+          label: "task-2",
+          status: "Succeeded",
+        },
         position: { x: 0, y: 0 },
       },
     ]);
@@ -315,7 +347,110 @@ describe("Ensure root dag is dropped", () => {
         animated: true,
       },
     ]);
-
   });
 });
 
+describe("Test highlight and fill behaviour", () => {
+  it("Ensure correct tasks are highlighted and filled", () => {
+    const taskTree: TaskNode[] = [
+      {
+        id: "task-1",
+        name: "task-1",
+        status: "Succeeded" as TaskStatus,
+        stepType: "POD",
+        children: [
+          {
+            id: "task-2",
+            name: "task-2",
+            status: "Succeeded" as TaskStatus,
+            depends: ["task-1"],
+            stepType: "POD",
+            children: [
+              {
+                id: "task-3",
+                name: "task-3",
+                status: "Succeeded" as TaskStatus,
+                depends: ["task-2"],
+                stepType: "POD",
+                children: [],
+                artifacts: [],
+                workflow: "workflowA",
+                instrumentSession: instrumentSession,
+              },
+            ],
+            artifacts: [],
+            workflow: "workflowA",
+            instrumentSession: instrumentSession,
+          },
+        ],
+        artifacts: [],
+        workflow: "workflowB",
+        instrumentSession: instrumentSession,
+      },
+    ];
+
+    const { nodes } = generateNodesAndEdges(taskTree);
+    const nodesWithHighlights = addHighlightsAndFills(
+      nodes,
+      ["task-1", "task-2"],
+      "task-3"
+    );
+
+    expect(nodesWithHighlights).toEqual([
+      {
+        id: "task-1",
+        type: "custom",
+        data: {
+          details: [],
+          highlighted: true,
+          filled: false,
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflowB",
+          label: "task-1",
+          status: "Succeeded",
+        },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: "task-2",
+        type: "custom",
+        data: {
+          details: [],
+          highlighted: true,
+          filled: false,
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflowA",
+          label: "task-2",
+          status: "Succeeded",
+        },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: "task-3",
+        type: "custom",
+        data: {
+          details: [],
+          highlighted: false,
+          filled: true,
+          instrumentSession: {
+            number: 1,
+            proposalCode: "xx",
+            proposalNumber: 98765,
+          },
+          workflow: "workflowA",
+          label: "task-3",
+          status: "Succeeded",
+        },
+        position: { x: 0, y: 0 },
+      },
+    ]);
+  });
+});

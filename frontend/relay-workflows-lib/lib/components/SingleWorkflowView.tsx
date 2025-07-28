@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
@@ -30,6 +30,7 @@ export default function SingleWorkflowView({
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
   const fetchedTasks = useFetchedTasks(data, visit, workflowName);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
+  const [filledTaskName, setFilledTaskName] = useState<string | null>(null)
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
 
@@ -40,6 +41,10 @@ export default function SingleWorkflowView({
   const handleSelectClear = () => {
     setSelectedTasks([]);
   };
+
+  const onArtifactHover = useCallback((artifact: Artifact | null) => {
+    setFilledTaskName(artifact ? artifact.parentTask : null)
+  }, [setFilledTaskName])
 
   useEffect(() => {
     setSelectedTasks(tasknames ? tasknames : []);
@@ -121,11 +126,12 @@ export default function SingleWorkflowView({
             workflowName={data.workflow.name}
             visit={data.workflow.visit}
             workflowLink
+            filledTaskName={filledTaskName}
             expanded={true}
           />
         </Box>
       </Box>
-      {tasknames && <TaskInfo artifactList={artifactList} />}
+      {tasknames && <TaskInfo artifactList={artifactList} onArtifactHover={onArtifactHover}/>}
       <WorkflowInfo workflow={data.workflow} />
     </>
   );

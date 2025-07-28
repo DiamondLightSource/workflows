@@ -5,7 +5,7 @@ import { Task, TaskNode } from "../types";
 
 export function applyDagreLayout(
   nodes: Node[],
-  edges: Edge[],
+  edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } {
   const graph = new dagre.graphlib.Graph();
 
@@ -58,25 +58,22 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
 
 export function isRedundantStep(task: TaskNode) {
   return (
-    (task.stepType === "DAG" || task.stepType === "Steps") && (!task.depends || task.depends.length === 0)
+    (task.stepType === "DAG" || task.stepType === "Steps") &&
+    (!task.depends || task.depends.length === 0)
   );
 }
 
 export function extractStepNumber(nodeName: string): string {
-  const number = parseInt(nodeName.slice(1,-1)) + 1;
+  const number = parseInt(nodeName.slice(1, -1)) + 1;
   return "Step " + number.toString();
 }
 
-export function generateNodesAndEdges(
-  taskNodes: TaskNode[],
-  highlightedTaskNames?: string[],
-): {
+export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   nodes: Node[];
   edges: Edge[];
 } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
     const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
     sortedTasks.forEach((task) => {
@@ -84,7 +81,10 @@ export function generateNodesAndEdges(
         !nodes.some((existingNode) => existingNode.id === task.id) &&
         !isRedundantStep(task)
       ) {
-        const taskName: string = task.stepType === "StepGroup" ? extractStepNumber(task.name) : task.name
+        const taskName: string =
+          task.stepType === "StepGroup"
+            ? extractStepNumber(task.name)
+            : task.name;
         nodes.push({
           id: task.id,
           type: "custom",
@@ -94,7 +94,8 @@ export function generateNodesAndEdges(
             details: task.artifacts,
             workflow: task.workflow,
             instrumentSession: task.instrumentSession,
-            highlighted: highlightedTaskNames?.includes(task.name) ?? false,
+            highlighted: false,
+            filled: false,
           },
           position: { x: 0, y: 0 },
         });
@@ -122,6 +123,24 @@ export function generateNodesAndEdges(
   return { nodes, edges };
 }
 
+export function addHighlightsAndFills(
+  nodes: Node[],
+  highlightedTaskNames?: string[],
+  filledTaskName?: string | null
+): Node[] {
+  return nodes.map((node) => {
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        highlighted:
+          highlightedTaskNames?.includes(String(node.data.label)) ?? false,
+        filled: filledTaskName === node.data.label,
+      },
+    };
+  });
+}
+
 export function usePersistentViewport(workflowName: string) {
   const viewport_key = `${workflowName}Viewport`;
   const saveViewport = useCallback(
@@ -130,7 +149,7 @@ export function usePersistentViewport(workflowName: string) {
         sessionStorage.setItem(viewport_key, JSON.stringify(viewport));
       }
     },
-    [viewport_key],
+    [viewport_key]
   );
 
   const loadViewport = useCallback((): Viewport | null => {
