@@ -5,10 +5,13 @@ import { ImageGallery } from "./ImageGallery";
 import { ArtifactFilteredList } from "./ArtifactFilteredList";
 
 interface TaskInfoProps {
-  artifactList: Artifact[];
+  artifactList: Artifact[], onArtifactHover?: (artifactName: Artifact | null) => void;
 }
 
-export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
+export const TaskInfo: React.FC<TaskInfoProps> = ({ 
+  artifactList,
+  onArtifactHover
+}) => {
   return (
     <Box
       sx={{
@@ -24,7 +27,10 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
       }}
     >
       <Box sx={{ flex: 1, minWidth: "300px" }}>
-        <ArtifactFilteredList artifactList={artifactList} />
+        <ArtifactFilteredList 
+          artifactList={artifactList}
+          onArtifactHover={onArtifactHover}
+        />
       </Box>
 
       <Box

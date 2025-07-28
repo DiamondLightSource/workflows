@@ -5,7 +5,7 @@ import React, {
   useState,
   useMemo,
 } from "react";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box, debounce, IconButton, Tooltip } from "@mui/material";
 import { AspectRatio } from "@mui/icons-material";
 import {
   ReactFlow,
@@ -13,10 +13,12 @@ import {
   Viewport,
   getNodesBounds,
 } from "@xyflow/react";
+import type { Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import TaskFlowNode, { TaskFlowNodeData } from "./TasksFlowNode";
 import TasksTable from "./TasksTable";
 import {
+  addHighlightsAndFills,
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
@@ -29,39 +31,37 @@ const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 interface TasksFlowProps {
   workflowName: string;
   tasks: Task[];
-  highlightedTaskNames?: string[];
   onNavigate: (s: string) => void;
+  highlightedTaskNames?: string[];
+  filledTaskName?: string | null;
   isDynamic?: boolean;
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
   workflowName,
   tasks,
-  highlightedTaskNames,
   onNavigate,
+  highlightedTaskNames,
+  filledTaskName,
   isDynamic,
 }) => {
-  const previousTaskCount = useRef<number>(tasks.length);
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  const nodeTypes = useMemo(() => ({
-    custom: (props: { data: TaskFlowNodeData }) => (
-      <TaskFlowNode onNavigate={onNavigate} {...props} />
-    ),
-  }), [onNavigate]);
-
-  const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
-  const { nodes, edges } = useMemo(
-    () => generateNodesAndEdges(taskTree, highlightedTaskNames),
-    [taskTree, highlightedTaskNames],
-  );
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
-    () => applyDagreLayout(nodes, edges),
-    [nodes, edges],
-  );
-
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isOverflow, setIsOverflow] = useState(false);
+  const [nodesWithHighlights, setNodesWithHighlights] = useState<Node[] | null>(
+    null
+  );
+
+  const previousTaskCount = useRef<number>(tasks.length);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const nodeTypes = useMemo(
+    () => ({
+      custom: (props: { data: TaskFlowNodeData }) => (
+        <TaskFlowNode onNavigate={onNavigate} {...props} />
+      ),
+    }),
+    [onNavigate]
+  );
 
   const { saveViewport, loadViewport, clearViewport } =
     usePersistentViewport(workflowName);
@@ -70,11 +70,37 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     (viewport: Viewport) => {
       saveViewport(viewport);
     },
-    [saveViewport],
+    [saveViewport]
   );
 
-  const hasInitialized = useRef(false);
+  const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
+  const { nodes, edges } = useMemo(
+    () => generateNodesAndEdges(taskTree),
+    [taskTree]
+  );
 
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
+    () => applyDagreLayout(nodes, edges),
+    [nodes, edges]
+  );
+
+  useEffect(() => {
+    const updateHighlights = debounce(() => {
+      const highlightedNodes = addHighlightsAndFills(
+        layoutedNodes,
+        highlightedTaskNames,
+        filledTaskName
+      );
+      setNodesWithHighlights(highlightedNodes);
+    }, 20);
+
+    updateHighlights();
+    return () => {
+      updateHighlights.clear();
+    };
+  }, [layoutedNodes, highlightedTaskNames, filledTaskName]);
+
+  const hasInitialized = useRef(false);
   const onInit = useCallback(
     (instance: ReactFlowInstance) => {
       reactFlowInstance.current = instance;
@@ -88,7 +114,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         hasInitialized.current = true;
       }
     },
-    [loadViewport],
+    [loadViewport]
   );
 
   const resetView = () => {
@@ -121,7 +147,6 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         setIsOverflow(boundingBox.width > width || boundingBox.height > height);
       }
     };
-
     const resizeObserver = new ResizeObserver(handleResizeAndOverflow);
     const currentContainerRef = containerRef.current;
 
@@ -163,7 +188,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         <ReactFlow
           onInit={onInit}
           onViewportChange={onViewportChangeEnd}
-          nodes={layoutedNodes}
+          nodes={nodesWithHighlights ? nodesWithHighlights : layoutedNodes}
           edges={layoutedEdges}
           nodeTypes={nodeTypes}
           nodesDraggable={false}

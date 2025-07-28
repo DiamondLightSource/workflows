@@ -15,10 +15,12 @@ import type { Artifact } from "workflows-lib";
 
 interface ArtifactFilteredListProps {
   artifactList: Artifact[];
+  onArtifactHover?: (artifactName: Artifact | null) => void;
 }
 
 export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   artifactList,
+  onArtifactHover,
 }) => {
   const [artifactFilter, setArtifactFilter] = useState<string>("all");
 
@@ -106,6 +108,8 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                 style={{ cursor: "pointer" }}
               >
                 <TableCell
+                  onMouseEnter={() => onArtifactHover?.(artifact)}
+                  onMouseLeave={() => onArtifactHover?.(null)}
                   sx={{
                     textOverflow: "ellipsis",
                     overflow: "hidden",
@@ -117,6 +121,8 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                   {artifact.name}
                 </TableCell>
                 <TableCell
+                  onMouseEnter={() => onArtifactHover?.(artifact)}
+                  onMouseLeave={() => onArtifactHover?.(null)}
                   sx={{
                     textOverflow: "ellipsis",
                     overflow: "hidden",
