@@ -12,10 +12,10 @@ import { ImageInfo, ScrollableImages } from "./ScrollableImages";
 import { useMemo } from "react";
 
 interface TaskInfoProps {
-  artifactList: Artifact[];
+  artifactList: Artifact[], onArtifactHover?: (artifactName: Artifact | null) => void;
 }
 
-export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
+export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList, onArtifactHover }) => {
   const imageArtifactsInfos: ImageInfo[] = useMemo(() => {
     return artifactList
       .filter((artifact) => artifact.mimeType === "image/png")
@@ -45,7 +45,10 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
           }}
         >
           <Box sx={{ flex: 1, minWidth: "300px" }}>
-            <ArtifactFilteredList artifactList={artifactList} />
+            <ArtifactFilteredList 
+              artifactList={artifactList}
+              onArtifactHover={onArtifactHover}
+            />
           </Box>
 
           <Box

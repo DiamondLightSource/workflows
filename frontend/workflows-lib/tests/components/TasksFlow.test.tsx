@@ -17,7 +17,7 @@ describe("TasksFlow Component", () => {
       async (importOriginal) => ({
         ...(await importOriginal()),
         TaskFlowNode: vi.fn().mockReturnValue(<div>CustomNode Mock</div>),
-      }),
+      })
     );
   });
 
@@ -67,7 +67,7 @@ describe("TasksFlow Component", () => {
         workflowName="mockWorkflowA"
         tasks={mockTasks}
         onNavigate={() => {}}
-      />,
+      />
     );
     expect(getByText("ReactFlow Mock")).toBeInTheDocument();
   });
@@ -78,7 +78,7 @@ describe("TasksFlow Component", () => {
         workflowName="mockWorkflowA"
         tasks={mockTasks}
         onNavigate={() => {}}
-      />,
+      />
     );
 
     expect(buildTaskTree).toHaveBeenCalledWith(mockTasks);
@@ -91,10 +91,10 @@ describe("TasksFlow Component", () => {
         tasks={mockTasks}
         highlightedTaskNames={["node-1"]}
         onNavigate={() => {}}
-      />,
+      />
     );
 
-    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree, ["node-1"]);
+    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree);
   });
 
   it("should apply the dagre layout", () => {
@@ -103,7 +103,7 @@ describe("TasksFlow Component", () => {
         workflowName="mockWorkflowA"
         tasks={mockTasks}
         onNavigate={() => {}}
-      />,
+      />
     );
 
     expect(applyDagreLayout).toHaveBeenCalledWith(mockNodes, mockEdges);
@@ -115,7 +115,7 @@ describe("TasksFlow Component", () => {
         workflowName="mockWorkflowA"
         tasks={mockTasks}
         onNavigate={() => {}}
-      />,
+      />
     );
 
     expect(ReactFlow).toHaveBeenCalledWith(
@@ -140,7 +140,7 @@ describe("TasksFlow Component", () => {
         fitView: false,
         style: { width: "100%", overflow: "auto", height: "100%" },
       }),
-      {},
+      {}
     );
   });
 });
@@ -167,7 +167,7 @@ describe("usePersistentViewport hook tests", () => {
   it("loads viewport from sessionStorage", () => {
     sessionStorage.setItem(
       "testWorkflowBViewport",
-      JSON.stringify(mockViewport),
+      JSON.stringify(mockViewport)
     );
 
     const { result } = renderHook(() => usePersistentViewport("testWorkflowB"));
@@ -183,7 +183,7 @@ describe("usePersistentViewport hook tests", () => {
   it("clears viewport from sessionStorage", () => {
     sessionStorage.setItem(
       "testWorkflowCViewport",
-      JSON.stringify(mockViewport),
+      JSON.stringify(mockViewport)
     );
 
     const { result } = renderHook(() => usePersistentViewport("testWorkflowC"));

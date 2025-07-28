@@ -12,6 +12,7 @@ export interface TaskFlowNodeData {
   workflow: string;
   instrumentSession: Visit;
   highlighted: boolean;
+  filled: boolean;
 }
 
 interface TaskFlowNodeProps {
@@ -24,7 +25,8 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
   const handleOpenTaskPage = (e: React.MouseEvent) => {
     const instrumentSessionId = visitToText(data.instrumentSession);
     onNavigate(
-      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`, e
+      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`,
+      e
     );
   };
 
@@ -41,6 +43,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         border: data.highlighted ? "1px solid #ff9c1a" : "1px solid #ccc",
         boxShadow: data.highlighted ? "0 0 10px #ff9c1a" : theme.shadows[3],
         transition: "all 0.3s ease-in-out",
+        backgroundColor: data.filled ? "rgb(255, 232, 202)" : undefined,
       }}
     >
       <Handle
