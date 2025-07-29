@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
+  MenuItem,
   ToggleButtonGroup,
   ToggleButton,
   Table,
@@ -11,6 +12,9 @@ import {
   TableContainer,
   Paper,
   TextField,
+  Select,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import type { Artifact } from "workflows-lib";
 
@@ -25,6 +29,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   const [sortColumn, setSortColumn] = useState<"name" | "parentTask">("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([]);
 
   const handleArtifactFilter = (
     _: React.MouseEvent<HTMLElement>,
@@ -74,16 +79,34 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
     });
   }, [listedArtifacts, searchQuery]);
 
+  const fileTypes = useMemo(() => {
+    const types = new Set<string>();
+    listedArtifacts.forEach((artifact) => {
+      const fileType = artifact.name.split(".").pop();
+      if (fileType) types.add(fileType);
+    });
+    return Array.from(types);
+  }, [listedArtifacts]);
+
+  const filteredByFileTypes = useMemo(() => {
+    if (selectedFileTypes.length === 0) return filteredArtifacts;
+    return filteredArtifacts.filter((artifact) =>
+      selectedFileTypes.some((type) => artifact.name.endsWith(`.${type}`))
+    );
+  }, [filteredArtifacts, selectedFileTypes]);
+
   const sortedArtifacts = useMemo(() => {
-    const sorted = [...filteredArtifacts].sort((artifactA, artifactB) => {
-      const sortValueA = (sortColumn === "name" ? artifactA.name : artifactA.parentTask || "");
-      const sortValueB = (sortColumn === "name" ? artifactB.name : artifactB.parentTask || "");
+    const sorted = [...filteredByFileTypes].sort((artifactA, artifactB) => {
+      const sortValueA =
+        sortColumn === "name" ? artifactA.name : artifactA.parentTask || "";
+      const sortValueB =
+        sortColumn === "name" ? artifactB.name : artifactB.parentTask || "";
       if (sortValueA < sortValueB) return sortOrder === "asc" ? -1 : 1;
       if (sortValueA > sortValueB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
     return sorted;
-  }, [filteredArtifacts, sortColumn, sortOrder]);
+  }, [filteredByFileTypes, sortColumn, sortOrder]);
 
   return (
     <>
@@ -109,15 +132,42 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           IMAGES
         </ToggleButton>
       </ToggleButtonGroup>
-      <TextField
+      <div style={{marginTop: "16px", display: "flex", gap: "5px"}}>
+        <TextField
         label="Search Artefacts"
         variant="outlined"
         size="small"
         value={searchQuery}
         onChange={e => { setSearchQuery(e.target.value); }}
-        sx={{ marginTop: 2, width: "100%" }}
+        sx={{ width: "75%" }}
         placeholder="Search by name or parent task"
-      />
+        />
+        <Select
+          multiple
+          value={selectedFileTypes}
+          onChange={(e) => {
+            setSelectedFileTypes(e.target.value as string[]);
+          }}
+          renderValue={(selected) => selected.join(", ")}
+          variant="outlined"
+          size="small"
+          sx={{ width: "25%" }}
+        >
+          {fileTypes.map((type) => (
+            <MenuItem
+              key={type}
+              value={type}
+              sx={{ display: "flex", alignItems: "center" }}
+            >
+              <Checkbox
+                checked={selectedFileTypes.includes(type)}
+                sx={{ marginRight: "8px" }}
+              />
+              <ListItemText primary={type} />
+            </MenuItem>
+          ))}
+        </Select>
+      </div>
       <TableContainer
         component={Paper}
         sx={{
@@ -137,26 +187,31 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                   position: "relative",
                   paddingRight: "32px",
                 }}
-                onClick={() => { handleSort("name"); }}
+                onClick={() => {
+                  handleSort("name");
+                }}
               >
                 <div style={{ display: "flex", alignItems: "center" }}>
-                  <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "left" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ flexGrow: 1, textAlign: "left" }}
+                  >
                     Artefact Name
                   </Typography>
                   <span
                     style={{
                       marginLeft: "auto",
                       color:
-                        sortColumn === "name"
-                          ? "inherit"
-                          : "#888",
+                        sortColumn === "name" ? "inherit" : "#888",
                       position: "absolute",
                       right: "10px",
                       fontSize: "1.3em",
                     }}
                   >
                     {sortColumn === "name"
-                      ? (sortOrder === "asc" ? " ↑" : " ↓")
+                      ? sortOrder === "asc"
+                        ? " ↑"
+                        : " ↓"
                       : "⇅"}
                   </span>
                 </div>
@@ -168,26 +223,31 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                   position: "relative",
                   paddingRight: "32px",
                 }}
-                onClick={() => { handleSort("parentTask"); }}
+                onClick={() => {
+                  handleSort("parentTask");
+                }}
               >
                 <div style={{ display: "flex", alignItems: "center" }}>
-                  <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "left" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ flexGrow: 1, textAlign: "left" }}
+                  >
                     Parent Task
                   </Typography>
                   <span
                     style={{
                       marginLeft: "auto",
                       color:
-                        sortColumn === "parentTask"
-                          ? "inherit"
-                          : "#888",
+                        sortColumn === "parentTask" ? "inherit" : "#888",
                       position: "absolute",
                       right: "10px",
                       fontSize: "1.3em",
                     }}
                   >
                     {sortColumn === "parentTask"
-                      ? (sortOrder === "asc" ? " ↑" : " ↓")
+                      ? sortOrder === "asc"
+                        ? " ↑"
+                        : " ↓"
                       : "⇅"}
                   </span>
                 </div>
