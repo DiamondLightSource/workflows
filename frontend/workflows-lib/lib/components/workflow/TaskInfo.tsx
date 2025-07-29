@@ -9,7 +9,9 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { ArtifactFilteredList } from "./ArtifactFilteredList";
 import type { Artifact } from "workflows-lib";
 import { ImageInfo, ScrollableImages } from "./ScrollableImages";
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { FuzzySearchBar } from "./FuzzySearchBar";
+import Fuse from "fuse.js";
 
 interface TaskInfoProps {
   artifactList: Artifact[];
@@ -20,6 +22,28 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
   artifactList,
   onArtifactHover,
 }) => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filteredArtifactList, setFilteredArtifactList] = useState<Artifact[]>(
+    [],
+  );
+
+  useEffect(() => {
+    let filtered = artifactList;
+
+    if (searchQuery.trim()) {
+      const fuse = new Fuse(filtered, {
+        keys: ["name", "parentTask"],
+        threshold: 0.1,
+        includeScore: true,
+        includeMatches: true,
+      });
+      const results = fuse.search(searchQuery);
+      filtered = results.map((result) => result.item);
+    }
+
+    setFilteredArtifactList(filtered);
+  }, [searchQuery, artifactList]);
+
   const imageArtifactsInfos: ImageInfo[] = useMemo(() => {
     return artifactList
       .filter((artifact) => artifact.mimeType.startsWith("image"))
@@ -49,8 +73,12 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
           }}
         >
           <Box sx={{ flex: 1, minWidth: "300px" }}>
+            <FuzzySearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
             <ArtifactFilteredList
-              artifactList={artifactList}
+              artifactList={filteredArtifactList}
               onArtifactHover={onArtifactHover}
             />
           </Box>
