@@ -45,9 +45,6 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
 
   return (
     <>
-      <Typography variant="h5" sx={{ marginTop: 2, marginBottom: 2 }}>
-        Artefacts
-      </Typography>
       <TableContainer
         component={Paper}
         sx={{
@@ -73,7 +70,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
               >
                 <div style={{ display: "flex", alignItems: "center" }} aria-label="sort-name">
                   <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "left" }}>
-                    Artefact Name
+                    Output Name
                   </Typography>
                   <span
                     style={{

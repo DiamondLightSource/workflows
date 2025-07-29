@@ -125,8 +125,12 @@ export default function SingleWorkflowView({
           />
         </Box>
       </Box>
-      {tasknames && <TaskInfo artifactList={artifactList} />}
-      <WorkflowInfo workflow={data.workflow} />
+
+      {tasknames && (
+        <div style={{ width: "100%", marginTop: "1rem" }}>
+            <TaskInfo artifactList={artifactList} />
+        </div>
+      )}
     </>
   );
 }
