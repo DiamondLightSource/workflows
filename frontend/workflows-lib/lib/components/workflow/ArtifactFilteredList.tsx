@@ -10,6 +10,7 @@ import {
   Typography,
   TableContainer,
   Paper,
+  TextField,
 } from "@mui/material";
 import type { Artifact } from "workflows-lib";
 
@@ -23,6 +24,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   const [artifactFilter, setArtifactFilter] = useState<string>("all");
   const [sortColumn, setSortColumn] = useState<"name" | "parentTask">("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleArtifactFilter = (
     _: React.MouseEvent<HTMLElement>,
@@ -62,6 +64,16 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
     }
   }, [artifactFilter, artifactList, imageArtifacts]);
 
+  const filteredArtifacts = useMemo(() => {
+    if (!searchQuery.trim()) return listedArtifacts;
+    const query = searchQuery.trim().toLowerCase();
+    return listedArtifacts.filter((artifact) => {
+      const name = artifact.name.toLowerCase();
+      const parentTask = (artifact.parentTask || "").toLowerCase();
+      return name.includes(query) || parentTask.includes(query);
+    });
+  }, [listedArtifacts, searchQuery]);
+
   const sortedArtifacts = useMemo(() => {
     const sorted = [...filteredArtifacts].sort((artifactA, artifactB) => {
       const sortValueA = (sortColumn === "name" ? artifactA.name : artifactA.parentTask || "");
@@ -97,12 +109,21 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           IMAGES
         </ToggleButton>
       </ToggleButtonGroup>
+      <TextField
+        label="Search Artefacts"
+        variant="outlined"
+        size="small"
+        value={searchQuery}
+        onChange={e => { setSearchQuery(e.target.value); }}
+        sx={{ marginTop: 2, width: "100%" }}
+        placeholder="Search by name or parent task"
+      />
       <TableContainer
         component={Paper}
         sx={{
           borderRadius: "8px",
           border: "1px solid #ccc",
-          marginTop: 2,
+          marginTop: 1,
         }}
       >
         <Table sx={{ width: "100%" }}>
