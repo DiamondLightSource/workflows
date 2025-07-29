@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
-  ToggleButtonGroup,
-  ToggleButton,
+  Box,
   Table,
   TableHead,
   TableBody,
@@ -12,6 +11,10 @@ import {
   Paper,
 } from "@mui/material";
 import type { Artifact } from "workflows-lib";
+import type { ArtifactSortType } from "workflows-lib/lib/types";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 interface ArtifactFilteredListProps {
   artifactList: Artifact[];
@@ -22,59 +25,34 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   artifactList,
   onArtifactHover,
 }) => {
-  const [artifactFilter, setArtifactFilter] = useState<string>("all");
+  const [sortType, setSortType] = useState<ArtifactSortType>({
+    name: "name",
+    order: true,
+  });
 
-  const handleArtifactFilter = (
-    _: React.MouseEvent<HTMLElement>,
-    newArtifactFilter: string,
-  ) => {
-    setArtifactFilter(newArtifactFilter);
+  const handleSort = (column: "name" | "parentTask") => {
+    if (sortType.name === column) {
+      setSortType((prev) => ({ ...prev, order: !prev.order }));
+    } else {
+      setSortType({ name: column, order: true });
+    }
   };
 
-  const imageArtifacts = useMemo(() => {
-    return artifactList.filter((artifact) =>
-      artifact.mimeType.startsWith("image"),
-    );
-  }, [artifactList]);
+  const sortedArtifacts = useMemo(() => {
+    const sorted = [...artifactList].sort((artifactA, artifactB) => {
+      const sortValueA =
+        sortType.name === "name" ? artifactA.name : artifactA.parentTask || "";
+      const sortValueB =
+        sortType.name === "name" ? artifactB.name : artifactB.parentTask || "";
+      if (sortValueA < sortValueB) return sortType.order ? -1 : 1;
+      if (sortValueA > sortValueB) return sortType.order ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [artifactList, sortType]);
 
-  const listedArtifacts = useMemo(() => {
-    switch (artifactFilter) {
-      case "images":
-        return imageArtifacts;
-      case "log":
-        return artifactList.filter(
-          (artifact) =>
-            artifact.mimeType === "text/plain" && artifact.name === "main.log",
-        );
-      case "text":
-        return artifactList.filter(
-          (artifact) => artifact.mimeType === "text/plain",
-        );
-      default:
-        return artifactList;
-    }
-  }, [artifactFilter, artifactList, imageArtifacts]);
   return (
     <>
-      <ToggleButtonGroup
-        value={artifactFilter}
-        exclusive
-        onChange={handleArtifactFilter}
-        aria-label="artifact filter"
-      >
-        <ToggleButton value="all" aria-label="all">
-          ALL
-        </ToggleButton>
-        <ToggleButton value="log" aria-label="log">
-          LOG
-        </ToggleButton>
-        <ToggleButton value="text" aria-label="text">
-          TEXT
-        </ToggleButton>
-        <ToggleButton value="images" aria-label="images">
-          IMAGES
-        </ToggleButton>
-      </ToggleButtonGroup>
       <TableContainer
         component={Paper}
         sx={{
@@ -89,26 +67,102 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
               <TableCell
                 sx={{
                   borderRight: "1px solid #ccc",
+                  cursor: "pointer",
+                  userSelect: "none",
+                  position: "relative",
+                  paddingRight: "32px",
+                }}
+                onClick={() => {
+                  handleSort("name");
                 }}
               >
-                <Typography variant="h6">Artefact Name</Typography>
+                <Box
+                  style={{ display: "flex", alignItems: "center" }}
+                  aria-label="sort-name"
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ flexGrow: 1, textAlign: "left" }}
+                  >
+                    Artefact Name
+                  </Typography>
+                  <Box
+                    sx={{
+                      marginLeft: "auto",
+                      color: sortType.name === "name" ? "inherit" : "#888",
+                      position: "absolute",
+                      right: "10px",
+                      fontSize: "1.3em",
+                    }}
+                  >
+                    {sortType.name === "name" ? (
+                      sortType.order ? (
+                        <ArrowUpwardIcon fontSize="inherit" />
+                      ) : (
+                        <ArrowDownwardIcon fontSize="inherit" />
+                      )
+                    ) : (
+                      <ImportExportIcon fontSize="inherit" />
+                    )}
+                  </Box>
+                </Box>
               </TableCell>
-              <TableCell>
-                <Typography variant="h6">Parent Task</Typography>
+              <TableCell
+                sx={{
+                  cursor: "pointer",
+                  userSelect: "none",
+                  position: "relative",
+                  paddingRight: "32px",
+                }}
+                onClick={() => {
+                  handleSort("parentTask");
+                }}
+              >
+                <Box
+                  sx={{ display: "flex", alignItems: "center" }}
+                  aria-label="sort-parent-task"
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ flexGrow: 1, textAlign: "left" }}
+                  >
+                    Parent Task
+                  </Typography>
+                  <Box
+                    style={{
+                      marginLeft: "auto",
+                      color:
+                        sortType.name === "parentTask" ? "inherit" : "#888",
+                      position: "absolute",
+                      right: "10px",
+                      fontSize: "1.3em",
+                    }}
+                  >
+                    {sortType.name === "parentTask" ? (
+                      sortType.order ? (
+                        <ArrowUpwardIcon fontSize="inherit" />
+                      ) : (
+                        <ArrowDownwardIcon fontSize="inherit" />
+                      )
+                    ) : (
+                      <ImportExportIcon fontSize="inherit" />
+                    )}
+                  </Box>
+                </Box>
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {listedArtifacts.map((artifact) => (
+            {sortedArtifacts.map((artifact) => (
               <TableRow
                 key={`${artifact.parentTask}-${artifact.name}`}
                 hover
-                onClick={() => window.open(artifact.url, "_blank")}
                 style={{ cursor: "pointer" }}
               >
                 <TableCell
                   onMouseEnter={() => onArtifactHover?.(artifact)}
                   onMouseLeave={() => onArtifactHover?.(null)}
+                  onClick={() => window.open(artifact.url, "_blank")}
                   sx={{
                     textOverflow: "ellipsis",
                     overflow: "hidden",

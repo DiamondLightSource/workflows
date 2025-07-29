@@ -120,3 +120,8 @@ export type JSONValue =
 export interface JSONObject {
   [key: string]: JSONValue;
 }
+
+export type ArtifactSortType = {
+  name: "name" | "parentTask";
+  order: boolean;
+};
