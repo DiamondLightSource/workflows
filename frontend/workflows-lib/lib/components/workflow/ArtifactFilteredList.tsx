@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
   MenuItem,
-  ToggleButtonGroup,
-  ToggleButton,
   Table,
   TableHead,
   TableBody,
@@ -25,18 +23,10 @@ interface ArtifactFilteredListProps {
 export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   artifactList,
 }) => {
-  const [artifactFilter, setArtifactFilter] = useState<string>("all");
   const [sortColumn, setSortColumn] = useState<"name" | "parentTask">("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([]);
-
-  const handleArtifactFilter = (
-    _: React.MouseEvent<HTMLElement>,
-    newArtifactFilter: string
-  ) => {
-    setArtifactFilter(newArtifactFilter);
-  };
 
   const handleSort = (column: "name" | "parentTask") => {
     if (sortColumn === column) {
@@ -52,22 +42,8 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   }, [artifactList]);
 
   const listedArtifacts = useMemo(() => {
-    switch (artifactFilter) {
-      case "images":
-        return imageArtifacts;
-      case "log":
-        return artifactList.filter(
-          (artifact) =>
-            artifact.mimeType === "text/plain" && artifact.name === "main.log"
-        );
-      case "text":
-        return artifactList.filter(
-          (artifact) => artifact.mimeType === "text/plain"
-        );
-      default:
-        return artifactList;
-    }
-  }, [artifactFilter, artifactList, imageArtifacts]);
+    return artifactList;
+  }, [artifactList, imageArtifacts]);
 
   const filteredArtifacts = useMemo(() => {
     if (!searchQuery.trim()) return listedArtifacts;
@@ -113,34 +89,15 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
       <Typography variant="h5" sx={{ marginTop: 2, marginBottom: 2 }}>
         Artefacts
       </Typography>
-      <ToggleButtonGroup
-        value={artifactFilter}
-        exclusive
-        onChange={handleArtifactFilter}
-        aria-label="artifact filter"
-      >
-        <ToggleButton value="all" aria-label="all">
-          ALL
-        </ToggleButton>
-        <ToggleButton value="log" aria-label="log">
-          LOG
-        </ToggleButton>
-        <ToggleButton value="text" aria-label="text">
-          TEXT
-        </ToggleButton>
-        <ToggleButton value="images" aria-label="images">
-          IMAGES
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <div style={{marginTop: "16px", display: "flex", gap: "5px"}}>
+      <div style={{ marginTop: "16px", display: "flex", gap: "5px" }}>
         <TextField
-        label="Search Artefacts"
-        variant="outlined"
-        size="small"
-        value={searchQuery}
-        onChange={e => { setSearchQuery(e.target.value); }}
-        sx={{ width: "75%" }}
-        placeholder="Search by name or parent task"
+          label="Search Artefacts"
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); }}
+          sx={{ width: "75%" }}
+          placeholder="Search by name or parent task"
         />
         <Select
           multiple
