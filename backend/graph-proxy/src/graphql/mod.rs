@@ -13,9 +13,10 @@ mod subscription;
 /// Axum-specific websocket handling to support subscriptions
 pub mod subscription_integration;
 
-use crate::graphql::subscription::SubscribeWorkflows;
-
-use self::{workflow_templates::WorkflowTemplatesQuery, workflows::WorkflowsQuery};
+use self::{
+    subscription::WorkflowsSubscription, workflow_templates::WorkflowTemplatesQuery,
+    workflows::WorkflowsQuery,
+};
 use async_graphql::{
     InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder, SimpleObject,
 };
@@ -52,7 +53,7 @@ pub struct Mutation(WorkflowTemplatesMutation);
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedSubscription)]
-pub struct Subscription(SubscribeWorkflows);
+pub struct Subscription(WorkflowsSubscription);
 
 /// Handles HTTP requests as GraphQL according to the provided [`Schema`]
 pub async fn graphql_handler(

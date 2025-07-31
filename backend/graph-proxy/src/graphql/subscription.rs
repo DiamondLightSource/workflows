@@ -14,12 +14,12 @@ use crate::{
     ArgoServerUrl,
 };
 
-/// Subscriptions relating to the LiveWorkflow object
+/// Subscribe to events involving workflows
 #[derive(Debug, Clone, Default)]
-pub struct SubscribeWorkflows;
+pub struct WorkflowsSubscription;
 
 #[Subscription]
-impl SubscribeWorkflows {
+impl WorkflowsSubscription {
     /// Processing to subscribe to data for all workflows in a session
     async fn workflow(
         &self,
