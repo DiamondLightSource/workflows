@@ -121,7 +121,9 @@ async fn main() {
             })
             .unwrap();
             info!(?args, "Generating GraphQL schema");
-            let schema = root_schema_builder().finish();
+            let schema = root_schema_builder()
+                .enable_subscription_in_federation()
+                .finish();
             let schema_string = schema.sdl_with_options(SDLExportOptions::new().federation());
             if let Some(path) = args.path {
                 let mut file = File::create(&path).unwrap();
