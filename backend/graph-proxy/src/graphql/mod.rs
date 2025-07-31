@@ -14,8 +14,9 @@ mod subscription;
 pub mod subscription_integration;
 
 use self::{
-    subscription::WorkflowsSubscription, workflow_templates::WorkflowTemplatesQuery,
-    workflows::WorkflowsQuery,
+    subscription::WorkflowsSubscription,
+    workflow_templates::WorkflowTemplatesQuery,
+    workflows::{WorkflowsMutation, WorkflowsQuery},
 };
 use async_graphql::{
     InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder, SimpleObject,
@@ -49,7 +50,7 @@ pub struct Query(WorkflowsQuery, WorkflowTemplatesQuery);
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Mutation(WorkflowTemplatesMutation);
+pub struct Mutation(WorkflowsMutation, WorkflowTemplatesMutation);
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedSubscription)]

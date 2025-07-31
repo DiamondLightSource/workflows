@@ -1,5 +1,6 @@
 use super::{Visit, VisitInput, CLIENT};
 use crate::{ArgoServerUrl, S3Bucket};
+use anyhow::anyhow;
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
@@ -704,6 +705,72 @@ impl WorkflowsQuery {
                 Edge::new(cursor, workflow)
             }));
         Ok(connection)
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct WorkflowsMutation;
+
+#[Object]
+impl WorkflowsMutation {
+    #[instrument(name = "graph_proxy_workflow", skip(self, ctx))]
+    async fn delete_workflow(
+        &self,
+        ctx: &Context<'_>,
+        visit: VisitInput,
+        name: String,
+    ) -> anyhow::Result<String> {
+        let workflow = WorkflowsQuery
+            .workflow(ctx, visit.clone(), name.clone())
+            .await?;
+
+        let is_archived = workflow
+            .manifest
+            .metadata
+            .labels
+            .get("workflows.argoproj.io/workflow-archiving-status")
+            .is_some_and(|status| status == "Archived");
+
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let mut url = server_url.clone();
+
+        let url = match is_archived {
+            true => {
+                let uid = workflow
+                    .manifest
+                    .metadata
+                    .uid
+                    .ok_or(anyhow!("Workflow could not be found"))?;
+
+                url.path_segments_mut()
+                    .unwrap()
+                    .extend(["api", "v1", "archived-workflows", &uid]);
+
+                url.query_pairs_mut()
+                    .append_pair("namespace", &visit.to_string());
+                url
+            }
+            false => {
+                url.path_segments_mut().unwrap().extend([
+                    "api",
+                    "v1",
+                    "workflows",
+                    &visit.to_string(),
+                    &name,
+                ]);
+                url
+            }
+        };
+
+        let request = if let Some(auth_token) = auth_token {
+            CLIENT.delete(url).bearer_auth(auth_token.token())
+        } else {
+            CLIENT.delete(url)
+        };
+        request.send().await?;
+
+        Ok(name)
     }
 }
 
@@ -1634,6 +1701,154 @@ mod tests {
                     "size": "1000"
                 }
             }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
+    async fn delete_archived_workflow() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let uid = "bed157b2-ecf2-4423-9945-8ecfa767a151";
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-wdkwj.json");
+
+        let workflow_server = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let delete_archived_workflow_server = server
+            .mock(
+                "DELETE",
+                &format!("/api/v1/archived-workflows/{uid}?namespace={visit}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body("{}")
+            .create_async()
+            .await;
+
+        let _delete_regular_workflow_server = server
+            .mock(
+                "DELETE",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body("{}")
+            .expect_at_most(0)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+
+        let query = format!(
+            r#"
+            mutation {{
+                deleteWorkflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}})
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_server.assert_async().await;
+        delete_archived_workflow_server.assert_async().await;
+
+        let expected_data = json!({
+            "deleteWorkflow": "numpy-benchmark-wdkwj"
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
+    async fn delete_non_archived_workflow() {
+        let workflow_name = "numpy-benchmark-pwtgn";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let uid = "bed157b2-ecf2-4423-9945-8ecfa767a151";
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-pwtgn-null.json");
+
+        let workflow_server = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let delete_archived_workflow_server = server
+            .mock(
+                "DELETE",
+                &format!("/api/v1/archived-workflows/{uid}?namespace={visit}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body("{}")
+            .expect_at_most(0)
+            .create_async()
+            .await;
+
+        let _delete_regular_workflow_server = server
+            .mock(
+                "DELETE",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body("{}")
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+
+        let query = format!(
+            r#"
+            mutation {{
+                deleteWorkflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}})
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_server.assert_async().await;
+        delete_archived_workflow_server.assert_async().await;
+
+        let expected_data = json!({
+            "deleteWorkflow": "numpy-benchmark-pwtgn"
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
     }
