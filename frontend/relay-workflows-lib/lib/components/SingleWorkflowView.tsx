@@ -3,6 +3,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
 import WorkflowRelay, { workflowRelayQuery } from "./WorkflowRelay";
+import WorkflowInfo from "./WorkflowInfo";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { Box, ToggleButton } from "@mui/material";
@@ -57,7 +58,7 @@ export default function SingleWorkflowView({
     const newOutputTasks: string[] = [];
     const traverse = (tasks: TaskNode[]) => {
       const sortedTasks = [...tasks].sort((a, b) =>
-        a.name.localeCompare(b.name)
+        a.name.localeCompare(b.name),
       );
       sortedTasks.forEach((taskNode) => {
         if (
@@ -116,7 +117,6 @@ export default function SingleWorkflowView({
               CLEAR
             </ToggleButton>
           </Box>
-
           <WorkflowRelay
             workflowName={data.workflow.name}
             visit={data.workflow.visit}
@@ -125,11 +125,8 @@ export default function SingleWorkflowView({
           />
         </Box>
       </Box>
-      {tasknames && (
-        <div style={{ width: "100%", marginTop: "1rem" }}>
-          <TaskInfo artifactList={artifactList} />
-        </div>
-      )}
+      {tasknames && <TaskInfo artifactList={artifactList} />}
+      <WorkflowInfo workflow={data.workflow} />
     </>
   );
 }
