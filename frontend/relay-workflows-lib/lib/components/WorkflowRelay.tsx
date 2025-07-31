@@ -20,6 +20,8 @@ export const workflowRelayQuery = graphql`
         proposalNumber
         number
       }
+      templateRef
+      parameters
       status {
         __typename
         ... on WorkflowPendingStatus {
@@ -151,7 +153,14 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       }
       setSelectedTasks(updatedTasks);
     },
-    [selectedTasks, setSelectedTasks, visit, workflowName, workflowNameURL]
+    [
+      navigate,
+      selectedTasks,
+      setSelectedTasks,
+      visit,
+      workflowName,
+      workflowNameURL,
+    ],
   );
 
   return (
