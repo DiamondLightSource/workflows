@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.5...workflows-lib@v0.1.6) (2025-08-01)
+
+
+### Features
+
+* **frontend:** add sliding list of images ([32cae44](https://github.com/DiamondLightSource/workflows/commit/32cae44b129463f231a416f9add5956e6f67091c))
+* **frontend:** add table view of the artefacts shown ([23b70a0](https://github.com/DiamondLightSource/workflows/commit/23b70a087b7753ff823e252f74b9cbd715af73e5))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.4...workflows-lib@v0.1.5) (2025-07-16)
 
 
