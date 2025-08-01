@@ -56,10 +56,15 @@ export function buildTaskTree(tasks: Task[]): TaskNode[] {
   return roots;
 }
 
-export function isRootDag(task: TaskNode) {
+export function isRedundantStep(task: TaskNode) {
   return (
-    task.stepType === "DAG" && (!task.depends || task.depends.length === 0)
+    (task.stepType === "DAG" || task.stepType === "Steps") && (!task.depends || task.depends.length === 0)
   );
+}
+
+export function extractStepNumber(nodeName: string): string {
+  const number = parseInt(nodeName.slice(1,-1)) + 1;
+  return "Step " + number.toString();
 }
 
 export function generateNodesAndEdges(
@@ -77,13 +82,14 @@ export function generateNodesAndEdges(
     sortedTasks.forEach((task) => {
       if (
         !nodes.some((existingNode) => existingNode.id === task.id) &&
-        !isRootDag(task)
+        !isRedundantStep(task)
       ) {
+        const taskName: string = task.stepType === "StepGroup" ? extractStepNumber(task.name) : task.name
         nodes.push({
           id: task.id,
           type: "custom",
           data: {
-            label: task.name,
+            label: taskName,
             status: task.status,
             details: task.artifacts,
             workflow: task.workflow,
