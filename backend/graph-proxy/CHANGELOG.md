@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.7...graph-proxy@v0.1.8) (2025-08-01)
+
+
+### Features
+
+* **graph-proxy:** enable subscriptions on federation ([90fa077](https://github.com/DiamondLightSource/workflows/commit/90fa077c9924135f04214c32b3df25095e696c4e))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.6...graph-proxy@v0.1.7) (2025-07-22)
 
 
