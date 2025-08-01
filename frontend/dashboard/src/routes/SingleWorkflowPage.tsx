@@ -14,7 +14,7 @@ function SingleWorkflowPage() {
   }>();
 
   const [searchParams] = useSearchParams();
-  const taskParam = searchParams.get("tasks")
+  const taskParam = searchParams.get("tasks");
 
   const tasknames = useMemo(() => {
     if (!taskParam) return [];
@@ -35,7 +35,13 @@ function SingleWorkflowPage() {
       <Breadcrumbs path={window.location.pathname} linkComponent={Link} />
       {visit && workflowName ? (
         <Container maxWidth="lg">
-          <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            mt={2}
+            mb={4}
+          >
             <WorkflowsErrorBoundary>
               <Suspense>
                 <SingleWorkflowView
@@ -48,7 +54,13 @@ function SingleWorkflowPage() {
           </Box>
         </Container>
       ) : (
-        <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          mt={2}
+          mb={4}
+        >
           <Typography>No valid workflow selected</Typography>
           {/* Go to instrumentSession or home page */}
         </Box>

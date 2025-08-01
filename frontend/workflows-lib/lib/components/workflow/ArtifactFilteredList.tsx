@@ -52,9 +52,6 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   }, [artifactFilter, artifactList, imageArtifacts]);
   return (
     <>
-      <Typography variant="h5" sx={{ marginTop: 2, marginBottom: 2 }}>
-        Artefacts
-      </Typography>
       <ToggleButtonGroup
         value={artifactFilter}
         exclusive
