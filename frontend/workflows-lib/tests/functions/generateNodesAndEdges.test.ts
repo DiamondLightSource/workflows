@@ -1,4 +1,4 @@
-import { generateNodesAndEdges, isRootDag } from "../../lib/utils/tasksFlowUtils";
+import { generateNodesAndEdges, isRedundantStep } from "../../lib/utils/tasksFlowUtils";
 import { TaskNode, TaskStatus } from "../../lib/types";
 import { instrumentSession } from "../components/data";
 
@@ -175,11 +175,11 @@ describe("check isRootDag behaviour", () => {
         instrumentSession: instrumentSession,
       };
 
-    expect(isRootDag(task)).toBe(true);
+    expect(isRedundantStep(task)).toBe(true);
     task.depends = [];
-    expect(isRootDag(task)).toBe(true);
+    expect(isRedundantStep(task)).toBe(true);
     task.depends = ["parent"];
-    expect(isRootDag(task)).toBe(false);
+    expect(isRedundantStep(task)).toBe(false);
   });
 });
 
