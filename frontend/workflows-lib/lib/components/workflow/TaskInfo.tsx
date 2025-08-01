@@ -11,6 +11,7 @@ import type { Artifact } from "workflows-lib";
 import { ImageInfo, ScrollableImages } from "./ScrollableImages";
 import { useState, useEffect, useMemo } from "react";
 import { FuzzySearchBar } from "./FuzzySearchBar";
+import { FileTypeDropdown } from "./FileTypeDropdown";
 import Fuse from "fuse.js";
 
 interface TaskInfoProps {
@@ -23,12 +24,33 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
   onArtifactHover,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([]);
   const [filteredArtifactList, setFilteredArtifactList] = useState<Artifact[]>(
     [],
   );
 
+  const fileTypes = useMemo(() => {
+    const types = artifactList
+      .map((artifact) => {
+        const lastDotIndex = artifact.name.lastIndexOf(".");
+        return lastDotIndex > 0 ? artifact.name.substring(lastDotIndex) : "";
+      })
+      .filter((type) => type !== "")
+      .filter((type, index, array) => array.indexOf(type) === index);
+    return types;
+  }, [artifactList]);
+
   useEffect(() => {
     let filtered = artifactList;
+
+    if (selectedFileTypes.length > 0) {
+      filtered = filtered.filter((artifact) => {
+        const lastDotIndex = artifact.name.lastIndexOf(".");
+        const fileType =
+          lastDotIndex > 0 ? artifact.name.substring(lastDotIndex) : "";
+        return selectedFileTypes.includes(fileType);
+      });
+    }
 
     if (searchQuery.trim()) {
       const fuse = new Fuse(filtered, {
@@ -42,7 +64,7 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
     }
 
     setFilteredArtifactList(filtered);
-  }, [searchQuery, artifactList]);
+  }, [searchQuery, selectedFileTypes, artifactList]);
 
   const imageArtifactsInfos: ImageInfo[] = useMemo(() => {
     return artifactList
@@ -76,6 +98,11 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
             <FuzzySearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+            />
+            <FileTypeDropdown
+              fileTypes={fileTypes}
+              selectedFileTypes={selectedFileTypes}
+              setSelectedFileTypes={setSelectedFileTypes}
             />
             <ArtifactFilteredList
               artifactList={filteredArtifactList}
