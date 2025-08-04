@@ -70,7 +70,7 @@ pub fn setup_telemetry(config: TelemetryConfig) -> Result<OtelGuard, TelemetryEr
 
     let otel_resources = Resource::builder()
         .with_attributes([
-            KeyValue::new(SERVICE_NAME, built_info::PKG_NAME),
+            KeyValue::new(SERVICE_NAME, "workflows"),
             KeyValue::new(SERVICE_VERSION, built_info::PKG_VERSION),
         ])
         .build();
