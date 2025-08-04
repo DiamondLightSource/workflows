@@ -8,7 +8,13 @@ mod graphql;
 /// S3 client
 mod s3client;
 
-use crate::graphql::subscription_integration::GraphQLSubscription;
+/// Graph-proxy-specific metrics
+mod metrics;
+
+use crate::{
+    graphql::subscription_integration::GraphQLSubscription,
+    metrics::{Metrics, MetricsState},
+};
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{
     http::Uri,
@@ -26,11 +32,13 @@ use std::{
     io::Write,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     path::PathBuf,
+    sync::Arc,
 };
 use telemetry::{setup_telemetry, TelemetryConfig};
 use tokio::net::TcpListener;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{info, instrument, Level};
+
 use url::Url;
 
 /// A proxy providing Argo Workflows data
@@ -101,7 +109,13 @@ async fn main() {
 
     match args {
         Cli::Serve(args) => {
-            let _otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
+            let otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
+
+            // TODO: This unwrap isn't ideal, but the telemetry lib is configured in such a way that
+            // it's necessary. probably needs a tweak on the telemetry lib.
+            let metrics = otlp_guard.meter_provider.as_ref().unwrap();
+            let metrics_state = Arc::new(Metrics::new(metrics));
+
             info!(?args, "Starting GraphQL Server");
             let s3_client = Client::from(args.s3_client);
             let schema = root_schema_builder()
@@ -109,8 +123,10 @@ async fn main() {
                 .data(KubernetesApiUrl(args.kubernetes_api_url))
                 .data(s3_client)
                 .data(args.s3_bucket)
+                .data(metrics_state.clone())
                 .finish();
-            let router = setup_router(schema, &args.prefix_path, args.cors_allow).unwrap();
+            let router =
+                setup_router(schema, &args.prefix_path, args.cors_allow, metrics_state).unwrap();
             serve(router, args.host, args.port).await.unwrap();
         }
         Cli::Schema(args) => {
@@ -142,6 +158,7 @@ fn setup_router(
     schema: RootSchema,
     prefix_path: &str,
     cors_allow: Option<Vec<Regex>>,
+    metrics_state: MetricsState,
 ) -> anyhow::Result<Router> {
     info!("Setting up the router");
     let cors_origin = if let Some(cors_allow) = cors_allow {
@@ -169,7 +186,10 @@ fn setup_router(
                     .finish(),
             ))
             .post(graphql_handler)
-            .with_state(schema.clone()),
+            .with_state(RouterState {
+                schema: schema.clone(),
+                metrics_state,
+            }),
         )
         .route_service(
             &socket_path,
@@ -198,4 +218,13 @@ async fn serve(router: Router, host: IpAddr, port: u16) -> std::io::Result<()> {
     info!("Server is running at http://{}", socket_addr);
     axum::serve(listener, router.into_make_service()).await?;
     Ok(())
+}
+
+#[derive(Clone)]
+/// Wrapper for state passed to router
+struct RouterState {
+    /// GraphQL service schema
+    schema: RootSchema,
+    /// Arc of metric counters/histograms
+    metrics_state: MetricsState,
 }
