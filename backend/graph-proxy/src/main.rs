@@ -158,6 +158,7 @@ fn setup_router(
         AllowOrigin::default()
     };
     Ok(Router::new()
+        .route_service("/ws", get_service(GraphQLSubscription::new(schema.clone())))
         .route(
             prefix_path,
             get(Html(
@@ -169,7 +170,6 @@ fn setup_router(
             .post(graphql_handler)
             .with_state(schema.clone()),
         )
-        .route_service("/ws", get_service(GraphQLSubscription::new(schema.clone())))
         .with_state(schema.clone())
         .layer(
             CorsLayer::new()
