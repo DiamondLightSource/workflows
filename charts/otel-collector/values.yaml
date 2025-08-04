@@ -30,9 +30,9 @@ opentelemetry-collector:
         paths:
           - path: '/'
             pathType: Prefix
-            port: 4318
+            port: 9090
     tls:
-      - secretName: letsencrypt-otelcollector-workflows-diamond-ac-uk
+      - secretName: otelcollector-tls-cert
         hosts:
           - otelcollector.workflows.diamond.ac.uk
   resources:
@@ -43,6 +43,16 @@ opentelemetry-collector:
       cpu: '12'
       memory: 24Gi
   config:
+    processors:
+      k8sattributes:
+        extract:
+          metadata:
+          - k8s.pod.name
+          - k8s.pod.uid
+          - container.image.name
+          - container.image.tag
+          - k8s.container.name
+          - k8s.namespace.name
     receivers:
       prometheus:
         config:
@@ -50,9 +60,13 @@ opentelemetry-collector:
             - job_name: 'kubernetes-pods'
               kubernetes_sd_configs:
                 - role: pod
-                  namespaces:
-                    own_namespace: true
               relabel_configs:
+                - source_labels: [__meta_kubernetes_namespace]
+                  regex: kube-system
+                  action: drop
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                  action: keep
+                  regex: "true"
                 - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
                   action: replace
                   regex: (https?)
@@ -83,8 +97,6 @@ opentelemetry-collector:
             - job_name: kubernetes-service-endpoints
               kubernetes_sd_configs:
                 - role: endpoints
-                  namespaces:
-                    own_namespace: true
               relabel_configs:
                 - source_labels:
                     [__meta_kubernetes_service_annotation_prometheus_io_scrape]
@@ -149,6 +161,7 @@ opentelemetry-collector:
           processors:
             - memory_limiter
             - batch
+            - k8sattributes
           exporters:
             - prometheus
         traces:
@@ -157,6 +170,7 @@ opentelemetry-collector:
           processors:
             - memory_limiter
             - batch
+            - k8sattributes
           exporters:
             - otlphttp
 
