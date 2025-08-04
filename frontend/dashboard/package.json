@@ -12,15 +12,15 @@
   },
   "dependencies": {
     "keycloak-js": "^26.2.0",
-    "react-relay": "20.0.0",
+    "react-relay": "20.1.0",
     "react-router-dom": "^7.7.1",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
   "devDependencies": {
     "@types/react-relay": "18.2.1",
-    "babel-plugin-relay": "20.0.0",
-    "relay-compiler": "20.0.0",
+    "babel-plugin-relay": "20.1.0",
+    "relay-compiler": "20.1.0",
     "vite-plugin-relay": "2.1.0"
   },
   "peerDependencies": {
