@@ -1721,6 +1721,8 @@ dependencies = [
  "lazy_static",
  "mime_guess",
  "mockito",
+ "opentelemetry",
+ "opentelemetry_sdk",
  "regex",
  "reqwest",
  "rustls 0.23.28",

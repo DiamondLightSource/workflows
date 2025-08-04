@@ -13,6 +13,8 @@ mod subscription;
 /// Axum-specific websocket handling to support subscriptions
 pub mod subscription_integration;
 
+use crate::RouterState;
+
 use self::{
     subscription::WorkflowsSubscription, workflow_templates::WorkflowTemplatesQuery,
     workflows::WorkflowsQuery,
@@ -57,12 +59,14 @@ pub struct Subscription(WorkflowsSubscription);
 
 /// Handles HTTP requests as GraphQL according to the provided [`Schema`]
 pub async fn graphql_handler(
-    State(schema): State<RootSchema>,
+    State(state): State<RouterState>,
     auth_token_header: Option<TypedHeader<Authorization<Bearer>>>,
     request: GraphQLRequest,
 ) -> GraphQLResponse {
+    state.metrics_state.total_requests.add(1, &[]);
     let auth_token = auth_token_header.map(|header| header.0);
-    schema
+    state
+        .schema
         .execute(request.into_inner().data(auth_token))
         .await
         .into()

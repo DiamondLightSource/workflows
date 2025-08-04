@@ -31,8 +31,8 @@ pub enum TelemetryError {
 /// are shutdown and flushed on drop
 #[allow(clippy::missing_docs_in_private_items)]
 pub struct OtelGuard {
-    tracer_provider: Option<SdkTracerProvider>,
-    meter_provider: Option<SdkMeterProvider>,
+    pub tracer_provider: Option<SdkTracerProvider>,
+    pub meter_provider: Option<SdkMeterProvider>,
 }
 
 impl Drop for OtelGuard {
