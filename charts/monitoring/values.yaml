@@ -263,9 +263,9 @@ prometheus:
                 - localhost:9090
   extraScrapeConfigs: |
     - job_name: 'otel-collector'
-      scrape_interval: 30s
-      scrape_timeout: 30s
+      scheme: https
+      scrape_interval: 15s
+      scrape_timeout: 15s
       static_configs:
         - targets:
-            - "{{ .Release.Name }}-opentelemetry-collector.{{ .Release.Namespace }}.svc.cluster.local:9090"
-
+          - "otelcollector.workflows.diamond.ac.uk"
