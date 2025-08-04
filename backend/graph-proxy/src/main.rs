@@ -157,19 +157,24 @@ fn setup_router(
         info!("CORS rules disabled. Allowing default origin.");
         AllowOrigin::default()
     };
+
+    let socket_path = append_to_path(prefix_path, "/ws");
     Ok(Router::new()
         .route(
             prefix_path,
             get(Html(
                 GraphiQLSource::build()
                     .endpoint(prefix_path)
-                    .subscription_endpoint("/ws")
+                    .subscription_endpoint(&socket_path)
                     .finish(),
             ))
             .post(graphql_handler)
             .with_state(schema.clone()),
         )
-        .route_service("/ws", get_service(GraphQLSubscription::new(schema.clone())))
+        .route_service(
+            &socket_path,
+            get_service(GraphQLSubscription::new(schema.clone())),
+        )
         .with_state(schema.clone())
         .layer(
             CorsLayer::new()
@@ -177,6 +182,13 @@ fn setup_router(
                 .allow_headers(tower_http::cors::Any)
                 .allow_origin(cors_origin),
         ))
+}
+
+/// Append the websocket path to the graph prefix
+fn append_to_path(base: &str, extension: &str) -> String {
+    let clean_base = base.trim_matches('/');
+    let clean_extension = extension.trim_matches('/');
+    format!("/{clean_base}/{clean_extension}")
 }
 
 /// Serves the endpoints on the specified host and port forever
