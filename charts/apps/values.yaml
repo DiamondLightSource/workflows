@@ -81,3 +81,9 @@ dashboard:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+otel:
+  enabled: true
+  targetRevision: mh/monitoring-rework
+  extraValuesFiles: []
+  valuesObject: {}
