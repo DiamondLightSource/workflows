@@ -32,7 +32,7 @@ COPY . .
 RUN touch sessionspaces/src/main.rs \
     && cargo auditable build --release --package sessionspaces
 
-FROM gcr.io/distroless/cc-debian12@sha256:eccec5274132c1be0ce5d2c8e6fe41033e64af5e987ccee9007826e4c012069d AS deploy
+FROM gcr.io/distroless/cc-debian12@sha256:aa435f48941dbbd18b4a1f3f71992a3afddc6fb913beb411cd4c0fb174e0bfb8 AS deploy
 
 COPY --from=build /app/target/release/sessionspaces /sessionspaces
 
