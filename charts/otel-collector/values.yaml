@@ -3,9 +3,9 @@ opentelemetry-collector:
   image:
     repository: otel/opentelemetry-collector-contrib
   mode: deployment
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9090"
+  presets:
+    kubernetesAttributes:
+      enabled: true
   ports:
     prometheus:
       enabled: true
@@ -30,9 +30,9 @@ opentelemetry-collector:
         paths:
           - path: '/'
             pathType: Prefix
-            port: 4318
+            port: 9090
     tls:
-      - secretName: letsencrypt-otelcollector-workflows-diamond-ac-uk
+      - secretName: otelcollector-tls-cert
         hosts:
           - otelcollector.workflows.diamond.ac.uk
   resources:
@@ -43,16 +43,55 @@ opentelemetry-collector:
       cpu: '12'
       memory: 24Gi
   config:
+    processors:
+      batch:
+        send_batch_size: 512
+      k8sattributes:
+        auth_type: 'serviceAccount'
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.start_time
+            - k8s.pod.uid
+            - k8s.deployment.name
+            - k8s.node.name
+          labels:
+            - tag_name: l1
+              key: label1
+              from: namespace
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
     receivers:
       prometheus:
         config:
           scrape_configs:
             - job_name: 'kubernetes-pods'
+              # scheme: https
+              # tls_config:
+              #   insecure_skip_verify: true
               kubernetes_sd_configs:
                 - role: pod
-                  namespaces:
-                    own_namespace: true
               relabel_configs:
+                - source_labels: [__meta_kubernetes_namespace]
+                  regex: kyverno
+                  action: drop
+                - source_labels: [__meta_kubernetes_namespace]
+                  regex: monitoring
+                  action: drop
+                - source_labels: [__meta_kubernetes_namespace]
+                  regex: kube-system
+                  action: drop
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                  action: keep
+                  regex: "true"
                 - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
                   action: replace
                   regex: (https?)
@@ -80,49 +119,6 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_pod_phase]
                   regex: Pending|Succeeded|Failed|Completed
                   action: drop
-            - job_name: kubernetes-service-endpoints
-              kubernetes_sd_configs:
-                - role: endpoints
-                  namespaces:
-                    own_namespace: true
-              relabel_configs:
-                - source_labels:
-                    [__meta_kubernetes_service_annotation_prometheus_io_scrape]
-                  action: keep
-                  regex: true
-                - source_labels:
-                    [__meta_kubernetes_service_annotation_prometheus_io_scheme]
-                  action: replace
-                  target_label: __scheme__
-                  regex: (https?)
-                - source_labels:
-                    [__meta_kubernetes_service_annotation_prometheus_io_path]
-                  action: replace
-                  target_label: __metrics_path__
-                  regex: (.+)
-                - source_labels:
-                    [
-                      __address__,
-                      __meta_kubernetes_service_annotation_prometheus_io_port,
-                    ]
-                  action: replace
-                  target_label: __address__
-                  regex: (.+?)(?::\d+)?;(\d+)
-                  replacement: $1:$2
-                - action: labelmap
-                  regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
-                  replacement: __param_$1
-                - action: labelmap
-                  regex: __meta_kubernetes_service_label_(.+)
-                - source_labels: [__meta_kubernetes_namespace]
-                  action: replace
-                  target_label: namespace
-                - source_labels: [__meta_kubernetes_service_name]
-                  action: replace
-                  target_label: service
-                - source_labels: [__meta_kubernetes_pod_node_name]
-                  action: replace
-                  target_label: node
       otlp:
         protocols:
           grpc:
@@ -130,8 +126,12 @@ opentelemetry-collector:
           http:
             endpoint: 0.0.0.0:4318
     exporters:
+      debug:
+        verbosity: detailed
       prometheus:
         endpoint: 0.0.0.0:9090
+        resource_to_telemetry_conversion:
+          enabled: true
       otlphttp:
         endpoint: "https://otel.tracing.diamond.ac.uk:4318"
         timeout: 30s
@@ -147,6 +147,7 @@ opentelemetry-collector:
             - prometheus
             - otlp
           processors:
+            - k8sattributes
             - memory_limiter
             - batch
           exporters:
@@ -157,6 +158,6 @@ opentelemetry-collector:
           processors:
             - memory_limiter
             - batch
+            - k8sattributes
           exporters:
             - otlphttp
-
