@@ -81,3 +81,10 @@ dashboard:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+otel:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
