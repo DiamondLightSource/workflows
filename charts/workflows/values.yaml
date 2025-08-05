@@ -14,6 +14,9 @@ argo-workflows:
       region: unsupported
   controller:
     replicas: 2
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9090"
     pdb:
       minAvailable: 1
     persistence:
