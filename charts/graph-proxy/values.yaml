@@ -27,8 +27,8 @@ deployment:
 
 telemetry:
   level: Info
-  metricsEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/metrics
-  tracingEndpoint: http://otel-collector-opentelemetry-collector.monitoring:4318/v1/traces
+  metricsEndpoint: otel-collector-opentelemetry-collector.monitoring:4318/v1/metrics
+  tracingEndpoint: otel-collector-opentelemetry-collector.monitoring:4318/v1/traces
 
 s3:
   url: https://sci-nas-s3.diamond.ac.uk
