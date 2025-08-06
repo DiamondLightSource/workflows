@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.7...dashboard@v0.1.8) (2025-08-06)
+
+
+### Features
+
+* **frontend:** use accordion for artifact list ([7fa8b21](https://github.com/DiamondLightSource/workflows/commit/7fa8b21626a7190a0050ca47850b9dc00be86bdd))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.6...dashboard@v0.1.7) (2025-07-16)
 
 
