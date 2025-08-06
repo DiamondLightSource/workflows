@@ -31,7 +31,7 @@
         }
       ] 
     },
-    "frontend": {
+    "frontend/dashboard": {
       "release-type": "node",
       "extra-files": [
         {
