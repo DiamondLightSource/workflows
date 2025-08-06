@@ -12,5 +12,6 @@
   "+6": "0.0.0",
   "backend/telemetry": "0.1.2",
   "+7": "0.0.0",
-  "workflows-cli": "0.1.0"
+  "workflows-cli": "0.1.0",
+  "frontend": "1.0.0"
 }
