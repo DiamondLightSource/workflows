@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.2...sessionspaces@v0.1.3) (2025-08-06)
+
+
+### Features
+
+* **graph-proxy:** add kubernetes api url to env variables ([cf8c416](https://github.com/DiamondLightSource/workflows/commit/cf8c41673c14c6fd38092cdc0523d86c3c6f6398))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.1...sessionspaces@v0.1.2) (2025-05-19)
 
 
