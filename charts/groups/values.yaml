@@ -48,6 +48,7 @@ groups:
     apps:
       - name: magnetic-materials
         repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
+        path: helm-based-workflows
         sourceType: helm
   - name: spectroscopy
     enabled: true
