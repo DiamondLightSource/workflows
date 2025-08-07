@@ -19,23 +19,28 @@ pub(super) enum UiSchema {
         #[serde(skip_serializing_if = "Option::is_none")]
         label: Option<String>,
         options: Option<serde_json::Value>,
+        rule: Option<serde_json::Value>,
     },
     HorizontalLayout {
         elements: Vec<UiSchema>,
         options: Option<serde_json::Value>,
+        rule: Option<serde_json::Value>,
     },
     VerticalLayout {
         elements: Vec<UiSchema>,
         options: Option<serde_json::Value>,
+        rule: Option<serde_json::Value>,
     },
     Group {
         label: String,
         elements: Vec<UiSchema>,
         options: Option<serde_json::Value>,
+        rule: Option<serde_json::Value>,
     },
     Categorization {
         elements: Vec<UiSchemaCategory>,
         options: Option<serde_json::Value>,
+        rule: Option<serde_json::Value>,
     },
     Category(UiSchemaCategory),
 }
@@ -91,16 +96,19 @@ mod tests {
         )]);
         let expected = Some(UiSchema::HorizontalLayout {
             options: None,
+            rule: None,
             elements: vec![
                 UiSchema::Control {
                     scope: "#/properties/foo".to_string(),
                     label: Some("Foo".to_string()),
                     options: None,
+                    rule: None,
                 },
                 UiSchema::Control {
                     scope: "#/properties/bar".to_string(),
                     label: None,
                     options: None,
+                    rule: None,
                 },
             ],
         });
@@ -129,6 +137,7 @@ mod tests {
             scope: "#/properties/foo".into(),
             label: None,
             options: Some(json!({"detail" : "DEFAULT"})),
+            rule: None,
         });
         let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form Control.");
         assert_eq!(expected, actual);
@@ -157,11 +166,13 @@ mod tests {
             scope: "#/properties/bar".into(),
             label: None,
             options: None,
+            rule: None,
         };
         let expected = Some(UiSchema::Group {
             label: "foo".into(),
             elements: vec![control],
             options: Some(json!({"collapsible":true})),
+            rule: None,
         });
         let actual = UiSchema::new(&annotations).expect("Failed to parse valid JSON form Group.");
         assert_eq!(expected, actual);
@@ -194,6 +205,7 @@ mod tests {
         let expected = Some(UiSchema::Categorization {
             elements: vec![category],
             options: Some(json!({"variant": "stepper"})),
+            rule: None,
         });
         let actual =
             UiSchema::new(&annotations).expect("Failed to parse valid JSON form Categorization.");

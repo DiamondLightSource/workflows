@@ -13,8 +13,6 @@ pub(super) enum ParameterSchemaError {
         annotation: String,
         err: serde_json::Error,
     },
-    #[error("Malformed parameter schema")]
-    MalformParameterSchema,
 }
 
 /// A JSON Schema, contents are expected to match Draft 2020-12
