@@ -12,7 +12,7 @@ use async_graphql::{
     Context, InputObject, Json, Object,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
-use serde_json::{Map, Value};
+use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 use url::Url;
@@ -70,23 +70,17 @@ impl WorkflowTemplate {
 
     /// A JSON Schema describing the arguments of a Workflow Template
     async fn arguments(&self) -> Result<Json<Value>, WorkflowTemplateParsingError> {
-        let generated_schema =
-            Schema::from(ArgumentSchema::new(&self.spec, &self.metadata.annotations)?);
-
-        if let Some(schema) = self
+        match self
             .0
             .metadata
             .annotations
             .get("workflows.diamond.ac.uk/parameter-schema")
         {
-            let mut full_schema: Value = serde_json::from_str(schema)
-                .map_err(WorkflowTemplateParsingError::MalformParameterSchema)?;
-
-            stitch_generated_schema(&mut full_schema, &generated_schema)?;
-
-            Ok(Json(full_schema))
-        } else {
-            Ok(Json(generated_schema.into()))
+            Some(schema) => serde_json::from_str(schema)
+                .map_err(WorkflowTemplateParsingError::MalformParameterSchema),
+            None => Ok(Json(
+                Schema::from(ArgumentSchema::new(&self.spec, &self.metadata.annotations)?).into(),
+            )),
         }
     }
 
@@ -94,46 +88,6 @@ impl WorkflowTemplate {
     async fn ui_schema(&self) -> Result<Option<Json<UiSchema>>, WorkflowTemplateParsingError> {
         Ok(UiSchema::new(&self.metadata.annotations)?.map(Json))
     }
-}
-
-fn stitch_generated_schema(
-    full_schema: &mut Value,
-    generated_schema: &Value,
-) -> Result<(), ParameterSchemaError> {
-    let obj = full_schema
-        .as_object_mut()
-        .ok_or(ParameterSchemaError::MalformParameterSchema)?;
-
-    // Add arguments to the list of properties
-    let default_args = generated_schema
-        .get("properties")
-        .and_then(|properties| properties.as_object())
-        .ok_or(ParameterSchemaError::MalformParameterSchema)?;
-    let properties = obj
-        .entry("properties")
-        .or_insert_with(|| Value::Object(Map::new()))
-        .as_object_mut()
-        .ok_or(ParameterSchemaError::MalformParameterSchema)?;
-    for (property, schema) in default_args {
-        properties.entry(property).or_insert(schema.clone());
-    }
-
-    // Add required fields to main schema's required fields
-    let required = obj
-        .entry("required")
-        .or_insert_with(|| Value::Array(vec![]))
-        .as_array_mut()
-        .unwrap();
-
-    if let Some(default_required) = generated_schema.get("required").and_then(|v| v.as_array()) {
-        for var_name in default_required {
-            if !required.iter().any(|v| v == var_name) {
-                required.push(var_name.clone());
-            }
-        }
-    }
-
-    Ok(())
 }
 
 /// Queries related to [`WorkflowTemplate`]s
@@ -460,19 +414,11 @@ mod tests {
                     "description": "",
                     "title": "Experiment Type"
                 },
-                "memory": {
-                    "default": "20Gi",
-                    "type": "string"
-                },
-                "size": {
-                    "default": "2000",
-                    "type": "string"
-                },
                 "quiet": {
                     "$ref": "#/$defs/Quiet"
                 }
             },
-            "required": ["quiet", "memory", "size"],
+            "required": ["quiet"],
             "title": "Main",
             "type": "object"
         });
