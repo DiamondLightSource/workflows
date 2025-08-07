@@ -65,3 +65,11 @@ groups:
         repoURL: https://github.com/DiamondLightSource/crystallography-workflows
         path: I15-1_workflows
         sourceType: helm
+  - name: test-rig
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: visr
+        repoURL: https://github.com/DiamondLightSource/test-rig-workflows
+        path: visr
+        sourceType: helm
