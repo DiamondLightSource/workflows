@@ -80,7 +80,7 @@ impl Workflow {
     }
 
     /// The current status of the workflow
-    async fn status(&self) -> Result<Option<WorkflowStatus>, WorkflowParsingError> {
+    async fn status(&self) -> Result<Option<WorkflowStatus<'_>>, WorkflowParsingError> {
         WorkflowStatus::new(&self.manifest, &self.metadata)
     }
 
@@ -430,7 +430,7 @@ impl Task {
     }
 
     /// Artifacts produced by a task
-    async fn artifacts(&self) -> Vec<Artifact> {
+    async fn artifacts(&self) -> Vec<Artifact<'_>> {
         self.node_status
             .outputs
             .as_ref()
