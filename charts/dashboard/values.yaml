@@ -49,6 +49,7 @@ ingress:
     nginx.ingress.kubernetes.io/hsts: "true"
     nginx.ingress.kubernetes.io/hsts-max-age: "86400"
 
+
 serviceAccount:
   create: true
   name: ""
