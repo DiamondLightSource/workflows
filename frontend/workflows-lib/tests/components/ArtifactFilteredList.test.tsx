@@ -9,14 +9,14 @@ describe("ArtifactFilteredList", () => {
     expect(screen.getByText("image1.png")).toBeInTheDocument();
     expect(screen.getByText("main.log")).toBeInTheDocument();
     expect(screen.getByText("textfile.txt")).toBeInTheDocument();
-    expect(screen.getByText("image2.png")).toBeInTheDocument();
+    expect(screen.getByText("image2.jpeg")).toBeInTheDocument();
   });
 
   it('filters and displays only image artifacts when "IMAGES" filter is selected', () => {
     render(<ArtifactFilteredList artifactList={mockArtifacts} />);
     fireEvent.click(screen.getByLabelText("images"));
     expect(screen.getByText("image1.png")).toBeInTheDocument();
-    expect(screen.getByText("image2.png")).toBeInTheDocument();
+    expect(screen.getByText("image2.jpeg")).toBeInTheDocument();
     expect(screen.queryByText("main.log")).not.toBeInTheDocument();
     expect(screen.queryByText("textfile.txt")).not.toBeInTheDocument();
   });
@@ -27,7 +27,7 @@ describe("ArtifactFilteredList", () => {
     expect(screen.getByText("main.log")).toBeInTheDocument();
     expect(screen.queryByText("image1.png")).not.toBeInTheDocument();
     expect(screen.queryByText("textfile.txt")).not.toBeInTheDocument();
-    expect(screen.queryByText("image2.png")).not.toBeInTheDocument();
+    expect(screen.queryByText("image2.jpeg")).not.toBeInTheDocument();
   });
 
   it('filters and displays only text artifacts when "TEXT" filter is selected', () => {
@@ -36,6 +36,6 @@ describe("ArtifactFilteredList", () => {
     expect(screen.getByText("main.log")).toBeInTheDocument();
     expect(screen.getByText("textfile.txt")).toBeInTheDocument();
     expect(screen.queryByText("image1.png")).not.toBeInTheDocument();
-    expect(screen.queryByText("image2.png")).not.toBeInTheDocument();
+    expect(screen.queryByText("image2.jpeg")).not.toBeInTheDocument();
   });
 });

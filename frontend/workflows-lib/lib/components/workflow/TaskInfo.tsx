@@ -18,7 +18,7 @@ interface TaskInfoProps {
 export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList, onArtifactHover }) => {
   const imageArtifactsInfos: ImageInfo[] = useMemo(() => {
     return artifactList
-      .filter((artifact) => artifact.mimeType === "image/png")
+      .filter((artifact) => artifact.mimeType.startsWith("image"))
       .map((artifact, index) => ({
         src: artifact.url,
         alt: `Gallery Image ${String(index + 1)}`,
