@@ -98,6 +98,18 @@ export interface FileUploadButtonProps {
   handleChange: (path: string, value: UploadedFile) => void;
 }
 
+export interface ScanRange {
+  start: number;
+  end: number;
+  excluded?: number[];
+}
+
+export interface ScanRangeInputProps {
+  name: string;
+  value: ScanRange;
+  handleChange: (path: string, value: ScanRange) => void;
+}
+
 export type JSONValue =
   | string
   | number

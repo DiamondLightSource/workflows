@@ -5,3 +5,9 @@ export const fileUploadTester = rankWith(
   (uischema) =>
     isControl(uischema) && uischema.options?.useFileUploadControl === true,
 );
+
+export const scanRangeTester = rankWith(
+  5,
+  (uischema) =>
+    isControl(uischema) && uischema.options?.useScanRangeControl === true,
+);
