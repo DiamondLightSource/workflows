@@ -25,6 +25,9 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     admissionController:
+      metricsService:
+        create: true
+        port: 9090
       replicas: 3
       container:
         resources:
@@ -35,6 +38,9 @@ kyverno:
             cpu: 5
             memory: 8Gi
     backgroundController:
+      metricsService:
+        create: true
+        port: 9090
       extraArgs:
         genWorkers: 50
         clientRateLimitBurst: 500
