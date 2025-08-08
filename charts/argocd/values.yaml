@@ -32,6 +32,16 @@ argo-cd:
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
         g, jacob.williamson@diamond.ac.uk, role:admin
+  controller:
+    resources:
+      resources:
+        limits:
+          cpu: 3
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
+
 
 ingress:
   enabled: true
