@@ -34,13 +34,12 @@ argo-cd:
         g, jacob.williamson@diamond.ac.uk, role:admin
   controller:
     resources:
-      resources:
-        limits:
-          cpu: 3
-          memory: 6Gi
-        requests:
-          cpu: 2
-          memory: 4Gi
+      limits:
+        cpu: 3
+        memory: 6Gi
+      requests:
+        cpu: 2
+        memory: 4Gi
 
 
 ingress:
