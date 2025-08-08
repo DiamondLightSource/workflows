@@ -22,6 +22,7 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
       .map((artifact, index) => ({
         src: artifact.url,
         alt: `Gallery Image ${String(index + 1)}`,
+        type: artifact.mimeType,
       }));
   }, [artifactList]);
 

@@ -2,6 +2,41 @@ import { Box, Button, Slider, Stack } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import * as UTIF from "utif";
+
+async function extractFramesFromTiff(tiffSrc: string): Promise<ImageInfo[]> {
+  const response = await fetch(tiffSrc);
+  const arrayBuffer = await response.arrayBuffer();
+  const frames = UTIF.decode(arrayBuffer);
+
+  const images: ImageInfo[] = [];
+
+  let index = 1;
+  for (const frame of frames) {
+    UTIF.decodeImage(arrayBuffer, frame);
+    const rgba = UTIF.toRGBA8(frame);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = frame.width;
+    canvas.height = frame.height;
+    const context = canvas.getContext("2d");
+    if (!context) continue;
+
+    const imageData = context.createImageData(frame.width, frame.height);
+    imageData.data.set(rgba);
+    context.putImageData(imageData, 0, 0);
+
+    const blob = await new Promise<Blob | null>((resolve) => 
+      canvas.toBlob((b) => resolve(b), "image/png")
+    );
+    if (!blob) continue;
+
+    const url = URL.createObjectURL(blob);
+    images.push({ src: url, alt: `TIFF frame ${index}`, type: "image/png"});
+    index ++;
+  }
+  return images;
+}
 
 interface ScrollableImagesProps {
   images: ImageInfo | ImageInfo[];
@@ -16,6 +51,7 @@ interface ScrollableImagesProps {
 
 interface ImageInfo {
   src: string;
+  type?: string;
   alt?: string;
 }
 
@@ -29,7 +65,29 @@ const ScrollableImages = ({
   numeration = true,
   backgroundColor = "#eee",
 }: ScrollableImagesProps) => {
-  const imageList = (Array.isArray(images) ? images : [images]).map(
+  const [extractedImages, setExtractedImages] = useState<ImageInfo[]>([]);
+
+  useEffect(() => {
+    async function processImages() {
+      const inputImages = Array.isArray(images) ? images : [images];
+      let result: ImageInfo[] = [];
+
+      for (const image of inputImages) {
+        if (image.type === "image/tiff") {
+          const frames = await extractFramesFromTiff(image.src);
+          result = result.concat(frames);
+        }
+        else {
+          result.push(image);
+        }
+      }
+      setExtractedImages(result);
+    }
+    processImages();
+  }, [images]);
+  console.log(extractedImages)
+
+  const imageList = extractedImages.map(
     (img, i) => (
       <img
         key={i}
@@ -44,6 +102,7 @@ const ScrollableImages = ({
       />
     )
   );
+  console.log(imageList)
 
   const imageListLength = imageList.length;
   const renderButtons = buttons && imageListLength > 1;
