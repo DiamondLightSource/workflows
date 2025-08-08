@@ -25,6 +25,10 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     admissionController:
+      metering:
+        config: grpc
+        collector: otel-collector-opentelemetry-collector.monitoring
+        port: 4317
       replicas: 3
       container:
         resources:
@@ -35,6 +39,10 @@ kyverno:
             cpu: 5
             memory: 8Gi
     backgroundController:
+      metering:
+        config: grpc
+        collector: otel-collector-opentelemetry-collector.monitoring
+        port: 4317
       extraArgs:
         genWorkers: 50
         clientRateLimitBurst: 500
