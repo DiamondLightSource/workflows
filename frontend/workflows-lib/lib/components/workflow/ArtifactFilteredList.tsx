@@ -30,7 +30,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
   };
 
   const imageArtifacts = useMemo(() => {
-    return artifactList.filter((artifact) => artifact.mimeType === "image/png");
+    return artifactList.filter((artifact) => artifact.mimeType.startsWith("image"));
   }, [artifactList]);
 
   const listedArtifacts = useMemo(() => {
