@@ -25,9 +25,9 @@ export const mockArtifacts: Artifact[] = [
     parentTask: "task2",
   },
   {
-    name: "image2.png",
-    mimeType: "image/png",
-    url: "fakepath/to/image2.png",
+    name: "image2.jpeg",
+    mimeType: "image/jpeg",
+    url: "fakepath/to/image2.jpeg",
     parentTask: "task3",
   },
 ];
