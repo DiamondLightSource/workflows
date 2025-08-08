@@ -9,13 +9,58 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { ArtifactFilteredList } from "./ArtifactFilteredList";
 import type { Artifact } from "workflows-lib";
 import { ImageInfo, ScrollableImages } from "./ScrollableImages";
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { FuzzySearchBar } from "./FuzzySearchBar";
+import { FileTypeDropdown } from "./FileTypeDropdown";
+import Fuse from "fuse.js";
 
 interface TaskInfoProps {
   artifactList: Artifact[];
 }
 
 export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([]);
+  const [filteredArtifactList, setFilteredArtifactList] = useState<Artifact[]>([]);
+
+  const fileTypes = useMemo(() => {
+    const types = artifactList
+      .map(artifact => {
+        const lastDotIndex = artifact.name.lastIndexOf('.');
+        return lastDotIndex > 0 ? artifact.name.substring(lastDotIndex) : '';
+      })
+      .filter(type => type !== '')
+      .filter((type, index, array) => array.indexOf(type) === index);
+    return types;
+  }, [artifactList]);
+
+  useEffect(() => {
+    let filtered = artifactList;
+
+    if (selectedFileTypes.length > 0) {
+      filtered = filtered.filter(artifact => {
+        const lastDotIndex = artifact.name.lastIndexOf('.');
+        const fileType = lastDotIndex > 0 ? artifact.name.substring(lastDotIndex) : '';
+        return selectedFileTypes.includes(fileType);
+      });
+    }
+
+    if (searchQuery.trim()) {
+      const fuse = new Fuse(filtered, {
+        keys: ['name', 'parentTask'],
+        threshold: 0.1,
+        includeScore: true,
+        includeMatches: true,
+      });
+      const results = fuse.search(searchQuery);
+      filtered = results.map(result => result.item);
+    }
+
+    setFilteredArtifactList(filtered);
+  }, [searchQuery, selectedFileTypes, artifactList]);
+
+
+
   const imageArtifactsInfos: ImageInfo[] = useMemo(() => {
     return artifactList
       .filter((artifact) => artifact.mimeType === "image/png")
@@ -45,7 +90,19 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
           }}
         >
           <Box sx={{ flex: 1, minWidth: "300px" }}>
-            <ArtifactFilteredList artifactList={artifactList} />
+            <Typography variant="h5" sx={{ marginBottom: 2 }}>
+              Outputs
+            </Typography>
+            <FuzzySearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+              />
+              <FileTypeDropdown
+                fileTypes={fileTypes}
+                selectedFileTypes={selectedFileTypes}
+                setSelectedFileTypes={setSelectedFileTypes}
+              />
+            <ArtifactFilteredList artifactList={filteredArtifactList} />
           </Box>
 
           <Box
@@ -53,7 +110,7 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({ artifactList }) => {
               flex: 1,
               minWidth: "300px",
               visibility: imageArtifactsInfos.length > 0 ? "visible" : "hidden",
-              mt: 8,
+              mt: 13,
               paddingLeft: 7,
             }}
           >

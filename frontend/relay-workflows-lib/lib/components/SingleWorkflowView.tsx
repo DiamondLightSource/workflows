@@ -3,7 +3,6 @@ import { useLazyLoadQuery } from "react-relay";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
 import WorkflowRelay, { workflowRelayQuery } from "./WorkflowRelay";
-import WorkflowInfo from "./WorkflowInfo";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
 import { Box, ToggleButton } from "@mui/material";
@@ -125,8 +124,12 @@ export default function SingleWorkflowView({
           />
         </Box>
       </Box>
-      {tasknames && <TaskInfo artifactList={artifactList} />}
-      <WorkflowInfo workflow={data.workflow} />
+
+      {tasknames && (
+        <div style={{ width: "100%", marginTop: "1rem" }}>
+            <TaskInfo artifactList={artifactList} />
+        </div>
+      )}
     </>
   );
 }
