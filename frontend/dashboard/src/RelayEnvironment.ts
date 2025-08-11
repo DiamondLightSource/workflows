@@ -11,7 +11,8 @@ const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 
 keycloak.onTokenExpired = () => {
   console.log("JWT expired");
-  keycloak.updateToken(10)
+  keycloak
+    .updateToken(10)
     .then((refreshed) => {
       if (refreshed) {
         console.log("Fetched new JWT");
@@ -24,18 +25,19 @@ keycloak.onTokenExpired = () => {
     });
 };
 
-const kcinit = keycloak.init({
-  onLoad: "login-required"
-})
-.then(
-  auth => {
+const kcinit = keycloak
+  .init({
+    onLoad: "login-required",
+  })
+  .then(
+    (auth) => {
       console.info("Authenticated");
       console.log("auth", auth);
-  },
-  () => {
-    console.error("Authentication failed");
-  }
-);
+    },
+    () => {
+      console.error("Authentication failed");
+    },
+  );
 
 const fetchFn: FetchFunction = async (request, variables) => {
   if (!keycloak.authenticated) {
@@ -56,14 +58,13 @@ const fetchFn: FetchFunction = async (request, variables) => {
         variables,
       }),
     });
-  
+
     return await resp.json(); // eslint-disable-line @typescript-eslint/no-unsafe-return
   } else {
     console.log("Not authenticated yet");
     return {};
   }
 };
-
 
 function createRelayEnvironment() {
   return new Environment({

@@ -42,7 +42,7 @@ const ScrollableImages = ({
           display: "block",
         }}
       />
-    )
+    ),
   );
 
   const imageListLength = imageList.length;

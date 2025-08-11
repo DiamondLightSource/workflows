@@ -7,7 +7,7 @@ import { WorkflowRelayQuery$data } from "./__generated__/WorkflowRelayQuery.grap
 export function updateSearchParamsWithTasks(
   updatedTasks: string[],
   searchParams: URLSearchParams,
-  setSearchParams: (params: URLSearchParams) => void
+  setSearchParams: (params: URLSearchParams) => void,
 ) {
   const params = new URLSearchParams(searchParams);
   if (updatedTasks.length > 0) {
@@ -36,14 +36,14 @@ export function useSelectedTasks(): [string[], (tasks: string[]) => void] {
 
   const selectedTasks = useMemo(
     () => getTasksFromSearchParams(searchParams),
-    [searchParams]
+    [searchParams],
   );
 
   const setSelectedTasks = useCallback(
     (tasks: string[]) => {
       updateSearchParamsWithTasks(tasks, searchParams, setSearchParams);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   return [selectedTasks, setSelectedTasks];
@@ -52,7 +52,7 @@ export function useSelectedTasks(): [string[], (tasks: string[]) => void] {
 export function useFetchedTasks(
   data: WorkflowRelayQuery$data,
   visit: Visit,
-  workflowName: string
+  workflowName: string,
 ): Task[] {
   const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
 
@@ -72,7 +72,7 @@ export function useFetchedTasks(
           workflow: workflowName,
           instrumentSession: visit,
           stepType: task.stepType,
-        }))
+        })),
       );
     }
   }, [data.workflow.status, visit, workflowName]);

@@ -30,7 +30,7 @@ export default function SingleWorkflowView({
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
   const fetchedTasks = useFetchedTasks(data, visit, workflowName);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
-  const [filledTaskName, setFilledTaskName] = useState<string | null>(null)
+  const [filledTaskName, setFilledTaskName] = useState<string | null>(null);
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
 
@@ -42,9 +42,12 @@ export default function SingleWorkflowView({
     setSelectedTasks([]);
   };
 
-  const onArtifactHover = useCallback((artifact: Artifact | null) => {
-    setFilledTaskName(artifact ? artifact.parentTask : null)
-  }, [setFilledTaskName])
+  const onArtifactHover = useCallback(
+    (artifact: Artifact | null) => {
+      setFilledTaskName(artifact ? artifact.parentTask : null);
+    },
+    [setFilledTaskName],
+  );
 
   useEffect(() => {
     setSelectedTasks(tasknames ? tasknames : []);
@@ -131,7 +134,12 @@ export default function SingleWorkflowView({
           />
         </Box>
       </Box>
-      {tasknames && <TaskInfo artifactList={artifactList} onArtifactHover={onArtifactHover}/>}
+      {tasknames && (
+        <TaskInfo
+          artifactList={artifactList}
+          onArtifactHover={onArtifactHover}
+        />
+      )}
       <WorkflowInfo workflow={data.workflow} />
     </>
   );

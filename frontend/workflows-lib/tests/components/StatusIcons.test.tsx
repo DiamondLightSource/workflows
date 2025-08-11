@@ -19,7 +19,7 @@ describe("getTaskStatusIcon", () => {
   it("renders the Succeeded icon", () => {
     render(getTaskStatusIcon("SUCCEEDED"));
     expect(
-      screen.getByTestId("task-status-icon-succeeded")
+      screen.getByTestId("task-status-icon-succeeded"),
     ).toBeInTheDocument();
   });
 

@@ -40,10 +40,9 @@ export default function WorkflowsContent({
   const theme = useTheme();
   const data = usePreloadedQuery(workflowsQuery, queryReference);
   const pageInfo = data.workflows.pageInfo;
-  const fetchedWorkflows = useMemo(() => { 
-    return data.workflows.nodes.map(
-    (wf: { readonly name: string }) => wf.name,
-  )}, [data.workflows.nodes]);
+  const fetchedWorkflows = useMemo(() => {
+    return data.workflows.nodes.map((wf: { readonly name: string }) => wf.name);
+  }, [data.workflows.nodes]);
   const prevFetchedRef = useRef<string[]>([]);
 
   const [visibleWorkflows, setVisibleWorkflows] =

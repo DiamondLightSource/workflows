@@ -26,13 +26,15 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
 
   const handleArtifactFilter = (
     _: React.MouseEvent<HTMLElement>,
-    newArtifactFilter: string
+    newArtifactFilter: string,
   ) => {
     setArtifactFilter(newArtifactFilter);
   };
 
   const imageArtifacts = useMemo(() => {
-    return artifactList.filter((artifact) => artifact.mimeType.startsWith("image"));
+    return artifactList.filter((artifact) =>
+      artifact.mimeType.startsWith("image"),
+    );
   }, [artifactList]);
 
   const listedArtifacts = useMemo(() => {
@@ -42,11 +44,11 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
       case "log":
         return artifactList.filter(
           (artifact) =>
-            artifact.mimeType === "text/plain" && artifact.name === "main.log"
+            artifact.mimeType === "text/plain" && artifact.name === "main.log",
         );
       case "text":
         return artifactList.filter(
-          (artifact) => artifact.mimeType === "text/plain"
+          (artifact) => artifact.mimeType === "text/plain",
         );
       default:
         return artifactList;

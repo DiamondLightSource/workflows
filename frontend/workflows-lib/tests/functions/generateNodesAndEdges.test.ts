@@ -393,7 +393,7 @@ describe("Test highlight and fill behaviour", () => {
     const nodesWithHighlights = addHighlightsAndFills(
       nodes,
       ["task-1", "task-2"],
-      "task-3"
+      "task-3",
     );
 
     expect(nodesWithHighlights).toEqual([

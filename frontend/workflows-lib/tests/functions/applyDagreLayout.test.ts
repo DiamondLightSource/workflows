@@ -28,7 +28,7 @@ describe("applyDagreLayout", () => {
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = applyDagreLayout(
       nodes,
-      edges
+      edges,
     );
 
     expect(layoutedNodes).toEqual([

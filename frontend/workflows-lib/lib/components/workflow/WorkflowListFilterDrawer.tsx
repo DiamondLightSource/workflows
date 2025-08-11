@@ -21,7 +21,7 @@ interface WorkflowListFilterDrawerProps {
 type LabelValueRowProps = {
   label: string;
   value: string;
-}
+};
 
 export function LabelValueRow({ label, value }: LabelValueRowProps) {
   return (
@@ -40,7 +40,7 @@ function WorkflowStatusToString(status?: WorkflowStatusBool): string | null {
     .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
     .join(", ");
 
-    return result.length > 0 ? result : null;
+  return result.length > 0 ? result : null;
 }
 
 export function WorkflowListFilterDisplay({
@@ -57,11 +57,13 @@ export function WorkflowListFilterDisplay({
         <LabelValueRow label="Workflow Status" value={statusString} />
       )}
       <Divider sx={{ borderBottomWidth: 3 }} />
-      </Box>
-      );
-    }
+    </Box>
+  );
+}
 
-function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerProps) {
+function WorkflowListFilterDrawer({
+  onApplyFilters,
+}: WorkflowListFilterDrawerProps) {
   const [open, setOpen] = useState(false);
   const [creator, setCreator] = useState<string>("");
   const [errors, setErrors] = useState<{ creator?: boolean }>({});
@@ -121,7 +123,7 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
   }
 
   function normaliseFilter(filter: WorkflowQueryFilter): WorkflowQueryFilter {
-    filter.creator = filter.creator?.trim() === "" ? undefined: filter.creator;
+    filter.creator = filter.creator?.trim() === "" ? undefined : filter.creator;
     return filter;
   }
 
@@ -140,7 +142,6 @@ function WorkflowListFilterDrawer({ onApplyFilters }: WorkflowListFilterDrawerPr
       errors,
     };
   }
-
 
   const isApplyDisabled = !processFilter().validation.valid;
 

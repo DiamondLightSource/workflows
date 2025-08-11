@@ -48,7 +48,7 @@ describe("SubmissionForm Component", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     expect(getByText("Numpy Benchmark")).toBeInTheDocument();
   });
@@ -61,7 +61,7 @@ describe("SubmissionForm Component", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     expect(getByText("Description of Numpy Benchmark")).toBeInTheDocument();
   });
@@ -73,14 +73,14 @@ describe("SubmissionForm Component", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     const getById = queryByAttribute.bind(null, "id");
     expect(
-      getById(dom.container, "#/properties/memory-input")
+      getById(dom.container, "#/properties/memory-input"),
     ).toBeInTheDocument();
     expect(
-      getById(dom.container, "#/properties/size-input")
+      getById(dom.container, "#/properties/size-input"),
     ).toBeInTheDocument();
   });
 
@@ -91,7 +91,7 @@ describe("SubmissionForm Component", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     expect(getByTestId("visit-field")).toBeInTheDocument();
   });
@@ -103,7 +103,7 @@ describe("SubmissionForm Component", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     expect(getByTestId("submit-button")).toBeInTheDocument();
   });
@@ -116,7 +116,7 @@ describe("SubmissionForm Component", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={callback}
-      />
+      />,
     );
     const visitField = within(getByTestId("visit-field")).getByRole("textbox");
     fireEvent.change(visitField, { target: { value: "mg36964-1" } });
@@ -131,7 +131,7 @@ describe("SubmissionForm Component", () => {
       {
         memory: "20Gi",
         size: 2000,
-      }
+      },
     );
   });
 });
@@ -150,14 +150,14 @@ describe("SubmissionForm Layout", () => {
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     expect(jsonforms.JsonForms).toHaveBeenCalledWith(
       expect.objectContaining({
         schema: mockParameterSchema,
         uischema: undefined,
       }),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -169,14 +169,14 @@ describe("SubmissionForm Layout", () => {
         parametersSchema={mockParameterSchema}
         parametersUISchema={mockParameterUISchema}
         onSubmit={() => {}}
-      />
+      />,
     );
     expect(jsonforms.JsonForms).toHaveBeenCalledWith(
       expect.objectContaining({
         schema: mockParameterSchema,
         uischema: mockParameterUISchema,
       }),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 });

@@ -54,7 +54,7 @@ export function getTaskStatusIcon(status: TaskStatus, size: number = 25) {
 
 export function getWorkflowStatusIcon(
   status: WorkflowStatus,
-  size: number = 25
+  size: number = 25,
 ) {
   const workflowStatusIconMap: { [key in WorkflowStatus]: React.JSX.Element } =
     {

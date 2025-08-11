@@ -5,7 +5,7 @@ import { Task, TaskNode } from "../types";
 
 export function applyDagreLayout(
   nodes: Node[],
-  edges: Edge[]
+  edges: Edge[],
 ): { nodes: Node[]; edges: Edge[] } {
   const graph = new dagre.graphlib.Graph();
 
@@ -126,7 +126,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
 export function addHighlightsAndFills(
   nodes: Node[],
   highlightedTaskNames?: string[],
-  filledTaskName?: string | null
+  filledTaskName?: string | null,
 ): Node[] {
   return nodes.map((node) => {
     return {
@@ -149,7 +149,7 @@ export function usePersistentViewport(workflowName: string) {
         sessionStorage.setItem(viewport_key, JSON.stringify(viewport));
       }
     },
-    [viewport_key]
+    [viewport_key],
   );
 
   const loadViewport = useCallback((): Viewport | null => {

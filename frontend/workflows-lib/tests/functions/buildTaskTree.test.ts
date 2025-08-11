@@ -109,7 +109,7 @@ describe("buildTaskTree", () => {
         artifacts: [],
         workflow: "workflow-3",
         instrumentSession: instrumentSession,
-        stepType: "POD"
+        stepType: "POD",
       },
     ];
 

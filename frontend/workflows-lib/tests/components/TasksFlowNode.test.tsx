@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import TaskFlowNode, { TaskFlowNodeData } from "../../lib/components/workflow/TasksFlowNode";
+import TaskFlowNode, {
+  TaskFlowNodeData,
+} from "../../lib/components/workflow/TasksFlowNode";
 import "@testing-library/jest-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import { vi } from "vitest";
-
 
 const mockedNavigator = vi.fn();
 vi.mock("react-router-dom", async () => ({
@@ -26,7 +27,7 @@ describe("TaskFlowNode", () => {
     render(
       <ReactFlowProvider>
         <TaskFlowNode data={mockData} onNavigate={mockedNavigator} />
-      </ReactFlowProvider>
+      </ReactFlowProvider>,
     );
     expect(screen.getByText("TaskA")).toBeInTheDocument();
   });
@@ -35,20 +36,23 @@ describe("TaskFlowNode", () => {
     render(
       <ReactFlowProvider>
         <TaskFlowNode data={mockData} onNavigate={mockedNavigator} />
-      </ReactFlowProvider>
+      </ReactFlowProvider>,
     );
-    expect(screen.getByTestId("task-status-icon-succeeded")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("task-status-icon-succeeded"),
+    ).toBeInTheDocument();
   });
 
   it("calls onNavigate with the correct path when the task label is clicked", () => {
     render(
       <ReactFlowProvider>
         <TaskFlowNode data={mockData} onNavigate={mockedNavigator} />
-      </ReactFlowProvider>
+      </ReactFlowProvider>,
     );
     fireEvent.click(screen.getByText("TaskA"));
     expect(mockedNavigator).toHaveBeenCalledWith(
-      "/workflows/ab12345-6/Workflow1/TaskA/", expect.any(Object)
+      "/workflows/ab12345-6/Workflow1/TaskA/",
+      expect.any(Object),
     );
   });
 
@@ -56,7 +60,7 @@ describe("TaskFlowNode", () => {
     render(
       <ReactFlowProvider>
         <TaskFlowNode data={mockData} onNavigate={mockedNavigator} />
-      </ReactFlowProvider>
+      </ReactFlowProvider>,
     );
     const targetHandle = screen.getByTestId("handle-target");
     expect(targetHandle).toBeInTheDocument();
@@ -66,7 +70,7 @@ describe("TaskFlowNode", () => {
     render(
       <ReactFlowProvider>
         <TaskFlowNode data={mockData} onNavigate={mockedNavigator} />
-      </ReactFlowProvider>
+      </ReactFlowProvider>,
     );
     const sourceHandle = screen.getByTestId("handle-source");
     expect(sourceHandle).toBeInTheDocument();
