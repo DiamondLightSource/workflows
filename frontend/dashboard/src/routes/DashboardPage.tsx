@@ -59,60 +59,6 @@ const documentationCard = (
   </React.Fragment>
 );
 
-const argoCard = (
-  <React.Fragment>
-    <CardActionArea
-      href="https:///argo-workflows.workflows.diamond.ac.uk"
-      target="_blank"
-    >
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          Argo Web UI
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          The native Argo Workflows dashboard.
-        </Typography>
-      </CardContent>
-    </CardActionArea>
-  </React.Fragment>
-);
-
-const grafanaCard = (
-  <React.Fragment>
-    <CardActionArea
-      href="https://grafana.workflows.diamond.ac.uk"
-      target="_blank"
-    >
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          Grafana
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          Provides visualization for workflows metrics.
-        </Typography>
-      </CardContent>
-    </CardActionArea>
-  </React.Fragment>
-);
-
-const argoCdCard = (
-  <React.Fragment>
-    <CardActionArea
-      href="https://argo-cd.workflows.diamond.ac.uk"
-      target="_blank"
-    >
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          ArgoCD
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          Monitors deployments of services and workflow templates.
-        </Typography>
-      </CardContent>
-    </CardActionArea>
-  </React.Fragment>
-);
-
 function DashboardPage() {
   return (
     <>
@@ -132,15 +78,6 @@ function DashboardPage() {
           </Grid>
           <Grid key={"documentation"} size={{ xs: 2, sm: 2, md: 3 }}>
             <Card style={{ height: "100%" }}>{documentationCard}</Card>
-          </Grid>
-          <Grid key={"argo"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card style={{ height: "100%" }}>{argoCard}</Card>
-          </Grid>
-          <Grid key={"grafana"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card style={{ height: "100%" }}>{grafanaCard}</Card>
-          </Grid>
-          <Grid key={"argocd"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card style={{ height: "100%" }}>{argoCdCard}</Card>
           </Grid>
         </Grid>
       </Container>
