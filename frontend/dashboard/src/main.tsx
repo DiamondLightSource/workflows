@@ -5,7 +5,6 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./routes/DashboardPage";
 import WorkflowsListPage from "./routes/WorkflowsListPage";
-import WorkflowsSessionInputPage from "./routes/WorkflowsSessionInputPage";
 import TemplatesListPage from "./routes/TemplatesListPage";
 import SingleTemplatePage from "./routes/SingleTemplatePage";
 import SingleWorkflowPage from "./routes/SingleWorkflowPage";
@@ -19,10 +18,6 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "workflows",
-    element: <WorkflowsSessionInputPage />,
-  },
-  {
     path: "templates",
     element: <TemplatesListPage />,
   },
@@ -33,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: "templates/:templateName/:prepopulate",
     element: <SingleTemplatePage />,
+  },
+  {
+    path: "workflows",
+    element: <WorkflowsListPage />,
   },
   {
     path: "workflows/:visitid",

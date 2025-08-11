@@ -16,6 +16,10 @@ function SingleWorkflowPage() {
   const [searchParams] = useSearchParams();
   const taskParam = searchParams.get("tasks");
 
+  if (visitid) {
+    localStorage.setItem("instrumentSessionID", visitid);
+  }
+
   const tasknames = useMemo(() => {
     if (!taskParam) return [];
     try {
