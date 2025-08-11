@@ -59,6 +59,42 @@ const documentationCard = (
   </React.Fragment>
 );
 
+const helpCard = (
+  <React.Fragment>
+    <CardActionArea
+      href="https://diamondlightsource.slack.com/archives/C08NYJSGMFD"
+      target="_blank"
+    >
+      <CardContent>
+        <Typography gutterBottom variant="h5" component="div">
+          Help/Feedback
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          Get help from the workflows team and leave feedback.
+        </Typography>
+      </CardContent>
+    </CardActionArea>
+  </React.Fragment>
+);
+
+const reportCard = (
+  <React.Fragment>
+    <CardActionArea
+      href="https://github.com/DiamondLightSource/workflows/issues/new"
+      target="_blank"
+    >
+      <CardContent>
+        <Typography gutterBottom variant="h5" component="div">
+          Report an issue
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          Report an issue on the workflows GitHub page.
+        </Typography>
+      </CardContent>
+    </CardActionArea>
+  </React.Fragment>
+);
+
 function DashboardPage() {
   return (
     <>
@@ -71,13 +107,25 @@ function DashboardPage() {
           columns={{ xs: 2, sm: 4, md: 6 }}
         >
           <Grid key={"workflows"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card style={{ height: "100%" }}>{workflowsCard}</Card>
+            <Card style={{ height: "100%", minHeight: 150 }}>
+              {workflowsCard}
+            </Card>
           </Grid>
-          <Grid key={"templates"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card style={{ height: "100%" }}>{templatesCard}</Card>
+          <Grid key={"templates"} size={{ xs: 2, sm: 4, md: 3 }}>
+            <Card style={{ height: "100%", minHeight: 150 }}>
+              {templatesCard}
+            </Card>
           </Grid>
           <Grid key={"documentation"} size={{ xs: 2, sm: 2, md: 3 }}>
-            <Card style={{ height: "100%" }}>{documentationCard}</Card>
+            <Card style={{ height: "100%", minHeight: 150 }}>
+              {documentationCard}
+            </Card>
+          </Grid>
+          <Grid key={"help"} size={{ xs: 2, sm: 2, md: 3 }}>
+            <Card style={{ height: "100%", minHeight: 150 }}>{helpCard}</Card>
+          </Grid>
+          <Grid key={"report"} size={{ xs: 2, sm: 2, md: 3 }}>
+            <Card style={{ height: "100%", minHeight: 150 }}>{reportCard}</Card>
           </Grid>
         </Grid>
       </Container>
