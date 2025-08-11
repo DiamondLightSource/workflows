@@ -42,10 +42,10 @@ kyverno:
       replicas: 2
       resources:
         limits:
-          cpu: 6
+          cpu: 8
           memory: 32Gi
         requests:
-          cpu: 5
+          cpu: 6
           memory: 16Gi
     cleanupController:
       enabled: false
