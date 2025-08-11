@@ -25,9 +25,12 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     admissionController:
+      podAnnotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
       metricsService:
         create: true
-        port: 9090
+        port: 8000
       replicas: 3
       container:
         resources:
@@ -38,9 +41,12 @@ kyverno:
             cpu: 5
             memory: 8Gi
     backgroundController:
+      podAnnotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
       metricsService:
         create: true
-        port: 9090
+        port: 8000
       extraArgs:
         genWorkers: 50
         clientRateLimitBurst: 500
