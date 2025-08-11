@@ -32,6 +32,11 @@ argo-cd:
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
         g, jacob.williamson@diamond.ac.uk, role:admin
+
+  repoServer:
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8084"
   controller:
     resources:
       limits:
@@ -40,7 +45,9 @@ argo-cd:
       requests:
         cpu: 2
         memory: 4Gi
-
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8082"
 
 ingress:
   enabled: true
