@@ -9,7 +9,7 @@ resolver = "2"
 
 [workspace.dependencies]
 anyhow = { version = "1.0.98" }
-built = { version = "0.7.5" }
+built = { version = "0.8.0" }
 clap = { version = "4.5.43", features = ["derive", "env"] }
 chrono = { version = "0.4.41" }
 derive_more = { version = "2.0.1" , features = [
