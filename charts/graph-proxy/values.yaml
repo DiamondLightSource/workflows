@@ -55,6 +55,10 @@ ingress:
       paths:
         - path: /graphql
           pathType: Exact
+    - host: workflows.diamond.ac.uk
+      paths:
+        - path: /graphql/ws
+          pathType: Exact
 
 serviceAccount:
   create: true
