@@ -16,7 +16,7 @@ jobs:
           cache: false
           components: clippy,rustfmt
 
-      - uses: actions/cache@v4.2.3
+      - uses: actions/cache@v4.2.4
         with:
           path: |
             ./workflows-cli/target
@@ -48,7 +48,7 @@ jobs:
         with:
           cache: false
 
-      - uses: actions/cache@v4.2.3
+      - uses: actions/cache@v4.2.4
         with:
           path: |
             ./workflows-cli/target
@@ -99,7 +99,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y musl-tools
 
-      - uses: actions/cache@v4.2.3
+      - uses: actions/cache@v4.2.4
         with:
           path: |
             ./workflows-cli/target
