@@ -32,7 +32,7 @@ COPY . .
 RUN touch graph-proxy/src/main.rs \
     && cargo auditable build --release --package graph-proxy
 
-FROM gcr.io/distroless/cc-debian12@sha256:aa435f48941dbbd18b4a1f3f71992a3afddc6fb913beb411cd4c0fb174e0bfb8 AS deploy
+FROM gcr.io/distroless/cc-debian12@sha256:00cc20b928afcc8296b72525fa68f39ab332f758c4f2a9e8d90845d3e06f1dc4 AS deploy
 
 COPY --from=build /app/target/release/graph-proxy /graph-proxy
 
