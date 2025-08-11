@@ -5,7 +5,7 @@ const logArtifact: Artifact = {
   name: "main.log",
   url: "fakepath/to/main-logs",
   mimeType: "text/plain",
-  parentTask: "task"
+  parentTask: "task",
 };
 
 const instrumentSession: Visit = {

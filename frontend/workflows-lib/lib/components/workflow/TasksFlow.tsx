@@ -49,7 +49,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isOverflow, setIsOverflow] = useState(false);
   const [nodesWithHighlights, setNodesWithHighlights] = useState<Node[] | null>(
-    null
+    null,
   );
 
   const previousTaskCount = useRef<number>(tasks.length);
@@ -60,7 +60,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         <TaskFlowNode onNavigate={onNavigate} {...props} />
       ),
     }),
-    [onNavigate]
+    [onNavigate],
   );
 
   const { saveViewport, loadViewport, clearViewport } =
@@ -70,18 +70,18 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     (viewport: Viewport) => {
       saveViewport(viewport);
     },
-    [saveViewport]
+    [saveViewport],
   );
 
   const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
   const { nodes, edges } = useMemo(
     () => generateNodesAndEdges(taskTree),
-    [taskTree]
+    [taskTree],
   );
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () => applyDagreLayout(nodes, edges),
-    [nodes, edges]
+    [nodes, edges],
   );
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
       const highlightedNodes = addHighlightsAndFills(
         layoutedNodes,
         highlightedTaskNames,
-        filledTaskName
+        filledTaskName,
       );
       setNodesWithHighlights(highlightedNodes);
     }, 20);
@@ -114,7 +114,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         hasInitialized.current = true;
       }
     },
-    [loadViewport]
+    [loadViewport],
   );
 
   const resetView = () => {

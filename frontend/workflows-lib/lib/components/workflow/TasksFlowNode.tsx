@@ -26,7 +26,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
     const instrumentSessionId = visitToText(data.instrumentSession);
     onNavigate(
       `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`,
-      e
+      e,
     );
   };
 

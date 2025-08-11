@@ -7,7 +7,7 @@ describe("WorkflowsErrorBoundary", () => {
     const { getByText } = render(
       <WorkflowsErrorBoundary>
         <div>Child</div>
-      </WorkflowsErrorBoundary>
+      </WorkflowsErrorBoundary>,
     );
     expect(getByText("Child")).toBeInTheDocument();
   });
@@ -20,7 +20,7 @@ describe("WorkflowsErrorBoundary", () => {
     const { getByText } = render(
       <WorkflowsErrorBoundary>
         <TestError />
-      </WorkflowsErrorBoundary>
+      </WorkflowsErrorBoundary>,
     );
 
     expect(getByText("Error thrown")).toBeInTheDocument();
