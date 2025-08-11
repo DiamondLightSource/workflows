@@ -14,6 +14,7 @@ import { visitToText } from "@diamondlightsource/sci-react-ui";
 import SubmissionForm from "./SubmissionForm";
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
 import { TemplateViewMutation as TemplateViewMutationType } from "./__generated__/TemplateViewMutation.graphql";
+import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
 const templateViewQuery = graphql`
   query TemplateViewQuery($templateName: String!) {
@@ -59,6 +60,8 @@ export default function TemplateView({
     )[]
   >([]);
 
+  const storedVisit = visitTextToVisit(localStorage.getItem("instrumentSessionID") ?? "");
+
   const [commitMutation] =
     useMutation<TemplateViewMutationType>(templateViewMutation);
 
@@ -89,6 +92,7 @@ export default function TemplateView({
             },
             ...prev,
           ]);
+          localStorage.setItem("instrumentSessionID", visitToText(visit));
         }
       },
       onError: (err) => {
@@ -110,7 +114,7 @@ export default function TemplateView({
           <SubmissionForm
             template={data.workflowTemplate}
             prepopulatedParameters={prepopulatedParameters}
-            visit={visit}
+            visit={visit ?? (storedVisit ?? undefined)}
             onSubmit={submitWorkflow}
           />
           <SubmittedMessagesList submissionResults={submissionResults} />

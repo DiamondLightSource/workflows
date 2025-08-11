@@ -3,18 +3,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
-export const useVisitInput = (initialVisitId?: string) => {
+export const useVisitInput = (initialVisitId?: string | null) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [visit, setVisit] = useState<Visit | null>(
-    visitTextToVisit(initialVisitId),
+    visitTextToVisit(initialVisitId ?? undefined),
   );
 
   const handleVisitSubmit = (visit: Visit | null) => {
     if (visit) {
       const route = location.pathname.split("/")[1]; // Extract the first segment of the path
       const visitid = visitToText(visit);
-      (navigate(`/${route}/${visitid}/`) as Promise<void>) // navigate to the new route
+      localStorage.setItem("instrumentSessionID", visitid);
+      (navigate(`/${route}/${visitid}/`) as Promise<void>)
         .then(() => {
           setVisit(visit);
         })
