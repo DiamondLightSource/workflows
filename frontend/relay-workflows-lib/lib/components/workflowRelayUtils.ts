@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Visit, Task, TaskStatus } from "workflows-lib";
 import { isWorkflowWithTasks } from "../utils";
-import { WorkflowRelayQuery$data } from "./__generated__/WorkflowRelayQuery.graphql";
+import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQuery.graphql";
 
 export function updateSearchParamsWithTasks(
   updatedTasks: string[],
@@ -50,7 +50,7 @@ export function useSelectedTasks(): [string[], (tasks: string[]) => void] {
 }
 
 export function useFetchedTasks(
-  data: WorkflowRelayQuery$data,
+  data: workflowRelayQuery$data,
   visit: Visit,
   workflowName: string,
 ): Task[] {

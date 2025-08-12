@@ -3,10 +3,10 @@ import { PreloadedQuery, usePreloadedQuery } from "react-relay";
 import { Box, Button, FormControlLabel, Switch, useTheme } from "@mui/material";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { PaginationControls } from "workflows-lib";
-import { workflowsQuery } from "./Workflows";
+import { workflowsQuery } from "../graphql/workflowsQuery";
 import WorkflowRelay from "./WorkflowRelay";
 import { updateWorkflowsState } from "../utils";
-import { WorkflowsQuery as WorkflowsQueryType } from "./__generated__/WorkflowsQuery.graphql";
+import { workflowsQuery as WorkflowsQueryType } from "../graphql/__generated__/workflowsQuery.graphql";
 
 interface WorkflowsContentProps {
   queryReference: PreloadedQuery<WorkflowsQueryType>;

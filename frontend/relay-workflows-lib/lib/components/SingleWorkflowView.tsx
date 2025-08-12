@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
-import WorkflowRelay, { workflowRelayQuery } from "./WorkflowRelay";
+import WorkflowRelay from "./WorkflowRelay";
 import WorkflowInfo from "./WorkflowInfo";
 import { Visit } from "@diamondlightsource/sci-react-ui";
-import { WorkflowRelayQuery as WorkflowRelayQueryType } from "./__generated__/WorkflowRelayQuery.graphql";
+import { workflowRelayQuery as WorkflowRelayQueryType } from "../graphql/__generated__/workflowRelayQuery.graphql";
 import { Box, ToggleButton } from "@mui/material";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
+import { workflowRelayQuery } from "../graphql/workflowRelayQuery";
 
 interface SingleWorkflowViewProps {
   visit: Visit;
