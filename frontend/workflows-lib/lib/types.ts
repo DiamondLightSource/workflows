@@ -61,6 +61,7 @@ export interface Template {
 
 export interface WorkflowQueryFilter {
   creator?: string;
+  template?: string;
   workflowStatusFilter?: WorkflowStatusBool;
 }
 
