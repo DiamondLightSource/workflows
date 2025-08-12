@@ -529,6 +529,8 @@ struct WorkflowFilter {
     workflow_status_filter: Option<WorkflowStatusFilter>,
     /// The creator of the workflow
     creator: Option<String>,
+    /// The workflow template
+    template: Option<String>,
 }
 
 impl WorkflowFilter {
@@ -558,6 +560,12 @@ impl WorkflowFilter {
             let creator_label =
                 format!("workflows.argoproj.io/creator-preferred-username={creator}");
             label_selectors.push(creator_label);
+        }
+
+        if let Some(template) = &self.template {
+            let template_label =
+                format!("workflows.argoproj.io/cluster-workflow-template={template}");
+            label_selectors.push(template_label);
         }
 
         label_selectors.join(",")
