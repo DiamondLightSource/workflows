@@ -50,9 +50,11 @@ export function WorkflowListFilterDisplay({
 }) {
   const statusString = WorkflowStatusToString(filter.workflowStatusFilter);
   const creator = filter.creator;
+  const template = filter.template;
   return (
     <Box sx={{ mb: 2 }}>
       {creator && <LabelValueRow label="FedID" value={creator} />}
+      {template && <LabelValueRow label="Template" value={template} />}
       {statusString && (
         <LabelValueRow label="Workflow Status" value={statusString} />
       )}
@@ -66,7 +68,11 @@ function WorkflowListFilterDrawer({
 }: WorkflowListFilterDrawerProps) {
   const [open, setOpen] = useState(false);
   const [creator, setCreator] = useState<string>("");
-  const [errors, setErrors] = useState<{ creator?: boolean }>({});
+  const [template, setTemplate] = useState<string>("");
+  const [errors, setErrors] = useState<{
+    creator?: boolean;
+    template?: boolean;
+  }>({});
   const [status, setStatus] = useState<{ label: string; value: string }[]>([]);
 
   const toggleDrawer = (newOpen: boolean) => () => {
@@ -75,6 +81,7 @@ function WorkflowListFilterDrawer({
 
   const clearAllFilters = () => () => {
     setCreator("");
+    setTemplate("");
     setStatus([]);
     setErrors({});
   };
@@ -84,6 +91,13 @@ function WorkflowListFilterDrawer({
 
     const isValid = value === "" || /^[a-z]+[0-9]+$/.test(value);
     setErrors((prev) => ({ ...prev, creator: !isValid }));
+  };
+
+  const handleChangeTemplate = (value: string) => {
+    setTemplate(value);
+
+    const isValid = true;
+    setErrors((prev) => ({ ...prev, template: !isValid }));
   };
 
   const handleApply = () => {
@@ -114,6 +128,7 @@ function WorkflowListFilterDrawer({
 
     const rawFilter = {
       creator,
+      template,
       workflowStatusFilter,
     };
 
@@ -124,6 +139,8 @@ function WorkflowListFilterDrawer({
 
   function normaliseFilter(filter: WorkflowQueryFilter): WorkflowQueryFilter {
     filter.creator = filter.creator?.trim() === "" ? undefined : filter.creator;
+    filter.template =
+      filter.template?.trim() === "" ? undefined : filter.template;
     return filter;
   }
 
@@ -190,6 +207,30 @@ function WorkflowListFilterDrawer({
                   <IconButton
                     onClick={() => {
                       handleChangeCreator("");
+                    }}
+                  >
+                    <ClearIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                ) : undefined,
+              },
+            }}
+          />
+          <TextField
+            fullWidth
+            id="template"
+            label="Template"
+            variant="outlined"
+            value={template}
+            error={!!errors.template}
+            onChange={(e) => {
+              handleChangeTemplate(e.target.value);
+            }}
+            slotProps={{
+              input: {
+                endAdornment: creator ? (
+                  <IconButton
+                    onClick={() => {
+                      handleChangeTemplate("");
                     }}
                   >
                     <ClearIcon sx={{ fontSize: 20 }} />
