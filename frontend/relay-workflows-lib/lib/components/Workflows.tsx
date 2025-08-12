@@ -1,31 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { graphql } from "react-relay";
 import { useQueryLoader } from "react-relay/hooks";
 import { Visit, WorkflowQueryFilter } from "workflows-lib";
-import { WorkflowsQuery } from "./__generated__/WorkflowsQuery.graphql";
+import { workflowsQuery as WorkflowsQueryType } from "../graphql/__generated__/workflowsQuery.graphql";
 import WorkflowsContent from "./WorkflowsContent";
 import { useServerSidePagination } from "./useServerSidePagination";
-
-export const workflowsQuery = graphql`
-  query WorkflowsQuery(
-    $visit: VisitInput!
-    $cursor: String
-    $limit: Int!
-    $filter: WorkflowFilter
-  ) {
-    workflows(visit: $visit, cursor: $cursor, limit: $limit, filter: $filter) {
-      nodes {
-        name
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        hasPreviousPage
-        startCursor
-      }
-    }
-  }
-`;
+import { workflowsQuery } from "../graphql/workflowsQuery";
 
 export default function Workflows({
   visit,
@@ -45,7 +24,7 @@ export default function Workflows({
   } = useServerSidePagination();
 
   const [queryReference, loadQuery] =
-    useQueryLoader<WorkflowsQuery>(workflowsQuery);
+    useQueryLoader<WorkflowsQueryType>(workflowsQuery);
 
   const [isPaginated, setIsPaginated] = useState(false);
   const lastPage = useRef(currentPage);

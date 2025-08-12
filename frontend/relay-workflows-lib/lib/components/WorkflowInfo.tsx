@@ -4,10 +4,10 @@ import {
   AccordionSummary,
   Typography,
 } from "@mui/material";
-import { WorkflowRelayQuery$data } from "./__generated__/WorkflowRelayQuery.graphql";
+import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQuery.graphql";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
-export default function WorkflowInfo({ workflow }: WorkflowRelayQuery$data) {
+export default function WorkflowInfo({ workflow }: workflowRelayQuery$data) {
   return (
     <Accordion sx={{ width: "100%" }} defaultExpanded>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>

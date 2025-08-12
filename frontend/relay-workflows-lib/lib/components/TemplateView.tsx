@@ -60,7 +60,9 @@ export default function TemplateView({
     )[]
   >([]);
 
-  const storedVisit = visitTextToVisit(localStorage.getItem("instrumentSessionID") ?? "");
+  const storedVisit = visitTextToVisit(
+    localStorage.getItem("instrumentSessionID") ?? "",
+  );
 
   const [commitMutation] =
     useMutation<TemplateViewMutationType>(templateViewMutation);
@@ -114,7 +116,7 @@ export default function TemplateView({
           <SubmissionForm
             template={data.workflowTemplate}
             prepopulatedParameters={prepopulatedParameters}
-            visit={visit ?? (storedVisit ?? undefined)}
+            visit={visit ?? storedVisit ?? undefined}
             onSubmit={submitWorkflow}
           />
           <SubmittedMessagesList submissionResults={submissionResults} />
