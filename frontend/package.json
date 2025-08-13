@@ -7,11 +7,11 @@
     "dashboard"
   ],
   "scripts": {
-    "lint": "eslint && prettier --no-config --ignore-path ../.gitignore --check \"**/*.{js,ts,tsx,json}\"",
-    "format": "prettier --no-config --write \"**/*.{js,ts,tsx,json}\"",
+    "lint": "eslint && prettier --config .prettierrc --ignore-path ../.gitignore --check \"**/*.{js,ts,tsx,json}\"",
+    "format": "prettier --config .prettierrc --write \"**/*.{js,ts,tsx,json}\"",
     "tsc": "tsc --build",
     "test": "vitest --run",
-    "precommit": "eslint && tsc --build && vitest --run && prettier --no-config --check \"**/*.{js,ts,tsx,json}\""
+    "precommit": "eslint && tsc --build && vitest --run && prettier --config .prettierrc --check \"**/*.{js,ts,tsx,json}\""
   },
   "dependencies": {
     "@dagrejs/dagre": "1.1.5",
