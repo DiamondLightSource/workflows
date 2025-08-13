@@ -12,4 +12,5 @@ export { default as FileUploadButton } from "./components/template/controls/File
 export { default as ScanRangeInput } from "./components/template/controls/ScanRangeInput";
 export { default as JsonFormsFileUploadRenderer } from "./components/template/jsonforms/JsonFormsFileUploadRenderer";
 export { default as JsonFormsScanRangeRenderer } from "./components/template/jsonforms/JsonFormsScanRangeRenderer";
+export { default as WorkflowsTemplateFilterDrawer } from "./components/workflow/TemplateListFilterDrawer";
 export * from "./types";

@@ -2,13 +2,13 @@ import { ChangeEvent } from "react";
 import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { Box, Pagination } from "@mui/material";
-import { TemplateCard } from "workflows-lib";
+import { TemplateCard, WorkflowTemplatesFilter } from "workflows-lib";
 import { TemplatesListQuery } from "./__generated__/TemplatesListQuery.graphql";
 import { useClientSidePagination } from "../utils";
 
 const templatesListQuery = graphql`
-  query TemplatesListQuery {
-    workflowTemplates {
+  query TemplatesListQuery($filter: WorkflowTemplatesFilter) {
+    workflowTemplates(filter: $filter) {
       nodes {
         name
         description
@@ -20,8 +20,15 @@ const templatesListQuery = graphql`
   }
 `;
 
-export default function TemplatesList() {
-  const data = useLazyLoadQuery<TemplatesListQuery>(templatesListQuery, {});
+export default function TemplatesList({
+  filter,
+}: {
+  filter: WorkflowTemplatesFilter;
+}) {
+  const data = useLazyLoadQuery<TemplatesListQuery>(templatesListQuery, {
+    filter,
+  });
+
   const templates = data.workflowTemplates.nodes;
 
   const {
