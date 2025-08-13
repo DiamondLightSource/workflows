@@ -1,5 +1,5 @@
 import { RelayEnvironmentProvider } from "react-relay";
-import { RelayEnvironment } from "./RelayEnvironment";
+import { getRelayEnvironment } from "./RelayEnvironment";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -47,12 +47,16 @@ const router = createBrowserRouter([
   },
 ]);
 
-createRoot(document.getElementById("root") as Element).render(
-  <RelayEnvironmentProvider environment={RelayEnvironment}>
-    <StrictMode>
-      <ThemeProvider theme={DiamondTheme} defaultMode="light">
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </StrictMode>
-  </RelayEnvironmentProvider>,
-);
+const root = createRoot(document.getElementById("root") as Element);
+
+getRelayEnvironment().then((environment) => {
+  root.render(
+    <RelayEnvironmentProvider environment={environment}>
+      <StrictMode>
+        <ThemeProvider theme={DiamondTheme} defaultMode="light">
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </StrictMode>
+    </RelayEnvironmentProvider>,
+  );
+});

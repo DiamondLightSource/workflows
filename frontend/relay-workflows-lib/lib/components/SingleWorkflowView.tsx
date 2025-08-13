@@ -5,9 +5,9 @@ import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
 import WorkflowRelay from "./WorkflowRelay";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import {
-  WorkflowRelaySubscription$data,
-  WorkflowRelaySubscription as WorkflowRelaySubscriptionType,
-} from "./__generated__/WorkflowRelaySubscription.graphql";
+  workflowRelaySubscription$data,
+  workflowRelaySubscription as WorkflowRelaySubscriptionType,
+} from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { Box, ToggleButton } from "@mui/material";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
@@ -28,9 +28,9 @@ export default function SingleWorkflowView({
   tasknames,
 }: SingleWorkflowViewProps) {
   const [workflowData, setWorkflowData] =
-    React.useState<WorkflowRelaySubscription$data | null>(null);
+    React.useState<workflowRelaySubscription$data | null>(null);
 
-  const groupLessonConfig: GraphQLSubscriptionConfig<WorkflowRelaySubscriptionType> =
+  const subscriptionData: GraphQLSubscriptionConfig<WorkflowRelaySubscriptionType> =
     useMemo(
       () => ({
         subscription: workflowRelaySubscription,
@@ -38,17 +38,16 @@ export default function SingleWorkflowView({
           visit,
           name: workflowName,
         },
-        onNext: (res: WorkflowRelaySubscription$data | null) => {
-          console.log("xxxonNext")
-          setWorkflowData(res);
+        onNext: (res?: workflowRelaySubscription$data | null) => {
+          setWorkflowData(res ?? null);
         },
-        onError: (err: any) => {console.log("xxxonError")},
-        onCompleted: () => {console.log("xxxonCompleted")},
+        onError: () => {},
+        onCompleted: () => {},
       }),
       [],
     );
 
-  useSubscription(groupLessonConfig);
+  useSubscription(subscriptionData);
 
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
@@ -149,13 +148,15 @@ export default function SingleWorkflowView({
               CLEAR
             </ToggleButton>
           </Box>
-          <WorkflowRelay
-            workflowName={workflowData.workflow.name}
-            visit={workflowData.workflow.visit}
-            workflowLink
-            filledTaskName={filledTaskName}
-            expanded={true}
-          />
+          {workflowData && (
+            <WorkflowRelay
+              workflowName={workflowData.workflow.name}
+              visit={workflowData.workflow.visit}
+              workflowLink
+              filledTaskName={filledTaskName}
+              expanded={true}
+            />
+          )}
         </Box>
       </Box>
       {tasknames && (
@@ -164,7 +165,7 @@ export default function SingleWorkflowView({
           onArtifactHover={onArtifactHover}
         />
       )}
-      <WorkflowInfo workflow={workflowData.workflow} />
+      {workflowData && <WorkflowInfo workflow={workflowData.workflow} />}
     </>
   );
 }
