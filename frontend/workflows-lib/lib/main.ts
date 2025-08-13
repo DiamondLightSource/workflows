@@ -10,4 +10,5 @@ export { default as WorkflowsNavbar } from "./components/workflow/WorkflowsNavba
 export { default as PaginationControls } from "./components/common/PaginationControls";
 export { default as FileUploadButton } from "./components/template/controls/FileUploadButton";
 export { default as JsonFormsFileUploadRenderer } from "./components/template/jsonforms/JsonFormsFileUploadRenderer";
+export { default as WorkflowsTemplateFilterDrawer } from "./components/workflow/TemplateListFilterDrawer";
 export * from "./types";

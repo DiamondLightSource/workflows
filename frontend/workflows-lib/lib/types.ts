@@ -64,6 +64,10 @@ export interface WorkflowQueryFilter {
   workflowStatusFilter?: WorkflowStatusBool;
 }
 
+export interface WorkflowTemplatesFilter {
+  scienceGroup?: string;
+}
+
 export interface WorkflowStatusBool {
   pending?: boolean;
   running?: boolean;
