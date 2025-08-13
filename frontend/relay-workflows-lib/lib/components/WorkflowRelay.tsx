@@ -1,4 +1,4 @@
-import { useLazyLoadQuery } from "react-relay";
+import { graphql, useLazyLoadQuery, useSubscription } from "react-relay";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { Box } from "@mui/material";
@@ -6,11 +6,13 @@ import { TasksFlow, WorkflowAccordion } from "workflows-lib";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import type { WorkflowStatus } from "workflows-lib";
 import RetriggerWorkflow from "./RetriggerWorkflow";
-import React from "react";
-import { workflowRelayQuery as WorkflowRelayQueryType } from "../graphql/__generated__/workflowRelayQuery.graphql";
+import React, { useMemo } from "react";
+import { workflowRelaySubscription as WorkflowRelaySubscriptionType } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { useParams, useNavigate } from "react-router-dom";
 import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
-import { workflowRelayQuery } from "../graphql/workflowRelayQuery";
+import { workflowRelaySubscription } from "../graphql/workflowRelaySubscription.ts";
+import { GraphQLSubscriptionConfig } from "relay-runtime";
+import { WorkflowRelaySubscription$data } from "./__generated__/WorkflowRelaySubscription.graphql.ts";
 
 interface WorkflowRelayProps {
   visit: Visit;
@@ -21,6 +23,11 @@ interface WorkflowRelayProps {
   onChange?: () => void;
 }
 
+type inputType = {
+  visit: Visit,
+  name: String
+}
+
 const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   visit,
   workflowName,
@@ -29,20 +36,50 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   expanded,
   onChange,
 }) => {
-  const data = useLazyLoadQuery<WorkflowRelayQueryType>(workflowRelayQuery, {
+//   function useWorkflowRelaySubscription(
+//   input: inputType,
+// ) {
+//   const config: GraphQLSubscriptionConfig<WorkflowRelaySubscriptionType>= useMemo(() => ({
+//     subscription: workflowRelaySubscription,
+//     variables: input
+//   }), [input]);
+
+//   return useSubscription(config);
+//   }
+
+  const [workflowData, setWorkflowData] =
+    React.useState<WorkflowRelaySubscription$data | null>(null);
+
+  useSubscription<WorkflowRelaySubscriptionType>({
+    subscription: workflowRelaySubscription,
+    variables: {
     visit: visit,
     name: workflowName,
-  });
+    },
+    onNext: (response?: WorkflowRelaySubscription$data | null) => {
+      if (response) {
+        setWorkflowData(response);
+      }
+    },
+    onError: (error) => {
+      console.error("Subscription error:", error);
+    },
+  },
+    
+  );
 
   const { workflowName: workflowNameURL } = useParams<{
     workflowName: string;
   }>();
 
   const navigate = useNavigate();
+  // const data = useWorkflowRelaySubscription({
+  //   visit: visit,
+  //   name: workflowName,
+  //   })
+  const statusText = workflowData?.workflow.status?.__typename ?? "Unknown";
 
-  const statusText = data.workflow.status?.__typename ?? "Unknown";
-
-  const fetchedTasks = useFetchedTasks(data, visit, workflowName);
+  const fetchedTasks = useFetchedTasks(workflowData, visit, workflowName);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
 
   const onNavigate = React.useCallback(
