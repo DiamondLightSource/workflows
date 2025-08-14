@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { workflowRelayQuery$data } from "./graphql/__generated__/workflowRelayQuery.graphql";
-type WorkflowStatus = NonNullable<workflowRelayQuery$data["workflow"]["status"]>;
-type WorkflowStatusType = NonNullable<workflowRelayQuery$data["workflow"]["status"]>;
+type WorkflowStatusType = NonNullable<
+  workflowRelayQuery$data["workflow"]["status"]
+>;
 
 export const isWorkflowWithTasks = (status: WorkflowStatusType) => {
   return (
@@ -29,68 +30,6 @@ export function useClientSidePagination<T>(
     totalPages,
     paginatedItems,
   };
-}
-
-function hasTasks(
-  status: WorkflowStatus | null | undefined,
-): status is Extract<WorkflowStatus, { tasks: readonly unknown[] }> {
-  return !!status && "tasks" in status && Array.isArray(status.tasks);
-}
-
-export function workflowsAreEqual(
-  a: workflowRelayQuery$data["workflow"] | workflowRelayQuery$data["workflow"][],
-  b: workflowRelayQuery$data["workflow"] | workflowRelayQuery$data["workflow"][],
-): boolean {
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    return a.every((wfA, i) => workflowsAreEqual(wfA, b[i]));
-  }
-
-  if (!Array.isArray(a) && !Array.isArray(b)) {
-    const statusA = a.status;
-    const statusB = b.status;
-
-    if (!statusA || !statusB) return statusA === statusB;
-    if (statusA.__typename !== statusB.__typename) return false;
-
-    const hasTasksA = hasTasks(statusA);
-    const hasTasksB = hasTasks(statusB);
-
-    if (hasTasksA !== hasTasksB) return false;
-    if (!hasTasksA || !hasTasksB) return true;
-
-    const tasksA = statusA.tasks;
-    const tasksB = statusB.tasks;
-
-    if (tasksA.length !== tasksB.length) return false;
-
-    for (let i = 0; i < tasksA.length; i++) {
-      const taskA = tasksA[i];
-      const taskB = tasksB[i];
-
-      if (
-        taskA.id !== taskB.id ||
-        taskA.name !== taskB.name ||
-        taskA.status !== taskB.status ||
-        taskA.stepType !== taskB.stepType ||
-        taskA.depends.length !== taskB.depends.length ||
-        !taskA.depends.every((d, j) => d === taskB.depends[j]) ||
-        taskA.artifacts.length !== taskB.artifacts.length ||
-        !taskA.artifacts.every((a, j) => {
-          const bArt = taskB.artifacts[j];
-          return (
-            a.name === bArt.name &&
-            a.url === bArt.url &&
-            a.mimeType === bArt.mimeType
-          );
-        })
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }
-  return false;
 }
 
 export function updateWorkflowsState(
