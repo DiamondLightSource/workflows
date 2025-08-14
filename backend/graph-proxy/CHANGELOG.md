@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.8...graph-proxy@v0.1.9) (2025-08-14)
+
+
+### Features
+
+* **graph-proxy:** add template to the workflow filter schema ([50a0a6e](https://github.com/DiamondLightSource/workflows/commit/50a0a6e22c55b68c9da4b0d1e5d44ab9ead2197e))
+* **graph-proxy:** proof-of-concept total request counter ([735e12a](https://github.com/DiamondLightSource/workflows/commit/735e12a432cd0d681fcf1b83431d716e84126fd3))
+
+
+### Bug Fixes
+
+* **graph-proxy:** fix lifetime issue ([3a0dabc](https://github.com/DiamondLightSource/workflows/commit/3a0dabc0ff8d23d0907eb936ee2f266f5b3c09e8))
+* **graph-proxy:** remove parameter schema stitching ([9c52ad6](https://github.com/DiamondLightSource/workflows/commit/9c52ad6133b7847aee863fadf95264f2ed33920e))
+
 ## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.7...graph-proxy@v0.1.8) (2025-08-04)
 
 
