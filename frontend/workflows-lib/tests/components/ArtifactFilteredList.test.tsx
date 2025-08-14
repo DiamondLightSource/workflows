@@ -4,38 +4,53 @@ import "@testing-library/jest-dom";
 import { mockArtifacts } from "./data";
 
 describe("ArtifactFilteredList", () => {
-  it("renders all artifacts by default", () => {
+  it("renders all artifacts by default - ascending order by artifact name", () => {
     render(<ArtifactFilteredList artifactList={mockArtifacts} />);
-    expect(screen.getByText("image1.png")).toBeInTheDocument();
-    expect(screen.getByText("main.log")).toBeInTheDocument();
-    expect(screen.getByText("textfile.txt")).toBeInTheDocument();
-    expect(screen.getByText("image2.jpeg")).toBeInTheDocument();
+    const artifactElements = screen.getAllByRole("row").slice(1);
+    const artifactNames = artifactElements.map(
+      (el) => (el as HTMLTableRowElement).cells[0].textContent,
+    );
+    expect(artifactNames).toEqual([
+      "image1.png",
+      "image2.jpeg",
+      "main.log",
+      "textfile.txt",
+    ]);
   });
 
-  it('filters and displays only image artifacts when "IMAGES" filter is selected', () => {
+  it("sorts artifact by name in descending order", () => {
     render(<ArtifactFilteredList artifactList={mockArtifacts} />);
-    fireEvent.click(screen.getByLabelText("images"));
-    expect(screen.getByText("image1.png")).toBeInTheDocument();
-    expect(screen.getByText("image2.jpeg")).toBeInTheDocument();
-    expect(screen.queryByText("main.log")).not.toBeInTheDocument();
-    expect(screen.queryByText("textfile.txt")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("sort-name"));
+    const artifactElements = screen.getAllByRole("row").slice(1);
+    const artifactNames = artifactElements.map(
+      (el) => (el as HTMLTableRowElement).cells[0].textContent,
+    );
+    expect(artifactNames).toEqual([
+      "textfile.txt",
+      "main.log",
+      "image2.jpeg",
+      "image1.png",
+    ]);
   });
 
-  it('filters and displays only log artifacts when "LOG" filter is selected', () => {
+  it("sorts artifact by parent-task in ascending order", () => {
     render(<ArtifactFilteredList artifactList={mockArtifacts} />);
-    fireEvent.click(screen.getByLabelText("log"));
-    expect(screen.getByText("main.log")).toBeInTheDocument();
-    expect(screen.queryByText("image1.png")).not.toBeInTheDocument();
-    expect(screen.queryByText("textfile.txt")).not.toBeInTheDocument();
-    expect(screen.queryByText("image2.jpeg")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("sort-parent-task"));
+    const artifactElements = screen.getAllByRole("row").slice(1);
+    const artifactNames = artifactElements.map(
+      (el) => (el as HTMLTableRowElement).cells[1].textContent,
+    );
+    expect(artifactNames).toEqual(["task", "task1", "task2", "task3"]);
   });
 
-  it('filters and displays only text artifacts when "TEXT" filter is selected', () => {
+  it("sorts artifact by parent-task in descending order", () => {
     render(<ArtifactFilteredList artifactList={mockArtifacts} />);
-    fireEvent.click(screen.getByLabelText("text"));
-    expect(screen.getByText("main.log")).toBeInTheDocument();
-    expect(screen.getByText("textfile.txt")).toBeInTheDocument();
-    expect(screen.queryByText("image1.png")).not.toBeInTheDocument();
-    expect(screen.queryByText("image2.jpeg")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("sort-parent-task"));
+    fireEvent.click(screen.getByLabelText("sort-parent-task"));
+    const artifactElements = screen.getAllByRole("row").slice(1);
+    const artifactNames = artifactElements.map(
+      (el) => (el as HTMLTableRowElement).cells[1].textContent,
+    );
+    expect(artifactNames).toEqual(["task3", "task2", "task1", "task"]);
   });
 });
