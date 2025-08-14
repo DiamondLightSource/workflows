@@ -107,6 +107,11 @@ impl Workflow {
             .as_ref()
             .and_then(|template_ref| template_ref.name.as_deref())
     }
+
+    /// The workflow creator
+    async fn creator(&self) -> WorkflowCreator {
+        WorkflowCreator::from_argo_workflow_labels(&self.manifest.metadata.labels)
+    }
 }
 
 #[derive(Debug)]
@@ -712,6 +717,103 @@ impl WorkflowsQuery {
                 Edge::new(cursor, workflow)
             }));
         Ok(connection)
+    }
+}
+
+/// Information about the creator of a workflow.
+#[derive(Debug, Clone, SimpleObject, Eq, PartialEq)]
+struct WorkflowCreator {
+    /// An identifier unique to the creator of the workflow.
+    /// Typically this is the creator's Fed-ID.
+    creator_id: String,
+    /// A human-readable name of the creator.
+    /// Will be `null` if the name is not known.
+    creator_name: Option<String>,
+}
+
+impl WorkflowCreator {
+    fn new(creator_id: impl Into<String>, creator_name: Option<impl Into<String>>) -> Self {
+        Self {
+            creator_id: creator_id.into(),
+            creator_name: creator_name.map(|s| s.into()),
+        }
+    }
+
+    fn from_argo_workflow_labels(labels: &HashMap<String, String>) -> Self {
+        let creator_id = labels
+            .get("workflows.argoproj.io/creator-preferred-username")
+            .or_else(|| labels.get("workflows.argoproj.io/creator"))
+            .cloned()
+            .unwrap_or_default();
+
+        let creator_name = labels
+            .get("workflows.argoproj.io/creator-email")
+            .and_then(Self::parse_creator_name_from_email);
+
+        Self::new(creator_id, creator_name)
+    }
+
+    fn parse_creator_name_from_email(email: impl AsRef<str>) -> Option<String> {
+        Self::local_part_from_email(email)
+            .and_then(Self::format_email_local_part_as_human_readable_name)
+    }
+
+    fn local_part_from_email(email: impl AsRef<str>) -> Option<String> {
+        // For now, we will only expose the names of Diamond employees
+        // as they are all publically available in the staff directory
+        let email = email.as_ref();
+        if let Some(pos) = email.find(".at.diamond.ac.uk") {
+            Some(email[..pos].to_string())
+        } else {
+            None
+        }
+    }
+
+    fn format_email_local_part_as_human_readable_name(
+        localpart: impl AsRef<str>,
+    ) -> Option<String> {
+        let name_parts: Vec<String> = localpart
+            .as_ref()
+            .split(['.'])
+            .filter(|s| !s.is_empty())
+            .map(Self::uppercase_first_letter)
+            .map(Self::uppercase_first_letter_after_hypthen)
+            .collect();
+
+        if name_parts.is_empty() {
+            None
+        } else {
+            Some(name_parts.join(" "))
+        }
+    }
+
+    fn uppercase_first_letter(string: impl AsRef<str>) -> String {
+        let mut chars = string.as_ref().chars();
+        match chars.next() {
+            None => String::new(),
+            Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+        }
+    }
+
+    fn uppercase_first_letter_after_hypthen(string: impl AsRef<str>) -> String {
+        let string = string.as_ref();
+        let mut result = String::with_capacity(string.len());
+        let mut capitalize_next = false;
+
+        for c in string.chars() {
+            if capitalize_next {
+                result.push_str(&c.to_uppercase().to_string());
+                capitalize_next = false;
+            } else {
+                result.push(c);
+            }
+
+            if c == '-' {
+                capitalize_next = true;
+            }
+        }
+
+        result
     }
 }
 
@@ -1640,6 +1742,59 @@ mod tests {
                 "parameters": {
                     "memory": "10Gi",
                     "size": "1000"
+                }
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
+    async fn workflow_creator() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                   creator {{ creatorId, creatorName }}
+                }}
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert_async().await;
+        let expected_data = json!({
+            "workflow": {
+                "creator": {
+                    "creatorId": "enu43627",
+                    "creatorName": "Garry O-Donnell"
                 }
             }
         });
