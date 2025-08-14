@@ -9,5 +9,7 @@ export { default as WorkflowListFilterDrawer } from "./components/workflow/Workf
 export { default as WorkflowsNavbar } from "./components/workflow/WorkflowsNavbar";
 export { default as PaginationControls } from "./components/common/PaginationControls";
 export { default as FileUploadButton } from "./components/template/controls/FileUploadButton";
+export { default as ScanRangeInput } from "./components/template/controls/ScanRangeInput";
 export { default as JsonFormsFileUploadRenderer } from "./components/template/jsonforms/JsonFormsFileUploadRenderer";
+export { default as JsonFormsScanRangeRenderer } from "./components/template/jsonforms/JsonFormsScanRangeRenderer";
 export * from "./types";
