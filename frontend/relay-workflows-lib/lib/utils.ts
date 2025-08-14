@@ -1,8 +1,7 @@
 import { useState } from "react";
-import type { workflowFragment$data } from "./graphql/__generated__/workflowFragment.graphql";
-
-type WorkflowStatus = NonNullable<workflowFragment$data["status"]>;
-type WorkflowStatusType = NonNullable<workflowFragment$data["status"]>;
+import type { workflowRelayQuery$data } from "./graphql/__generated__/workflowRelayQuery.graphql";
+type WorkflowStatus = NonNullable<workflowRelayQuery$data["workflow"]["status"]>;
+type WorkflowStatusType = NonNullable<workflowRelayQuery$data["workflow"]["status"]>;
 
 export const isWorkflowWithTasks = (status: WorkflowStatusType) => {
   return (
@@ -39,8 +38,8 @@ function hasTasks(
 }
 
 export function workflowsAreEqual(
-  a: workflowFragment$data | workflowFragment$data[],
-  b: workflowFragment$data | workflowFragment$data[],
+  a: workflowRelayQuery$data["workflow"] | workflowRelayQuery$data["workflow"][],
+  b: workflowRelayQuery$data["workflow"] | workflowRelayQuery$data["workflow"][],
 ): boolean {
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
