@@ -24,5 +24,6 @@ replace_placeholder KEYCLOAK_URL
 replace_placeholder KEYCLOAK_REALM
 replace_placeholder KEYCLOAK_CLIENT
 replace_placeholder GRAPH_URL
+replace_placeholder GRAPH_WS_URL
 
 nginx -g 'daemon off;'

@@ -4,10 +4,27 @@ import {
   RecordSource,
   Store,
   FetchFunction,
+  SubscribeFunction,
+  GraphQLResponse,
+  Observable,
 } from "relay-runtime";
 import keycloak from "./keycloak";
+import { createClient } from "graphql-ws";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
+const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
+
+let kcinitPromise: Promise<boolean> | null = null;
+
+// needed to prevent repeated refresh of page when using subscriptions
+function ensureKeycloakInit(): Promise<boolean> {
+  if (!kcinitPromise) {
+    kcinitPromise = keycloak.init({
+      onLoad: "login-required",
+    });
+  }
+  return kcinitPromise;
+}
 
 keycloak.onTokenExpired = () => {
   console.log("JWT expired");
@@ -25,23 +42,9 @@ keycloak.onTokenExpired = () => {
     });
 };
 
-const kcinit = keycloak
-  .init({
-    onLoad: "login-required",
-  })
-  .then(
-    (auth) => {
-      console.info("Authenticated");
-      console.log("auth", auth);
-    },
-    () => {
-      console.error("Authentication failed");
-    },
-  );
-
 const fetchFn: FetchFunction = async (request, variables) => {
   if (!keycloak.authenticated) {
-    await kcinit;
+    await ensureKeycloakInit();
   }
 
   if (keycloak.token) {
@@ -66,11 +69,55 @@ const fetchFn: FetchFunction = async (request, variables) => {
   }
 };
 
-function createRelayEnvironment() {
-  return new Environment({
-    network: Network.create(fetchFn),
-    store: new Store(new RecordSource()),
-  });
-}
+const wsClient = createClient({
+  url: WS_ENDPOINT,
+  connectionParams: async () => {
+    if (!keycloak.authenticated) {
+      await ensureKeycloakInit();
+    }
+    return {
+      Authorization: `Bearer ${keycloak.token ?? ""}`,
+    };
+  },
+});
 
-export const RelayEnvironment = createRelayEnvironment();
+const subscribeFn: SubscribeFunction = (operation, variables) => {
+  return Observable.create((sink) => {
+    const cleanup = wsClient.subscribe(
+      {
+        operationName: operation.name,
+        query: operation.text ?? "",
+        variables,
+      },
+      {
+        next: (response) => {
+          const data = response.data;
+          if (data) {
+            sink.next({ data } as GraphQLResponse);
+          } else if (data == null) {
+            console.warn("Data is null:", response);
+          } else {
+            console.error("Subscription error response:", response);
+            sink.error(new Error("Subscription response missing data"));
+          }
+        },
+        error: sink.error.bind(sink),
+        complete: sink.complete.bind(sink),
+      },
+    );
+    return cleanup;
+  });
+};
+
+let RelayEnvironment: Environment | null = null;
+
+export async function getRelayEnvironment(): Promise<Environment> {
+  if (!RelayEnvironment) {
+    await ensureKeycloakInit();
+    RelayEnvironment = new Environment({
+      network: Network.create(fetchFn, subscribeFn),
+      store: new Store(new RecordSource()),
+    });
+  }
+  return RelayEnvironment;
+}
