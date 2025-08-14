@@ -3,6 +3,7 @@ configuration:
   keycloakRealm: master
   keycloakClient: workflows-dashboard
   graphUrl: https://workflows.diamond.ac.uk/graphql
+  graphWsUrl: wss://workflows.diamond.ac.uk/graphql/ws
   sourceDir: "/usr/share/nginx/html"
 
 image:

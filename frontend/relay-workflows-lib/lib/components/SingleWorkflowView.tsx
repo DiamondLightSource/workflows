@@ -1,15 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSubscription } from "react-relay";
+import { GraphQLSubscriptionConfig } from "relay-runtime";
+import { Box, ToggleButton } from "@mui/material";
+import { Visit } from "@diamondlightsource/sci-react-ui";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
+import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
+import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
 import WorkflowRelay from "./WorkflowRelay";
 import WorkflowInfo from "./WorkflowInfo";
-import { Visit } from "@diamondlightsource/sci-react-ui";
-import { workflowRelayQuery as WorkflowRelayQueryType } from "../graphql/__generated__/workflowRelayQuery.graphql";
-import { Box, ToggleButton } from "@mui/material";
-import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
-import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
-import { workflowRelayQuery } from "../graphql/workflowRelayQuery";
+import { workflowRelaySubscription } from "../graphql/workflowRelaySubscription";
+import {
+  workflowRelaySubscription$data,
+  workflowRelaySubscription as WorkflowRelaySubscriptionType,
+} from "../graphql/__generated__/workflowRelaySubscription.graphql";
 
 interface SingleWorkflowViewProps {
   visit: Visit;
@@ -22,14 +26,31 @@ export default function SingleWorkflowView({
   workflowName,
   tasknames,
 }: SingleWorkflowViewProps) {
-  const data = useLazyLoadQuery<WorkflowRelayQueryType>(workflowRelayQuery, {
-    visit: visit,
-    name: workflowName,
-  });
+  const [workflowData, setWorkflowData] =
+    React.useState<workflowRelaySubscription$data | null>(null);
+
+  const subscriptionData: GraphQLSubscriptionConfig<WorkflowRelaySubscriptionType> =
+    useMemo(
+      () => ({
+        subscription: workflowRelaySubscription,
+        variables: {
+          visit,
+          name: workflowName,
+        },
+        onNext: (res?: workflowRelaySubscription$data | null) => {
+          setWorkflowData(res ?? null);
+        },
+        onError: () => {},
+        onCompleted: () => {},
+      }),
+      [visit, workflowName],
+    );
+
+  useSubscription(subscriptionData);
 
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
-  const fetchedTasks = useFetchedTasks(data, visit, workflowName);
+  const fetchedTasks = useFetchedTasks(workflowData, visit, workflowName);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
   const [filledTaskName, setFilledTaskName] = useState<string | null>(null);
 
@@ -126,13 +147,15 @@ export default function SingleWorkflowView({
               CLEAR
             </ToggleButton>
           </Box>
-          <WorkflowRelay
-            workflowName={data.workflow.name}
-            visit={data.workflow.visit}
-            workflowLink
-            filledTaskName={filledTaskName}
-            expanded={true}
-          />
+          {workflowData && (
+            <WorkflowRelay
+              workflowName={workflowData.workflow.name}
+              visit={workflowData.workflow.visit}
+              workflowLink
+              filledTaskName={filledTaskName}
+              expanded={true}
+            />
+          )}
         </Box>
       </Box>
       {tasknames && (
@@ -141,7 +164,7 @@ export default function SingleWorkflowView({
           onArtifactHover={onArtifactHover}
         />
       )}
-      <WorkflowInfo workflow={data.workflow} />
+      {workflowData && <WorkflowInfo workflow={workflowData.workflow} />}
     </>
   );
 }

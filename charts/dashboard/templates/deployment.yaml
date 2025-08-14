@@ -60,6 +60,8 @@ spec:
               value: {{ .Values.configuration.keycloakClient }}
             - name: GRAPH_URL
               value: {{ .Values.configuration.graphUrl }}
+            - name: GRAPH_WS_URL
+              value: {{ .Values.configuration.graphWsUrl }}
             - name: SOURCE_DIR
               value: {{ .Values.configuration.sourceDir }}
           livenessProbe:
