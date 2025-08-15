@@ -56,7 +56,7 @@ export function useFetchedTasks(
 ): Task[] {
   const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (
       data &&
       data.workflow.status &&
@@ -79,6 +79,7 @@ export function useFetchedTasks(
         })),
       );
     }
+    console.log(data);
   }, [data, visit, workflowName]);
 
   return fetchedTasks;
