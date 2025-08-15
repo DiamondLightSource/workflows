@@ -1,6 +1,11 @@
 import { useState } from "react";
+
 import type { workflowRelayQuery$data } from "./graphql/__generated__/workflowRelayQuery.graphql";
+import { workflowRelaySubscription$data } from "./graphql/__generated__/workflowRelaySubscription.graphql";
 type WorkflowStatusType = NonNullable<
+  workflowRelayQuery$data["workflow"]["status"]
+>;
+type WorkflowStatus = NonNullable<
   workflowRelayQuery$data["workflow"]["status"]
 >;
 
@@ -30,6 +35,33 @@ export function useClientSidePagination<T>(
     totalPages,
     paginatedItems,
   };
+}
+
+function hasTasks(
+  status: WorkflowStatus | null | undefined,
+): status is Extract<WorkflowStatus, { tasks: readonly unknown[] }> {
+  return !!status && "tasks" in status && Array.isArray(status.tasks);
+}
+
+export function getNormalisedResponse(
+  response?: workflowRelaySubscription$data | null,
+): workflowRelaySubscription$data | null | undefined {
+  let normalised = response;
+  if (hasTasks(response?.workflow.status)) {
+    normalised = {
+      ...response,
+      workflow: {
+        ...response.workflow,
+        status: {
+          ...response.workflow.status,
+          tasks: [...response.workflow.status.tasks].sort((a, b) =>
+            a.name.localeCompare(b.name),
+          ),
+        },
+      },
+    };
+  }
+  return normalised;
 }
 
 export function updateWorkflowsState(
