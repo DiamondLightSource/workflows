@@ -21,7 +21,8 @@ use self::{
     workflows::WorkflowsQuery,
 };
 use async_graphql::{
-    InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder, SimpleObject,
+    parser::parse_query, InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder,
+    SimpleObject,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::extract::State;
@@ -30,6 +31,7 @@ use axum_extra::{
     TypedHeader,
 };
 use lazy_static::lazy_static;
+use opentelemetry::KeyValue;
 use std::fmt::Display;
 use workflow_templates::WorkflowTemplatesMutation;
 
@@ -64,13 +66,42 @@ pub async fn graphql_handler(
     auth_token_header: Option<TypedHeader<Authorization<Bearer>>>,
     request: GraphQLRequest,
 ) -> GraphQLResponse {
-    state.metrics_state.total_requests.add(1, &[]);
+    let query = request.into_inner();
+
+    if let Ok(query) = parse_query(&query.query) {
+        let operation = query.operations;
+
+        let operations = match operation {
+            async_graphql::parser::types::DocumentOperations::Single(operation) => {
+                vec![operation.node.ty]
+            }
+            async_graphql::parser::types::DocumentOperations::Multiple(operation) => operation
+                .iter()
+                .map(|operation| operation.1.node.ty)
+                .collect(),
+        };
+        for operation in operations {
+            match operation {
+                async_graphql::parser::types::OperationType::Query => state
+                    .metrics_state
+                    .total_requests
+                    .add(1, &[KeyValue::new("request_type", "query")]),
+                async_graphql::parser::types::OperationType::Mutation => state
+                    .metrics_state
+                    .total_requests
+                    .add(1, &[KeyValue::new("request_type", "mutation")]),
+                async_graphql::parser::types::OperationType::Subscription => {}
+            };
+        }
+    } else {
+        state
+            .metrics_state
+            .total_requests
+            .add(1, &[KeyValue::new("request_type", "unparseable")]);
+    };
+
     let auth_token = auth_token_header.map(|header| header.0);
-    state
-        .schema
-        .execute(request.into_inner().data(auth_token))
-        .await
-        .into()
+    state.schema.execute(query.data(auth_token)).await.into()
 }
 
 lazy_static! {
