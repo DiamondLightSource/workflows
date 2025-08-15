@@ -188,12 +188,15 @@ fn setup_router(
             .post(graphql_handler)
             .with_state(RouterState {
                 schema: schema.clone(),
-                metrics_state,
+                metrics_state: metrics_state.clone(),
             }),
         )
         .route_service(
             &socket_path,
-            get_service(GraphQLSubscription::new(schema.clone())),
+            get_service(GraphQLSubscription::new(
+                schema.clone(),
+                metrics_state.clone(),
+            )),
         )
         .with_state(schema.clone())
         .layer(

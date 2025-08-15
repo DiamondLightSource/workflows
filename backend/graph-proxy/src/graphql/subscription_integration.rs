@@ -41,7 +41,10 @@ use futures_util::{
     stream::{SplitSink, SplitStream},
     Sink, SinkExt, Stream, StreamExt,
 };
+use opentelemetry::KeyValue;
 use tower_service::Service;
+
+use crate::metrics::MetricsState;
 
 /// A GraphQL protocol extractor.
 ///
@@ -73,6 +76,7 @@ where
 /// A GraphQL subscription service.
 pub struct GraphQLSubscription<E> {
     executor: E,
+    metrics_state: MetricsState,
 }
 
 impl<E> Clone for GraphQLSubscription<E>
@@ -82,6 +86,7 @@ where
     fn clone(&self) -> Self {
         Self {
             executor: self.executor.clone(),
+            metrics_state: self.metrics_state.clone(),
         }
     }
 }
@@ -91,8 +96,11 @@ where
     E: Executor,
 {
     /// Create a GraphQL subscription service.
-    pub fn new(executor: E) -> Self {
-        Self { executor }
+    pub fn new(executor: E, metrics_state: MetricsState) -> Self {
+        Self {
+            executor,
+            metrics_state,
+        }
     }
 }
 
@@ -111,8 +119,10 @@ where
 
     fn call(&mut self, req: Request<B>) -> Self::Future {
         let executor = self.executor.clone();
+        let metrics = self.metrics_state.clone();
 
         Box::pin(async move {
+            let metrics = metrics;
             let (mut parts, _body) = req.into_parts();
 
             let protocol = match GraphQLProtocol::from_request_parts(&mut parts, &()).await {
@@ -126,6 +136,9 @@ where
             };
 
             let executor = executor.clone();
+            metrics
+                .total_requests
+                .add(1, &[KeyValue::new("request_type", "subscription")]);
 
             let resp = upgrade
                 .protocols(ALL_WEBSOCKET_PROTOCOLS)
