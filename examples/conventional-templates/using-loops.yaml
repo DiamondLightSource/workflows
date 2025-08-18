@@ -3,7 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: looping-through-inputs
   labels:
-    workflows.diamond.ac.uk/science-group: workflows-examples
+    workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: using-loops
     workflows.argoproj.io/description: |
