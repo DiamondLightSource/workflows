@@ -7,9 +7,10 @@ mod workflow_templates;
 /// GraphQL operations related to workflows
 mod workflows;
 
+/// Workflow/Template filters
+mod filters;
 /// GraphQL operations requiring subscriptions
 mod subscription;
-
 /// Axum-specific websocket handling to support subscriptions
 pub mod subscription_integration;
 
