@@ -3,7 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: conditional-steps
   labels:
-    workflows.diamond.ac.uk/science-group: workflows-examples
+    workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: conditional-steps
     workflows.argoproj.io/description: |

@@ -3,7 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: numpy-benchmark
   labels:
-    workflows.diamond.ac.uk/science-group: workflows-examples
+    workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: Numpy Benchmark
     workflows.argoproj.io/description: |

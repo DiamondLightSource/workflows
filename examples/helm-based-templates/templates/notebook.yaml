@@ -2,6 +2,8 @@ apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
   name: notebook
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
 spec:
   entrypoint: notebook
   volumeClaimTemplates:

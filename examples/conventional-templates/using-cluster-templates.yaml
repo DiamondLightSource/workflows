@@ -3,7 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: using-cluster-templates
   labels:
-    workflows.diamond.ac.uk/science-group: workflows-examples
+    workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: using-cluster-templates
     workflows.argoproj.io/description: |

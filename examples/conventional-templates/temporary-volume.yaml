@@ -3,7 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: mount-tmpdir
   labels:
-    workflows.diamond.ac.uk/science-group: workflows-examples
+    workflows.diamond.ac.uk/science-group-examples: "true"
 spec:
   entrypoint: workflow-entry
   volumeClaimTemplates:
