@@ -120,7 +120,7 @@ jobs:
           path: merged-artifacts
 
       - name: Upload Merged Artifact
-        uses: actions/upload-pages-artifact@v3.0.1
+        uses: actions/upload-pages-artifact@v4.0.0
         with:
           path: merged-artifacts
 
