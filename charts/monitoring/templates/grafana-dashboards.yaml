@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: {{ .Release.Namespace }}
+data:
+  {{ (.Files.Glob "grafana-dashboards/*.json").AsConfig | nindent 2 }}
