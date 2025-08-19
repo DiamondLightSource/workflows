@@ -36,6 +36,8 @@ argo-workflows:
     workflowDefaults:
       spec:
         serviceAccountName: argo-workflow
+        ttlStrategy:
+          secondsAfterCompletion: 300
   server:
     replicas: 3
     authModes: ["client"]
