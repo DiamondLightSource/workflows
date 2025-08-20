@@ -126,3 +126,7 @@ export type ArtifactSortType = {
   name: "name" | "parentTask";
   order: boolean;
 };
+
+export type Tester {
+  name: string;
+}
