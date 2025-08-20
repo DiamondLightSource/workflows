@@ -188,12 +188,15 @@ fn setup_router(
             .post(graphql_handler)
             .with_state(RouterState {
                 schema: schema.clone(),
-                metrics_state,
+                metrics_state: metrics_state.clone(),
             }),
         )
         .route_service(
             &socket_path,
-            get_service(GraphQLSubscription::new(schema.clone())),
+            get_service(GraphQLSubscription::new(
+                schema.clone(),
+                metrics_state.clone(),
+            )),
         )
         .with_state(schema.clone())
         .layer(
@@ -208,6 +211,9 @@ fn setup_router(
 fn append_to_path(base: &str, extension: &str) -> String {
     let clean_base = base.trim_matches('/');
     let clean_extension = extension.trim_matches('/');
+    if clean_base.is_empty() {
+        return format!("/{clean_extension}");
+    }
     format!("/{clean_base}/{clean_extension}")
 }
 
