@@ -1,13 +1,14 @@
-name: 'Auto Assign'
+name: "Auto Assign"
 on:
   pull_request:
     types: [opened]
+    branches-ignore:
+      - "release-please--**"
+      - "dependabot/**"
 
 jobs:
   add-reviews:
     runs-on: ubuntu-latest
-    if: |
-      !contains(['dependabot', 'dls-release-please'], github.event.pull_request.user.login)
     steps:
       - uses: kentaro-m/auto-assign-action@v2.0.0
         with:
