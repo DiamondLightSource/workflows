@@ -2,6 +2,9 @@ name: 'Auto Assign'
 on:
   pull_request:
     types: [opened]
+    branches-ignore:
+      - 'release-please--**'
+      - 'dependabot/**'
 
 jobs:
   add-reviews:
