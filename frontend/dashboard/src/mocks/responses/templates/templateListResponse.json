@@ -1,0 +1,202 @@
+{
+  "workflowTemplates": {
+    "nodes": [
+      {
+        "name": "conditional-steps",
+        "description": "Run steps based on conditions from previous outputs.\n",
+        "title": "conditional-steps",
+        "maintainer": "example-manifests-group",
+        "repository": "https://github.com/DiamondLightSource/workflows"
+      },
+      {
+        "name": "e02-auto-mib2x",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-e02-group",
+        "repository": null
+      },
+      {
+        "name": "e02-mib2x",
+        "description": "Convert MIB file to hdf5/hspy files\n",
+        "title": "ePSIC mib conversion",
+        "maintainer": "imaging-e02-group",
+        "repository": null
+      },
+      {
+        "name": "httomo-cor-sweep",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-httomo-group",
+        "repository": null
+      },
+      {
+        "name": "httomo-gpu-job",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-httomo-group",
+        "repository": null
+      },
+      {
+        "name": "looping-through-inputs",
+        "description": "Use script step to transform inputs and dynamically create workflow steps.\n",
+        "title": "using-loops",
+        "maintainer": "example-manifests-group",
+        "repository": "https://github.com/DiamondLightSource/workflows"
+      },
+      {
+        "name": "marimo-uv",
+        "description": "This is an example demo-ing the marimo with uv setup\n",
+        "title": "marimo-uv",
+        "maintainer": "spectroscopy-bluesky-group",
+        "repository": null
+      },
+      {
+        "name": "mmg-test-notebook",
+        "description": null,
+        "title": null,
+        "maintainer": "magnetic-materials-group",
+        "repository": null
+      },
+      {
+        "name": "mmg-test-python",
+        "description": null,
+        "title": null,
+        "maintainer": "magnetic-materials-group",
+        "repository": null
+      },
+      {
+        "name": "mount-tmpdir",
+        "description": null,
+        "title": null,
+        "maintainer": "example-manifests-group",
+        "repository": null
+      },
+      {
+        "name": "msmapper-notebook",
+        "description": "Runs the msmapper program to re-map detector images\nfrom i16 NeXus files into reciprocal lattice units.\n",
+        "title": "Reciprocal Space Mapper",
+        "maintainer": "magnetic-materials-group",
+        "repository": "https://github.com/DiamondLightSource/magnetic-materials-workflows"
+      },
+      {
+        "name": "notebook",
+        "description": null,
+        "title": null,
+        "maintainer": "example-helm-group",
+        "repository": null
+      },
+      {
+        "name": "notebook-with-input",
+        "description": null,
+        "title": null,
+        "maintainer": "example-helm-group",
+        "repository": null
+      },
+      {
+        "name": "numpy-benchmark",
+        "description": "Runs a numpy script in a python container.\nThe script finds the normal of the dot product of two random matrices.\nMatrix sizes are specified by the input parameter \"size\".\n",
+        "title": "Numpy Benchmark",
+        "maintainer": "example-manifests-group",
+        "repository": "https://github.com/DiamondLightSource/workflows"
+      },
+      {
+        "name": "nxstacker",
+        "description": "nxstacker is an utility to stack projections from different types of experiments to produce NeXus-compliance file(s).\n",
+        "title": "nxstacker",
+        "maintainer": "imaging-nxstacker-group",
+        "repository": null
+      },
+      {
+        "name": "ptycho-tomo-job",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-i14-group",
+        "repository": null
+      },
+      {
+        "name": "ptypy-cpu-job",
+        "description": "Runs a PtyPy reconstruction job inside a container.\n",
+        "title": "PtyPy CPU Job Submitter",
+        "maintainer": "imaging-ptypy-group",
+        "repository": null
+      },
+      {
+        "name": "ptypy-cpu-moonflower-benchmark",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-ptypy-group",
+        "repository": null
+      },
+      {
+        "name": "ptypy-gpu-job",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-ptypy-group",
+        "repository": null
+      },
+      {
+        "name": "ptypy-gpu-moonflower-benchmark",
+        "description": null,
+        "title": null,
+        "maintainer": "imaging-ptypy-group",
+        "repository": null
+      },
+      {
+        "name": "sin-simulate-artifact",
+        "description": "Plots a sin curve for a given input.\n",
+        "title": "Away Day",
+        "maintainer": "away-day-group",
+        "repository": null
+      },
+      {
+        "name": "sin-simulate-boilerplate",
+        "description": "Plots a sin curve for a given input.\n",
+        "title": "Away Day",
+        "maintainer": "away-day-group",
+        "repository": null
+      },
+      {
+        "name": "sin-simulate-init",
+        "description": "Plots a sin curve for a given input.\n",
+        "title": "Away Day",
+        "maintainer": "away-day-group",
+        "repository": null
+      },
+      {
+        "name": "sin-simulate-schema",
+        "description": "Plots a sin curve for a given input.\n",
+        "title": "Away Day",
+        "maintainer": "away-day-group",
+        "repository": null
+      },
+      {
+        "name": "sin-simulate-tmp-vol",
+        "description": "Plots a sin curve for a given input.\n",
+        "title": "Away Day",
+        "maintainer": "away-day-group",
+        "repository": null
+      },
+      {
+        "name": "using-cluster-templates",
+        "description": "Use pre-exisiting cluster-workflows as steps in your workflow.\n",
+        "title": "using-cluster-templates",
+        "maintainer": "example-manifests-group",
+        "repository": "https://github.com/DiamondLightSource/workflows"
+      },
+      {
+        "name": "visr",
+        "description": "Data processing for the Visible Light Spectroscopy beamline (ViSR).\n",
+        "title": "visr",
+        "maintainer": "visr-group",
+        "repository": null
+      },
+      {
+        "name": "xas-notebook",
+        "description": null,
+        "title": null,
+        "maintainer": "magnetic-materials-group",
+        "repository": null
+      }
+    ]
+  }
+}

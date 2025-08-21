@@ -1,0 +1,54 @@
+{
+  "name": "fallback",
+  "maintainer": "example-manifests-group",
+  "title": "mock-template",
+  "description": "Use script step to transform inputs and dynamically create workflow steps.\n",
+  "arguments": {
+    "properties": {
+      "number": {
+        "default": 5,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "start": {
+        "default": 2,
+        "type": "integer"
+      },
+      "stop": {
+        "default": 10,
+        "type": "integer"
+      }
+    },
+    "required": ["number", "start", "stop"],
+    "type": "object"
+  },
+  "uiSchema": {
+    "type": "VerticalLayout",
+    "elements": [
+      {
+        "type": "Control",
+        "scope": "#/properties/start",
+        "label": "Start",
+        "options": null,
+        "rule": null
+      },
+      {
+        "type": "Control",
+        "scope": "#/properties/stop",
+        "label": "Matrix Size",
+        "options": null,
+        "rule": null
+      },
+      {
+        "type": "Control",
+        "scope": "#/properties/number",
+        "label": "Number of outputs",
+        "options": null,
+        "rule": null
+      }
+    ],
+    "options": null,
+    "rule": null
+  },
+  "repository": "https://github.com/DiamondLightSource/workflows"
+}

@@ -1,0 +1,42 @@
+{
+  "name": "sin-simulate-artifact-first",
+  "visit": {
+    "proposalCode": "mg",
+    "proposalNumber": 36964,
+    "number": 1
+  },
+  "templateRef": "sin-simulate-artifact",
+  "parameters": {
+    "stop": "10",
+    "step": "1",
+    "start": "0"
+  },
+  "status": {
+    "__typename": "WorkflowSucceededStatus",
+    "startTime": "2025-08-19T09:47:26+00:00",
+    "endTime": "2025-08-19T09:47:58+00:00",
+    "message": null,
+    "tasks": [
+      {
+        "id": "sin-simulate-artifact-first",
+        "name": "sin-simulate-artifact-first",
+        "status": "SUCCEEDED",
+        "depends": [],
+        "dependencies": [],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "figure.png",
+            "url": "",
+            "mimeType": "image/png"
+          },
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      }
+    ]
+  }
+}
