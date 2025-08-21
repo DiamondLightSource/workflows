@@ -37,6 +37,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 }) => {
   const [workflowData, setWorkflowData] =
     React.useState<workflowRelaySubscription$data | null>(null);
+  const workflowHashRef = React.useRef("");
 
   useSubscription<WorkflowRelaySubscriptionType>({
     subscription: workflowRelaySubscription,
@@ -46,11 +47,12 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
     },
     onNext: (response?: workflowRelaySubscription$data | null) => {
       const normalised = getNormalisedResponse(response);
-      if (
-        normalised &&
-        stringify(normalised.workflow) !== stringify(workflowData?.workflow)
-      ) {
-        setWorkflowData(normalised);
+      if (normalised) {
+        const newHash = stringify(normalised.workflow);
+        if (newHash !== workflowHashRef.current) {
+          setWorkflowData(normalised);
+          workflowHashRef.current = newHash;
+        }
       }
     },
     onError: (error) => {
