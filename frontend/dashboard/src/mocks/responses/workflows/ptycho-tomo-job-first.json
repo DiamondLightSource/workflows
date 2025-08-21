@@ -1,0 +1,138 @@
+{
+  "name": "ptycho-tomo-job-first",
+  "visit": {
+    "proposalCode": "mg",
+    "proposalNumber": 36964,
+    "number": 1
+  },
+  "templateRef": "ptycho-tomo-job",
+  "parameters": {},
+  "status": {
+    "__typename": "WorkflowSucceededStatus",
+    "startTime": "2025-08-22T10:27:18+00:00",
+    "endTime": "2025-08-22T10:28:12+00:00",
+    "message": null,
+    "tasks": [
+      {
+        "id": "ptycho-tomo-job-first-2462835579",
+        "name": "ptycho-recons-2",
+        "status": "SUCCEEDED",
+        "depends": ["ptycho-tomo-job-first-2539189859"],
+        "dependencies": ["ptycho-tomo-job-first-670375061"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "ptycho-tomo-job-first-620042204",
+        "name": "post-processing-1",
+        "status": "SUCCEEDED",
+        "depends": ["ptycho-tomo-job-first-2479613198"],
+        "dependencies": ["ptycho-tomo-job-first-1048220977"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "ptycho-tomo-job-first-2479613198",
+        "name": "ptycho-recons-1",
+        "status": "SUCCEEDED",
+        "depends": ["ptycho-tomo-job-first-2539189859"],
+        "dependencies": ["ptycho-tomo-job-first-620042204"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "ptycho-tomo-job-first-3788201106",
+        "name": "tomography",
+        "status": "SUCCEEDED",
+        "depends": ["ptycho-tomo-job-first-1048220977"],
+        "dependencies": [],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "ptycho-tomo-job-first",
+        "name": "ptycho-tomo-job-first",
+        "status": "SUCCEEDED",
+        "depends": [],
+        "dependencies": ["ptycho-tomo-job-first-2539189859"],
+        "stepType": "DAG",
+        "artifacts": []
+      },
+      {
+        "id": "ptycho-tomo-job-first-1048220977",
+        "name": "align",
+        "status": "SUCCEEDED",
+        "depends": [
+          "ptycho-tomo-job-first-620042204",
+          "ptycho-tomo-job-first-670375061"
+        ],
+        "dependencies": ["ptycho-tomo-job-first-3788201106"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "ptycho-tomo-job-first-2539189859",
+        "name": "create-mask",
+        "status": "SUCCEEDED",
+        "depends": ["ptycho-tomo-job-first"],
+        "dependencies": [
+          "ptycho-tomo-job-first-2462835579",
+          "ptycho-tomo-job-first-2479613198"
+        ],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "ptycho-tomo-job-first-670375061",
+        "name": "post-processing-2",
+        "status": "SUCCEEDED",
+        "depends": ["ptycho-tomo-job-first-2462835579"],
+        "dependencies": ["ptycho-tomo-job-first-1048220977"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      }
+    ]
+  }
+}
