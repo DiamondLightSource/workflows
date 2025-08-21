@@ -7,7 +7,8 @@ jobs:
   add-reviews:
     runs-on: ubuntu-latest
     if: |
-      !contains(['dependabot', 'dls-release-please'], github.event.pull_request.user.login)
+      !startsWith(github.head_ref, 'release-please--') &&
+      !startsWith(github.head_ref, 'dependabot/')
     steps:
       - uses: kentaro-m/auto-assign-action@v2.0.0
         with:
