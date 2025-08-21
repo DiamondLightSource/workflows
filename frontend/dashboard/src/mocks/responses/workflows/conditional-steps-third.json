@@ -1,0 +1,89 @@
+{
+  "name": "conditional-steps-third",
+  "visit": {
+    "proposalCode": "mg",
+    "proposalNumber": 36964,
+    "number": 1
+  },
+  "templateRef": "conditional-steps",
+  "parameters": {},
+  "status": {
+    "__typename": "WorkflowSucceededStatus",
+    "startTime": "2025-08-19T09:45:55+00:00",
+    "endTime": "2025-08-19T09:46:26+00:00",
+    "message": null,
+    "tasks": [
+      {
+        "id": "conditional-steps-third-1746857061",
+        "name": "greater-than-5",
+        "status": "SKIPPED",
+        "depends": ["conditional-steps-third-3177968324"],
+        "dependencies": [],
+        "stepType": "Skipped",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-third-3903486903",
+        "name": "complex-condition",
+        "status": "SKIPPED",
+        "depends": ["conditional-steps-third-3177968324"],
+        "dependencies": [],
+        "stepType": "Skipped",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-third",
+        "name": "conditional-steps-third",
+        "status": "SUCCEEDED",
+        "depends": [],
+        "dependencies": ["conditional-steps-third-3177968324"],
+        "stepType": "DAG",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-third-3320442045",
+        "name": "even",
+        "status": "SKIPPED",
+        "depends": ["conditional-steps-third-3177968324"],
+        "dependencies": [],
+        "stepType": "Skipped",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-third-3545401330",
+        "name": "less-than-5",
+        "status": "SUCCEEDED",
+        "depends": ["conditional-steps-third-3177968324"],
+        "dependencies": [],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "conditional-steps-third-3177968324",
+        "name": "pick-a-number",
+        "status": "SUCCEEDED",
+        "depends": ["conditional-steps-third"],
+        "dependencies": [
+          "conditional-steps-third-3903486903",
+          "conditional-steps-third-3320442045",
+          "conditional-steps-third-1746857061",
+          "conditional-steps-third-3545401330"
+        ],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      }
+    ]
+  }
+}

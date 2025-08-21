@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "mock": "vite --mode mock",
     "build": "relay-compiler --validate && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "keycloak-js": "^26.2.0",
+    "msw": "^2.10.5",
     "react-relay": "20.1.1",
     "react-router-dom": "^7.8.2",
     "relay-workflows-lib": "*",
@@ -26,5 +28,10 @@
   "peerDependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "conditional-steps",
+  "maintainer": "example-manifests-group",
+  "title": "conditional-steps",
+  "description": "Run steps based on conditions from previous outputs.\n",
+  "arguments": {
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "uiSchema": null,
+  "repository": "https://github.com/DiamondLightSource/workflows"
+}

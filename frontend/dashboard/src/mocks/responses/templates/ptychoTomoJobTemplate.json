@@ -1,0 +1,13 @@
+{
+  "name": "ptycho-tomo-job",
+  "maintainer": "imaging-i14-group",
+  "title": null,
+  "description": null,
+  "arguments": {
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "uiSchema": null,
+  "repository": null
+}

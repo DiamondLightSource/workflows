@@ -47,16 +47,25 @@ const router = createBrowserRouter([
   },
 ]);
 
+async function startMockingIfConfigured() {
+  if (import.meta.env.VITE_ENABLE_MOCKING === "true") {
+    const { worker } = await import("./mocks/browser");
+    return worker.start();
+  }
+}
+
 const root = createRoot(document.getElementById("root") as Element);
 
-void getRelayEnvironment().then((environment) => {
-  root.render(
-    <RelayEnvironmentProvider environment={environment}>
-      <StrictMode>
-        <ThemeProvider theme={DiamondTheme} defaultMode="light">
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </StrictMode>
-    </RelayEnvironmentProvider>,
-  );
+void startMockingIfConfigured().then(() => {
+  void getRelayEnvironment().then((environment) => {
+    root.render(
+      <RelayEnvironmentProvider environment={environment}>
+        <StrictMode>
+          <ThemeProvider theme={DiamondTheme} defaultMode="light">
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </StrictMode>
+      </RelayEnvironmentProvider>,
+    );
+  });
 });

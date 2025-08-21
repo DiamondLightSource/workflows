@@ -1,0 +1,57 @@
+{
+  "name": "mount-tmpdir-first",
+  "visit": {
+    "proposalCode": "mg",
+    "proposalNumber": 36964,
+    "number": 1
+  },
+  "templateRef": "mount-tmpdir",
+  "parameters": {},
+  "status": {
+    "__typename": "WorkflowSucceededStatus",
+    "startTime": "2025-08-19T09:49:41+00:00",
+    "endTime": "2025-08-19T09:50:12+00:00",
+    "message": null,
+    "tasks": [
+      {
+        "id": "mount-tmpdir-first-2996578215",
+        "name": "read-shared-file",
+        "status": "SUCCEEDED",
+        "depends": ["mount-tmpdir-first-1553540662"],
+        "dependencies": [],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "mount-tmpdir-first-1553540662",
+        "name": "say-hello",
+        "status": "SUCCEEDED",
+        "depends": ["mount-tmpdir-first"],
+        "dependencies": ["mount-tmpdir-first-2996578215"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "mount-tmpdir-first",
+        "name": "mount-tmpdir-first",
+        "status": "SUCCEEDED",
+        "depends": [],
+        "dependencies": ["mount-tmpdir-first-1553540662"],
+        "stepType": "DAG",
+        "artifacts": []
+      }
+    ]
+  }
+}

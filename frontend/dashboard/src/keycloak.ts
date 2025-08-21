@@ -1,12 +1,19 @@
 import Keycloak from "keycloak-js";
 
-//Keycloak init options
-const initOptions = {
-  url: import.meta.env.VITE_KEYCLOAK_URL,
-  realm: import.meta.env.VITE_KEYCLOAK_REALM,
-  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT,
-};
+export async function getKeycloak() {
+  const isMocking = import.meta.env.VITE_ENABLE_MOCKING === "true";
 
-const keycloak = new Keycloak(initOptions);
+  if (isMocking) {
+    // only import when mocking
+    const mockKeycloak = await import("./mocks/mockKeycloak").then(
+      (mod) => mod.default,
+    );
+    return mockKeycloak;
+  }
 
-export default keycloak;
+  return new Keycloak({
+    url: import.meta.env.VITE_KEYCLOAK_URL,
+    realm: import.meta.env.VITE_KEYCLOAK_REALM,
+    clientId: import.meta.env.VITE_KEYCLOAK_CLIENT,
+  });
+}

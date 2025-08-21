@@ -1,0 +1,13 @@
+{
+  "name": "notebook",
+  "maintainer": "example-helm-group",
+  "title": null,
+  "description": null,
+  "arguments": {
+    "properties": {},
+    "required": [],
+    "type": "object"
+  },
+  "uiSchema": null,
+  "repository": null
+}

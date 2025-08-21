@@ -8,20 +8,27 @@ import {
   GraphQLResponse,
   Observable,
 } from "relay-runtime";
-import keycloak from "./keycloak";
+import { getKeycloak } from "./keycloak";
 import { createClient } from "graphql-ws";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
+
+const keycloak = await getKeycloak();
 
 let kcinitPromise: Promise<boolean> | null = null;
 
 // needed to prevent repeated refresh of page when using subscriptions
 function ensureKeycloakInit(): Promise<boolean> {
   if (!kcinitPromise) {
-    kcinitPromise = keycloak.init({
-      onLoad: "login-required",
-    });
+    kcinitPromise = keycloak
+      .init({
+        onLoad: "login-required",
+      })
+      .catch((err: unknown) => {
+        console.error("Keycloak init failed", err);
+        return false;
+      });
   }
   return kcinitPromise;
 }
