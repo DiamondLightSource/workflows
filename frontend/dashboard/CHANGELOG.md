@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.8...dashboard@v0.1.9) (2025-08-22)
+
+
+### Features
+
+* **frontend:** add help and report links to dashboard ([e18d177](https://github.com/DiamondLightSource/workflows/commit/e18d177466c03ea69fff1bd75cdb91a5833ec611))
+* **frontend:** add subscriptions to react flow views ([d756203](https://github.com/DiamondLightSource/workflows/commit/d7562037513f423c1108e5c0d4935b940a0d7a69))
+* **frontend:** improve dashboard cards ([c10c142](https://github.com/DiamondLightSource/workflows/commit/c10c142f9c6156838480d26a39176a29ec49871e))
+* **frontend:** remove dev links from dashboard ([7b3b5ff](https://github.com/DiamondLightSource/workflows/commit/7b3b5ffd1a251ea91704c3b7e7ac55ee82ec7680))
+* **frontend:** store instrumentSessionID in localStorage ([3efcfc6](https://github.com/DiamondLightSource/workflows/commit/3efcfc6e4ac734779a231ea431e5a1284cefc5bf))
+
 ## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.7...dashboard@v0.1.8) (2025-08-06)
 
 
