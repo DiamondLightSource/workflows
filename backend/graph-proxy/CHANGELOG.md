@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.9...graph-proxy@v0.1.10) (2025-08-22)
+
+
+### Features
+
+* **graph-proxy:** update science-group filter semantics ([237b1aa](https://github.com/DiamondLightSource/workflows/commit/237b1aa47c93b724ee3fa5f1724ea365fb350605))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.8...graph-proxy@v0.1.9) (2025-08-14)
 
 
