@@ -75,8 +75,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
-    const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
-    sortedTasks.forEach((task) => {
+    tasks.forEach((task) => {
       if (
         !nodes.some((existingNode) => existingNode.id === task.id) &&
         !isRedundantStep(task)

@@ -15,6 +15,8 @@ import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
 import { workflowRelaySubscription } from "../graphql/workflowRelaySubscription.ts";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { workflowRelaySubscription as WorkflowRelaySubscriptionType } from "../graphql/__generated__/workflowRelaySubscription.graphql";
+import { getNormalisedResponse } from "../utils.ts";
+import stringify from "fast-json-stable-stringify";
 
 interface WorkflowRelayProps {
   visit: Visit;
@@ -35,6 +37,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
 }) => {
   const [workflowData, setWorkflowData] =
     React.useState<workflowRelaySubscription$data | null>(null);
+  const workflowHashRef = React.useRef("");
 
   useSubscription<WorkflowRelaySubscriptionType>({
     subscription: workflowRelaySubscription,
@@ -43,8 +46,13 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
       name: workflowName,
     },
     onNext: (response?: workflowRelaySubscription$data | null) => {
-      if (response) {
-        setWorkflowData(response);
+      const normalised = getNormalisedResponse(response);
+      if (normalised) {
+        const newHash = stringify(normalised.workflow);
+        if (newHash !== workflowHashRef.current) {
+          setWorkflowData(normalised);
+          workflowHashRef.current = newHash;
+        }
       }
     },
     onError: (error) => {
@@ -58,6 +66,7 @@ const WorkflowRelay: React.FC<WorkflowRelayProps> = ({
   const navigate = useNavigate();
   const statusText = workflowData?.workflow.status?.__typename ?? "Unknown";
   const fetchedTasks = useFetchedTasks(workflowData, visit, workflowName);
+
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
 
   const onNavigate = React.useCallback(
