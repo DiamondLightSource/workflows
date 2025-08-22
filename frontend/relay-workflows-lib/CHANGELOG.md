@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.5...relay-workflows-lib@v0.1.6) (2025-08-22)
+
+
+### Features
+
+* **frontend:** add subscriptions to react flow views ([d756203](https://github.com/DiamondLightSource/workflows/commit/d7562037513f423c1108e5c0d4935b940a0d7a69))
+* **frontend:** button to clear all tasks ([fdeee0b](https://github.com/DiamondLightSource/workflows/commit/fdeee0be04ecf7cdb82d73e92a2e85d0d622e845))
+* **frontend:** button to select output tasks ([f2d220f](https://github.com/DiamondLightSource/workflows/commit/f2d220f8462031ba306c8d374125ece49cb32fa3))
+* **frontend:** fill task when artifact is hovered over ([5610b2a](https://github.com/DiamondLightSource/workflows/commit/5610b2a230a76866fc8c692fc6b490448c9af13f))
+* **frontend:** show input params and template in single workflow UI ([fd3bca2](https://github.com/DiamondLightSource/workflows/commit/fd3bca27f2a30c4a1f52f6783214144d5923b754))
+* **frontend:** store instrumentSessionID in localStorage ([3efcfc6](https://github.com/DiamondLightSource/workflows/commit/3efcfc6e4ac734779a231ea431e5a1284cefc5bf))
+* **frontend:** sync selected tasks between components ([e78347f](https://github.com/DiamondLightSource/workflows/commit/e78347f668021bae04035d5af7588f17d4748184))
+
+
+### Bug Fixes
+
+* **frontend:** move graphql consts out of component files ([f3e1fb5](https://github.com/DiamondLightSource/workflows/commit/f3e1fb567e3c814ea3b969e203c09f57b6adbff6))
+* **frontend:** remove unused fragment ([2ba60c3](https://github.com/DiamondLightSource/workflows/commit/2ba60c397c64834f7d0d6cec5b4d300287e87c51))
+* **frontend:** remove unused util functions ([e7e7df3](https://github.com/DiamondLightSource/workflows/commit/e7e7df38b2325d33f701435a4f6cb78f0a7c910d))
+* **relay-workflows-lib:** fix live update bug ([4cc3b83](https://github.com/DiamondLightSource/workflows/commit/4cc3b83447ff59197ff4b356d4855f355da62b2b))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.4...relay-workflows-lib@v0.1.5) (2025-07-22)
 
 
