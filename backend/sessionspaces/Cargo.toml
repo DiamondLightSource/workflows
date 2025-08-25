@@ -33,4 +33,4 @@ tracing = { workspace = true }
 url = { workspace = true }
 
 [dev-dependencies]
-wiremock = "0.6.4"
+wiremock = "0.6.5"

@@ -20,7 +20,7 @@ derive_more = { workspace = true }
 dotenvy = { workspace = true }
 lazy_static = { version = "1.5.0" }
 mime_guess = "2.0.5"
-regex = "1.11.1"
+regex = "1.11.2"
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
