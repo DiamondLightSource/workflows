@@ -216,3 +216,97 @@ export const fakeWorkflowA = {
   workflow: "workflow1",
   instrumentSession: instrumentSession,
 };
+
+export const numpySchema = {
+  type: "object",
+  required: ["memory", "size"],
+  properties: {
+    memory: {
+      default: "20Gi",
+      type: "string",
+      pattern: "^[0-9]+[GMK]i$",
+    },
+    size: {
+      default: 2000,
+      type: "integer",
+    },
+  },
+};
+
+export const numpyUiSchema = {
+  type: "VerticalLayout",
+  elements: [
+    {
+      type: "Control",
+      scope: "#/properties/memory",
+      label: "Memory",
+    },
+    {
+      type: "Control",
+      scope: "#/properties/size",
+      label: "Matrix Size",
+    },
+  ],
+};
+
+export const customRendererSchema = {
+  type: "object",
+  properties: {
+    filePath: {
+      type: "string",
+      minLength: 1,
+    },
+    scanRange: {
+      type: "object",
+      properties: {
+        start: { type: "number" },
+        end: { type: "number" },
+        excluded: {
+          type: "array",
+          items: { type: "number" },
+        },
+      },
+      required: ["start", "end", "excluded"],
+    },
+    calibrationFile: {
+      type: "object",
+      properties: {
+        fileName: { type: "string" },
+        content: { type: "string" },
+        type: { type: "string" },
+      },
+    },
+  },
+  required: ["filePath"],
+};
+
+export const customRendererUiSchema = {
+  type: "VerticalLayout",
+  options: { formWidth: "50%" },
+  elements: [
+    {
+      type: "HorizontalLayout",
+      elements: [
+        {
+          type: "Control",
+          scope: "#/properties/filePath",
+        },
+      ],
+    },
+    {
+      type: "Control",
+      scope: "#/properties/scanRange",
+      options: {
+        useScanRangeControl: true,
+      },
+    },
+    {
+      type: "Control",
+      label: "Calibration File",
+      scope: "#/properties/calibrationFile",
+      options: {
+        useFileUploadControl: true,
+      },
+    },
+  ],
+};
