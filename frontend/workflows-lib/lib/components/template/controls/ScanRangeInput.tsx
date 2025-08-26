@@ -1,10 +1,40 @@
 import { useCallback, useEffect, useState } from "react";
-import { Box, InputAdornment, TextField, Tooltip } from "@mui/material";
+import {
+  Box,
+  InputAdornment,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { InfoOutlined } from "@mui/icons-material";
-import { ScanRangeInputProps } from "../../../types";
 import { validateScanRange } from "../../../utils/validationUtils";
+import { ScanRange } from "../../../types";
 
-const ScanRangeInput = ({ name, value, handleChange }: ScanRangeInputProps) => {
+export interface ScanRangeInputProps {
+  name: string;
+  value: ScanRange;
+  handleChange: (path: string, value: ScanRange) => void;
+  label?: string;
+  description?: string;
+  error?: string;
+  required?: boolean;
+  enabled?: boolean;
+  visible?: boolean;
+  id?: string;
+}
+
+const ScanRangeInput = ({
+  name,
+  value,
+  handleChange,
+  label,
+  description,
+  error,
+  required = false,
+  enabled = true,
+  visible = true,
+  id,
+}: ScanRangeInputProps) => {
   const [scanRange, setScanRange] = useState({
     start: String(value.start),
     end: String(value.end),
@@ -13,7 +43,7 @@ const ScanRangeInput = ({ name, value, handleChange }: ScanRangeInputProps) => {
   const [excludedRaw, setExcludedRaw] = useState(
     (value.excluded ?? []).join(", "),
   );
-  const [errors, setErrors] = useState({
+  const [componentError, setComponentError] = useState({
     start: "",
     end: "",
     excluded: "",
@@ -27,10 +57,10 @@ const ScanRangeInput = ({ name, value, handleChange }: ScanRangeInputProps) => {
       scanRange.end,
       excludedRaw,
     );
-    setErrors(result.errors);
+    setComponentError(result.errors);
 
     if (result.parsed) {
-      const current = {
+      const current: ScanRange = {
         start: Number(scanRange.start),
         end: Number(scanRange.end),
         excluded: result.parsed.excluded,
@@ -74,68 +104,109 @@ const ScanRangeInput = ({ name, value, handleChange }: ScanRangeInputProps) => {
     validateAndUpdate();
   }, [scanRange, excludedRaw, validateAndUpdate]);
 
+  if (!visible) return null;
+
   return (
     <Box
+      id={id}
       sx={{
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "column",
         gap: 2,
-        alignItems: "flex-start",
         paddingTop: "20px",
       }}
     >
-      <TextField
-        type="number"
-        label="Start"
-        value={scanRange.start}
-        onChange={handleFieldChange("start")}
-        error={!!errors.start}
-        helperText={errors.start || " "}
-        slotProps={{
-          htmlInput: { step: 1 },
-          formHelperText: { sx: { minHeight: "3em", whiteSpace: "pre-wrap" } },
-          inputLabel: { shrink: true },
+      {label && (
+        <Typography variant="body1">
+          {label}
+          {required && <span style={{ color: "red" }}> *</span>}
+        </Typography>
+      )}
+
+      {description && (
+        <Typography variant="caption" color="textSecondary">
+          {description}
+        </Typography>
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          gap: 2,
+          alignItems: "flex-start",
         }}
-        onWheel={(event) => {
-          (event.target as HTMLInputElement).blur();
-        }}
-      />
-      <TextField
-        type="number"
-        label="End"
-        value={scanRange.end}
-        onChange={handleFieldChange("end")}
-        error={!!errors.end}
-        helperText={errors.end || " "}
-        slotProps={{
-          htmlInput: { step: 1 },
-          formHelperText: { sx: { minHeight: "3em", whiteSpace: "pre-wrap" } },
-          inputLabel: { shrink: true },
-        }}
-        onWheel={(event) => {
-          (event.target as HTMLInputElement).blur();
-        }}
-      />
-      <TextField
-        label="Excluded"
-        value={excludedRaw}
-        onChange={handleExcludedChange}
-        error={!!errors.excluded}
-        helperText={errors.excluded || " "}
-        slotProps={{
-          formHelperText: { sx: { minHeight: "3em", whiteSpace: "pre-wrap" } },
-          inputLabel: { shrink: true },
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <Tooltip title="Accepts integers ond ranges separated by spaces or commas i.e. 1 2, 5-9, 11.">
-                  <InfoOutlined color="action" />
-                </Tooltip>
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
+      >
+        <TextField
+          type="number"
+          label="Start"
+          value={scanRange.start}
+          onChange={handleFieldChange("start")}
+          error={!!componentError.start}
+          helperText={componentError.start || " "}
+          disabled={!enabled}
+          slotProps={{
+            htmlInput: { step: 1 },
+            formHelperText: {
+              sx: { minHeight: "3em", whiteSpace: "pre-wrap" },
+            },
+            inputLabel: { shrink: true },
+          }}
+          onWheel={(event) => {
+            (event.target as HTMLInputElement).blur();
+          }}
+        />
+
+        <TextField
+          type="number"
+          label="End"
+          value={scanRange.end}
+          onChange={handleFieldChange("end")}
+          error={!!componentError.end}
+          helperText={componentError.end || " "}
+          disabled={!enabled}
+          slotProps={{
+            htmlInput: { step: 1 },
+            formHelperText: {
+              sx: { minHeight: "3em", whiteSpace: "pre-wrap" },
+            },
+            inputLabel: { shrink: true },
+          }}
+          onWheel={(event) => {
+            (event.target as HTMLInputElement).blur();
+          }}
+        />
+
+        <TextField
+          label="Excluded"
+          value={excludedRaw}
+          onChange={handleExcludedChange}
+          error={!!componentError.excluded}
+          helperText={componentError.excluded || " "}
+          disabled={!enabled}
+          slotProps={{
+            formHelperText: {
+              sx: { minHeight: "3em", whiteSpace: "pre-wrap" },
+            },
+            inputLabel: { shrink: true },
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title="Accepts integers and ranges separated by spaces or commas, e.g. 1 2, 5-9, 11.">
+                    <InfoOutlined color="action" />
+                  </Tooltip>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+      </Box>
+
+      {error && (
+        <Typography variant="body2" color="error">
+          {error}
+        </Typography>
+      )}
     </Box>
   );
 };
