@@ -42,7 +42,9 @@ export const Default: Story = {
       renderers={[
         { tester: fileUploadTester, renderer: JsonFormsFileUploadRenderer },
       ]}
-      onChange={() => {}}
+      onChange={(data) => {
+        console.log("Updated:", data);
+      }}
     />
   ),
 };

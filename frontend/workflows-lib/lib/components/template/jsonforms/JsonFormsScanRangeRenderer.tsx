@@ -1,13 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/unbound-method */
 import { withJsonFormsControlProps } from "@jsonforms/react";
 import { ControlProps } from "@jsonforms/core";
 import ScanRangeInput from "../controls/ScanRangeInput";
 import { ScanRange } from "../../../types";
 import { useEffect, useState } from "react";
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const ScanRangeControl = ({ data, path, handleChange }: ControlProps) => {
+const ScanRangeControl = ({
+  data,
+  path,
+  handleChange,
+  label,
+  description,
+  errors,
+  required,
+  enabled,
+  visible,
+  id,
+}: ControlProps) => {
   const [localValue, setLocalValue] = useState<ScanRange>({
     start: data?.start,
     end: data?.end,
@@ -32,6 +43,13 @@ const ScanRangeControl = ({ data, path, handleChange }: ControlProps) => {
       name={path}
       value={localValue}
       handleChange={handleBufferedChange}
+      label={label}
+      description={description}
+      error={errors}
+      required={required}
+      enabled={enabled}
+      visible={visible}
+      id={id}
     />
   );
 };
