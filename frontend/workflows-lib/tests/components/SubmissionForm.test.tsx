@@ -21,6 +21,21 @@ const mockParameterSchema = {
       default: 2000,
       type: "integer",
     },
+    configFile: {
+      type: "string",
+      minLength: 1,
+    },
+    scanRange: {
+      type: "object",
+      properties: {
+        start: { type: "number" },
+        end: { type: "number" },
+        excluded: {
+          type: "array",
+          items: { type: "number" },
+        },
+      },
+    },
   },
 };
 
@@ -36,6 +51,22 @@ const mockParameterUISchema = {
       type: "Control",
       scope: "#/properties/size",
       label: "Matrix Size",
+    },
+    {
+      type: "Control",
+      scope: "#/properties/configFile",
+      label: "Config File",
+      options: {
+        useFileUploadControl: true,
+      },
+    },
+    {
+      type: "Control",
+      scope: "#/properties/scanRange",
+      label: "Scan Range",
+      options: {
+        useScanRangeControl: true,
+      },
     },
   ],
 };
@@ -66,22 +97,25 @@ describe("SubmissionForm Component", () => {
     expect(getByText("Description of Numpy Benchmark")).toBeInTheDocument();
   });
 
-  it("should render property fields", () => {
-    const dom = render(
+  it("should render ScanRangeInput custom renderer", () => {
+    const { getByLabelText, container } = render(
       <TemplateSubmissionForm
         title="Numpy Benchmark"
         maintainer="AGroup"
         parametersSchema={mockParameterSchema}
+        parametersUISchema={mockParameterUISchema}
         onSubmit={() => {}}
       />,
     );
+
+    expect(getByLabelText("Start")).toBeInTheDocument();
+    expect(getByLabelText("End")).toBeInTheDocument();
+    expect(getByLabelText("Excluded")).toBeInTheDocument();
+    expect(getByLabelText("Config File")).toBeInTheDocument();
+
     const getById = queryByAttribute.bind(null, "id");
-    expect(
-      getById(dom.container, "#/properties/memory-input"),
-    ).toBeInTheDocument();
-    expect(
-      getById(dom.container, "#/properties/size-input"),
-    ).toBeInTheDocument();
+    expect(getById(container, "#/properties/memory-input")).toBeInTheDocument();
+    expect(getById(container, "#/properties/size-input")).toBeInTheDocument();
   });
 
   it("should render visit field", () => {

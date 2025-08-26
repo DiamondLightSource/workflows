@@ -1,7 +1,4 @@
-import {
-  materialCells,
-  materialRenderers,
-} from "@jsonforms/material-renderers";
+import { materialCells } from "@jsonforms/material-renderers";
 import { JsonSchema, UISchemaElement, createAjv } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 import React, { useState } from "react";
@@ -9,6 +6,7 @@ import { Divider, Snackbar, Stack, Typography, useTheme } from "@mui/material";
 import { ErrorObject } from "ajv";
 import { JSONObject, Visit } from "../../types";
 import { VisitInput } from "@diamondlightsource/sci-react-ui";
+import { rendererSet } from "../../utils/renderers";
 
 interface TemplateSubmissionFormProps {
   title: string;
@@ -79,7 +77,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
         schema={parametersSchema}
         uischema={parametersUISchema ?? undefined}
         data={parameters}
-        renderers={materialRenderers}
+        renderers={rendererSet}
         cells={materialCells}
         ajv={validator}
         onChange={({ data, errors }) => {
