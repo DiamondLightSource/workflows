@@ -1,7 +1,6 @@
 #![allow(clippy::missing_docs_in_private_items)]
-use yaml_rust2::YamlLoader;
-
-use crate::command_runner::get_command_factory;
+use crate::linter::linter_argocli::ArgoCLI;
+use serde_yaml::Value;
 
 use super::LintResult;
 use std::fs::{read_dir, read_to_string};
@@ -38,62 +37,38 @@ fn lint_path(target: &Path) -> Result<LintResult, String> {
     Ok(LintResult::new(template_name, result))
 }
 
-fn get_yaml(target: &Path) -> Result<String, String> {
-    read_to_string(target)
-        .map_err(|err| format!("Couldn't read file {}: {}", target.display(), err))
+pub fn get_manifest(target: &Path) -> Result<Value, String> {
+    let yaml = read_to_string(target)
+        .map_err(|err| format!("Couldn't read file {}: {}", target.display(), err))?;
+
+    let doc: Value = serde_yaml::from_str(&yaml)
+        .map_err(|e| format!("Could not parse manifest to string: {e}"))?;
+
+    Ok(doc)
 }
 
 fn get_template_name(path: &Path) -> Result<String, String> {
-    let yaml = get_yaml(path)?;
-    let docs =
-        YamlLoader::load_from_str(&yaml).map_err(|e| format!("Manifest is not valid YAML: {e}"))?;
+    let yaml = get_manifest(path)?;
 
-    let doc = docs.first().ok_or("YAML document is empty")?;
-
-    let name = doc["metadata"]["name"]
+    let name = yaml["metadata"]["name"]
         .as_str()
-        .or_else(|| doc["metadata"]["generateName"].as_str())
+        .or_else(|| yaml["metadata"]["generateName"].as_str())
         .ok_or("Template has no name")?
         .to_string();
     Ok(name)
 }
 
 fn lint_template(target: &Path) -> Result<Vec<String>, String> {
-    let file_path = target.to_str().unwrap();
-    let command = get_command_factory()
-        .new_command("argo")
-        .arg("lint")
-        .arg(file_path)
-        .arg("--offline")
-        .arg("--output")
-        .arg("simple")
-        .output()
-        .map_err(|e| format!("Failed to run Argo CLI: {e}"))?;
+    let mut errors = vec![];
+    errors.extend(ArgoCLI::lint(target)?);
+    Ok(errors)
+}
 
-    let stdout = String::from_utf8_lossy(&command.stdout);
-    let stderr = String::from_utf8_lossy(&command.stderr);
-    let combined = format!("{stdout}\n{stderr}");
-
-    let errs = combined
-        .lines()
-        .filter(|msg| !msg.is_empty())
-        .filter(|msg| !msg.contains("couldn't find cluster workflow template"))
-        .filter(|msg| !msg.contains("no linting errors"))
-        .map(|msg| {
-            if let Some((_, remainder)) = msg.split_once("msg=failed to parse YAML from file") {
-                remainder.trim_start()
-            } else {
-                msg
-            }
-        })
-        .map(|msg| {
-            if let Some((_, remainder)) = msg.split_once(":") {
-                remainder.trim_start()
-            } else {
-                msg
-            }
-        })
-        .map(|msg| msg.replace('"', ""))
-        .collect();
-    Ok(errs)
+pub trait Linter {
+    // The lint function takes path, rather than manifest. This is not ideal as it requires a tmp file
+    // to be opened in every linter, and then linted - rather than opened once and shared.
+    // The argo CLI has a bug where it cannot lint from stdin in '--offline' mode so we must lint from a file.
+    // Once this is fixed, we should refactor the lint function to take a reference to the yaml.
+    // https://github.com/argoproj/argo-workflows/issues/12819
+    fn lint(target: &Path) -> Result<Vec<String>, String>;
 }
