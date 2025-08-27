@@ -43,13 +43,14 @@ pub fn lint(args: LintArgs) {
 
 fn print_and_exit(results: Vec<LintResult>) {
     results.iter().for_each(|result| {
-        print!("Template Name: {} - ", result.name);
-
         if result.errors.is_empty() {
-            println!("No errors");
+            println!("Template Name: {} - No errors", result.name);
         } else {
-            eprintln!("Errors found");
-            result.errors.iter().for_each(|e| println!("  - {e}"));
+            eprintln!("Template Name: {} - Errors found:", result.name);
+            result.errors.iter().for_each(|e| {
+                eprint!("    ");
+                eprintln!("{e}")
+            });
         }
     });
     match results.iter().any(|result| !result.errors.is_empty()) {
