@@ -3,8 +3,8 @@ kind: WorkflowTemplate
 metadata:
   name: template3
   labels:
-    workflows.diamond.ac.uk/science-group-examples: "true"
+    placeholder: value
   annotations:
-    workflows.diamond.ac.uk/repository: "url"
+    placeholder: value
 data:
   key: value
