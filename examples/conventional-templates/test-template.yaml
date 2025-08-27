@@ -1,0 +1,260 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: example-template
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: Example Template
+    workflows.argoproj.io/description: |
+      This is an example template to use during testing and developement.
+    workflows.diamond.ac.uk/parameter-schema.png: |
+      {
+        "type": "boolean",
+        "default": "true"
+      }
+    workflows.diamond.ac.uk/parameter-schema.jpg: |
+      {
+        "type": "boolean",
+        "default": "true"
+      }
+    workflows.diamond.ac.uk/parameter-schema.jpeg: |
+      {
+        "type": "boolean",
+        "default": "true"
+      }
+    workflows.diamond.ac.uk/parameter-schema.tif: |
+      {
+        "type": "boolean",
+        "default": "true"
+      }
+    workflows.diamond.ac.uk/parameter-schema.tiff: |
+      {
+        "type": "boolean",
+        "default": "true"
+      }
+
+spec:
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: png
+        value: "True"
+      - name: jpg
+        value: "True"
+      - name: jpeg
+        value: "True"
+      - name: tif
+        value: "True"
+      - name: tiff
+        value: "True"
+  volumeClaimTemplates:
+    - metadata:
+        name: tmpdir
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: local-path
+
+  templates:
+    - name: install-dependencies
+      script:
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: [bash]
+        source: |
+          echo "creating a venv and installing dependencies."
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install pillow
+          mkdir /tmp/images/
+          mkdir /tmp/tmp-images/
+          mkdir /tmp/tmp-images/png/
+          mkdir /tmp/tmp-images/jpg/
+          mkdir /tmp/tmp-images/jpeg/
+          mkdir /tmp/tmp-images/tif/
+          mkdir /tmp/tmp-images/tiff/
+          echo "done"
+
+    - name: generate-parameters
+      inputs:
+        parameters:
+          - name: png
+          - name: jpg
+          - name: jpeg
+          - name: tif
+          - name: tiff
+      script:
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: [python]
+        source: |
+          import json, time
+          params = [
+              {"width": 500, "height": 500, "weights": [255, 1, 100], "extension": "png"} if "{{inputs.parameters.png}}".lower() == "true" else None,
+              {"width": 600, "height": 200, "weights": [100, 150, 100], "extension": "jpg"} if "{{inputs.parameters.jpg}}".lower() == "true" else None,
+              {"width": 300, "height": 400, "weights": [100, 150, 100], "extension": "jpeg"} if "{{inputs.parameters.jpeg}}".lower() == "true" else None,
+              {"width": 300, "height": 200, "weights": [230, 100, 1], "extension": "tif"} if "{{inputs.parameters.tif}}".lower() == "true" else None,
+              {"width": 200, "height": 300, "weights": [230, 100, 1], "extension": "tiff"} if "{{inputs.parameters.tiff}}".lower() == "true" else None,
+          ]
+          params_to_write = [image_params for image_params in params if image_params is not None]
+          with open("/tmp/parameters.json", "w") as f:
+            json.dump(params_to_write, f)
+          print("Generated the following params:")
+          for image_params in params_to_write:
+            print(image_params)
+      outputs:
+        parameters:
+          - name: image-parameters
+            valueFrom:
+              path: /tmp/parameters.json
+
+    - name: "create-image"
+      inputs:
+        parameters:
+          - name: width
+          - name: height
+          - name: weights
+          - name: extension
+      script:
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: [/tmp/venv/bin/python]
+        source: |
+          import json
+          from PIL import Image
+          extension = "{{inputs.parameters.extension}}"
+          width = "{}"
+          def create_pattern(
+            width: int,
+            height: int,
+            weights: tuple[int, int, int],
+          ) -> Image.Image:
+            print(f"width: {width}")
+            print(f"height: {height}")
+            print(f"RBG weights: {weights}")
+            image = Image.new("RGB", (width, height))
+            pixels = image.load()
+            for i in range(width):
+                for j in range(height):
+                    pixels[i, j] = (
+                        (i + j * 50) % weights[0],
+                        weights[1],
+                        (i * 300 + j) % weights[2],
+                    )
+            return image
+          image = create_pattern({{inputs.parameters.width}}, {{inputs.parameters.height}}, {{inputs.parameters.weights}})
+          path = "/tmp/tmp-images/{{inputs.parameters.extension}}/image.png"
+          image.save(path)
+          print(f"Image saved at {path}")
+          with open(f"/tmp/{extension}-path.json", "w") as f:
+            json.dump(path, f)
+          with open("/tmp/extension.json", "w") as f:
+            json.dump(path, f)
+      outputs:
+        parameters:
+          - name: image-path
+            valueFrom:
+              path: "/tmp/{{inputs.parameters.extension}}-path.json"
+
+    - name: save-image
+      inputs:
+        parameters:
+          - name: image-path
+          - name: extension
+      script:
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: [/tmp/venv/bin/python]
+        source: |
+          import json
+          from PIL import Image
+          extension = "{{inputs.parameters.extension}}"
+          print(f"extension = {extension}")
+          path = {{ inputs.parameters.image-path }}
+          new_path = f"/tmp/{extension}-image.{extension}"
+          with Image.open(path) as image:
+              image.save(new_path)
+          print(f"saved image at {new_path}")
+      outputs:
+        artifacts:
+          - name: "{{inputs.parameters.extension}}-image"
+            path: "/tmp/{{inputs.parameters.extension}}-image.{{inputs.parameters.extension}}"
+            archive:
+              none: {}
+
+    - name: generate-image
+      inputs:
+        parameters:
+          - name: width
+          - name: height
+          - name: weights
+          - name: extension
+      dag:
+        tasks:
+          - name: create-image
+            template: create-image
+            arguments:
+              parameters:
+                - name: width
+                  value: "{{inputs.parameters.width}}"
+                - name: height
+                  value: "{{inputs.parameters.height}}"
+                - name: weights
+                  value: "{{inputs.parameters.weights}}"
+                - name: extension
+                  value: "{{inputs.parameters.extension}}"
+          - name: save-image
+            template: save-image
+            dependencies: [create-image]
+            arguments:
+              parameters:
+                - name: image-path
+                  value: "{{tasks.create-image.outputs.parameters.image-path}}"
+                - name: extension
+                  value: "{{inputs.parameters.extension}}"
+
+    - name: workflow-entry
+      dag:
+        tasks:
+          - name: install-dependencies
+            template: install-dependencies
+
+          - name: generate-parameters
+            template: generate-parameters
+            arguments:
+              parameters:
+                - name: png
+                  value: "{{workflow.parameters.png}}"
+                - name: jpg
+                  value: "{{workflow.parameters.jpg}}"
+                - name: jpeg
+                  value: "{{workflow.parameters.jpeg}}"
+                - name: tif
+                  value: "{{workflow.parameters.tif}}"
+                - name: tiff
+                  value: "{{workflow.parameters.tiff}}"
+
+          - name: generate-image
+            template: generate-image
+            dependencies: [generate-parameters, install-dependencies]
+            arguments:
+              parameters:
+                - name: width
+                  value: "{{item.width}}"
+                - name: height
+                  value: "{{item.height}}"
+                - name: weights
+                  value: "{{item.weights}}"
+                - name: extension
+                  value: "{{item.extension}}"
+            withParam: "{{tasks.generate-parameters.outputs.parameters.image-parameters}}"
