@@ -1,23 +1,27 @@
-import React from "react";
-import MockedWorkflowRelay from "./MockedWorkflowRelay";
+import React, { useState } from "react";
 import LiveWorkflowRelay from "./LiveWorkflowRelay";
-import { Visit } from "workflows-lib";
+import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQuery.graphql";
+import BaseWorkflowRelay from "./BaseWorkflowRelay";
+import { isFinished } from "../utils";
 export interface WorkflowRelayProps {
-  visit: Visit;
-  workflowName: string;
+  data: workflowRelayQuery$data;
   workflowLink?: boolean;
   filledTaskName?: string | null;
   expanded?: boolean;
   onChange?: () => void;
 }
 
-const isMocking = import.meta.env.VITE_ENABLE_MOCKING === "true";
-
 const WorkflowRelay: React.FC<WorkflowRelayProps> = (props) => {
-  return isMocking ? (
-    <MockedWorkflowRelay {...props} />
+  const finished = isFinished(props.data);
+  const [isNull, setIsNull] = useState<boolean>(false);
+  const onNull = () => {
+    setIsNull(true);
+  };
+
+  return finished || isNull ? (
+    <BaseWorkflowRelay {...props} data={props.data} />
   ) : (
-    <LiveWorkflowRelay {...props} />
+    <LiveWorkflowRelay {...props} onNull={onNull} />
   );
 };
 

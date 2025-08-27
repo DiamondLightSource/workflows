@@ -4,9 +4,9 @@ import { Box, Button, FormControlLabel, Switch, useTheme } from "@mui/material";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { PaginationControls } from "workflows-lib";
 import { workflowsQuery } from "../graphql/workflowsQuery";
-import WorkflowRelay from "./WorkflowRelay";
 import { updateWorkflowsState } from "../utils";
 import { workflowsQuery as WorkflowsQueryType } from "../graphql/__generated__/workflowsQuery.graphql";
+import QueryWorkflowRelay from "./QueryWorkflowRelay";
 
 interface WorkflowsContentProps {
   queryReference: PreloadedQuery<WorkflowsQueryType>;
@@ -143,7 +143,7 @@ export default function WorkflowsContent({
 
       <Box sx={{ overflowY: "auto", maxHeight: "80vh", width: "100%" }}>
         {visibleWorkflows.map((n) => (
-          <WorkflowRelay
+          <QueryWorkflowRelay
             key={n}
             visit={visit}
             workflowName={n}

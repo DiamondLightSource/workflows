@@ -4,24 +4,22 @@ import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
 import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
-import WorkflowRelay from "./WorkflowRelay";
 import WorkflowInfo from "./WorkflowInfo";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
-import { SingleWorkflowViewProps } from "./SingleWorkflowView";
+import WorkflowRelay from "./WorkflowRelay";
 
-interface Props extends SingleWorkflowViewProps {
+interface BaseSingleWorkflowViewProps {
   data: workflowRelaySubscription$data | null;
+  tasknames?: string[];
 }
 
 export default function BaseSingleWorkflowView({
-  visit,
-  workflowName,
   tasknames,
   data,
-}: Props) {
+}: BaseSingleWorkflowViewProps) {
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [outputTasks, setOutputTasks] = useState<string[]>([]);
-  const fetchedTasks = useFetchedTasks(data, visit, workflowName);
+  const fetchedTasks = useFetchedTasks(data);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
   const [filledTaskName, setFilledTaskName] = useState<string | null>(null);
 
@@ -120,8 +118,7 @@ export default function BaseSingleWorkflowView({
           </Box>
           {data && (
             <WorkflowRelay
-              workflowName={data.workflow.name}
-              visit={data.workflow.visit}
+              data={data}
               workflowLink
               filledTaskName={filledTaskName}
               expanded={true}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Visit, Task, TaskStatus } from "workflows-lib";
+import { Task, TaskStatus } from "workflows-lib";
 import { isWorkflowWithTasks } from "../utils";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 
@@ -51,8 +51,6 @@ export function useSelectedTasks(): [string[], (tasks: string[]) => void] {
 
 export function useFetchedTasks(
   data: workflowRelaySubscription$data | null,
-  visit: Visit,
-  workflowName: string,
 ): Task[] {
   const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
 
@@ -73,13 +71,13 @@ export function useFetchedTasks(
             parentTask: task.name,
             key: `${task.name}-${artifact.name}`,
           })),
-          workflow: workflowName,
-          instrumentSession: visit,
+          workflow: data.workflow.name,
+          instrumentSession: data.workflow.visit,
           stepType: task.stepType,
         })),
       );
     }
-  }, [data, visit, workflowName]);
+  }, [data]);
 
   return fetchedTasks;
 }
