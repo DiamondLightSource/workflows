@@ -1,6 +1,7 @@
 #![allow(clippy::missing_docs_in_private_items)]
 
 mod base_linting;
+mod linter_argocli;
 
 use base_linting::lint_from_manifest;
 mod helm;
