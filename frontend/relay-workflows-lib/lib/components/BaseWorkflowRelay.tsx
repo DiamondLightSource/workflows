@@ -1,7 +1,7 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { Box } from "@mui/material";
-import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
+import { visitToText } from "@diamondlightsource/sci-react-ui";
 import {
   TasksFlow,
   WorkflowAccordion,
@@ -12,31 +12,27 @@ import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { useParams, useNavigate } from "react-router-dom";
 
-interface Props {
-  visit: Visit;
-  workflowName: string;
+interface BaseWorkflowRelayProps {
   workflowLink?: boolean;
   filledTaskName?: string | null;
   expanded?: boolean;
   onChange?: () => void;
-  data: workflowRelaySubscription$data | null;
+  data: workflowRelaySubscription$data;
 }
 
 export default function BaseWorkflowRelay({
-  visit,
-  workflowName,
   workflowLink,
   filledTaskName,
   expanded,
   onChange,
   data,
-}: Props) {
+}: BaseWorkflowRelayProps) {
   const { workflowName: workflowNameURL } = useParams<{
     workflowName: string;
   }>();
   const navigate = useNavigate();
-  const statusText = data?.workflow.status?.__typename ?? "Unknown";
-  const fetchedTasks = useFetchedTasks(data, visit, workflowName);
+  const statusText = data.workflow.status?.__typename ?? "Unknown";
+  const fetchedTasks = useFetchedTasks(data);
   const [selectedTasks, setSelectedTasks] = useSelectedTasks();
 
   const onNavigate = React.useCallback(
@@ -53,19 +49,14 @@ export default function BaseWorkflowRelay({
       } else {
         updatedTasks = [taskName];
       }
-      if (workflowNameURL !== workflowName) {
-        void navigate(`/workflows/${visitToText(visit)}/${workflowName}`);
+      if (workflowNameURL !== data.workflow.name) {
+        void navigate(
+          `/workflows/${visitToText(data.workflow.visit)}/${data.workflow.name}`,
+        );
       }
       setSelectedTasks(updatedTasks);
     },
-    [
-      navigate,
-      selectedTasks,
-      setSelectedTasks,
-      visit,
-      workflowName,
-      workflowNameURL,
-    ],
+    [navigate, selectedTasks, setSelectedTasks, workflowNameURL, data],
   );
 
   return (
@@ -85,8 +76,8 @@ export default function BaseWorkflowRelay({
     >
       <WorkflowAccordion
         workflow={{
-          name: workflowName,
-          instrumentSession: visit,
+          name: data.workflow.name,
+          instrumentSession: data.workflow.visit,
           status: statusText as WorkflowStatus,
         }}
         workflowLink={workflowLink}
@@ -111,7 +102,7 @@ export default function BaseWorkflowRelay({
           }}
         >
           <TasksFlow
-            workflowName={workflowName}
+            workflowName={data.workflow.name}
             tasks={fetchedTasks}
             onNavigate={onNavigate}
             highlightedTaskNames={selectedTasks}

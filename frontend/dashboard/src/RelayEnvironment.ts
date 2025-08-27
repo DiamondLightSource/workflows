@@ -76,7 +76,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   }
 };
 
-const wsClient = createClient({
+export const wsClient = createClient({
   url: WS_ENDPOINT,
   connectionParams: async () => {
     if (!keycloak.authenticated) {

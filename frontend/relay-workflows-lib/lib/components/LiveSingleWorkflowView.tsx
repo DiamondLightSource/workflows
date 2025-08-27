@@ -37,12 +37,5 @@ export default function LiveWorkflowView({
 
   useSubscription(subscriptionData);
 
-  return (
-    <BaseSingleWorkflowView
-      visit={visit}
-      workflowName={workflowName}
-      tasknames={tasknames}
-      data={workflowData}
-    />
-  );
+  return <BaseSingleWorkflowView tasknames={tasknames} data={workflowData} />;
 }

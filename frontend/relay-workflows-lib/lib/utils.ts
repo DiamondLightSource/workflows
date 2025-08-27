@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { workflowRelayQuery$data } from "./graphql/__generated__/workflowRelayQuery.graphql";
+import { workflowRelaySubscription$data } from "./graphql/__generated__/workflowRelaySubscription.graphql";
 type WorkflowStatusType = NonNullable<
   workflowRelayQuery$data["workflow"]["status"]
 >;
@@ -48,4 +49,19 @@ export function updateWorkflowsState(
   if (newChanged) {
     setNew(combined);
   }
+}
+
+const finishedStatuses = new Set([
+  "WorkflowErroredStatus",
+  "WorkflowFailedStatus",
+  "WorkflowSucceededStatus",
+]);
+
+export function isFinished(
+  data: workflowRelayQuery$data | workflowRelaySubscription$data,
+) {
+  return (
+    data.workflow.status?.__typename &&
+    finishedStatuses.has(data.workflow.status.__typename)
+  );
 }
