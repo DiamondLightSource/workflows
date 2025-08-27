@@ -9,6 +9,19 @@ passing_manifest:
   - command: argo lint ./tests/manifests/workflow3.yaml --offline --output simple
     response: no linting errors found!
     code: 0
+failing_manifests_labels:
+  - command: argo lint ./tests/manifests_failing_labels/workflow1.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint ./tests/manifests_failing_labels/workflow2.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint ./tests/manifests_failing_labels/workflow3.yaml --offline --output simple
+    response: '../examples/conventional-templates/numpy-benchmark.yaml: in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source'
+    code: 0
+  - command: argo lint ./tests/manifests_failing_labels/workflow4.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
 failing_manifest:
   - command: argo lint ./tests/manifests/workflow1.yaml --offline --output simple
     response: '../examples/conventional-templates/numpy-benchmark.yaml: in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source'
@@ -35,6 +48,10 @@ passing_helm:
       kind: WorkflowTemplate
       metadata:
         name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
       ---
@@ -42,6 +59,10 @@ passing_helm:
       kind: WorkflowTemplate
       metadata:
         name: template2
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
 failing_helm:
@@ -58,6 +79,10 @@ failing_helm:
       kind: WorkflowTemplate
       metadata:
         name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
       ---
@@ -65,6 +90,10 @@ failing_helm:
       kind: WorkflowTemplate
       metadata:
         name: template2
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
 
@@ -80,6 +109,10 @@ lint_one_helm_chart:
       kind: WorkflowTemplate
       metadata:
         name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
 submit_workflow:
@@ -100,6 +133,10 @@ submit_workflow:
       kind: WorkflowTemplate
       metadata:
         name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
     code: 0
@@ -112,6 +149,10 @@ submit_workflow_failing:
       kind: WorkflowTemplate
       metadata:
         name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
       ---
@@ -120,6 +161,10 @@ submit_workflow_failing:
       kind: WorkflowTemplate
       metadata:
         name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
       data:
         key: value
     code: 0

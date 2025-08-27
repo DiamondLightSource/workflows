@@ -5,6 +5,6 @@ metadata:
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
-    workflows.diamond.ac.uk/repository: "url"
+    placeholder: value
 data:
   key: value

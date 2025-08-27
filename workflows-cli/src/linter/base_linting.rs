@@ -1,6 +1,8 @@
 #![allow(clippy::missing_docs_in_private_items)]
-use crate::linter::linter_argocli::ArgoCLI;
 use serde_yaml::Value;
+
+use crate::linter::linter_argocli::ArgoCLI;
+use crate::linter::linter_labels::LabelChecker;
 
 use super::LintResult;
 use std::fs::{read_dir, read_to_string};
@@ -61,6 +63,7 @@ fn get_template_name(path: &Path) -> Result<String, String> {
 fn lint_template(target: &Path) -> Result<Vec<String>, String> {
     let mut errors = vec![];
     errors.extend(ArgoCLI::lint(target)?);
+    errors.extend(LabelChecker::lint(target)?);
     Ok(errors)
 }
 

@@ -1,0 +1,11 @@
+critical:
+  - type: stem
+    stem: workflows.diamond.ac.uk/science-group
+    possibleValues:
+      - mx
+      - examples
+      - magnetic-materials
+    location: label
+  - type: requiredKey
+    key: workflows.diamond.ac.uk/repository
+    location: annotation
