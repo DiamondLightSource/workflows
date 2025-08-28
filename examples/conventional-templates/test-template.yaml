@@ -69,7 +69,7 @@ spec:
         source: |
           echo "creating a venv and installing dependencies."
           python -m venv /tmp/venv
-          /tmp/venv/bin/pip install pillow
+          /tmp/venv/bin/pip install pillow h5py numpy
           mkdir /tmp/images/
           mkdir /tmp/tmp-images/
           mkdir /tmp/tmp-images/png/
@@ -94,7 +94,7 @@ spec:
             mountPath: /tmp
         command: [python]
         source: |
-          import json, time
+          import json
           params = [
               {"width": 500, "height": 500, "weights": [255, 1, 100], "extension": "png"} if "{{inputs.parameters.png}}".lower() == "true" else None,
               {"width": 600, "height": 200, "weights": [100, 150, 100], "extension": "jpg"} if "{{inputs.parameters.jpg}}".lower() == "true" else None,
@@ -128,7 +128,7 @@ spec:
             mountPath: /tmp
         command: [/tmp/venv/bin/python]
         source: |
-          import json
+          import json, time
           from PIL import Image
           extension = "{{inputs.parameters.extension}}"
           width = "{}"
@@ -176,7 +176,7 @@ spec:
             mountPath: /tmp
         command: [/tmp/venv/bin/python]
         source: |
-          import json
+          import json, time
           from PIL import Image
           extension = "{{inputs.parameters.extension}}"
           print(f"extension = {extension}")
@@ -184,11 +184,47 @@ spec:
           new_path = f"/tmp/{extension}-image.{extension}"
           with Image.open(path) as image:
               image.save(new_path)
+          with open(f"/tmp/{extension}-image-path.json", "w") as f:
+            json.dump(new_path, f)
           print(f"saved image at {new_path}")
       outputs:
+        parameters:
+          - name: image-path
+            valueFrom:
+              path: "/tmp/{{inputs.parameters.extension}}-image-path.json"
         artifacts:
           - name: "{{inputs.parameters.extension}}-image"
             path: "/tmp/{{inputs.parameters.extension}}-image.{{inputs.parameters.extension}}"
+            archive:
+              none: {}
+
+    - name: hdf5
+      inputs:
+        parameters:
+          - name: image-paths
+      script:
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: [/tmp/venv/bin/python]
+        source: |
+          import json, h5py, time
+          import numpy as np
+          from PIL import Image
+          print("creating hdf5 file")
+          paths = (json.loads(path) for path in {{inputs.parameters.image-paths}})
+          with h5py.File("tmp/images.hdf5", "w") as f:
+              for i, path in enumerate(paths):
+                  print(f"Got {path}")
+                  with Image.open(path) as image:
+                      arr = np.array(image)
+                      f.create_dataset(f"image_{i}", data=arr, dtype=arr.dtype)
+          print("done")
+      outputs:
+        artifacts:
+          - name: "hdf5-file"
+            path: "/tmp/images.hdf5"
             archive:
               none: {}
 
@@ -222,6 +258,11 @@ spec:
                   value: "{{tasks.create-image.outputs.parameters.image-path}}"
                 - name: extension
                   value: "{{inputs.parameters.extension}}"
+      outputs:
+        parameters:
+          - name: image-path
+            valueFrom:
+              parameter: "{{tasks.save-image.outputs.parameters.image-path}}"
 
     - name: workflow-entry
       dag:
@@ -258,3 +299,11 @@ spec:
                 - name: extension
                   value: "{{item.extension}}"
             withParam: "{{tasks.generate-parameters.outputs.parameters.image-parameters}}"
+
+          - name: hdf5
+            template: hdf5
+            dependencies: [generate-image]
+            arguments:
+              parameters:
+                - name: image-paths
+                  value: "{{tasks.generate-image.outputs.parameters.image-path}}"
