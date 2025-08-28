@@ -1,12 +1,12 @@
 use super::{Visit, VisitInput, CLIENT};
-use crate::{ArgoServerUrl, S3Bucket};
+use crate::{graphql::filters::WorkflowFilter, ArgoServerUrl, S3Bucket};
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Enum, InputObject, Object, SimpleObject, Union,
+    Context, Enum, Object, SimpleObject, Union,
 };
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
@@ -519,99 +519,6 @@ impl TaskMap {
                 }
             })
             .collect::<Vec<_>>()
-    }
-}
-
-/// All the supported Workflows filters
-#[derive(Debug, Default, Clone, InputObject)]
-struct WorkflowFilter {
-    /// The status field for a workflow
-    workflow_status_filter: Option<WorkflowStatusFilter>,
-    /// The creator of the workflow
-    creator: Option<String>,
-    /// The workflow template
-    template: Option<String>,
-}
-
-impl WorkflowFilter {
-    /// Generates and applies all the filters
-    fn generate_filters(&self, url: &mut Url) {
-        let labels = &self.create_label_selection();
-        url.query_pairs_mut()
-            .append_pair("listOptions.labelSelector", labels);
-    }
-
-    /// Creates a string of all the reqested filters that belong to the
-    /// `labelSelector` query key in the Workflow API
-    fn create_label_selection(&self) -> String {
-        let mut label_selectors = Vec::new();
-
-        if let Some(status_filter) = &self.workflow_status_filter {
-            if status_filter.is_enabled() {
-                let status_label = format!(
-                    "workflows.argoproj.io/phase in ({})",
-                    status_filter.to_phases().join(", ")
-                );
-                label_selectors.push(status_label);
-            }
-        }
-
-        if let Some(creator) = &self.creator {
-            let creator_label =
-                format!("workflows.argoproj.io/creator-preferred-username={creator}");
-            label_selectors.push(creator_label);
-        }
-
-        if let Some(template) = &self.template {
-            let template_label =
-                format!("workflows.argoproj.io/cluster-workflow-template={template}");
-            label_selectors.push(template_label);
-        }
-
-        label_selectors.join(",")
-    }
-}
-
-/// Represents workflow status filters
-#[allow(clippy::missing_docs_in_private_items)]
-#[derive(Debug, Default, Clone, InputObject)]
-struct WorkflowStatusFilter {
-    #[graphql(default = false)]
-    pending: bool,
-    #[graphql(default = false)]
-    running: bool,
-    #[graphql(default = false)]
-    succeeded: bool,
-    #[graphql(default = false)]
-    failed: bool,
-    #[graphql(default = false)]
-    error: bool,
-}
-
-#[allow(clippy::missing_docs_in_private_items)]
-impl WorkflowStatusFilter {
-    pub fn is_enabled(&self) -> bool {
-        self.pending || self.running || self.succeeded || self.failed || self.error
-    }
-
-    fn to_phases(&self) -> Vec<&'static str> {
-        let mut phases = Vec::new();
-        if self.pending {
-            phases.push("Pending");
-        }
-        if self.running {
-            phases.push("Running");
-        }
-        if self.succeeded {
-            phases.push("Succeeded");
-        }
-        if self.failed {
-            phases.push("Failed");
-        }
-        if self.error {
-            phases.push("Error");
-        }
-        phases
     }
 }
 
