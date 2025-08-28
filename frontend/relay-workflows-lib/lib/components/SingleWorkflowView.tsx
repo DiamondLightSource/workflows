@@ -9,7 +9,7 @@ import BaseSingleWorkflowView from "./BaseSingleWorkflowView";
 export interface SingleWorkflowViewProps {
   visit: Visit;
   workflowName: string;
-  tasknames?: string[];
+  taskIds?: string[];
 }
 
 export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
@@ -24,7 +24,7 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
   const finished = isFinished(queryData);
 
   return finished ? (
-    <BaseSingleWorkflowView data={queryData} tasknames={props.tasknames} />
+    <BaseSingleWorkflowView data={queryData} taskIds={props.taskIds} />
   ) : (
     <LiveSingleWorkflowView {...props} />
   );

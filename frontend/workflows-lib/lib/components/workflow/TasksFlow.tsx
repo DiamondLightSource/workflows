@@ -31,9 +31,9 @@ const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 interface TasksFlowProps {
   workflowName: string;
   tasks: Task[];
-  onNavigate: (s: string) => void;
-  highlightedTaskNames?: string[];
-  filledTaskName?: string | null;
+  onNavigate: (path: string, e?: React.MouseEvent) => void;
+  highlightedTaskIds?: string[];
+  filledTaskId?: string | null;
   isDynamic?: boolean;
 }
 
@@ -41,8 +41,8 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   workflowName,
   tasks,
   onNavigate,
-  highlightedTaskNames,
-  filledTaskName,
+  highlightedTaskIds,
+  filledTaskId,
   isDynamic,
 }) => {
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
@@ -88,8 +88,8 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     const updateHighlights = debounce(() => {
       const highlightedNodes = addHighlightsAndFills(
         layoutedNodes,
-        highlightedTaskNames,
-        filledTaskName,
+        highlightedTaskIds,
+        filledTaskId,
       );
       setNodesWithHighlights(highlightedNodes);
     }, 20);
@@ -98,7 +98,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     return () => {
       updateHighlights.clear();
     };
-  }, [layoutedNodes, highlightedTaskNames, filledTaskName]);
+  }, [layoutedNodes, highlightedTaskIds, filledTaskId]);
 
   const hasInitialized = useRef(false);
   const onInit = useCallback(

@@ -3,76 +3,74 @@ import { Box, ToggleButton } from "@mui/material";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
-import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
+import { useFetchedTasks, useSelectedTaskIds } from "./workflowRelayUtils";
 import WorkflowInfo from "./WorkflowInfo";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import WorkflowRelay from "./WorkflowRelay";
 
 interface BaseSingleWorkflowViewProps {
   data: workflowRelaySubscription$data | null;
-  tasknames?: string[];
+  taskIds?: string[];
 }
 
 export default function BaseSingleWorkflowView({
-  tasknames,
+  taskIds,
   data,
 }: BaseSingleWorkflowViewProps) {
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
-  const [outputTasks, setOutputTasks] = useState<string[]>([]);
+  const [outputTaskIds, setOutputTaskIds] = useState<string[]>([]);
   const fetchedTasks = useFetchedTasks(data);
-  const [selectedTasks, setSelectedTasks] = useSelectedTasks();
-  const [filledTaskName, setFilledTaskName] = useState<string | null>(null);
+  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
+  const [filledTaskId, setFilledTaskId] = useState<string | null>(null);
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
 
   const handleSelectOutput = () => {
-    setSelectedTasks(outputTasks);
+    setSelectedTaskIds(outputTaskIds);
   };
 
   const handleSelectClear = () => {
-    setSelectedTasks([]);
+    setSelectedTaskIds([]);
   };
 
   const onArtifactHover = useCallback(
     (artifact: Artifact | null) => {
-      setFilledTaskName(artifact ? artifact.parentTask : null);
+      setFilledTaskId(artifact ? artifact.parentTaskId : null);
     },
-    [setFilledTaskName],
+    [setFilledTaskId],
   );
 
   useEffect(() => {
-    setSelectedTasks(tasknames ?? []);
-  }, [tasknames, setSelectedTasks]);
+    setSelectedTaskIds(taskIds ?? []);
+  }, [taskIds, setSelectedTaskIds]);
 
   useEffect(() => {
-    const filteredTasks = selectedTasks.length
-      ? selectedTasks
-          .map((name) => fetchedTasks.find((task) => task.name === name))
+    const filteredTasks = selectedTaskIds.length
+      ? selectedTaskIds
+          .map((id) => fetchedTasks.find((task) => task.id === id))
           .filter((task): task is Task => !!task)
       : fetchedTasks;
     setArtifactList(filteredTasks.flatMap((task) => task.artifacts));
-  }, [selectedTasks, fetchedTasks]);
+  }, [selectedTaskIds, fetchedTasks]);
 
   useEffect(() => {
-    const newOutputTasks: string[] = [];
+    const newOutputTaskIds: string[] = [];
     const traverse = (tasks: TaskNode[]) => {
-      const sortedTasks = [...tasks].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      const sortedTasks = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
       sortedTasks.forEach((taskNode) => {
         if (
           taskNode.children &&
           taskNode.children.length === 0 &&
-          !newOutputTasks.includes(taskNode.name)
+          !newOutputTaskIds.includes(taskNode.id)
         ) {
-          newOutputTasks.push(taskNode.name);
+          newOutputTaskIds.push(taskNode.id);
         } else if (taskNode.children && taskNode.children.length > 0) {
           traverse(taskNode.children);
         }
       });
     };
     traverse(taskTree);
-    setOutputTasks(newOutputTasks);
+    setOutputTaskIds(newOutputTaskIds);
   }, [taskTree]);
 
   return (
@@ -120,13 +118,13 @@ export default function BaseSingleWorkflowView({
             <WorkflowRelay
               data={data}
               workflowLink
-              filledTaskName={filledTaskName}
+              filledTaskId={filledTaskId}
               expanded={true}
             />
           )}
         </Box>
       </Box>
-      {tasknames && (
+      {taskIds && (
         <TaskInfo
           artifactList={artifactList}
           onArtifactHover={onArtifactHover}

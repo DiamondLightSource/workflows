@@ -1,12 +1,13 @@
 import { Box, Paper, Typography, useTheme, Tooltip } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { visitToText, Visit } from "@diamondlightsource/sci-react-ui";
+import { Visit } from "@diamondlightsource/sci-react-ui";
 import { getTaskStatusIcon } from "../common/StatusIcons";
 import { Artifact, TaskStatus } from "../../types";
 
 export interface TaskFlowNodeData {
   label: string;
+  taskId: string;
   status: TaskStatus;
   details: Artifact[];
   workflow: string;
@@ -17,17 +18,13 @@ export interface TaskFlowNodeData {
 
 interface TaskFlowNodeProps {
   data: TaskFlowNodeData;
-  onNavigate: (path: string, e?: React.MouseEvent) => void;
+  onNavigate: (id: string, e?: React.MouseEvent) => void;
 }
 
 const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
   const theme = useTheme();
   const handleOpenTaskPage = (e: React.MouseEvent) => {
-    const instrumentSessionId = visitToText(data.instrumentSession);
-    onNavigate(
-      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`,
-      e,
-    );
+    onNavigate(data.taskId, e);
   };
 
   return (
