@@ -89,7 +89,7 @@ describe("TasksFlow Component", () => {
       <TasksFlow
         workflowName="mockWorkflowA"
         tasks={mockTasks}
-        highlightedTaskNames={["node-1"]}
+        highlightedTaskIds={["node-1"]}
         onNavigate={() => {}}
       />,
     );

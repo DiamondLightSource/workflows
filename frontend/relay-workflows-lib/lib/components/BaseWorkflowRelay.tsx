@@ -8,13 +8,13 @@ import {
   type WorkflowStatus,
 } from "workflows-lib";
 import RetriggerWorkflow from "./RetriggerWorkflow";
-import { useFetchedTasks, useSelectedTasks } from "./workflowRelayUtils";
+import { useFetchedTasks, useSelectedTaskIds } from "./workflowRelayUtils";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface BaseWorkflowRelayProps {
   workflowLink?: boolean;
-  filledTaskName?: string | null;
+  filledTaskId?: string | null;
   expanded?: boolean;
   onChange?: () => void;
   data: workflowRelaySubscription$data;
@@ -22,7 +22,7 @@ interface BaseWorkflowRelayProps {
 
 export default function BaseWorkflowRelay({
   workflowLink,
-  filledTaskName,
+  filledTaskId,
   expanded,
   onChange,
   data,
@@ -33,30 +33,29 @@ export default function BaseWorkflowRelay({
   const navigate = useNavigate();
   const statusText = data.workflow.status?.__typename ?? "Unknown";
   const fetchedTasks = useFetchedTasks(data);
-  const [selectedTasks, setSelectedTasks] = useSelectedTasks();
+  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
-    (path: string, event?: React.MouseEvent) => {
-      const taskName = String(path.split("/").filter(Boolean).pop());
+    (taskId: string, event?: React.MouseEvent) => {
       const isCtrl = event?.ctrlKey || event?.metaKey;
 
-      let updatedTasks: string[];
+      let updatedTaskIds: string[];
 
       if (isCtrl) {
-        updatedTasks = selectedTasks.includes(taskName)
-          ? selectedTasks.filter((name) => name !== taskName)
-          : [...selectedTasks, taskName];
+        updatedTaskIds = selectedTaskIds.includes(taskId)
+          ? selectedTaskIds.filter((id) => id !== taskId)
+          : [...selectedTaskIds, taskId];
       } else {
-        updatedTasks = [taskName];
+        updatedTaskIds = [taskId];
       }
       if (workflowNameURL !== data.workflow.name) {
         void navigate(
           `/workflows/${visitToText(data.workflow.visit)}/${data.workflow.name}`,
         );
       }
-      setSelectedTasks(updatedTasks);
+      setSelectedTaskIds(updatedTaskIds);
     },
-    [navigate, selectedTasks, setSelectedTasks, workflowNameURL, data],
+    [navigate, selectedTaskIds, setSelectedTaskIds, workflowNameURL, data],
   );
 
   return (
@@ -105,8 +104,8 @@ export default function BaseWorkflowRelay({
             workflowName={data.workflow.name}
             tasks={fetchedTasks}
             onNavigate={onNavigate}
-            highlightedTaskNames={selectedTasks}
-            filledTaskName={filledTaskName}
+            highlightedTaskIds={selectedTaskIds}
+            filledTaskId={filledTaskId}
           />
         </ResizableBox>
       </WorkflowAccordion>
