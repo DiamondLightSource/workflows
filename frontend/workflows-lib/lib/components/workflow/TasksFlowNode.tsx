@@ -40,7 +40,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         border: data.highlighted ? "1px solid #ff9c1a" : "1px solid #ccc",
         boxShadow: data.highlighted ? "0 0 10px #ff9c1a" : theme.shadows[3],
         transition: "all 0.3s ease-in-out",
-        backgroundColor: data.filled ? "rgb(255, 232, 202)" : undefined,
+        backgroundColor: data.filled ? "rgba(62, 218, 0, 1)" : undefined,
       }}
     >
       <Handle
