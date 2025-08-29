@@ -37,7 +37,7 @@ tokio = { version = "1.47.1", features = [
     "net",
     "rt-multi-thread",
 ] }
-tracing-subscriber = { version = "0.3.19" }
+tracing-subscriber = { version = "0.3.20" }
 url = { version = "2.5.4" }
 k8s-openapi = { version = "0.24.0", features = ["latest"] }
 kube = { version = "0.99.0", features = ["runtime", "derive"] }
