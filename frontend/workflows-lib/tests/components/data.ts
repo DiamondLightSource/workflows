@@ -7,6 +7,7 @@ export const logArtifact: Artifact = {
   url: "fakepath/to/main.log",
   mimeType: "text/plain",
   parentTask: "task",
+  parentTaskId: "unique-id-0",
 };
 
 export const mockArtifacts: Artifact[] = [
@@ -16,6 +17,7 @@ export const mockArtifacts: Artifact[] = [
     mimeType: "image/png",
     url: "fakepath/to/image1.png",
     parentTask: "task1",
+    parentTaskId: "unique-id-1",
   },
 
   {
@@ -23,12 +25,14 @@ export const mockArtifacts: Artifact[] = [
     mimeType: "text/plain",
     url: "fakepath/to/textfile.txt",
     parentTask: "task2",
+    parentTaskId: "unique-id-2",
   },
   {
     name: "image2.jpeg",
     mimeType: "image/jpeg",
     url: "fakepath/to/image2.jpeg",
     parentTask: "task3",
+    parentTaskId: "unique-id-3",
   },
 ];
 

@@ -20,7 +20,7 @@ function SingleWorkflowPage() {
     localStorage.setItem("instrumentSessionID", visitid);
   }
 
-  const tasknames = useMemo(() => {
+  const taskIds = useMemo(() => {
     if (!taskParam) return [];
     try {
       return JSON.parse(taskParam) as string[];
@@ -51,7 +51,7 @@ function SingleWorkflowPage() {
                 <SingleWorkflowView
                   visit={visit}
                   workflowName={workflowName}
-                  tasknames={tasknames}
+                  taskIds={taskIds}
                 />
               </Suspense>
             </WorkflowsErrorBoundary>

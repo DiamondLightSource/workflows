@@ -1,12 +1,13 @@
 import { Box, Paper, Typography, useTheme, Tooltip } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { visitToText, Visit } from "@diamondlightsource/sci-react-ui";
+import { Visit } from "@diamondlightsource/sci-react-ui";
 import { getTaskStatusIcon } from "../common/StatusIcons";
 import { Artifact, TaskStatus } from "../../types";
 
 export interface TaskFlowNodeData {
   label: string;
+  taskId: string;
   status: TaskStatus;
   details: Artifact[];
   workflow: string;
@@ -17,17 +18,13 @@ export interface TaskFlowNodeData {
 
 interface TaskFlowNodeProps {
   data: TaskFlowNodeData;
-  onNavigate: (path: string, e?: React.MouseEvent) => void;
+  onNavigate: (id: string, e?: React.MouseEvent) => void;
 }
 
 const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
   const theme = useTheme();
   const handleOpenTaskPage = (e: React.MouseEvent) => {
-    const instrumentSessionId = visitToText(data.instrumentSession);
-    onNavigate(
-      `/workflows/${instrumentSessionId}/${data.workflow}/${data.label}/`,
-      e,
-    );
+    onNavigate(data.taskId, e);
   };
 
   return (
@@ -43,7 +40,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         border: data.highlighted ? "1px solid #ff9c1a" : "1px solid #ccc",
         boxShadow: data.highlighted ? "0 0 10px #ff9c1a" : theme.shadows[3],
         transition: "all 0.3s ease-in-out",
-        backgroundColor: data.filled ? "rgb(255, 232, 202)" : undefined,
+        backgroundColor: data.filled ? "rgba(62, 218, 0, 1)" : undefined,
       }}
     >
       <Handle

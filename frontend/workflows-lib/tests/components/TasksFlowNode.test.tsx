@@ -14,6 +14,7 @@ vi.mock("react-router-dom", async () => ({
 
 const mockData: TaskFlowNodeData = {
   label: "TaskA",
+  taskId: "id-12345",
   status: "SUCCEEDED",
   highlighted: false,
   filled: false,
@@ -43,7 +44,7 @@ describe("TaskFlowNode", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls onNavigate with the correct path when the task label is clicked", () => {
+  it("calls onNavigate with the correct id when the task label is clicked", () => {
     render(
       <ReactFlowProvider>
         <TaskFlowNode data={mockData} onNavigate={mockedNavigator} />
@@ -51,7 +52,7 @@ describe("TaskFlowNode", () => {
     );
     fireEvent.click(screen.getByText("TaskA"));
     expect(mockedNavigator).toHaveBeenCalledWith(
-      "/workflows/ab12345-6/Workflow1/TaskA/",
+      "id-12345",
       expect.any(Object),
     );
   });

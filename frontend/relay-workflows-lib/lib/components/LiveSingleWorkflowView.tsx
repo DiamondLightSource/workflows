@@ -12,7 +12,7 @@ import { SingleWorkflowViewProps } from "./SingleWorkflowView";
 export default function LiveWorkflowView({
   visit,
   workflowName,
-  tasknames,
+  taskIds,
 }: SingleWorkflowViewProps) {
   const [workflowData, setWorkflowData] =
     useState<workflowRelaySubscription$data | null>(null);
@@ -37,5 +37,5 @@ export default function LiveWorkflowView({
 
   useSubscription(subscriptionData);
 
-  return <BaseSingleWorkflowView tasknames={tasknames} data={workflowData} />;
+  return <BaseSingleWorkflowView taskIds={taskIds} data={workflowData} />;
 }

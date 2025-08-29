@@ -6,6 +6,7 @@ const logArtifact: Artifact = {
   url: "fakepath/to/main-logs",
   mimeType: "text/plain",
   parentTask: "task",
+  parentTaskId: "id-12345",
 };
 
 const instrumentSession: Visit = {

@@ -155,7 +155,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
           <TableBody>
             {sortedArtifacts.map((artifact) => (
               <TableRow
-                key={`${artifact.parentTask}-${artifact.name}`}
+                key={`${artifact.parentTaskId}-${artifact.name}`}
                 hover
                 style={{ cursor: "pointer" }}
               >

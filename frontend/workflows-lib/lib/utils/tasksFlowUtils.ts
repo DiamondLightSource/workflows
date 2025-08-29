@@ -75,7 +75,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const traverse = (tasks: TaskNode[], parents: string[] = []) => {
-    const sortedTasks = [...tasks].sort((a, b) => a.name.localeCompare(b.name));
+    const sortedTasks = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
     sortedTasks.forEach((task) => {
       if (
         !nodes.some((existingNode) => existingNode.id === task.id) &&
@@ -90,6 +90,7 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
           type: "custom",
           data: {
             label: taskName,
+            taskId: task.id,
             status: task.status,
             details: task.artifacts,
             workflow: task.workflow,
@@ -125,8 +126,8 @@ export function generateNodesAndEdges(taskNodes: TaskNode[]): {
 
 export function addHighlightsAndFills(
   nodes: Node[],
-  highlightedTaskNames?: string[],
-  filledTaskName?: string | null,
+  highlightedTaskIds?: string[],
+  filledTaskId?: string | null,
 ): Node[] {
   return nodes.map((node) => {
     return {
@@ -134,8 +135,8 @@ export function addHighlightsAndFills(
       data: {
         ...node.data,
         highlighted:
-          highlightedTaskNames?.includes(String(node.data.label)) ?? false,
-        filled: filledTaskName === node.data.label,
+          highlightedTaskIds?.includes(String(node.data.taskId)) ?? false,
+        filled: filledTaskId === node.data.taskId,
       },
     };
   });

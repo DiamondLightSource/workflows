@@ -28,12 +28,14 @@ describe("TaskInfo", () => {
         mimeType: "text/plain",
         url: "fakepath/to/main.log",
         parentTask: "task1",
+        parentTaskId: "id-12345",
       },
       {
         name: "textfile.txt",
         mimeType: "text/plain",
         url: "fakepath/to/textfile.txt",
         parentTask: "task2",
+        parentTaskId: "id-54321",
       },
     ];
     render(<TaskInfo artifactList={noImageArtifacts} />);
@@ -47,6 +49,7 @@ describe("TaskInfo", () => {
         mimeType: "image/png",
         url: "fakepath/to/image1.png",
         parentTask: "task1",
+        parentTaskId: "id-12345",
       },
     ];
     render(<TaskInfo artifactList={pngArtifact} />);
@@ -60,6 +63,7 @@ describe("TaskInfo", () => {
         mimeType: "image/jpeg",
         url: "fakepath/to/image1.jpeg",
         parentTask: "task1",
+        parentTaskId: "id-12345",
       },
     ];
     render(<TaskInfo artifactList={pngArtifact} />);
@@ -73,6 +77,7 @@ describe("TaskInfo", () => {
         mimeType: "image/tiff",
         url: "fakepath/to/image1.tiff",
         parentTask: "task1",
+        parentTaskId: "id-12345",
       },
     ];
     render(<TaskInfo artifactList={pngArtifact} />);

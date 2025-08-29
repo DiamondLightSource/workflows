@@ -6,7 +6,7 @@ import { isFinished } from "../utils";
 export interface WorkflowRelayProps {
   data: workflowRelayQuery$data;
   workflowLink?: boolean;
-  filledTaskName?: string | null;
+  filledTaskId?: string | null;
   expanded?: boolean;
   onChange?: () => void;
 }
