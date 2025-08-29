@@ -2,7 +2,7 @@ apiVersion: v2
 name: monitoring
 description: A monitoring stack for the workflows deployment
 type: application
-version: 0.1.4
+version: 0.1.5
 dependencies:
   - name: grafana
     repository: https://grafana.github.io/helm-charts
