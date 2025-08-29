@@ -5,6 +5,12 @@ critical:
       - mx
       - examples
       - magnetic-materials
+      - condensed-matter
+      - imaging
+      - bio-cryo-imaging
+      - surfaces
+      - crystallography
+      - spectroscopy
     location: label
   - type: requiredKey
     key: workflows.diamond.ac.uk/repository

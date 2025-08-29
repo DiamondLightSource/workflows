@@ -238,7 +238,7 @@ mod tests {
 
         let mut expected_result = vec![LintResult::new(
             "template1".to_string(),
-            vec!["Expected workflows.diamond.ac.uk/science-group-<mx, examples, magnetic-materials> in labels".to_string()],
+            vec!["Expected workflows.diamond.ac.uk/science-group-<mx, examples, magnetic-materials, condensed-matter, imaging, bio-cryo-imaging, surfaces, crystallography, spectroscopy> in labels".to_string()],
         )];
 
         println!("Response: {result:?}");
@@ -280,7 +280,7 @@ mod tests {
         let path = Path::new("./tests/manifests_failing_labels/workflow3.yaml").to_path_buf();
         let mut result = lint_from_manifest(&path, false).unwrap();
 
-        let mut expected_result = vec![LintResult::new("template3".to_string(), vec!["in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source".to_string(), "Expected workflows.diamond.ac.uk/science-group-<mx, examples, magnetic-materials> in labels".to_string(), "Expected workflows.diamond.ac.uk/repository in annotations".to_string()])];
+        let mut expected_result = vec![LintResult::new("template3".to_string(), vec!["in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source".to_string(), "Expected workflows.diamond.ac.uk/science-group-<mx, examples, magnetic-materials, condensed-matter, imaging, bio-cryo-imaging, surfaces, crystallography, spectroscopy> in labels".to_string(), "Expected workflows.diamond.ac.uk/repository in annotations".to_string()])];
 
         println!("Response: {result:?}");
         assert!(have_same_elements(&mut result, &mut expected_result));

@@ -52,14 +52,24 @@ impl WorkflowTemplatesFilter {
 /// Supported DLS science groups
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum ScienceGroup {
-    /// MX Group
+    /// Macromolecular Crystallography
     Mx,
-    /// Crystallography Group
-    Crystallography,
-    /// Magnetic Materials Group
-    MagneticMaterials,
-    /// Examples Group
+    /// Workflows Examples
     Examples,
+    /// Magnetic Materials
+    MagneticMaterials,
+    /// Soft Condensed Matter
+    CondensedMatter,
+    /// Imaging and Microscopy
+    Imaging,
+    /// Biological Cryo-Imaging
+    BioCryoImaging,
+    /// Structures and Surfaces
+    Surfaces,
+    /// Crystallography
+    Crystallography,
+    /// Spectroscopy
+    Spectroscopy,
 }
 
 impl GraphFilter for Vec<ScienceGroup> {
@@ -73,6 +83,11 @@ impl GraphFilter for Vec<ScienceGroup> {
                 ScienceGroup::Crystallography => "crystallography",
                 ScienceGroup::MagneticMaterials => "magnetic-materials",
                 ScienceGroup::Examples => "examples",
+                ScienceGroup::BioCryoImaging => "bio-cryo-imaging",
+                ScienceGroup::CondensedMatter => "condensed-matter",
+                ScienceGroup::Spectroscopy => "spectroscopy",
+                ScienceGroup::Imaging => "imaging",
+                ScienceGroup::Surfaces => "surfaces",
             };
             labels.push(format!("{label_prefix}{key}=true"));
         }

@@ -228,7 +228,7 @@ mod tests {
         assert_eq!(
             result,
             vec![
-                "Expected workflows.diamond.ac.uk/science-group-<mx, examples, magnetic-materials> in labels"
+                "Expected workflows.diamond.ac.uk/science-group-<mx, examples, magnetic-materials, condensed-matter, imaging, bio-cryo-imaging, surfaces, crystallography, spectroscopy> in labels"
             ]
         )
     }
