@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.5...workflows-lib@v0.1.6) (2025-08-29)
+
+
+### Features
+
+* **frontend:** add extra fields to custom renderers ([705b1e1](https://github.com/DiamondLightSource/workflows/commit/705b1e1d75823ab87f71094bdd4376006e524db2))
+* **frontend:** add ScanRangeInput component and json forms renderer ([0a13368](https://github.com/DiamondLightSource/workflows/commit/0a1336864f54a8f1c3a80495611eeb0b93175fe4))
+* **frontend:** add sliding list of images ([32cae44](https://github.com/DiamondLightSource/workflows/commit/32cae44b129463f231a416f9add5956e6f67091c))
+* **frontend:** add table view of the artefacts shown ([23b70a0](https://github.com/DiamondLightSource/workflows/commit/23b70a087b7753ff823e252f74b9cbd715af73e5))
+* **frontend:** added table sorting ([464d871](https://github.com/DiamondLightSource/workflows/commit/464d871c577324a1c8d09b44e89b0bbb3b10a063))
+* **frontend:** allow all image types ([7c0ab6b](https://github.com/DiamondLightSource/workflows/commit/7c0ab6ba878d82bd852739e9532a48eae85aca87))
+* **frontend:** fill task when artifact is hovered over ([5610b2a](https://github.com/DiamondLightSource/workflows/commit/5610b2a230a76866fc8c692fc6b490448c9af13f))
+* **frontend:** filter workflows by template ([15990b6](https://github.com/DiamondLightSource/workflows/commit/15990b616bc62b93f21badf2ea2ec65e01d89716))
+* **frontend:** make custom renderers available to form ([6cd595c](https://github.com/DiamondLightSource/workflows/commit/6cd595c84d154fc7a981a9392de2ab6bc2b9d048))
+* **frontend:** use accordion for artifact list ([7fa8b21](https://github.com/DiamondLightSource/workflows/commit/7fa8b21626a7190a0050ca47850b9dc00be86bdd))
+
+
+### Bug Fixes
+
+* **workflows-lib:** correct reactflow for 'steps' type ([b116395](https://github.com/DiamondLightSource/workflows/commit/b116395c274317d76f50fd3c2ace2a06ad84a9e9))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.4...workflows-lib@v0.1.5) (2025-07-16)
 
 
