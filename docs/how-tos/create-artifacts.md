@@ -24,7 +24,7 @@ spec:
       resources:
         requests:
           storage: 1Gi
-      storageClassName: local-path
+      storageClassName: netapp
 
   templates:
   - name: bash
@@ -99,7 +99,7 @@ The complete workflow is provided below for reference.
           resources:
             requests:
               storage: 1Gi
-          storageClassName: local-path
+          storageClassName: netapp
 
       templates:
       - name: bash
@@ -155,7 +155,7 @@ spec:
       resources:
         requests:
           storage: 1Gi
-      storageClassName: local-path
+      storageClassName: netapp
 
   templates:
   - name: bash
