@@ -107,7 +107,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: local-path
+        storageClassName: netapp
 
   templates:
     - name: read

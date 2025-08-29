@@ -302,7 +302,7 @@ to our template and mount it into our container like so
         resources:
             requests:
             storage: 1Gi
-        storageClassName: local-path
+        storageClassName: netapp
     templates:
     - name: ptypy-run
       container:
@@ -332,7 +332,7 @@ be a good starting point for your specific science application/workflow.
           resources:
             requests:
               storage: 1Gi
-          storageClassName: local-path
+          storageClassName: netapp
       arguments:
         parameters:
         - name: visitdir
@@ -395,7 +395,7 @@ be a good starting point for your specific science application/workflow.
           resources:
             requests:
               storage: 1Gi
-          storageClassName: local-path
+          storageClassName: netapp
       arguments:
         parameters:
         - name: visitdir
