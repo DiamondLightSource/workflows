@@ -32,6 +32,7 @@ argo-cd:
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
         g, jacob.williamson@diamond.ac.uk, role:admin
+        g, n.leung@diamond.ac.uk, role:admin
 
   repoServer:
     podAnnotations:
