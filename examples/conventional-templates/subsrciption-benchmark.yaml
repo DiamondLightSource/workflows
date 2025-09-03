@@ -72,20 +72,29 @@ spec:
         template: operation-one
       - name: operation-02
         template: operation-two
+        dependencies: [operation-01]
       - name: operation-03
         template: operation-three
+        dependencies: [operation-02]
       - name: operation-04
         template: operation-four
+        dependencies: [operation-03]
       - name: operation-05
         template: operation-five
+        dependencies: [operation-04]
       - name: operation-06
         template: operation-six
+        dependencies: [operation-05]
       - name: operation-07
         template: operation-seven
+        dependencies: [operation-06]
       - name: operation-08
         template: operation-eight
+        dependencies: [operation-07]
       - name: operation-09
         template: operation-nine
+        dependencies: [operation-08]
       - name: operation-10
         template: operation-ten
+        dependencies: [operation-09]
         
