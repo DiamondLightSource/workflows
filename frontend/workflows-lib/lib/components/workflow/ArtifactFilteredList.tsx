@@ -84,10 +84,10 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                     variant="h6"
                     sx={{ flexGrow: 1, textAlign: "left" }}
                   >
-                    Artefact Name
+                    Output Name
                   </Typography>
                   <Box
-                    sx={{
+                    style={{
                       marginLeft: "auto",
                       color: sortType.name === "name" ? "inherit" : "#888",
                       position: "absolute",
@@ -129,7 +129,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                     Parent Task
                   </Typography>
                   <Box
-                    style={{
+                    sx={{
                       marginLeft: "auto",
                       color:
                         sortType.name === "parentTask" ? "inherit" : "#888",
