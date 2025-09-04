@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.2...sessionspaces@v0.1.3) (2025-09-04)
+
+
+### Bug Fixes
+
+* **sessionspaces:** enable data directory for b01-1 instrument ([dc47eb1](https://github.com/DiamondLightSource/workflows/commit/dc47eb1f708f602c0d36339f2fe516f4c6c97865))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.1...sessionspaces@v0.1.2) (2025-05-19)
 
 
