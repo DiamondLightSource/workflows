@@ -10,61 +10,71 @@ spec:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-one")
+        import time
+        time.sleep(3600)
   - name: operation-two
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-two")
+        import time
+        time.sleep(3600)
   - name: operation-three
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-three")
+        import time
+        time.sleep(3600)
   - name: operation-four
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-four")
+        import time
+        time.sleep(3600)
   - name: operation-five
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-five")
+        import time
+        time.sleep(3600)
   - name: operation-six
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-six")
+        import time
+        time.sleep(3600)
   - name: operation-seven
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-seven")
+        import time
+        time.sleep(3600)
   - name: operation-eight
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-eight")
+        import time
+        time.sleep(3600)
   - name: operation-nine
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-nine")
+        import time
+        time.sleep(3600)
   - name: operation-ten
     script:
       image: python:3.10
       command: ["python"]
       source: |
-        print("This is operation-ten")
+        import time
+        time.sleep(3600)
   - name: workflow-entry
     dag:
       tasks:
