@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useResolvedPath } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Accordion,
   AccordionSummary,
@@ -10,7 +10,7 @@ import {
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Visit } from "@diamondlightsource/sci-react-ui";
+import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
 import { Workflow } from "../../types";
 
@@ -40,7 +40,6 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   onChange,
   retriggerComponent,
 }) => {
-  const resolvedPath = useResolvedPath(workflow.name);
   return (
     <Accordion
       key={workflow.name}
@@ -51,7 +50,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
         <Box sx={{ display: "flex", flexGrow: 1, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}
           {workflowLink && (
-            <Link to={resolvedPath}>
+            <Link to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}>
               <OpenInNewIcon />
             </Link>
           )}
