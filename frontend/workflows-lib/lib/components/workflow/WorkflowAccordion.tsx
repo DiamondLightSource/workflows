@@ -50,7 +50,9 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
         <Box sx={{ display: "flex", flexGrow: 1, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}
           {workflowLink && (
-            <Link to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}>
+            <Link
+              to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}
+            >
               <OpenInNewIcon />
             </Link>
           )}
