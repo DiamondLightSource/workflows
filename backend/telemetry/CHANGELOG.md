@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/telemetry@v0.1.2...telemetry@v0.1.3) (2025-09-04)
+
+
+### Features
+
+* **graph-proxy:** proof-of-concept total request counter ([735e12a](https://github.com/DiamondLightSource/workflows/commit/735e12a432cd0d681fcf1b83431d716e84126fd3))
+
+
+### Bug Fixes
+
+* **telemetry:** give all services reasonable tracing name ([67bc3bb](https://github.com/DiamondLightSource/workflows/commit/67bc3bbb073096c55adbc42434ceb040913f0c2c))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/telemetry@v0.1.1...telemetry@v0.1.2) (2025-04-14)
 
 
