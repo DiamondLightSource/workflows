@@ -44,6 +44,20 @@ grafana:
       use_pkce: true
       use_refresh_token: true
       email_attribute_path: id
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboardsConfigMaps:
+    default: grafana-dashboards
 
 thanos:
   existingObjstoreSecret: '{{ include "common.names.fullname" . }}-s3'
