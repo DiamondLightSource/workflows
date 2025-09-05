@@ -1,4 +1,5 @@
-import {Button, TextField} from "@mui/material"
+import { Search } from "@mui/icons-material"
+import { Button, Stack, TextField } from "@mui/material"
 import { useState } from "react"
 
 interface SearchFieldProps {
@@ -15,17 +16,25 @@ export default function SearchField({searchSetter}: SearchFieldProps) {
     
 
     return(
-        <>
-        <TextField 
-            onChange={e => setSearchTerm(e.target.value)}
-            onKeyDown={e => handleKeyPress(e.key)}
-        >
-            
-        </TextField>
-        <Button onClick={() => searchSetter(searchTerm)}>
-            Search
-        </Button>
-        </>
+        <Stack direction="row" spacing={1} justifyContent="center">
+            <TextField 
+                onChange={e => setSearchTerm(e.target.value)}
+                onKeyDown={e => handleKeyPress(e.key)}
+                slotProps={{
+                    input: {
+                        startAdornment: <Search/>
+                    }
+                }}
+            >
+            </TextField>
+            <Button
+                onClick={() => searchSetter(searchTerm)}
+                variant="contained"
+                color="primary"
+            >
+                Search
+            </Button>
+        </Stack>
     )
 }
 
