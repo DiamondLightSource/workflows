@@ -7,7 +7,7 @@ import React from "react";
 import { Container, Box, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
-interface TemplateCardProps {
+export interface TemplateCardProps {
   template: Template;
 }
 
