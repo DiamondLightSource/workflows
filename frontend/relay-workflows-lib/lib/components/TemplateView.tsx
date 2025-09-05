@@ -2,19 +2,13 @@ import { useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay/hooks";
 import { graphql } from "relay-runtime";
 import { Box } from "@mui/material";
-import {
-  JSONObject,
-  SubmissionGraphQLErrorMessage,
-  SubmissionNetworkErrorMessage,
-  SubmissionSuccessMessage,
-  SubmittedMessagesList,
-  Visit,
-} from "workflows-lib";
+import { JSONObject, SubmissionData, Visit } from "workflows-lib";
 import { visitToText } from "@diamondlightsource/sci-react-ui";
 import SubmissionForm from "./SubmissionForm";
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
 import { TemplateViewMutation as TemplateViewMutationType } from "./__generated__/TemplateViewMutation.graphql";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
+import SubmittedMessagesList from "./SubmittedMessagesList";
 
 const templateViewQuery = graphql`
   query TemplateViewQuery($templateName: String!) {
@@ -52,17 +46,12 @@ export default function TemplateView({
   const data = useLazyLoadQuery<TemplateViewQueryType>(templateViewQuery, {
     templateName,
   });
-  const [submissionResults, setSubmissionResults] = useState<
-    (
-      | SubmissionSuccessMessage
-      | SubmissionNetworkErrorMessage
-      | SubmissionGraphQLErrorMessage
-    )[]
-  >([]);
 
   const storedVisit = visitTextToVisit(
     localStorage.getItem("instrumentSessionID") ?? "",
   );
+
+  const [submissionData, setSubmissionData] = useState<SubmissionData[]>([]);
 
   const [commitMutation] =
     useMutation<TemplateViewMutationType>(templateViewMutation);
@@ -77,20 +66,27 @@ export default function TemplateView({
       onCompleted: (response, errors) => {
         if (errors?.length) {
           console.error("GraphQL errors:", errors);
-          setSubmissionResults((prev) => [
+          setSubmissionData((prev) => [
             {
-              type: "graphQLError",
-              errors: errors,
+              submissionResult: {
+                type: "graphQLError",
+                errors: errors,
+              },
+              visit: visit,
             },
             ...prev,
           ]);
         } else {
           const submittedName = response.submitWorkflowTemplate.name;
           console.log("Successfully submitted:", submittedName);
-          setSubmissionResults((prev) => [
+          setSubmissionData((prev) => [
             {
-              type: "success",
-              message: `${visitToText(visit)}/${submittedName}`,
+              submissionResult: {
+                type: "success",
+                message: `${visitToText(visit)}/${submittedName}`,
+              },
+              visit: visit,
+              workflowName: submittedName,
             },
             ...prev,
           ]);
@@ -99,10 +95,13 @@ export default function TemplateView({
       },
       onError: (err) => {
         console.error("Submission failed:", err);
-        setSubmissionResults((prev) => [
+        setSubmissionData((prev) => [
           {
-            type: "networkError",
-            error: err,
+            submissionResult: {
+              type: "networkError",
+              error: err,
+            },
+            visit: visit,
           },
           ...prev,
         ]);
@@ -119,7 +118,17 @@ export default function TemplateView({
             visit={visit ?? storedVisit ?? undefined}
             onSubmit={submitWorkflow}
           />
-          <SubmittedMessagesList submissionResults={submissionResults} />
+          <Box
+            sx={{
+              width: {
+                xs: "100%",
+                sm: "100%",
+                md: "800px",
+              },
+            }}
+          >
+            <SubmittedMessagesList submittedData={submissionData} />
+          </Box>
         </Box>
       ) : (
         <>No Template Name provided</>
