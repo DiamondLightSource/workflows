@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { Box, Pagination } from "@mui/material";
@@ -37,7 +37,7 @@ export default function TemplatesList() {
     setPageNumber(page);
   };
 
-  useEffect(() => {
+  useMemo(() => {
     const templates = data.workflowTemplates.nodes
     let filteredTemplates = []
     if (search === "") {setFilteredTemplates(templates)}
@@ -55,7 +55,7 @@ export default function TemplatesList() {
     }
 
     setFilteredTemplates(filteredTemplates)
-  }, [search])
+  }, [search, data])
 
   return (
     <>
