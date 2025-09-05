@@ -37,33 +37,29 @@ export default function TemplatesList() {
     setPageNumber(page);
   };
 
-  const filterTemplates = () => {
-    let templates = data.workflowTemplates.nodes
+  useEffect(() => {
+    const templates = data.workflowTemplates.nodes
     let filteredTemplates = []
-    if (search === "") {return templates}
+    if (search === "") {setFilteredTemplates(templates)}
+
+    const upperSearch = search.toUpperCase()
 
     for(let i = 0; i < templates.length; i++){
       if(
-        templates[i].title?.includes(search) ||
-        templates[i].name?.includes(search) || 
-        templates[i].description?.includes(search)
+        templates[i].title?.toUpperCase().includes(upperSearch) ||
+        templates[i].name?.toUpperCase().includes(upperSearch) || 
+        templates[i].description?.toUpperCase().includes(upperSearch)
       ){
         filteredTemplates.push(templates[i])
       }
     }
 
-    return filteredTemplates
-  }
-
-  useEffect(() => {
-    setFilteredTemplates(filterTemplates())
-  },[search])
+    setFilteredTemplates(filteredTemplates)
+  }, [search])
 
   return (
     <>
-    <Box>
-      <SearchField searchSetter={setSearch} />
-    </Box>
+    <SearchField searchSetter={setSearch}/>
     <Box display="flex" flexDirection="column" alignItems="center" width="100%">
       {paginatedPosts.map((node, index) => (
         <TemplateCard key={index} template={node} />
