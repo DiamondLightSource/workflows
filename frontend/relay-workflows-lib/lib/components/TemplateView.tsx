@@ -64,6 +64,8 @@ export default function TemplateView({
     localStorage.getItem("instrumentSessionID") ?? "",
   );
 
+  const [submittedWorkflowName, setSubmittedWorkflowName] = useState<string>("");
+
   const [commitMutation] =
     useMutation<TemplateViewMutationType>(templateViewMutation);
 
@@ -86,6 +88,7 @@ export default function TemplateView({
           ]);
         } else {
           const submittedName = response.submitWorkflowTemplate.name;
+          setSubmittedWorkflowName(submittedName);
           console.log("Successfully submitted:", submittedName);
           setSubmissionResults((prev) => [
             {
@@ -119,7 +122,11 @@ export default function TemplateView({
             visit={visit ?? storedVisit ?? undefined}
             onSubmit={submitWorkflow}
           />
-          <SubmittedMessagesList submissionResults={submissionResults} />
+          <SubmittedMessagesList
+            submissionResults={submissionResults}
+            visit={visit}
+            submittedWorkflowName={submittedWorkflowName}
+          />
         </Box>
       ) : (
         <>No Template Name provided</>
