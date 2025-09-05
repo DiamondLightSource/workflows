@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -14,7 +14,19 @@ import {
   SubmissionGraphQLErrorMessage,
   SubmissionNetworkErrorMessage,
   SubmissionSuccessMessage,
+  Visit,
+  WorkflowStatus,
 } from "../../types";
+import { useSubscription } from "react-relay";
+import { GraphQLSubscriptionConfig } from "relay-runtime";
+import {
+  workflowRelaySubscription$data,
+  workflowRelaySubscription as WorkflowRelaySubscriptionType,
+} from "relay-workflows-lib/lib/graphql/__generated__/workflowRelaySubscription.graphql";
+import {
+  workflowRelaySubscription,
+} from "relay-workflows-lib/lib/graphql/workflowRelaySubscription";
+import { getWorkflowStatusIcon } from "../common/StatusIcons";
 
 const renderSubmittedMessage = (
   r:
@@ -82,11 +94,37 @@ interface SubmittedMessagesListProps {
     | SubmissionNetworkErrorMessage
     | SubmissionSuccessMessage
   )[];
+  submittedWorkflowName: string;
+  visit: Visit;
 }
 
 const SubmittedMessagesList: React.FC<SubmittedMessagesListProps> = ({
   submissionResults,
+  visit,
+  submittedWorkflowName,
 }) => {
+  const [workflowData, setWorkflowData] =
+    useState<workflowRelaySubscription$data | null>(null);
+
+  const subscriptionData: GraphQLSubscriptionConfig<WorkflowRelaySubscriptionType> =
+    useMemo(
+      () => ({
+        subscription: workflowRelaySubscription,
+        variables: { visit, name: submittedWorkflowName },
+        onNext: (res) => {
+          setWorkflowData(res ?? null);
+        },
+        onError: (error: unknown) => {
+          console.error("Subscription error:", error);
+        },
+        onCompleted: () => {
+          console.log("completed");
+        },
+      }),
+      [visit, submittedWorkflowName],
+    );
+
+  useSubscription(subscriptionData);
   return (
     <Box
       sx={{
