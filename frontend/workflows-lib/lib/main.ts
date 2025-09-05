@@ -3,7 +3,6 @@ export { default as TasksFlow } from "./components/workflow/TasksFlow";
 export { default as TasksTable } from "./components/workflow/TasksTable";
 export { default as SubmissionForm } from "./components/template/SubmissionForm";
 export { default as TemplateCard } from "./components/template/TemplateCard";
-export { default as SubmittedMessagesList } from "./components/workflow/SubmittedMessagesList";
 export { default as WorkflowsErrorBoundary } from "./components/workflow/WorkflowsErrorBoundary";
 export { default as WorkflowListFilterDrawer } from "./components/workflow/WorkflowListFilterDrawer";
 export { default as WorkflowsNavbar } from "./components/workflow/WorkflowsNavbar";
