@@ -15,7 +15,7 @@ opentelemetry_sdk = { workspace = true}
 thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-opentelemetry = { version = "0.31.0" }
-tracing-subscriber = { version = "0.3.19" }
+tracing-subscriber = { version = "0.3.20" }
 url = { workspace = true }
 
 [dev-dependencies]
