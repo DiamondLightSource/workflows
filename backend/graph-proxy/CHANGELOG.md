@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.9...graph-proxy@v0.1.10) (2025-09-08)
+
+
+### Features
+
+* **graph-proxy:** distinguish between query types in metrics ([37b8701](https://github.com/DiamondLightSource/workflows/commit/37b87012dded37db133472fa1756ff910e16f08e))
+* **graph-proxy:** update science-group filter semantics ([237b1aa](https://github.com/DiamondLightSource/workflows/commit/237b1aa47c93b724ee3fa5f1724ea365fb350605))
+
+
+### Bug Fixes
+
+* exhaustive science group list ([232a055](https://github.com/DiamondLightSource/workflows/commit/232a05582ea1ffa05304f0db94f8e056e5a25e5b))
+* **graph-proxy:** fix base prefix path parsing in dev env ([9cb9896](https://github.com/DiamondLightSource/workflows/commit/9cb989693889e4776d3e994cda524fffa08148ed))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.8...graph-proxy@v0.1.9) (2025-08-14)
 
 
