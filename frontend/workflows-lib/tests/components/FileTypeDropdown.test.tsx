@@ -149,12 +149,14 @@ describe("FileTypeDropdown Integration", () => {
         url: "http://example.com/file1",
         mimeType: "text/plain",
         parentTask: "task1",
+        parentTaskId: "unique-id-1",
       },
       {
         name: "file2",
         url: "http://example.com/file2",
         mimeType: "text/plain",
         parentTask: "task2",
+        parentTaskId: "unique-id-2",
       },
     ];
 
