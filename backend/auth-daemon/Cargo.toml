@@ -1,0 +1,20 @@
+[package]
+name = "auth-daemon"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+axum = { version = "0.8.4", features = ["macros"] }
+clap = { workspace = true, features = ["derive", "env"] }
+dotenvy.workspace = true
+regex = "1.11.2"
+reqwest = { workspace = true, features = ["json"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tower-http = { version = "0.6.6", features = ["cors"] }
+tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+url.workspace = true

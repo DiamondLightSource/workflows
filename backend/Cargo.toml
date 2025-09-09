@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "argo-workflows-openapi",
+    "argo-workflows-openapi", "auth-daemon",
     "graph-proxy",
     "sessionspaces",
     "telemetry",

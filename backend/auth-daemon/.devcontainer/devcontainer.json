@@ -1,0 +1,26 @@
+{
+  "name": "workflows-graph-proxy",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "containerEnv": {
+    "ARGO_SERVER_URL": "tmp"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.4.2": {
+      "username": "none",
+      "upgradePackages": false
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/"
+}
