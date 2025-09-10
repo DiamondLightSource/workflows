@@ -53,10 +53,7 @@ groups:
   - name: spectroscopy
     enabled: true
     permittedRepos: []
-    apps:
-      - name: spectroscopy-bluesky
-        repoURL: https://github.com/DiamondLightSource/spectroscopy-bluesky
-        path: workflows/helm
+    apps: []
   - name: crystallography
     enabled: true
     permittedRepos: []
