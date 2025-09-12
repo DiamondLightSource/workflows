@@ -6,12 +6,14 @@ use proxy::proxy;
 
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
+    process,
     sync::Arc,
 };
 
 use axum::{Router, http::Method, routing::post};
 use clap::Parser;
 use regex::Regex;
+use tokio::signal::unix::{SignalKind, signal};
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{debug, info};
 use tracing_subscriber::EnvFilter;
@@ -87,6 +89,15 @@ async fn serve(router: Router, host: IpAddr, port: u16) -> std::io::Result<()> {
     let socket_addr = SocketAddr::new(host, port);
     let listener = tokio::net::TcpListener::bind(socket_addr).await?;
     debug!("Server is running at http://{}", socket_addr);
-    axum::serve(listener, router.into_make_service()).await?;
+    axum::serve(listener, router.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let mut sigterm = signal(SignalKind::terminate()).expect("Failed to listen for SIGTERM");
+    sigterm.recv().await;
+    println!("Shutting down");
+    process::exit(0);
 }
