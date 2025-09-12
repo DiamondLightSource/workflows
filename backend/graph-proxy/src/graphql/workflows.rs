@@ -452,6 +452,11 @@ impl Task {
     async fn end_time(&self) -> Option<DateTime<Utc>> {
         self.node_status.finished_at.as_ref().map(|time| **time)
     }
+
+    /// A human readable message indicating details about why this step is in this condition
+    async fn message(&self) -> Option<&str> {
+        self.node_status.message.as_deref()
+    }
 }
 
 async fn fetch_missing_task_info(
