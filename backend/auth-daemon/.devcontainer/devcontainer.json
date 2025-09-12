@@ -7,7 +7,7 @@
   "containerEnv": {
     "AUTH_DOMAIN": "https://authn.diamond.ac.uk/realms/master",
     "CLIENT_ID": "workflows-cluster",
-    "GRAPH_URL": "https://workflows.diamond.ac.uk"
+    "GRAPH_URL": "https://workflows.diamond.ac.uk/graphql"
   },
   "customizations": {
     "vscode": {

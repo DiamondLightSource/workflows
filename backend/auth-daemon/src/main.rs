@@ -21,6 +21,7 @@ use axum::{
 use clap::Parser;
 use regex::Regex;
 use tokio::signal::unix::{SignalKind, signal};
+
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{debug, info};
 use tracing_subscriber::EnvFilter;
@@ -90,7 +91,7 @@ fn setup_router(state: Arc<RouterState>, cors_allow: Option<Vec<Regex>>) -> anyh
                 .allow_headers(tower_http::cors::Any)
                 .allow_origin(cors_origin),
         )
-        .route("healthz", get(healthcheck)))
+        .route("/healthz", get(healthcheck)))
 }
 
 async fn serve(router: Router, host: IpAddr, port: u16) -> std::io::Result<()> {
