@@ -9,6 +9,7 @@ RUN cargo install cargo-auditable
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
+COPY auth-daemon/Cargo.toml auth-daemon/
 COPY telemetry/build.rs telemetry/build.rs
 COPY telemetry/Cargo.toml telemetry/Cargo.toml
 COPY Cargo.toml Cargo.lock ./
@@ -19,6 +20,8 @@ RUN mkdir argo-workflows-openapi/src \
     && echo "fn main() {}" > graph-proxy/src/main.rs \
     && mkdir sessionspaces/src \
     && echo "fn main() {}" > sessionspaces/src/main.rs \
+    && mkdir auth-daemon/src \
+    && echo "fn prebuild() {}" > auth-daemon/src/main.rs \
     && mkdir telemetry/src \
     && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
