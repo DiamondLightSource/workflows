@@ -4,12 +4,19 @@
 mod proxy;
 use proxy::proxy;
 
+mod healthcheck;
+use healthcheck::healthcheck;
+
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
 };
 
-use axum::{Router, http::Method, routing::post};
+use axum::{
+    Router,
+    http::Method,
+    routing::{get, post},
+};
 use clap::Parser;
 use regex::Regex;
 use tower_http::cors::{AllowOrigin, CorsLayer};
@@ -80,7 +87,8 @@ fn setup_router(state: Arc<RouterState>, cors_allow: Option<Vec<Regex>>) -> anyh
                 .allow_methods([Method::GET, Method::POST])
                 .allow_headers(tower_http::cors::Any)
                 .allow_origin(cors_origin),
-        ))
+        )
+        .route("healthz", get(healthcheck)))
 }
 
 async fn serve(router: Router, host: IpAddr, port: u16) -> std::io::Result<()> {
