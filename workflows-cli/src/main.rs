@@ -15,6 +15,9 @@ mod command_runner;
 mod helm_integration;
 use helm_integration::ManifestType;
 
+/// Create repository for workflow templates
+mod create;
+
 use clap::Parser;
 use std::path::PathBuf;
 use std::process::Command;
@@ -29,6 +32,8 @@ enum Cli {
     LintConfig(LintConfigArgs),
     /// Submit workflows and templates
     Submit(SubmitArgs),
+    /// Create a new repository to create workflow templates as conventional manifests and/or helm based templates
+    Create(CreateArgs),
 }
 
 /// Arguments for linting from a configfile
@@ -51,6 +56,19 @@ struct LintArgs {
 
     /// Path to manifest(s). Expects a file, or directory if --all
     file_name: PathBuf,
+}
+
+/// Arguments for template repo generation
+#[derive(Debug, Parser)]
+struct CreateArgs {
+    /// Name of the repository to create
+    name: String,
+    #[arg(long)]
+    manifest: bool,
+    #[arg(long)]
+    helm: bool,
+    #[arg(env = "WORKFLOWS_HOME")]
+    workflows_home: String,
 }
 
 /// Test workflow templates
@@ -85,6 +103,9 @@ fn main() {
         }
         Cli::Submit(args) => {
             submit_workflow::submit(args);
+        }
+        Cli::Create(args) => {
+            create::generate(args, create::prompt);
         }
     }
 }
