@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.10...graph-proxy@v0.1.11) (2025-09-15)
+
+
+### Features
+
+* **graph-proxy:** error message for an individual workflow steps ([1f10d3c](https://github.com/DiamondLightSource/workflows/commit/1f10d3cb5e3ef0cb2f36b96b6c5b94c04628a292))
+
 ## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.9...graph-proxy@v0.1.10) (2025-09-08)
 
 
