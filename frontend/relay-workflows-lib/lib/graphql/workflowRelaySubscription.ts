@@ -20,6 +20,7 @@ export const workflowRelaySubscription: GraphQLTaggedNode = graphql`
           startTime
           message
           tasks {
+            message
             id
             name
             status
@@ -38,6 +39,7 @@ export const workflowRelaySubscription: GraphQLTaggedNode = graphql`
           endTime
           message
           tasks {
+            message
             id
             name
             status
@@ -56,6 +58,7 @@ export const workflowRelaySubscription: GraphQLTaggedNode = graphql`
           endTime
           message
           tasks {
+            message
             id
             name
             status
@@ -74,6 +77,7 @@ export const workflowRelaySubscription: GraphQLTaggedNode = graphql`
           endTime
           message
           tasks {
+            message
             id
             name
             status

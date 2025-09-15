@@ -21,6 +21,34 @@ export default function WorkflowInfo({ workflow }: workflowRelayQuery$data) {
           <strong>Parameters:</strong>{" "}
           {JSON.stringify(workflow.parameters, null, 2)}
         </Typography>
+        {(workflow.status?.__typename === "WorkflowErroredStatus" ||
+          workflow.status?.__typename === "WorkflowFailedStatus") && (
+          <>
+            <Typography sx={{ whiteSpace: "break-spaces", color: "darkred" }}>
+              {workflow.status.message && (
+                <Typography>
+                  <strong>Workflow Error: </strong>
+                  {workflow.status.message}
+                </Typography>
+              )}
+              {workflow.status.tasks.map(
+                (task) =>
+                  task.message && (
+                    <Typography
+                      variant="body1"
+                      sx={{ whiteSpace: "break-spaces", color: "darkred" }}
+                    >
+                      <strong>Task Name: </strong>
+                      {task.name}
+                      {"\n"}
+                      <strong>Task Error: </strong>
+                      {task.message}
+                    </Typography>
+                  ),
+              )}
+            </Typography>
+          </>
+        )}
       </AccordionDetails>
     </Accordion>
   );
