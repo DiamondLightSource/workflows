@@ -114,6 +114,7 @@ export default function BaseSingleWorkflowView({
               CLEAR
             </ToggleButton>
           </Box>
+
           {data && (
             <WorkflowRelay
               data={data}
@@ -124,6 +125,7 @@ export default function BaseSingleWorkflowView({
           )}
         </Box>
       </Box>
+
       {taskIds && (
         <TaskInfo
           artifactList={artifactList}
