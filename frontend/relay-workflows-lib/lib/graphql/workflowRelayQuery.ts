@@ -23,6 +23,7 @@ export const workflowRelayQuery = graphql`
             id
             name
             status
+            message
             depends
             dependencies
             stepType
@@ -41,6 +42,7 @@ export const workflowRelayQuery = graphql`
             id
             name
             status
+            message
             depends
             dependencies
             stepType
@@ -59,6 +61,7 @@ export const workflowRelayQuery = graphql`
             id
             name
             status
+            message
             depends
             dependencies
             stepType
@@ -77,6 +80,7 @@ export const workflowRelayQuery = graphql`
             id
             name
             status
+            message
             depends
             dependencies
             stepType
