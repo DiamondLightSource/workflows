@@ -18,7 +18,7 @@ import {
 import {
   TemplatesListQuery$data,
   TemplatesListQuery$variables,
-} from "relay-workflows-lib/lib/components/__generated__/TemplatesListQuery.graphql";
+} from "relay-workflows-lib/lib/graphql/__generated__/TemplatesListQuery.graphql";
 import templateListResponse from "./responses/templates/templateListResponse.json";
 import {
   templateViewResponse,
