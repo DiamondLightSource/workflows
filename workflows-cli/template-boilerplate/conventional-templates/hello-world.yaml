@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
+
+# Keep the line at the top to link to the Argo Workflows schema for validation and autocompletion
+# Use this template as a boilerplate for creating your own conventional workflow templates.
+# Once you use this as an example, please delete this file.
+# For more thorough examples have a look at the examples found in the workflows documentation
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: hello-world-template
+  # #Labels for which science group your worfklow template belongs to
+  # labels:
+  #   workflows.diamond.ac.uk/science-group-examples: "true"
+  #   workflows.diamond.ac.uk/science-group-mx: "true"
+spec:
+  entrypoint: hello-world
+  arguments:
+    parameters:
+    - name: visitdir
+      valueFrom:
+        configMapKeyRef:
+          name: sessionspaces
+          key: data_directory
+  # Define a volume to share data between workflow steps
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: netapp
+
+  # This is where your templates are defined
+  templates:
+  - name: bash-command
+    inputs:
+      parameters:
+      - name: command
+    container:
+      image: busybox
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      command: ["/bin/sh", "-c"]
+      args:
+      - "{{ inputs.parameters.command }}"
+
+  # Set the steps in the order you want your templates to run
+  - name: hello-world
+    dag:
+      tasks:
+      - name: say-hello
+        template: bash-command # this is the template name
+        arguments:
+          parameters:
+          - name: command
+            value: |
+              echo "This is an example template with a session directory of: {{workflow.parameters.visitdir}}" > /tmp/my-file.txt
+              cat /tmp/my-file.txt
+      - name: read-shared-file
+        dependencies: [say-hello]
+        template: bash-command
+        arguments:
+          parameters:
+          - name: command
+            value: |
+              cat /tmp/my-file.txt
