@@ -1,0 +1,5 @@
+apiVersion: v2
+name: helm-based-templates # Change the name and description to match your use case
+description: A Helm chart from the example
+type: application
+version: 0.1.0
