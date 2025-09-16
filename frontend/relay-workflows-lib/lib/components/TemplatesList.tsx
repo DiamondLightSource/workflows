@@ -1,28 +1,14 @@
 import { ChangeEvent, useMemo, useState } from "react";
-import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { Box, Pagination } from "@mui/material";
 import { TemplateCard } from "workflows-lib/lib/components/template/TemplateCard";
-import { TemplatesListQuery } from "./__generated__/TemplatesListQuery.graphql";
+import { templatesListQuery } from "../graphql/TemplatesListQuery";
+import { TemplatesListQuery as TemplatesListQueryType } from "../graphql/__generated__/TemplatesListQuery.graphql";
 import { useClientSidePagination } from "../utils";
 import TemplateSearchField from "workflows-lib/lib/components/template/TemplateSearchField";
 
-const templatesListQuery = graphql`
-  query TemplatesListQuery {
-    workflowTemplates {
-      nodes {
-        name
-        description
-        title
-        maintainer
-        repository
-      }
-    }
-  }
-`;
-
 export default function TemplatesList() {
-  const data = useLazyLoadQuery<TemplatesListQuery>(templatesListQuery, {});
+  const data = useLazyLoadQuery<TemplatesListQueryType>(templatesListQuery, {});
   const [search, setSearch] = useState("");
 
   const filteredTemplates = useMemo(() => {

@@ -7,13 +7,13 @@ import {
   visitToText,
 } from "@diamondlightsource/sci-react-ui";
 import Workflows from "relay-workflows-lib/lib/components/Workflows";
+import WorkflowListFilterDrawer from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
 import {
   WorkflowQueryFilter,
   WorkflowsErrorBoundary,
-  WorkflowListFilterDrawer,
   WorkflowsNavbar,
 } from "workflows-lib";
-import { WorkflowListFilterDisplay } from "workflows-lib/lib/components/workflow/WorkflowListFilterDrawer";
+import { WorkflowListFilterDisplay } from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
 import { useVisitInput, ScrollRestorer } from "./utils";
 
 const WorkflowsListPage: React.FC = () => {
@@ -61,11 +61,13 @@ const WorkflowsListPage: React.FC = () => {
                   onSubmit={handleVisitSubmit}
                   visit={visit ?? undefined}
                 />
-                <WorkflowListFilterDrawer
-                  onApplyFilters={(newFilters: WorkflowQueryFilter) => {
-                    setWorkflowQueryFilter(newFilters);
-                  }}
-                />
+                <Suspense>
+                  <WorkflowListFilterDrawer
+                    onApplyFilters={(newFilters: WorkflowQueryFilter) => {
+                      setWorkflowQueryFilter(newFilters);
+                    }}
+                  />
+                </Suspense>
               </Stack>
               {workflowQueryFilter && (
                 <WorkflowListFilterDisplay filter={workflowQueryFilter} />

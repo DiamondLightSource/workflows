@@ -12,7 +12,10 @@ import {
 import ClearIcon from "@mui/icons-material/Clear";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
-import { WorkflowQueryFilter, WorkflowStatusBool } from "../../types";
+import { WorkflowQueryFilter, WorkflowStatusBool } from "workflows-lib";
+import { useLazyLoadQuery } from "react-relay/hooks";
+import { templatesListQuery } from "relay-workflows-lib/lib/graphql/TemplatesListQuery.ts";
+import { TemplatesListQuery as TemplatesListQueryType } from "relay-workflows-lib/lib/graphql/__generated__/TemplatesListQuery.graphql";
 
 interface WorkflowListFilterDrawerProps {
   onApplyFilters: (filters: WorkflowQueryFilter) => void;
@@ -74,6 +77,10 @@ function WorkflowListFilterDrawer({
     template?: boolean;
   }>({});
   const [status, setStatus] = useState<{ label: string; value: string }[]>([]);
+  const data = useLazyLoadQuery<TemplatesListQueryType>(templatesListQuery, {});
+  const templateOptions = data.workflowTemplates.nodes.map(
+    (templateNode) => templateNode.name,
+  );
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -93,8 +100,8 @@ function WorkflowListFilterDrawer({
     setErrors((prev) => ({ ...prev, creator: !isValid }));
   };
 
-  const handleChangeTemplate = (value: string) => {
-    setTemplate(value);
+  const handleChangeTemplate = (value: string | null) => {
+    setTemplate(value ?? "");
 
     const isValid = true;
     setErrors((prev) => ({ ...prev, template: !isValid }));
@@ -215,28 +222,15 @@ function WorkflowListFilterDrawer({
               },
             }}
           />
-          <TextField
+          <Autocomplete
+            options={templateOptions}
             fullWidth
             id="template"
-            label="Template"
-            variant="outlined"
+            data-testid="template-box"
             value={template}
-            error={!!errors.template}
-            onChange={(e) => {
-              handleChangeTemplate(e.target.value);
-            }}
-            slotProps={{
-              input: {
-                endAdornment: creator ? (
-                  <IconButton
-                    onClick={() => {
-                      handleChangeTemplate("");
-                    }}
-                  >
-                    <ClearIcon sx={{ fontSize: 20 }} />
-                  </IconButton>
-                ) : undefined,
-              },
+            renderInput={(params) => <TextField {...params} label="Template" />}
+            onChange={(_e, value) => {
+              handleChangeTemplate(value);
             }}
           />
           <Autocomplete
