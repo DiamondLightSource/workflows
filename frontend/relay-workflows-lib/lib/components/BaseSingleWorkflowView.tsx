@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box, ToggleButton } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  ToggleButton,
+  Typography,
+} from "@mui/material";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
@@ -7,6 +14,7 @@ import { useFetchedTasks, useSelectedTaskIds } from "./workflowRelayUtils";
 import WorkflowInfo from "./WorkflowInfo";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import WorkflowRelay from "./WorkflowRelay";
+import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 
 interface BaseSingleWorkflowViewProps {
   data: workflowRelaySubscription$data | null;
@@ -114,6 +122,7 @@ export default function BaseSingleWorkflowView({
               CLEAR
             </ToggleButton>
           </Box>
+
           {data && (
             <WorkflowRelay
               data={data}
@@ -124,6 +133,33 @@ export default function BaseSingleWorkflowView({
           )}
         </Box>
       </Box>
+      {(data?.workflow.status?.__typename === "WorkflowErroredStatus" ||
+        data?.workflow.status?.__typename === "WorkflowFailedStatus") && (
+        <Accordion expanded sx={{ width: "100%" }}>
+          <AccordionSummary>
+            <Typography variant="h4" sx={{ color: "red" }}>
+              <strong>Attention!</strong>
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {data.workflow.status.tasks.map(
+              (task) =>
+                task.message && (
+                  <Typography
+                    variant="body1"
+                    sx={{ whiteSpace: "break-spaces" }}
+                  >
+                    <strong>Task Name: </strong>
+                    {task.name}
+                    {"\n"}
+                    <strong>Message: </strong>
+                    {task.message}
+                  </Typography>
+                ),
+            )}
+          </AccordionDetails>
+        </Accordion>
+      )}
       {taskIds && (
         <TaskInfo
           artifactList={artifactList}
