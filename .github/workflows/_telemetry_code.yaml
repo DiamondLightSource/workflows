@@ -17,7 +17,7 @@ jobs:
           components: clippy,rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.8.0
+        uses: Swatinem/rust-cache@v2.8.1
         with:
           workspaces: backend/telemetry
           shared-key: backend/telemetry
@@ -57,7 +57,7 @@ jobs:
           components: rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.8.0
+        uses: Swatinem/rust-cache@v2.8.1
         with:
           workspaces: backend/telemetry
           shared-key: backend/telemetry
