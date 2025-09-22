@@ -11,6 +11,9 @@
       "release-type": "rust",
       "package-name": "workflows-cli"
     },
+    "backend/auth-daemon": {
+      "release-type": "rust"
+    },
     "backend/graph-proxy": {
       "release-type": "rust",
       "extra-files": [
