@@ -68,7 +68,7 @@ kyverno:
     cleanupController:
       enabled: false
     reportsController:
-      enabled: false
+      enabled: true
 
 sessionspaces:
   enabled: true
