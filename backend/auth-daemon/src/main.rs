@@ -44,6 +44,8 @@ struct RouterState {
     graph_url: Url,
     #[arg(short, long, env = "TOKEN")]
     token: String,
+    #[arg(long, env = "PORT")]
+    port: u16,
 }
 
 #[tokio::main]
@@ -56,10 +58,11 @@ async fn main() -> anyhow::Result<()> {
 
     match args {
         Cli::Serve(args) => {
+            let requested_port = args.port;
             let router_state = Arc::new(args);
 
             let router = setup_router(router_state, None)?;
-            serve(router, IpAddr::V4(Ipv4Addr::UNSPECIFIED), 3000).await?;
+            serve(router, IpAddr::V4(Ipv4Addr::UNSPECIFIED), requested_port).await?;
         }
     }
 
