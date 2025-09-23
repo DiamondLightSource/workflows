@@ -2,19 +2,30 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActionArea from "@mui/material/CardActionArea";
 import Typography from "@mui/material/Typography";
-import { Template } from "../../types";
 import React from "react";
 import { Container, Box, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { graphql, useFragment } from "react-relay";
+import type { TemplateCard_template$key } from "./__generated__/TemplateCard_template.graphql";
+
+const templateCardFragment = graphql`
+  fragment TemplateCard_template on WorkflowTemplate {
+    name
+    title
+    description
+    maintainer
+    repository
+  }
+`;
 
 export interface TemplateCardProps {
-  template: Template;
+  template: TemplateCard_template$key;
 }
 
 export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
+  const data = useFragment(templateCardFragment, template);
   const location = useLocation();
   const navigate = useNavigate();
-
   const reroute = (templateName: string) => {
     const path = location.pathname.split("/")[1];
     (navigate(`/${path}/${templateName}`) as Promise<void>).catch(
@@ -23,14 +34,13 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
       },
     );
   };
-
   return (
     <Container maxWidth="sm">
       <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
         <Card sx={{ width: { xs: "100%", lg: "900px" } }}>
           <CardActionArea
             onClick={() => {
-              reroute(template.name);
+              reroute(data.name);
             }}
           >
             <CardContent>
@@ -41,10 +51,10 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
                   alignItems="center"
                 >
                   <Typography variant="h5">
-                    {template.title ?? template.name}
+                    {data.title ?? data.name}
                   </Typography>
                   <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    Maintainer: {template.maintainer}
+                    Maintainer: {data.maintainer}
                   </Typography>
                 </Box>
                 <Box
@@ -52,20 +62,18 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <Typography>{template.name}</Typography>
-                  {template.repository && (
+                  <Typography>{data.name}</Typography>
+                  {data.repository && (
                     <Typography
                       variant="body2"
                       sx={{ color: "text.secondary" }}
                     >
-                      Repository: {template.repository}
+                      Repository: {data.repository}
                     </Typography>
                   )}
                 </Box>
-                {template.description && (
-                  <Typography variant="caption">
-                    {template.description}
-                  </Typography>
+                {data.description && (
+                  <Typography variant="caption">{data.description}</Typography>
                 )}
               </Stack>
             </CardContent>

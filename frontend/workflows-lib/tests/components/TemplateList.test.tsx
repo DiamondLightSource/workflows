@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import TemplatesList from "relay-workflows-lib/lib/components/TemplatesList";
-import { TemplateCardProps } from "../../lib/components/template/TemplateCard";
+import { TemplateCardProps } from "relay-workflows-lib/lib/components/TemplateCard";
 import { Box } from "@mui/material";
 import userEvent from "@testing-library/user-event";
 import templateListResponse from "dashboard/src/mocks/responses/templates/templateListResponse.json";
@@ -17,7 +17,9 @@ vi.mock("relay-runtime", () => ({
 }));
 
 vi.mock("workflows-lib/lib/components/template/TemplateCard", () => ({
-  TemplateCard: (props: TemplateCardProps) => <Box>{props.template.name}</Box>,
+  TemplateCard: (props: TemplateCardProps) => (
+    <Box>{(props as any).template.name}</Box>
+  ),
 }));
 
 vi.mock("react-relay/hooks", () => ({
