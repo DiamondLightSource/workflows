@@ -1,5 +1,6 @@
 secrets:
   enabled: false
+  cluster: dev
 
 vcluster:
   controlPlane:
