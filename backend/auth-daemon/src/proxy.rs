@@ -119,6 +119,7 @@ mod tests {
     async fn base_test() {
         let client = "client";
         let token = "token";
+        let port = 3000;
 
         let query = UserQuery {
             query: "test-query".into(),
@@ -147,6 +148,7 @@ mod tests {
             client_id: client.into(),
             graph_url: Url::from_str(&graph.url()).unwrap(),
             token: token.into(),
+            port,
         };
 
         let resp = proxy(
@@ -163,6 +165,7 @@ mod tests {
     async fn invalid_auth() {
         let client = "client";
         let token = "token";
+        let port = 3000;
 
         let query = UserQuery {
             query: "test-query".into(),
@@ -181,6 +184,7 @@ mod tests {
             client_id: client.into(),
             graph_url: Url::from_str("https://example.com").unwrap(),
             token: token.into(),
+            port,
         };
 
         let resp = proxy(
