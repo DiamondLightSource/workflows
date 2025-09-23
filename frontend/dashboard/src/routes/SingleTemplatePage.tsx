@@ -2,10 +2,10 @@ import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs, visitToText } from "@diamondlightsource/sci-react-ui";
-import TemplateView from "relay-workflows-lib/lib/components/TemplateView";
-import TemplateViewRetrigger from "relay-workflows-lib/lib/components/TemplateViewRetrigger";
-import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
+import { WorkflowsNavbar, WorkflowsErrorBoundary } from "workflows-lib";
 import { parseVisitAndTemplate } from "workflows-lib/lib/utils/commonUtils";
+import TemplateViewRetrigger from "relay-workflows-lib/lib/views/TemplateViewRetrigger";
+import TemplateView from "relay-workflows-lib/lib/views/TemplateView";
 
 const SingleTemplatePage: React.FC = () => {
   const { templateName, prepopulate } = useParams<{
@@ -40,7 +40,7 @@ const SingleTemplatePage: React.FC = () => {
           )}
           {templateName && (
             <WorkflowsErrorBoundary>
-              <Suspense>
+              <Suspense fallback={<div>Loading...</div>}>
                 {workflowName ? (
                   <TemplateViewRetrigger
                     templateName={templateName}

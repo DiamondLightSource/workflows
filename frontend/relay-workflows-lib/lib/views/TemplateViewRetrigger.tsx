@@ -1,16 +1,16 @@
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { graphql } from "relay-runtime";
-import { JSONObject, Visit } from "workflows-lib";
+import { Visit } from "workflows-lib";
 import { TemplateViewRetriggerQuery as TemplateViewRetriggerQueryType } from "./__generated__/TemplateViewRetriggerQuery.graphql";
 import TemplateView from "./TemplateView";
 
-const templateViewRetriggerQuery = graphql`
+const TemplateViewRetriggerQuery = graphql`
   query TemplateViewRetriggerQuery(
     $visit: VisitInput!
-    $workflowname: String!
+    $workflowName: String!
   ) {
-    workflow(visit: $visit, name: $workflowname) {
-      parameters
+    workflow(visit: $visit, name: $workflowName) {
+      ...SubmissionFormParametersFragment
     }
   }
 `;
@@ -25,20 +25,18 @@ export default function TemplateViewWithRetrigger({
   visit: Visit;
 }) {
   const retriggerData = useLazyLoadQuery<TemplateViewRetriggerQueryType>(
-    templateViewRetriggerQuery,
+    TemplateViewRetriggerQuery,
     {
       visit,
-      workflowname: workflowName,
+      workflowName: workflowName,
     },
   );
-  const prepopulatedParameters = retriggerData.workflow
-    .parameters as JSONObject;
 
   return (
     <TemplateView
       templateName={templateName}
       visit={visit}
-      prepopulatedParameters={prepopulatedParameters}
+      prepopulatedParameters={retriggerData.workflow}
     />
   );
 }

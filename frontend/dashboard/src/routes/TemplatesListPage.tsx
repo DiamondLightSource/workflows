@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Container, Box } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
-import TemplatesList from "relay-workflows-lib/lib/components/TemplatesList";
+import TemplatesListView from "relay-workflows-lib/lib/views/TemplatesListView";
 
 const TemplatesListPage: React.FC = () => {
   return (
@@ -14,7 +14,7 @@ const TemplatesListPage: React.FC = () => {
         <WorkflowsErrorBoundary>
           <Suspense>
             <Box mt={2} mb={2}>
-              <TemplatesList />
+              <TemplatesListView />
             </Box>
           </Suspense>
         </WorkflowsErrorBoundary>
