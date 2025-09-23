@@ -13,28 +13,62 @@ groups:
   enabled: true
   targetRevision: staging-merge
 
+# kyverno:
+#   enabled: true
+#   valuesObject:
+#     admissionController:
+#       replicas: 1
+#       container:
+#         resources:
+#           limits:
+#             cpu: 200m
+#             memory: 2Gi
+#           requests:
+#             cpu: 100m
+#             memory: 1Gi
+#     backgroundController:
+#       replicas: 1
+#       resources:
+#         limits:
+#           cpu: 200m
+#           memory: 2Gi
+#         requests:
+#           cpu: 100m
+#           memory: 1Gi
+
+# make staging match production exactly
 kyverno:
   enabled: true
+  targetRevision: 3.2.6
+  extraValuesFiles: []
   valuesObject:
     admissionController:
-      replicas: 1
+      replicas: 3
       container:
         resources:
           limits:
-            cpu: 200m
-            memory: 2Gi
+            cpu: 6
+            memory: 12Gi
           requests:
-            cpu: 100m
-            memory: 1Gi
+            cpu: 5
+            memory: 8Gi
     backgroundController:
+      extraArgs:
+        genWorkers: 50
+        clientRateLimitBurst: 500
+        clientRateLimitQPS: 500
       replicas: 2
       resources:
         limits:
-          cpu: 200m
-          memory: 2Gi
+          cpu: 8
+          memory: 32Gi
         requests:
-          cpu: 100m
-          memory: 1Gi
+          cpu: 6
+          memory: 16Gi
+    cleanupController:
+      enabled: false
+    reportsController:
+      enabled: false
 
 sessionspaces:
   enabled: true
