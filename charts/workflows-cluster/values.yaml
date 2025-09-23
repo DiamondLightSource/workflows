@@ -130,6 +130,7 @@ vcluster:
 ingress:
   enabled: true
   host: kubernetes.workflows.diamond.ac.uk
+  secretName: letsencrypt-kubernetes-workflows-diamond-ac-uk
   pathType: Prefix
 
 authenticationConfiguration:
