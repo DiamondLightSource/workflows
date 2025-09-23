@@ -27,7 +27,7 @@ kyverno:
             cpu: 100m
             memory: 1Gi
     backgroundController:
-      replicas: 1
+      replicas: 2
       resources:
         limits:
           cpu: 200m
