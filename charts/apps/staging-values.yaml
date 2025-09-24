@@ -71,7 +71,7 @@ kyverno:
       enabled: true
 
 sessionspaces:
-  enabled: true
+  enabled: false
   targetRevision: staging-merge
   extraValueFiles:
     - staging-values.yaml
