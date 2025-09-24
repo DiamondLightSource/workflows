@@ -38,6 +38,9 @@ argo-workflows:
         serviceAccountName: argo-workflow
         ttlStrategy:
           secondsAfterCompletion: 300
+    extraEnv:
+      - name: POD_NAMES
+        value: "v1"
   server:
     replicas: 3
     authModes: ["client"]
@@ -48,6 +51,8 @@ argo-workflows:
         value: "false"
       - name: NEW_VERSION_MODAL
         value: "false"
+      - name: POD_NAMES
+        value: "v1"
   createAggregateRoles: false
 
 postgresql-ha:
