@@ -43,7 +43,7 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     admissionController:
-      replicas: 3
+      replicas: 1
       container:
         resources:
           limits:
@@ -57,7 +57,7 @@ kyverno:
         genWorkers: 50
         clientRateLimitBurst: 500
         clientRateLimitQPS: 500
-      replicas: 2
+      replicas: 1
       resources:
         limits:
           cpu: 8
