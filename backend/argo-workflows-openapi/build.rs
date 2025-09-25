@@ -16,22 +16,55 @@ fn main() {
     let mut schema: RootSchema = serde_json::from_str(&raw_schema).unwrap();
     // The upstream argo workflow API schema does not match with its API response.
     // This is a temporary fix to match the API response.
-    if let Some(Schema::Object(ref mut pod_gc)) = schema
+
+    let pod_gc = schema
         .definitions
         .get_mut("io.argoproj.workflow.v1alpha1.PodGC")
-    {
-        let delete_delay_duration = pod_gc
-            .object
-            .as_mut()
-            .unwrap()
-            .properties
-            .get_mut("deleteDelayDuration")
-            .unwrap();
-        *delete_delay_duration = Schema::Object(SchemaObject {
-            instance_type: Some(InstanceType::String.into()),
-            ..Default::default()
-        });
-    }
+        .unwrap();
+    let pod_gc = match pod_gc {
+        Schema::Object(obj) => obj,
+        _ => panic!("Expected PodGC to be a SchemaObject"),
+    };
+    let pod_gc_obj = pod_gc.object.as_mut().unwrap();
+    let field = pod_gc_obj
+        .properties
+        .get_mut("deleteDelayDuration")
+        .unwrap();
+    *field = Schema::Object(SchemaObject {
+        instance_type: Some(InstanceType::String.into()),
+        ..Default::default()
+    });
+
+    let retry_strategy = schema
+        .definitions
+        .get_mut("io.argoproj.workflow.v1alpha1.RetryStrategy")
+        .unwrap();
+
+    let retry_strategy = match retry_strategy {
+        Schema::Object(obj) => obj,
+        _ => panic!("Expected RetryStrategy to be a SchemaObject"),
+    };
+    let retry_strategy_obj = retry_strategy.object.as_mut().unwrap();
+    let field = retry_strategy_obj.properties.get_mut("limit").unwrap();
+    *field = Schema::Object(SchemaObject {
+        instance_type: Some(InstanceType::Integer.into()),
+        ..Default::default()
+    });
+
+    let http_get = schema
+        .definitions
+        .get_mut("io.k8s.api.core.v1.HTTPGetAction")
+        .unwrap();
+    let http_get = match http_get {
+        Schema::Object(obj) => obj,
+        _ => panic!("Expected HTTPGetAction to be a SchemaObject"),
+    };
+    let http_get_obj = http_get.object.as_mut().unwrap();
+    let port_field = http_get_obj.properties.get_mut("port").unwrap();
+    *port_field = Schema::Object(SchemaObject {
+        instance_type: Some(InstanceType::Integer.into()),
+        ..Default::default()
+    });
 
     let mut type_space = TypeSpace::new(TypeSpaceSettings::default().with_struct_builder(true));
     type_space.add_root_schema(schema).unwrap();
