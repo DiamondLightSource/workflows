@@ -5,106 +5,50 @@ metadata:
 spec:
   entrypoint: workflow-entry
   templates:
-  - name: operation-one
+  - name: operation-step
     script:
       image: python:3.10
       command: ["python"]
       source: |
         import time
-        time.sleep(3600)
-  - name: operation-two
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-three
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-four
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-five
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-six
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-seven
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-eight
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-nine
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
-  - name: operation-ten
-    script:
-      image: python:3.10
-      command: ["python"]
-      source: |
-        import time
-        time.sleep(3600)
+        print("Operation progress 0%")
+        time.sleep(900)
+        print("Operation progress 25%")
+        time.sleep(900)
+        print("Operation progress 50%")
+        time.sleep(900)
+        print("Operation progress 75%")
+        time.sleep(900)
+        print("Operation progress 100%")
   - name: workflow-entry
     dag:
       tasks:
       - name: operation-01
-        template: operation-one
+        template: operation-step
       - name: operation-02
-        template: operation-two
+        template: operation-step
         dependencies: [operation-01]
       - name: operation-03
-        template: operation-three
+        template: operation-step
         dependencies: [operation-02]
       - name: operation-04
-        template: operation-four
+        template: operation-step
         dependencies: [operation-03]
       - name: operation-05
-        template: operation-five
+        template: operation-step
         dependencies: [operation-04]
       - name: operation-06
-        template: operation-six
+        template: operation-step
         dependencies: [operation-05]
       - name: operation-07
-        template: operation-seven
+        template: operation-step
         dependencies: [operation-06]
       - name: operation-08
-        template: operation-eight
+        template: operation-step
         dependencies: [operation-07]
       - name: operation-09
-        template: operation-nine
+        template: operation-step
         dependencies: [operation-08]
       - name: operation-10
-        template: operation-ten
+        template: operation-step
         dependencies: [operation-09]
-        
