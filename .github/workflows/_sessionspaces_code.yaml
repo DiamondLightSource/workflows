@@ -25,6 +25,8 @@ jobs:
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.0
+        with:
+          components: clippy,rustfmt
 
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.8.1
