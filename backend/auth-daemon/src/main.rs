@@ -44,7 +44,7 @@ struct RouterState {
     graph_url: Url,
     #[arg(short, long, env = "TOKEN")]
     token: String,
-    #[arg(long, env = "PORT")]
+    #[arg(long, env = "PORT", default_value = "8080")]
     port: u16,
 }
 
