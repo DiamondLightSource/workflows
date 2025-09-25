@@ -5,6 +5,21 @@ metadata:
 spec:
   entrypoint: workflow-entry
   templates:
+  - name: short-operation-step
+    script:
+      image: python:3.10
+      command: ["python", "-u"]
+      source: |
+        import time
+        print("Short operation progress 0%",)
+        time.sleep(60)
+        print("Short operation progress 25%")
+        time.sleep(60)
+        print("Short operation progress 50%")
+        time.sleep(60)
+        print("Short operation progress 75%")
+        time.sleep(60)
+        print("Short operation progress 100%")
   - name: operation-step
     script:
       image: python:3.10
@@ -24,18 +39,18 @@ spec:
     dag:
       tasks:
       - name: operation-01
-        template: operation-step
+        template: short-operation-step
       - name: operation-02
-        template: operation-step
+        template: short-operation-step
         dependencies: [operation-01]
       - name: operation-03
-        template: operation-step
+        template: short-operation-step
         dependencies: [operation-02]
       - name: operation-04
-        template: operation-step
+        template: short-operation-step
         dependencies: [operation-03]
       - name: operation-05
-        template: operation-step
+        template: short-operation-step
         dependencies: [operation-04]
       - name: operation-06
         template: operation-step
