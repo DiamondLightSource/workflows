@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.11...graph-proxy@v0.1.12) (2025-09-26)
+
+
+### Features
+
+* **auth-daemon:** router and CLI configuration ([73d0a78](https://github.com/DiamondLightSource/workflows/commit/73d0a78efbcea8f1054e5969f8c8a01341334a9b))
+* **graph-proxy:** add logs subscription ([7824edd](https://github.com/DiamondLightSource/workflows/commit/7824edd4446c12a8b0829e7c60cf0a0e1953bf5f))
+
 ## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.10...graph-proxy@v0.1.11) (2025-09-15)
 
 
