@@ -107,6 +107,11 @@ impl Workflow {
             .as_ref()
             .and_then(|template_ref| template_ref.name.as_deref())
     }
+
+    /// The workflow creator
+    async fn creator(&self) -> WorkflowCreator {
+        WorkflowCreator::from_argo_workflow_labels(&self.manifest.metadata.labels)
+    }
 }
 
 #[derive(Debug)]
@@ -624,6 +629,34 @@ impl WorkflowsQuery {
                 Edge::new(cursor, workflow)
             }));
         Ok(connection)
+    }
+}
+
+/// Information about the creator of a workflow.
+#[derive(Debug, Clone, SimpleObject, Eq, PartialEq)]
+struct WorkflowCreator {
+    /// An identifier unique to the creator of the workflow.
+    /// Typically this is the creator's Fed-ID.
+    creator_id: String,
+}
+
+impl WorkflowCreator {
+    /// Creates a new [`WorkflowCreator`] from the given creator ID.
+    fn new(creator_id: impl Into<String>) -> Self {
+        Self {
+            creator_id: creator_id.into(),
+        }
+    }
+
+    /// Builds a [`WorkflowCreator`] from Argo workflow labels.
+    fn from_argo_workflow_labels(labels: &HashMap<String, String>) -> Self {
+        let creator_id = labels
+            .get("workflows.argoproj.io/creator-preferred-username")
+            .or_else(|| labels.get("workflows.argoproj.io/creator"))
+            .cloned()
+            .unwrap_or_default();
+
+        Self::new(creator_id)
     }
 }
 
@@ -1552,6 +1585,58 @@ mod tests {
                 "parameters": {
                     "memory": "10Gi",
                     "size": "1000"
+                }
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
+    async fn workflow_creator() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                   creator {{ creatorId }}
+                }}
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert_async().await;
+        let expected_data = json!({
+            "workflow": {
+                "creator": {
+                    "creatorId": "enu43627",
                 }
             }
         });
