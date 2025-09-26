@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.9...dashboard@v0.1.10) (2025-09-26)
+
+
+### Features
+
+* **frontend:** add autocomplete to workflow template filter ([7aa8fb7](https://github.com/DiamondLightSource/workflows/commit/7aa8fb7a8496bfd06dc38d3e127f21607872e8ab))
+
+
+### Bug Fixes
+
+* **frontend:** fix bugs caused by tasks with the same name ([a8c39f5](https://github.com/DiamondLightSource/workflows/commit/a8c39f572aa6168b1bbbe8ee29d933bda03f1475))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.8...dashboard@v0.1.9) (2025-08-29)
 
 
