@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.5...relay-workflows-lib@v0.1.6) (2025-09-26)
+
+
+### Features
+
+* **frontend:** add autocomplete to workflow template filter ([7aa8fb7](https://github.com/DiamondLightSource/workflows/commit/7aa8fb7a8496bfd06dc38d3e127f21607872e8ab))
+* **frontend:** add live workflow status icon to submission message ([b03cc37](https://github.com/DiamondLightSource/workflows/commit/b03cc3709a2cceffe722f880483e2a26273bcc39))
+* **frontend:** add mocking ([4e4c6e6](https://github.com/DiamondLightSource/workflows/commit/4e4c6e6e35ad9d0bca229d35d0dc33c86b87b731))
+* **frontend:** add search filter to template list ([74d2ead](https://github.com/DiamondLightSource/workflows/commit/74d2ead67bad90bfcc682c5b6659d0d8e2b5d6a0))
+* **frontend:** add subscriptions to react flow views ([d756203](https://github.com/DiamondLightSource/workflows/commit/d7562037513f423c1108e5c0d4935b940a0d7a69))
+* **frontend:** add workflow error message to ui ([e3c10a8](https://github.com/DiamondLightSource/workflows/commit/e3c10a84efdd33703af969c7929767c99e19bd79))
+* **frontend:** button to clear all tasks ([fdeee0b](https://github.com/DiamondLightSource/workflows/commit/fdeee0be04ecf7cdb82d73e92a2e85d0d622e845))
+* **frontend:** button to select output tasks ([f2d220f](https://github.com/DiamondLightSource/workflows/commit/f2d220f8462031ba306c8d374125ece49cb32fa3))
+* **frontend:** fill task when artifact is hovered over ([5610b2a](https://github.com/DiamondLightSource/workflows/commit/5610b2a230a76866fc8c692fc6b490448c9af13f))
+* **frontend:** only have open subscriptions for active workflows ([b27c731](https://github.com/DiamondLightSource/workflows/commit/b27c7314909a4143e1d56db6a12baf4a141d7609))
+* **frontend:** show input params and template in single workflow UI ([fd3bca2](https://github.com/DiamondLightSource/workflows/commit/fd3bca27f2a30c4a1f52f6783214144d5923b754))
+* **frontend:** store instrumentSessionID in localStorage ([3efcfc6](https://github.com/DiamondLightSource/workflows/commit/3efcfc6e4ac734779a231ea431e5a1284cefc5bf))
+* **frontend:** sync selected tasks between components ([e78347f](https://github.com/DiamondLightSource/workflows/commit/e78347f668021bae04035d5af7588f17d4748184))
+* **frontend:** use accordion for artifact list ([7fa8b21](https://github.com/DiamondLightSource/workflows/commit/7fa8b21626a7190a0050ca47850b9dc00be86bdd))
+
+
+### Bug Fixes
+
+* **frontend:** fix bugs caused by tasks with the same name ([a8c39f5](https://github.com/DiamondLightSource/workflows/commit/a8c39f572aa6168b1bbbe8ee29d933bda03f1475))
+* **frontend:** move graphql consts out of component files ([f3e1fb5](https://github.com/DiamondLightSource/workflows/commit/f3e1fb567e3c814ea3b969e203c09f57b6adbff6))
+* **frontend:** remove unused fragment ([2ba60c3](https://github.com/DiamondLightSource/workflows/commit/2ba60c397c64834f7d0d6cec5b4d300287e87c51))
+* **frontend:** remove unused util functions ([e7e7df3](https://github.com/DiamondLightSource/workflows/commit/e7e7df38b2325d33f701435a4f6cb78f0a7c910d))
+* **relay-workflows-lib:** fix live update bug ([4cc3b83](https://github.com/DiamondLightSource/workflows/commit/4cc3b83447ff59197ff4b356d4855f355da62b2b))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.4...relay-workflows-lib@v0.1.5) (2025-07-22)
 
 
