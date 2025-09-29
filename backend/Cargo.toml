@@ -28,9 +28,9 @@ reqwest = { version = "0.12.15", default-features = false, features = [
     "blocking",
     "stream"
 ] }
-serde = { version = "1.0.226", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145" }
-thiserror = { version = "2.0.16" }
+thiserror = { version = "2.0.17" }
 tracing = { version = "0.1.41" }
 tokio = { version = "1.47.1", features = [
     "macros",
@@ -44,6 +44,6 @@ k8s-openapi = { version = "0.24.0", features = ["latest"] }
 kube = { version = "0.99.0", features = ["runtime", "derive"] }
 opentelemetry = { version = "0.30.0" }
 opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
-axum = { version = "0.8.4" }
-regex = "1.11.2"
+axum = { version = "0.8.5" }
+regex = "1.11.3"
 tower-http = { version = "0.6.6", features = ["cors"] }
