@@ -13,22 +13,41 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { WorkflowTemplatesFilter, ScienceGroup } from "../../types";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { LabelValueRow } from "./WorkflowListFilterDrawer";
 
 interface WorkflowTemplateListFilterDrawerProps {
   onApplyFilters: (filters: WorkflowTemplatesFilter) => void;
 }
 
 export const scienceGroups = [
-  { label: "Mx", value: ScienceGroup.MX },
+  { label: "MX", value: ScienceGroup.MX },
   { label: "Examples", value: ScienceGroup.Examples },
   { label: "Magnetic Materials", value: ScienceGroup.MagneticMaterials },
-  { label: "Condensed Matter", value: ScienceGroup.CondensedMatter },
-  { label: "Imaging", value: ScienceGroup.Imaging },
-  { label: "Bio-Cryo Imaging", value: ScienceGroup.BioCryoImaging },
-  { label: "Surfaces", value: ScienceGroup.Surfaces },
+  { label: "Soft Condensed Matter", value: ScienceGroup.CondensedMatter },
+  { label: "Imaging and Microscopy", value: ScienceGroup.Imaging },
+  { label: "Biological Cryo-Imaging", value: ScienceGroup.BioCryoImaging },
+  { label: "Structures and Surfaces", value: ScienceGroup.Surfaces },
   { label: "Crystallography", value: ScienceGroup.Crystallography },
   { label: "Spectroscopy", value: ScienceGroup.Spectroscopy },
 ];
+
+export function WorkflowTemplateFilterDisplay({
+  filter,
+}: {
+  filter: WorkflowTemplatesFilter;
+}) {
+  const scienceGroup = filter.scienceGroup ? filter.scienceGroup.join(", ") : null;
+  return (
+    <Box sx={{ mb: 2 }}>
+      {scienceGroup && 
+        <LabelValueRow
+          label="Science Group"
+          value={scienceGroup}
+        />
+      }  
+    </Box>
+  );
+}
 
 function WorkflowTemplatesFilterDrawer({
   onApplyFilters,
@@ -37,10 +56,7 @@ function WorkflowTemplatesFilterDrawer({
   const [scienceGroup, setScienceGroup] = useState<ScienceGroup[]>([]);
 
   function clearAllFilters(): void {
-    const clearedFilter = fetchFilter();
     setScienceGroup([]);
-    onApplyFilters(clearedFilter);
-    setOpen(false);
   }
 
   function handleApply(): void {
@@ -56,7 +72,7 @@ function WorkflowTemplatesFilterDrawer({
   return (
     <>
       <Button
-        sx={{ mt: 2 }}
+        sx={{ mt: 1 }}
         variant="contained"
         onClick={() => {
           setOpen(true);
