@@ -1,1 +1,1 @@
-FROM node:24.8-bookworm
+FROM node:24.9-bookworm
