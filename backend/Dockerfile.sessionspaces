@@ -1,4 +1,4 @@
-FROM docker.io/library/rust:1.89.0-bookworm AS build
+FROM docker.io/library/rust:1.90.0-bookworm AS build
 
 ARG DATABASE_URL
 
@@ -9,6 +9,7 @@ RUN cargo install cargo-auditable
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
+COPY auth-daemon/Cargo.toml auth-daemon/
 COPY telemetry/build.rs telemetry/build.rs
 COPY telemetry/Cargo.toml telemetry/Cargo.toml
 COPY Cargo.toml Cargo.lock ./
@@ -19,6 +20,8 @@ RUN mkdir argo-workflows-openapi/src \
     && echo "fn main() {}" > graph-proxy/src/main.rs \
     && mkdir sessionspaces/src \
     && echo "fn main() {}" > sessionspaces/src/main.rs \
+    && mkdir auth-daemon/src \
+    && echo "fn prebuild() {}" > auth-daemon/src/main.rs \
     && mkdir telemetry/src \
     && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
@@ -32,7 +35,7 @@ COPY . .
 RUN touch sessionspaces/src/main.rs \
     && cargo auditable build --release --package sessionspaces
 
-FROM gcr.io/distroless/cc-debian12@sha256:d4e8c4c18626ce7c09104d3b39d9e5541ced61de7fb398a455cb09ae5a7b3598 AS deploy
+FROM gcr.io/distroless/cc-debian12@sha256:620d8b11ae800f0dbd7995f89ddc5344ad603269ea98770588b1b07a4a0a6872 AS deploy
 
 COPY --from=build /app/target/release/sessionspaces /sessionspaces
 

@@ -1,6 +1,6 @@
 [package]
 name = "graph-proxy"
-version = "0.1.10"
+version = "0.1.11"
 edition = "2021"
 exclude = ["test-assets/"]
 license-file = "../../LICENSE"
@@ -12,7 +12,7 @@ aws-sdk-s3 = { version = "1.82.0" , features = ["behavior-version-latest"]}
 argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.17", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.17" }
-axum = { version = "0.8.4" }
+axum = { workspace = true }
 axum-extra = { version = "0.10.1", features = ["typed-header"] }
 chrono = { workspace = true }
 clap = { workspace = true }
@@ -20,14 +20,14 @@ derive_more = { workspace = true }
 dotenvy = { workspace = true }
 lazy_static = { version = "1.5.0" }
 mime_guess = "2.0.5"
-regex = "1.11.2"
+regex = { workspace = true}
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 telemetry = { path = "../telemetry" }
 tokio = { workspace = true }
-tower-http = { version = "0.6.6", features = ["cors"] }
+tower-http = { workspace = true, features = ["cors"] }
 tracing = { workspace = true }
 url = { workspace = true }
 tower-service = "0.3.3"

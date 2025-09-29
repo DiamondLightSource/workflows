@@ -1,0 +1,28 @@
+{
+  "name": "auth-daemon",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "containerEnv": {
+    "AUTH_DOMAIN": "https://authn.diamond.ac.uk/realms/master",
+    "CLIENT_ID": "workflows-cluster",
+    "GRAPH_URL": "https://workflows.diamond.ac.uk/graphql"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.4.2": {
+      "username": "none",
+      "upgradePackages": false
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/"
+}

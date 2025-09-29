@@ -1,0 +1,23 @@
+version: "3.10"
+
+services:
+  sessionspaces:
+    network_mode: host
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../../..:/workspace:cached,z
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sleep infinity
+    environment:
+      DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
+      LDAP_URL: ldap://127.0.0.1:1389
+
+  ispyb:
+    image: ghcr.io/diamondlightsource/ispyb-database:v3.0.0
+    restart: unless-stopped
+    ports:
+    - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword

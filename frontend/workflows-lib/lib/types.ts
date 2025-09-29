@@ -105,6 +105,15 @@ export interface SubmissionGraphQLErrorMessage {
   errors: PayloadError[];
 }
 
+export interface SubmissionData {
+  submissionResult:
+    | SubmissionSuccessMessage
+    | SubmissionGraphQLErrorMessage
+    | SubmissionNetworkErrorMessage;
+  visit: Visit;
+  workflowName?: string;
+}
+
 export interface UploadedFile {
   fileName: string;
   content: string | ArrayBuffer | null;

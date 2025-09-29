@@ -1,10 +1,10 @@
 {
   "+1": "0.0.0",
-  "backend/graph-proxy": "0.1.10",
+  "backend/graph-proxy": "0.1.11",
   "+2": "0.0.0",
   "backend/sessionspaces": "0.1.2",
   "+3": "0.0.0",
-  "frontend/dashboard": "0.1.9",
+  "frontend/dashboard": "0.1.10",
   "+4": "0.0.0",
   "frontend/relay-workflows-lib": "0.1.5",
   "+5": "0.0.0",
@@ -12,5 +12,7 @@
   "+6": "0.0.0",
   "backend/telemetry": "0.1.2",
   "+7": "0.0.0",
-  "workflows-cli": "0.1.0"
+  "workflows-cli": "0.1.0",
+  "+8": "0.0.0",
+  "backend/auth-daemon": "0.1.0"
 }

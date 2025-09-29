@@ -1,5 +1,4 @@
-import { ChangeEvent } from "react";
-import { graphql } from "relay-runtime";
+import { ChangeEvent, useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { Box, Pagination } from "@mui/material";
 import { TemplateCard, WorkflowTemplatesFilter } from "workflows-lib";
@@ -36,34 +35,42 @@ export default function TemplatesList({
     setPageNumber,
     totalPages,
     paginatedItems: paginatedPosts,
-  } = useClientSidePagination(templates, 10);
+  } = useClientSidePagination(filteredTemplates, 10);
 
   const handlePageChange = (_event: ChangeEvent<unknown>, page: number) => {
     setPageNumber(page);
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" width="100%">
-      {paginatedPosts.map((node, index) => (
-        <TemplateCard key={index} template={node} />
-      ))}
+    <>
+      <TemplateSearchField handleSearch={handleSearch} />
       <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 2,
-          mt: 2,
-        }}
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        width="100%"
       >
-        <Pagination
-          count={totalPages}
-          page={pageNumber}
-          onChange={handlePageChange}
-          showFirstButton
-        />
+        {paginatedPosts.map((template) => (
+          <TemplateCard key={template.name} template={template} />
+        ))}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          <Pagination
+            count={totalPages}
+            page={pageNumber}
+            onChange={handlePageChange}
+            showFirstButton
+          />
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }
