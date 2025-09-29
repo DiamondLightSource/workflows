@@ -11,13 +11,13 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.14.1
+        uses: actions-rust-lang/setup-rust-toolchain@v1.15.1
         with:
           cache: false
           components: clippy,rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.8.0
+        uses: Swatinem/rust-cache@v2.8.1
         with:
           shared-key: backend/auth-daemon
           workspaces: backend
@@ -51,13 +51,13 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.14.1
+        uses: actions-rust-lang/setup-rust-toolchain@v1.15.1
         with:
           cache: false
           components: rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.8.0
+        uses: Swatinem/rust-cache@v2.8.1
         with:
           shared-key: backend/auth-daemon
           workspaces: backend
