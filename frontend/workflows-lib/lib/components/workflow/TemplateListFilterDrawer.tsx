@@ -13,7 +13,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { WorkflowTemplatesFilter, ScienceGroup } from "../../types";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { LabelValueRow } from "./WorkflowListFilterDrawer";
+import { LabelValueRow } from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
 
 interface WorkflowTemplateListFilterDrawerProps {
   onApplyFilters: (filters: WorkflowTemplatesFilter) => void;
@@ -112,7 +112,7 @@ function WorkflowTemplatesFilterDrawer({
           <Typography variant="h6" color="primary" gutterBottom>
             Select Filters
           </Typography>
-
+        
           <Autocomplete
             multiple
             disablePortal
