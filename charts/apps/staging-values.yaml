@@ -39,7 +39,7 @@ groups:
 # make staging match production exactly
 kyverno:
   enabled: true
-  targetRevision: 3.2.6
+  targetRevision: 3.5.2
   extraValuesFiles: []
   valuesObject:
     features:
