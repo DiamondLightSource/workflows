@@ -66,6 +66,22 @@ export interface WorkflowQueryFilter {
   workflowStatusFilter?: WorkflowStatusBool;
 }
 
+export enum ScienceGroup {
+  MX = "MX",
+  Examples = "EXAMPLES",
+  MagneticMaterials = "MAGNETIC_MATERIALS",
+  CondensedMatter = "CONDENSED_MATTER",
+  Imaging = "IMAGING",
+  BioCryoImaging = "BIO_CRYO_IMAGING",
+  Surfaces = "SURFACES",
+  Crystallography = "CRYSTALLOGRAPHY",
+  Spectroscopy = "SPECTROSCOPY",
+}
+
+export interface WorkflowTemplatesFilter {
+  scienceGroup?: ScienceGroup[];
+}
+
 export interface WorkflowStatusBool {
   pending?: boolean;
   running?: boolean;
