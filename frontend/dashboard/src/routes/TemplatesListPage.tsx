@@ -1,12 +1,15 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { WorkflowsNavbar } from "workflows-lib";
+import { WorkflowsNavbar, WorkflowTemplatesFilter } from "workflows-lib";
 import TemplatesListView from "relay-workflows-lib/lib/views/TemplatesListView";
 import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
 
 const TemplatesListPage: React.FC = () => {
+  const [workflowTemplatesFilter, setWorkflowTemplatesFilter] = useState<
+    WorkflowTemplatesFilter | undefined
+  >(undefined);
   return (
     <>
       <WorkflowsNavbar />
@@ -25,7 +28,12 @@ const TemplatesListPage: React.FC = () => {
               }
             >
               <Box mt={2} mb={2}>
-                <TemplatesListView />
+                <TemplatesListView
+                  filter={workflowTemplatesFilter}
+                  setFilter={(newFilter: WorkflowTemplatesFilter) => {
+                    setWorkflowTemplatesFilter(newFilter);
+                  }}
+                />
               </Box>
             </Suspense>
           )}

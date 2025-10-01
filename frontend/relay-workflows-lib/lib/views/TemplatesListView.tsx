@@ -1,15 +1,16 @@
 import { useState, ChangeEvent, useMemo, useEffect } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import { Box, Pagination } from "@mui/material";
+import { Box, Pagination, Stack } from "@mui/material";
 import { useClientSidePagination } from "../utils/coreUtils";
 import TemplateSearchField from "workflows-lib/lib/components/template/TemplateSearchField";
 import type { TemplatesListViewQuery as TemplatesListViewQueryType } from "./__generated__/TemplatesListViewQuery.graphql";
 import TemplateCard from "../components/TemplateCard";
 import { templateMatchesSearch } from "../utils/useTemplateMatchesSearch";
+import { ScienceGroupSelector, WorkflowTemplatesFilter } from "workflows-lib";
 
 export const TemplatesListViewQuery = graphql`
-  query TemplatesListViewQuery {
-    workflowTemplates {
+  query TemplatesListViewQuery($filter: WorkflowTemplatesFilter) {
+    workflowTemplates(filter: $filter) {
       nodes {
         name
         title
@@ -20,10 +21,16 @@ export const TemplatesListViewQuery = graphql`
   }
 `;
 
-export default function TemplatesListView() {
+export default function TemplatesListView({
+  filter,
+  setFilter,
+}: {
+  filter?: WorkflowTemplatesFilter;
+  setFilter: (filter: WorkflowTemplatesFilter) => void;
+}) {
   const data = useLazyLoadQuery<TemplatesListViewQueryType>(
     TemplatesListViewQuery,
-    {},
+    { filter },
   );
   const [search, setSearch] = useState("");
 
@@ -57,7 +64,10 @@ export default function TemplatesListView() {
 
   return (
     <>
-      <TemplateSearchField handleSearch={handleSearch} />
+      <Stack direction="row" spacing={1}>
+        <TemplateSearchField handleSearch={handleSearch} />
+        <ScienceGroupSelector setFilter={setFilter} />
+      </Stack>
       <Box
         display="flex"
         flexDirection="column"
