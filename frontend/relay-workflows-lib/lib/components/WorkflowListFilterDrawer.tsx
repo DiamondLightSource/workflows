@@ -14,7 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { WorkflowQueryFilter, WorkflowStatusBool } from "workflows-lib";
 import { useLazyLoadQuery } from "react-relay/hooks";
-import { templatesListQuery } from "relay-workflows-lib/lib/graphql/TemplatesListQuery.ts";
+import { templatesListQuery } from "relay-workflows-lib/lib/graphql/TemplatesListQuery";
 import { TemplatesListQuery as TemplatesListQueryType } from "relay-workflows-lib/lib/graphql/__generated__/TemplatesListQuery.graphql";
 
 interface WorkflowListFilterDrawerProps {
