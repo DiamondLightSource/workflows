@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: large-notebook
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+spec:
+  entrypoint: notebook
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: netapp
+  templates:
+  - name: mount-files
+    script:
+      image: docker.io/library/python:bookworm
+      command: [bash]
+      source: |
+        curl https://raw.githubusercontent.com/DiamondLightSource/workflows/refs/heads/main/examples/helm-based-templates/notebooks/large-notebook.ipynb > /tmp/notebook.ipynb
+        echo '{{ .Files.Get "notebooks/requirements.txt" | b64enc }}' | base64 -d > /tmp/requirements.txt
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+  - name: convert-notebook
+    script:
+      image: docker.io/library/python:bookworm
+      command: [bash]
+      source: |
+        python -m venv /tmp/venv
+        /tmp/venv/bin/pip install -r /tmp/requirements.txt
+        /tmp/venv/bin/python -m ipykernel install --prefix=/tmp/venv --name=venv
+        /tmp/venv/bin/python -m jupyter nbconvert --execute --allow-errors --to html --output notebook --output-dir /tmp /tmp/notebook.ipynb
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+    outputs:
+      artifacts:
+      - name: notebook
+        path: /tmp/notebook.html
+        archive:
+          none: {}
+
+  - name: notebook
+    dag:
+      tasks:
+      - name: files
+        template: mount-files 
+      - name: convert
+        template: convert-notebook
+        dependencies: [files]
+
+
+
