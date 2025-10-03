@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       ispyb:
-        image: ghcr.io/diamondlightsource/ispyb-database:v3.0.0
+        image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0
         ports:
           - 3306:3306
         env:

@@ -12,7 +12,7 @@ services:
       DATABASE_URL: mysql://root:rootpassword@ispyb/ispyb_build
 
   ispyb:
-    image: ghcr.io/diamondlightsource/ispyb-database:v3.0.0
+    image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: rootpassword

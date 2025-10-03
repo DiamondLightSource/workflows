@@ -35,14 +35,14 @@ impl BasicInfo {
             BasicInfoRow,
             "
             SELECT
-                sessionId as id,
-                proposalId as proposal_id,
-                proposalCode as proposal_code,
-                proposalNumber as proposal_number,
-                visit_number as visit,
-                beamLineName as instrument,
-                startDate as start_date,
-                endDate as end_date
+                BLSession.sessionId AS id,
+                Proposal.proposalId AS proposal_id,
+                Proposal.proposalCode AS proposal_code,
+                Proposal.proposalNumber AS proposal_number,
+                BLSession.visit_number AS visit,
+                BLSession.beamLineName AS instrument,
+                BLSession.startDate AS start_date,
+                BLSession.endDate AS end_date
             FROM
                 BLSession
                 JOIN Proposal USING (proposalId)
