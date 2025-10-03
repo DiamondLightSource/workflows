@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Task, TaskStatus } from "workflows-lib";
-import { isWorkflowWithTasks } from "../utils";
-import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
+import { Artifact, Task } from "workflows-lib";
+import { isWorkflowWithTasks } from "../utils/coreUtils";
+import { useFragment } from "react-relay";
+import { WorkflowTasksFragment } from "../graphql/WorkflowTasksFragment";
+import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTasksFragment.graphql";
 
 export function updateSearchParamsWithTaskIds(
   updatedTaskIds: string[],
@@ -50,30 +52,27 @@ export function useSelectedTaskIds(): [string[], (tasks: string[]) => void] {
 }
 
 export function useFetchedTasks(
-  data: workflowRelaySubscription$data | null,
+  fragmentRef: WorkflowTasksFragment$key | null,
 ): Task[] {
   const [fetchedTasks, setFetchedTasks] = useState<Task[]>([]);
+  const data = useFragment(WorkflowTasksFragment, fragmentRef);
 
   useEffect(() => {
-    if (
-      data &&
-      data.workflow.status &&
-      isWorkflowWithTasks(data.workflow.status)
-    ) {
+    if (data && data.status && isWorkflowWithTasks(data.status)) {
       setFetchedTasks(
-        data.workflow.status.tasks.map((task) => ({
+        data.status.tasks.map((task: Task) => ({
           id: task.id,
           name: task.name,
-          status: task.status as TaskStatus,
-          depends: [...task.depends],
-          artifacts: task.artifacts.map((artifact) => ({
+          status: task.status,
+          depends: [...(task.depends ?? [])],
+          artifacts: task.artifacts.map((artifact: Artifact) => ({
             ...artifact,
             parentTask: task.name,
             parentTaskId: task.id,
             key: `${task.id}-${artifact.name}`,
           })),
-          workflow: data.workflow.name,
-          instrumentSession: data.workflow.visit,
+          workflow: data.name,
+          instrumentSession: data.visit,
           stepType: task.stepType,
         })),
       );

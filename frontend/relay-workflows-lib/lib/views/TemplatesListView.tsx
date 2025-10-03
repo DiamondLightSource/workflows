@@ -1,26 +1,20 @@
-import { ChangeEvent, useMemo, useState } from "react";
-import TemplateCard from "../components/TemplateCard";
-import { graphql, useLazyLoadQuery, useFragment } from "react-relay/hooks";
+import { useState, ChangeEvent, useMemo, useEffect } from "react";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import { Box, Pagination } from "@mui/material";
-import type { TemplatesListViewQuery_templateSearch$key } from "./__generated__/TemplatesListViewQuery_templateSearch.graphql";
 import { useClientSidePagination } from "../utils/coreUtils";
 import TemplateSearchField from "workflows-lib/lib/components/template/TemplateSearchField";
-import { TemplatesListViewQuery as TemplatesListViewQueryType } from "./__generated__/TemplatesListViewQuery.graphql";
-
-const templateSearchFragment = graphql`
-  fragment TemplatesListViewQuery_templateSearch on WorkflowTemplate {
-    name
-    title
-    description
-  }
-`;
+import type { TemplatesListViewQuery as TemplatesListViewQueryType } from "./__generated__/TemplatesListViewQuery.graphql";
+import TemplateCard from "../components/TemplateCard";
+import { templateMatchesSearch } from "../utils/useTemplateMatchesSearch";
 
 export const TemplatesListViewQuery = graphql`
   query TemplatesListViewQuery {
     workflowTemplates {
       nodes {
-        ...TemplateCard_template
-        ...TemplatesListViewQuery_templateSearch
+        name
+        title
+        description
+        ...TemplateCardFragment
       }
     }
   }
@@ -33,47 +27,29 @@ export default function TemplatesListView() {
   );
   const [search, setSearch] = useState("");
 
-  const templatesWithSearchData = data.workflowTemplates.nodes.map(
-    (template) =>
-      template
-        ? {
-            original: template,
-            searchData: useFragment(
-              templateSearchFragment,
-              template as TemplatesListViewQuery_templateSearch$key,
-            ),
-          }
-        : null,
-  );
+  const filteredNodes = useMemo(() => {
+    const result = data.workflowTemplates.nodes.filter((node) => {
+      const match = templateMatchesSearch(
+        search,
+        node.name,
+        node.title ?? "",
+        node.description,
+      );
+      return match;
+    });
+    return result;
+  }, [search, data.workflowTemplates.nodes]);
 
-  const filteredTemplates = useMemo(() => {
-    const upperSearch = search.toUpperCase();
-    if (!search)
-      return templatesWithSearchData.map((t) => t?.original).filter(Boolean);
+  const { pageNumber, setPageNumber, totalPages, paginatedItems } =
+    useClientSidePagination(filteredNodes, 10);
 
-    return templatesWithSearchData
-      .filter((t) => {
-        if (!t) return false;
-        const { searchData } = t;
-        return (
-          searchData.title?.toUpperCase().includes(upperSearch) ||
-          searchData.name.toUpperCase().includes(upperSearch) ||
-          searchData.description?.toUpperCase().includes(upperSearch)
-        );
-      })
-      .map((t) => t?.original);
-  }, [search, data]);
+  useEffect(() => {
+    setPageNumber(1);
+  }, [search, setPageNumber]);
 
   const handleSearch = (search: string) => {
     setSearch(search);
   };
-
-  const {
-    pageNumber,
-    setPageNumber,
-    totalPages,
-    paginatedItems: paginatedPosts,
-  } = useClientSidePagination(filteredTemplates, 10);
 
   const handlePageChange = (_event: ChangeEvent<unknown>, page: number) => {
     setPageNumber(page);
@@ -88,9 +64,10 @@ export default function TemplatesListView() {
         alignItems="center"
         width="100%"
       >
-        {paginatedPosts.map((template, i) =>
-          template ? <TemplateCard key={i} template={template} /> : null,
-        )}
+        {paginatedItems.map((template, i) => (
+          <TemplateCard key={i} template={template} />
+        ))}
+
         <Box
           sx={{
             display: "flex",

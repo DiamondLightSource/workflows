@@ -13,11 +13,19 @@ import ClearIcon from "@mui/icons-material/Clear";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { WorkflowQueryFilter, WorkflowStatusBool } from "workflows-lib";
-import { useLazyLoadQuery } from "react-relay/hooks";
-import { templatesListQuery } from "relay-workflows-lib/lib/graphql/TemplatesListQuery.ts";
-import { TemplatesListQuery as TemplatesListQueryType } from "relay-workflows-lib/lib/graphql/__generated__/TemplatesListQuery.graphql";
+import { graphql, useFragment } from "react-relay/hooks";
+import { WorkflowListFilterDrawerFragment$key } from "./__generated__/WorkflowListFilterDrawerFragment.graphql";
+
+const WorkflowListFilterDrawerFragment = graphql`
+  fragment WorkflowListFilterDrawerFragment on WorkflowTemplateConnection {
+    nodes {
+      name
+    }
+  }
+`;
 
 interface WorkflowListFilterDrawerProps {
+  data: WorkflowListFilterDrawerFragment$key;
   onApplyFilters: (filters: WorkflowQueryFilter) => void;
 }
 
@@ -67,6 +75,7 @@ export function WorkflowListFilterDisplay({
 }
 
 function WorkflowListFilterDrawer({
+  data,
   onApplyFilters,
 }: WorkflowListFilterDrawerProps) {
   const [open, setOpen] = useState(false);
@@ -77,10 +86,8 @@ function WorkflowListFilterDrawer({
     template?: boolean;
   }>({});
   const [status, setStatus] = useState<{ label: string; value: string }[]>([]);
-  const data = useLazyLoadQuery<TemplatesListQueryType>(templatesListQuery, {});
-  const templateOptions = data.workflowTemplates.nodes.map(
-    (templateNode) => templateNode.name,
-  );
+  const { nodes } = useFragment(WorkflowListFilterDrawerFragment, data);
+  const templateOptions = nodes.map((templateNode) => templateNode.name);
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);

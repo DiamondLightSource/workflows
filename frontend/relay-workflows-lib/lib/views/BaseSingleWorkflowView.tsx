@@ -3,23 +3,41 @@ import { Box, ToggleButton } from "@mui/material";
 import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
 import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
 import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
-import { useFetchedTasks, useSelectedTaskIds } from "./workflowRelayUtils";
-import WorkflowInfo from "./WorkflowInfo";
-import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
-import WorkflowRelay from "./WorkflowRelay";
+import {
+  useFetchedTasks,
+  useSelectedTaskIds,
+} from "../utils/workflowRelayUtils";
+import WorkflowInfo from "../components/WorkflowInfo";
+import { useFragment } from "react-relay";
+import { graphql } from "react-relay";
+import { BaseSingleWorkflowViewFragment$key } from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
+import BaseWorkflowRelay from "../components/BaseWorkflowRelay";
+
+export const BaseSingleWorkflowViewFragment = graphql`
+  fragment BaseSingleWorkflowViewFragment on Workflow @relay(mask: false) {
+    status {
+      __typename
+    }
+    ...BaseWorkflowRelayFragment
+    ...WorkflowRelayFragment
+    ...WorkflowInfoFragment
+    ...WorkflowTasksFragment
+  }
+`;
 
 interface BaseSingleWorkflowViewProps {
-  data: workflowRelaySubscription$data | null;
+  fragmentRef: BaseSingleWorkflowViewFragment$key | null;
   taskIds?: string[];
 }
 
 export default function BaseSingleWorkflowView({
   taskIds,
-  data,
+  fragmentRef,
 }: BaseSingleWorkflowViewProps) {
   const [artifactList, setArtifactList] = useState<Artifact[]>([]);
   const [outputTaskIds, setOutputTaskIds] = useState<string[]>([]);
-  const fetchedTasks = useFetchedTasks(data);
+  const data = useFragment(BaseSingleWorkflowViewFragment, fragmentRef);
+  const fetchedTasks = useFetchedTasks(data ?? null);
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
   const [filledTaskId, setFilledTaskId] = useState<string | null>(null);
 
@@ -73,6 +91,10 @@ export default function BaseSingleWorkflowView({
     setOutputTaskIds(newOutputTaskIds);
   }, [taskTree]);
 
+  if (!data || !data.status) {
+    return null;
+  }
+
   return (
     <>
       <Box
@@ -115,9 +137,9 @@ export default function BaseSingleWorkflowView({
             </ToggleButton>
           </Box>
 
-          {data && (
-            <WorkflowRelay
-              data={data}
+          {fragmentRef && (
+            <BaseWorkflowRelay
+              fragmentRef={data}
               workflowLink
               filledTaskId={filledTaskId}
               expanded={true}
@@ -125,14 +147,13 @@ export default function BaseSingleWorkflowView({
           )}
         </Box>
       </Box>
-
       {taskIds && (
         <TaskInfo
           artifactList={artifactList}
           onArtifactHover={onArtifactHover}
         />
       )}
-      {data && <WorkflowInfo workflow={data.workflow} />}
+      {<WorkflowInfo fragmentRef={data} />}
     </>
   );
 }

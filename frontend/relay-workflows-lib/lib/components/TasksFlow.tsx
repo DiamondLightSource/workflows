@@ -15,22 +15,25 @@ import {
 } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import TaskFlowNode, { TaskFlowNodeData } from "./TasksFlowNode";
-import TasksTable from "./TasksTable";
+import TaskFlowNode, {
+  TaskFlowNodeData,
+} from "workflows-lib/lib/components/workflow/TasksFlowNode";
+import TasksTable from "workflows-lib/lib/components/workflow/TasksTable";
 import {
   addHighlightsAndFills,
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
   usePersistentViewport,
-} from "../../utils/tasksFlowUtils";
-import { Task } from "../../types";
+} from "workflows-lib/lib/utils/tasksFlowUtils";
+import { useFetchedTasks } from "relay-workflows-lib/lib/utils/workflowRelayUtils";
+import { WorkflowTasksFragment$key } from "relay-workflows-lib/lib/graphql/__generated__/WorkflowTasksFragment.graphql";
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 
 interface TasksFlowProps {
   workflowName: string;
-  tasks: Task[];
+  tasksRef?: WorkflowTasksFragment$key | null;
   onNavigate: (path: string, e?: React.MouseEvent) => void;
   highlightedTaskIds?: string[];
   filledTaskId?: string | null;
@@ -39,12 +42,13 @@ interface TasksFlowProps {
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
   workflowName,
-  tasks,
+  tasksRef,
   onNavigate,
   highlightedTaskIds,
   filledTaskId,
   isDynamic,
 }) => {
+  const tasks = useFetchedTasks(tasksRef ?? null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isOverflow, setIsOverflow] = useState(false);
