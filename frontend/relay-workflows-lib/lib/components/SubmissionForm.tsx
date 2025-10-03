@@ -1,5 +1,9 @@
 import { useFragment } from "react-relay";
-import { SubmissionForm as SubmissionFormBase, Visit } from "workflows-lib";
+import {
+  JSONObject,
+  SubmissionForm as SubmissionFormBase,
+  Visit,
+} from "workflows-lib";
 import { JsonSchema, UISchemaElement } from "@jsonforms/core";
 import { graphql } from "react-relay";
 import { SubmissionFormFragment$key } from "./__generated__/SubmissionFormFragment.graphql";
@@ -49,7 +53,7 @@ const SubmissionForm = ({
       parametersSchema={data.arguments as JsonSchema}
       parametersUISchema={data.uiSchema as UISchemaElement}
       visit={visit}
-      prepopulatedParameters={parameterData?.parameters}
+      prepopulatedParameters={parameterData?.parameters as JSONObject}
       onSubmit={onSubmit}
     />
   );

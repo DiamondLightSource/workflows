@@ -7,7 +7,7 @@ import {
   SubmissionSuccessMessage,
 } from "workflows-lib/lib/types";
 import { Visit } from "@diamondlightsource/sci-react-ui";
-import { RenderSubmittedMessage } from "./RenderSubmittedMessage";
+import { RenderSubmittedMessage } from "../components/RenderSubmittedMessage";
 import { graphql, GraphQLTaggedNode } from "react-relay";
 import {
   SubscribeAndRenderSubscription$data,

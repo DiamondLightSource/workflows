@@ -1,17 +1,16 @@
 import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
-import { WorkflowAccordion } from "../../lib/main";
-import { TaskStatus, WorkflowStatus } from "../../lib/types";
+import { WorkflowAccordion } from "workflows-lib";
+import { TaskStatus, WorkflowStatus } from "workflows-lib/lib/types";
 import { Visit } from "@diamondlightsource/sci-react-ui";
+import { vi } from "vitest";
+
+vi.mock("../../lib/components/common/StatusIcons", () => ({
+  getWorkflowStatusIcon: vi.fn(() => <div>Mocked WorkflowStatusIcon</div>),
+}));
 
 describe("WorkflowAccordion Component", () => {
-  beforeAll(() => {
-    vi.mock("../../lib/components/common/StatusIcons", () => ({
-      getWorkflowStatusIcon: vi.fn(() => <div>Mocked WorkflowStatusIcon</div>),
-    }));
-  });
-
   const mockWorkflow = {
     name: "Test Workflow",
     status: "Running" as WorkflowStatus,

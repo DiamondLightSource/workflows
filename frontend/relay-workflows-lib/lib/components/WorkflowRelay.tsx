@@ -1,10 +1,28 @@
 import React, { useState } from "react";
-import LiveWorkflowRelay from "./LiveWorkflowRelay";
-import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQuery.graphql";
+import LiveWorkflowRelay from "../subscription-components/LiveWorkflowRelay";
 import BaseWorkflowRelay from "./BaseWorkflowRelay";
-import { isFinished } from "../utils";
+import { finishedStatuses } from "../utils/coreUtils";
+import { graphql } from "relay-runtime";
+import { useFragment } from "react-relay";
+import { WorkflowRelayFragment$key } from "./__generated__/WorkflowRelayFragment.graphql";
+
+export const WorkflowRelayFragment = graphql`
+  fragment WorkflowRelayFragment on Workflow {
+    ...BaseWorkflowRelayFragment
+    status {
+      __typename
+    }
+    visit {
+      proposalCode
+      proposalNumber
+      number
+    }
+    name
+  }
+`;
+
 export interface WorkflowRelayProps {
-  data: workflowRelayQuery$data;
+  fragmentRef: WorkflowRelayFragment$key;
   workflowLink?: boolean;
   filledTaskId?: string | null;
   expanded?: boolean;
@@ -12,16 +30,24 @@ export interface WorkflowRelayProps {
 }
 
 const WorkflowRelay: React.FC<WorkflowRelayProps> = (props) => {
-  const finished = isFinished(props.data);
+  const data = useFragment(WorkflowRelayFragment, props.fragmentRef);
+  const finished =
+    data.status?.__typename && finishedStatuses.has(data.status.__typename);
   const [isNull, setIsNull] = useState<boolean>(false);
-  const onNull = () => {
+  const onNullSubscriptionData = () => {
     setIsNull(true);
   };
 
   return finished || isNull ? (
-    <BaseWorkflowRelay {...props} data={props.data} />
+    <BaseWorkflowRelay {...props} fragmentRef={data} />
   ) : (
-    <LiveWorkflowRelay {...props} onNull={onNull} />
+    <LiveWorkflowRelay
+      {...props}
+      workflowName={data.name}
+      visit={data.visit}
+      baseFragmentRef={data}
+      onNullSubscriptionData={onNullSubscriptionData}
+    />
   );
 };
 

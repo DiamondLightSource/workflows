@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemoryRouter } from "react-router-dom";
 import { fakeWorkflowA } from "./common";
 import WorkflowAccordion from "../lib/components/workflow/WorkflowAccordion";
-import TasksFlow from "../lib/components/workflow/TasksFlow";
-import { fakeTasksA } from "./common";
+import { Typography } from "@mui/material";
 
 const meta: Meta<typeof WorkflowAccordion> = {
   title: "Workflow",
@@ -24,13 +23,6 @@ export default meta;
 export const Accordion: Story = {
   args: {
     workflow: fakeWorkflowA,
-    children: (
-      <TasksFlow
-        workflowName={fakeWorkflowA.name}
-        tasks={fakeTasksA}
-        isDynamic={true}
-        onNavigate={() => {}}
-      />
-    ),
+    children: <Typography>Workflow Content </Typography>,
   },
 };

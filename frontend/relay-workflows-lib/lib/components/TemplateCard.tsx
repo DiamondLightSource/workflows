@@ -6,10 +6,10 @@ import React from "react";
 import { Container, Box, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { graphql, useFragment } from "react-relay";
-import type { TemplateCard_template$key } from "./__generated__/TemplateCard_template.graphql";
+import type { TemplateCardFragment$key } from "./__generated__/TemplateCardFragment.graphql";
 
 const templateCardFragment = graphql`
-  fragment TemplateCard_template on WorkflowTemplate {
+  fragment TemplateCardFragment on WorkflowTemplate {
     name
     title
     description
@@ -19,7 +19,7 @@ const templateCardFragment = graphql`
 `;
 
 export interface TemplateCardProps {
-  template: TemplateCard_template$key;
+  template: TemplateCardFragment$key;
 }
 
 export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {

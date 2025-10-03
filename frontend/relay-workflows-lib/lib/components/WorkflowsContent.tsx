@@ -1,15 +1,32 @@
-import { useEffect, useRef, useState, useMemo } from "react";
-import { PreloadedQuery, usePreloadedQuery } from "react-relay";
-import { Box, Button, FormControlLabel, Switch, useTheme } from "@mui/material";
-import { Visit } from "@diamondlightsource/sci-react-ui";
+import { useEffect, useRef, useState } from "react";
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+} from "react-relay";
+import { Box } from "@mui/material";
 import { PaginationControls } from "workflows-lib";
-import { workflowsQuery } from "../graphql/workflowsQuery";
-import { updateWorkflowsState } from "../utils";
-import { workflowsQuery as WorkflowsQueryType } from "../graphql/__generated__/workflowsQuery.graphql";
-import QueryWorkflowRelay from "./QueryWorkflowRelay";
+import { WorkflowsContentFragment$key } from "./__generated__/WorkflowsContentFragment.graphql";
+import WorkflowRelay from "./WorkflowRelay";
+import { WorkflowsListViewQuery as WorkflowsListViewQueryType } from "../views/__generated__/WorkflowsListViewQuery.graphql";
+import { WorkflowsListViewQuery } from "../views/WorkflowsListView";
+
+export const WorkflowsContentFragment = graphql`
+  fragment WorkflowsContentFragment on WorkflowConnection {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      ...WorkflowRelayFragment
+      name
+    }
+  }
+`;
 
 interface WorkflowsContentProps {
-  queryReference: PreloadedQuery<WorkflowsQueryType>;
+  queryReference: PreloadedQuery<WorkflowsListViewQueryType>;
   currentPage: number;
   totalPages: number;
   selectedLimit: number;
@@ -22,7 +39,6 @@ interface WorkflowsContentProps {
   updatePageInfo: (hasNextPage: boolean, endCursor: string | null) => void;
   isPaginated: boolean;
   setIsPaginated: (b: boolean) => void;
-  visit: Visit;
 }
 
 export default function WorkflowsContent({
@@ -35,64 +51,35 @@ export default function WorkflowsContent({
   updatePageInfo,
   isPaginated,
   setIsPaginated,
-  visit,
 }: WorkflowsContentProps) {
-  const theme = useTheme();
-  const data = usePreloadedQuery(workflowsQuery, queryReference);
-  const pageInfo = data.workflows.pageInfo;
-  const fetchedWorkflows = useMemo(() => {
-    return data.workflows.nodes.map((wf: { readonly name: string }) => wf.name);
-  }, [data.workflows.nodes]);
+  const queryData = usePreloadedQuery(WorkflowsListViewQuery, queryReference);
+  const data = useFragment<WorkflowsContentFragment$key>(
+    WorkflowsContentFragment,
+    queryData.workflows,
+  );
+  const pageInfo = data.pageInfo;
+  const fetchedWorkflows = data.nodes;
   const prevFetchedRef = useRef<string[]>([]);
 
-  const [visibleWorkflows, setVisibleWorkflows] =
-    useState<string[]>(fetchedWorkflows);
-  const [newWorkflows, setNewWorkflows] = useState<string[]>([]);
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(
     new Set(),
   );
-  const [liveUpdate, setLiveUpdate] = useState(false);
+
   useEffect(() => {
     updatePageInfo(pageInfo.hasNextPage, pageInfo.endCursor ?? null);
   }, [pageInfo, updatePageInfo]);
 
   useEffect(() => {
-    const fetchedChanged = prevFetchedRef.current !== fetchedWorkflows;
-
-    if ((isPaginated || liveUpdate) && fetchedChanged) {
-      setVisibleWorkflows(fetchedWorkflows);
-      setNewWorkflows([]);
-      setExpandedWorkflows(new Set());
-      prevFetchedRef.current = fetchedWorkflows;
-
-      if (isPaginated) {
-        setTimeout(() => {
-          setIsPaginated(false);
-        }, 0);
-      }
-    } else if (fetchedChanged) {
-      updateWorkflowsState(
-        fetchedWorkflows,
-        visibleWorkflows,
-        newWorkflows,
-        setNewWorkflows,
-      );
-      prevFetchedRef.current = fetchedWorkflows;
+    const currentNames = fetchedWorkflows.map((wf) => wf.name);
+    const prevNames = prevFetchedRef.current;
+    const fetchedChanged =
+      JSON.stringify(currentNames) !== JSON.stringify(prevNames);
+    if (fetchedChanged && isPaginated) {
+      setTimeout(() => {
+        setIsPaginated(false);
+      }, 0);
     }
-  }, [
-    isPaginated,
-    fetchedWorkflows,
-    newWorkflows,
-    visibleWorkflows,
-    liveUpdate,
-    setIsPaginated,
-  ]);
-  const handleShowNewWorkflows = () => {
-    const combined = [...new Set([...newWorkflows, ...visibleWorkflows])];
-    const trimmed = combined.slice(0, selectedLimit);
-    setVisibleWorkflows(trimmed);
-    setNewWorkflows([]);
-  };
+  }, [isPaginated, fetchedWorkflows, setIsPaginated]);
 
   const handleToggleExpanded = (name: string) => {
     setExpandedWorkflows((prev) => {
@@ -106,51 +93,19 @@ export default function WorkflowsContent({
     });
   };
 
-  const toggleLiveUpdate = () => {
-    setLiveUpdate((prev) => !prev);
-  };
-
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "flex-end",
-          pr: 2,
-        }}
-      >
-        <FormControlLabel
-          control={<Switch sx={{ color: theme.palette.primary.dark }} />}
-          label="Live Update"
-          sx={{ position: "right" }}
-          value={liveUpdate}
-          onChange={toggleLiveUpdate}
-        />
-      </Box>
-
-      {!liveUpdate && currentPage === 1 && newWorkflows.length > 0 && (
-        <Button
-          onClick={handleShowNewWorkflows}
-          variant="contained"
-          sx={{ margin: "1rem" }}
-        >
-          Show New Workflows
-        </Button>
-      )}
-
       <Box sx={{ overflowY: "auto", maxHeight: "80vh", width: "100%" }}>
-        {visibleWorkflows.map((n) => (
-          <QueryWorkflowRelay
-            key={n}
-            visit={visit}
-            workflowName={n}
+        {fetchedWorkflows.map((node) => (
+          <WorkflowRelay
+            key={node.name}
+            fragmentRef={node}
             workflowLink
-            expanded={expandedWorkflows.has(n)}
+            expanded={expandedWorkflows.has(node.name)}
             onChange={() => {
-              handleToggleExpanded(n);
+              handleToggleExpanded(node.name);
             }}
           />
         ))}

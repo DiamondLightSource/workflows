@@ -4,10 +4,58 @@ import {
   AccordionSummary,
   Typography,
 } from "@mui/material";
-import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQuery.graphql";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { graphql } from "relay-runtime";
+import { useFragment } from "react-relay";
+import { WorkflowInfoFragment$key } from "./__generated__/WorkflowInfoFragment.graphql";
 
-export default function WorkflowInfo({ workflow }: workflowRelayQuery$data) {
+const WorkflowInfoFragment = graphql`
+  fragment WorkflowInfoFragment on Workflow {
+    templateRef
+    parameters
+    status {
+      __typename
+      ... on WorkflowPendingStatus {
+        message
+      }
+      ... on WorkflowRunningStatus {
+        message
+        tasks {
+          name
+          message
+        }
+      }
+      ... on WorkflowSucceededStatus {
+        message
+        tasks {
+          name
+          message
+        }
+      }
+      ... on WorkflowFailedStatus {
+        message
+        tasks {
+          name
+          message
+        }
+      }
+      ... on WorkflowErroredStatus {
+        message
+        tasks {
+          name
+          message
+        }
+      }
+    }
+  }
+`;
+
+interface WorkflowInfoProps {
+  fragmentRef: WorkflowInfoFragment$key;
+}
+
+export default function WorkflowInfo({ fragmentRef }: WorkflowInfoProps) {
+  const workflow = useFragment(WorkflowInfoFragment, fragmentRef);
   return (
     <Accordion sx={{ width: "100%" }} defaultExpanded>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>

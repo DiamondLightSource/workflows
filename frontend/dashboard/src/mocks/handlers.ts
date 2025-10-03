@@ -2,28 +2,32 @@ import { graphql, HttpResponse } from "msw";
 import {
   RetriggerWorkflowQuery$data,
   RetriggerWorkflowQuery$variables,
-} from "relay-workflows-lib/lib/components/__generated__/RetriggerWorkflowQuery.graphql";
+} from "relay-workflows-lib/lib/query-components/__generated__/RetriggerWorkflowQuery.graphql";
 import {
   TemplateViewMutation$data,
   TemplateViewMutation$variables,
-} from "relay-workflows-lib/lib/components/__generated__/TemplateViewMutation.graphql";
+} from "relay-workflows-lib/lib/views/__generated__/TemplateViewMutation.graphql";
 import {
   TemplateViewQuery$data,
   TemplateViewQuery$variables,
-} from "relay-workflows-lib/lib/components/__generated__/TemplateViewQuery.graphql";
+} from "relay-workflows-lib/lib/views/__generated__/TemplateViewQuery.graphql";
 import {
   workflowsQuery$data,
   workflowsQuery$variables,
 } from "relay-workflows-lib/lib/graphql/__generated__/workflowsQuery.graphql";
 import {
-  TemplatesListQuery$data,
-  TemplatesListQuery$variables,
-} from "relay-workflows-lib/lib/graphql/__generated__/TemplatesListQuery.graphql";
+  TemplatesListViewQuery$data,
+  TemplatesListViewQuery$variables,
+} from "relay-workflows-lib/lib/views/__generated__/TemplatesListViewQuery.graphql";
 import templateListResponse from "./responses/templates/templateListResponse.json";
 import {
   templateViewResponse,
   templateFallbackResponse,
 } from "./responses/templates/templateResponses";
+import {
+  templateRetriggerResponse,
+  templateFallbackRetriggerResponse,
+} from "./responses/templates/templateViewRetriggerResponse";
 import workflowsListResponse from "./responses/workflows/workflowsListResponse.json";
 import {
   workflowRelayQuery$data,
@@ -33,6 +37,25 @@ import {
   defaultWorkflowResponse,
   workflowRelayMockResponses,
 } from "./responses/workflows/workflowResponses";
+import {
+  WorkflowsListViewTemplatesQuery$data,
+  WorkflowsListViewTemplatesQuery$variables,
+} from "relay-workflows-lib/lib/views/__generated__/WorkflowsListViewTemplatesQuery.graphql";
+import { workflowsListViewTemplatesResponse } from "./responses/templates/workflowsListViewTemplates";
+import { workflowsListViewQueryResponse } from "./responses/workflows/WorkflowsListViewQueryResponse";
+import {
+  WorkflowsListViewQuery$data,
+  WorkflowsListViewQuery$variables,
+} from "relay-workflows-lib/lib/views/__generated__/WorkflowsListViewQuery.graphql";
+import {
+  SingleWorkflowViewQuery$data,
+  SingleWorkflowViewQuery$variables,
+} from "relay-workflows-lib/lib/views/__generated__/SingleWorkflowViewQuery.graphql";
+import { singleWorkflowViewQueryResponse } from "./responses/workflows/SingleWorkflowViewQueryResponse";
+import {
+  TemplateViewRetriggerQuery$data,
+  TemplateViewRetriggerQuery$variables,
+} from "relay-workflows-lib/lib/views/__generated__/TemplateViewRetriggerQuery.graphql";
 
 const api = graphql.link("https://workflows.diamond.ac.uk/graphql");
 
@@ -55,6 +78,32 @@ export const handlers = [
     },
   ),
 
+  api.query<
+    WorkflowsListViewTemplatesQuery$data,
+    WorkflowsListViewTemplatesQuery$variables
+  >("WorkflowsListViewTemplatesQuery", () => {
+    return HttpResponse.json({
+      data: workflowsListViewTemplatesResponse as unknown as WorkflowsListViewTemplatesQuery$data,
+    });
+  }),
+
+  api.query<WorkflowsListViewQuery$data, WorkflowsListViewQuery$variables>(
+    "WorkflowsListViewQuery",
+    () => {
+      return HttpResponse.json({
+        data: workflowsListViewQueryResponse as unknown as WorkflowsListViewQuery$data,
+      });
+    },
+  ),
+  api.query<SingleWorkflowViewQuery$data, SingleWorkflowViewQuery$variables>(
+    "SingleWorkflowViewQuery",
+    () => {
+      return HttpResponse.json({
+        data: singleWorkflowViewQueryResponse as unknown as SingleWorkflowViewQuery$data,
+      });
+    },
+  ),
+
   api.query<RetriggerWorkflowQuery$data, RetriggerWorkflowQuery$variables>(
     "RetriggerWorkflowQuery",
     ({ variables }) => {
@@ -68,14 +117,24 @@ export const handlers = [
     },
   ),
 
-  api.query<TemplatesListQuery$data, TemplatesListQuery$variables>(
-    "TemplatesListQuery",
+  api.query<TemplatesListViewQuery$data, TemplatesListViewQuery$variables>(
+    "TemplatesListViewQuery",
     () => {
       return HttpResponse.json({
-        data: templateListResponse,
+        data: templateListResponse as unknown as TemplatesListViewQuery$data,
       });
     },
   ),
+
+  api.query<
+    TemplateViewRetriggerQuery$data,
+    TemplateViewRetriggerQuery$variables
+  >("TemplateViewRetriggerQuery", ({ variables }) => {
+    const response =
+      templateRetriggerResponse[variables.workflowName] ??
+      templateFallbackRetriggerResponse;
+    return HttpResponse.json({ data: response });
+  }),
 
   api.query<TemplateViewQuery$data, TemplateViewQuery$variables>(
     "TemplateViewQuery",

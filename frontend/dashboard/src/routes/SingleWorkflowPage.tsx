@@ -3,7 +3,7 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Suspense, useMemo } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import SingleWorkflowView from "relay-workflows-lib/lib/components/SingleWorkflowView";
+import SingleWorkflowView from "relay-workflows-lib/lib/views/SingleWorkflowView";
 import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 
