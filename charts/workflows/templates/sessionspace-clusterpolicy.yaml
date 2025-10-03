@@ -44,7 +44,7 @@ spec:
         apiVersion: v1
         kind: Secret
         name: artifact-s3
-        namespace: "{{ `{{request.namespace}}` }}"
+        namespace: "{{ `{{request.object.metadata.name}}` }}"
         clone:
           namespace: workflows
           name: artifact-s3
