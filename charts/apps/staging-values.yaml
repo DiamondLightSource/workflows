@@ -48,6 +48,8 @@ kyverno:
     admissionController:
       metricsService:
         enabled: true
+      metering:
+        port: "https://otelcollector.workflows.diamond.ac.uk/v1/metrics"
       replicas: 1
       container:
         resources:
