@@ -46,6 +46,8 @@ kyverno:
       dumpPayload:
         enabled: true
     admissionController:
+      metricsService:
+        enabled: true
       replicas: 1
       container:
         resources:
