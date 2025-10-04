@@ -49,7 +49,9 @@ kyverno:
       metricsService:
         enabled: true
       metering:
-        port: "https://otelcollector.workflows.diamond.ac.uk/v1/metrics"
+        collector: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local"
+        port: 4317
+        config: "grpc"
       replicas: 1
       container:
         resources:
