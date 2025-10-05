@@ -6,6 +6,12 @@ grafana:
       domain: localhost
       root_url: http://localhost:3000
       serve_from_sub_path: false
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Admin
     auth.generic_oauth:
       enabled: false
       client_id: ""
@@ -48,4 +54,6 @@ prometheus:
       scrape_timeout: 15s
       static_configs:
         - targets:
-          - "localhost:9090"
+          - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b.workflows.svc.cluster.local"
+# inside the vCluster it would be:
+# - "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:9090"
