@@ -46,7 +46,6 @@ prometheus:
     ingress:
       enabled: false
     baseURL: http://localhost:9090
-    remoteWrite: []
   extraScrapeConfigs: |
     - job_name: 'otel-collector'
       scheme: http
@@ -54,6 +53,6 @@ prometheus:
       scrape_timeout: 15s
       static_configs:
         - targets:
-          - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b.workflows.svc.cluster.local"
+          - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b.workflows.svc.cluster.local:9090"
 # inside the vCluster it would be:
 # - "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:9090"
