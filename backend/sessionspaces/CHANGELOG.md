@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.2...sessionspaces@v0.1.3) (2025-10-07)
+
+
+### Bug Fixes
+
+* **sessionspaces:** disambiguate columns in ispyb query due to schema changes (new startDate column) ([2a54966](https://github.com/DiamondLightSource/workflows/commit/2a5496672157389331ea9a5e143ee9d22f49a6f5))
+* **sessionspaces:** enable data directory for b01-1 instrument ([dc47eb1](https://github.com/DiamondLightSource/workflows/commit/dc47eb1f708f602c0d36339f2fe516f4c6c97865))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.1...sessionspaces@v0.1.2) (2025-05-19)
 
 
