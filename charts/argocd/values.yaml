@@ -27,7 +27,6 @@ argo-cd:
         p, role:admin, settings, *, *, allow
         g, admin, role:admin
         g, benedikt.daurer@diamond.ac.uk, role:admin
-        g, max.herbert@diamond.ac.uk, role:admin
         g, thomas.thomas@diamond.ac.uk, role:admin
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
