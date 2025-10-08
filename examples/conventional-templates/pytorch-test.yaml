@@ -1,0 +1,96 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: pytorch-test
+spec:
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: size
+        value: "1024"
+  volumeClaimTemplates:
+    - metadata:
+        name: tmpdir
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: netapp
+  
+  templates:
+    - name: install-dependencies
+      script:
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: [bash]
+        source: |
+          echo "creating a venv and installing dependencies."
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install torch numpy
+          echo "done"
+
+    - name: matrix-multiplication
+      inputs: 
+        parameters:
+          - name: size
+            value: 1024
+      script: 
+        image: python:3.10
+        volumeMounts:
+          - name: tmpdir
+            mountPath: /tmp
+        command: ["/tmp/venv/bin/python"]
+        source: |
+          import torch
+          import numpy as np
+          device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+          print(f"Running on: {device}")
+          size = {{inputs.parameters.size}}
+          mat_a = 255 * torch.rand(size,size,device=device)
+          mat_b = 255 * torch.rand(size,size,device=device)
+          product = (mat_a @ mat_b)
+          np.save("/tmp/output.npy", product.cpu().numpy())
+          print("Result saved to /tmp/output.npy")
+
+    - name: generate-image
+      script:
+        image: python:3.10
+        volumeMounts:
+        - name: tmpdir
+          mountPath: /tmp
+        command: ["/tmp/venv/bin/python"]
+        source: |
+          import numpy as np
+          from PIL import Image
+          array = np.load("/tmp/output.npy")
+          array = array.astype(np.uint8)
+          print(np.shape(array))
+          image = Image.fromarray(array)
+          image.save("/tmp/image.png", mode="L")
+      outputs:
+        artifacts:
+          - name: "png-file"
+            path: "/tmp/image.png"
+            archive:
+              none: {}
+
+    - name: workflow-entry
+      dag: 
+        tasks:
+          - name: install-dependencies
+            template: install-dependencies
+          
+          - name: matrix-multiplication
+            template: matrix-multiplication
+            dependencies: [install-dependencies]
+            arguments:
+              parameters:
+                - name: size
+                  value: 1024
+
+          - name: generate-image
+            template: generate-image
+            dependencies: [matrix-multiplication]
