@@ -74,10 +74,10 @@ postgresql-ha:
     resources:
       requests:
         cpu: 500m
-        memory: 1024Mi
+        memory: 2Gi
       limits:
         cpu: 1000m
-        memory: 2048Mi
+        memory: 4Gi
   persistence:
     storageClass: db-nvme-storage
     size: 50Gi
