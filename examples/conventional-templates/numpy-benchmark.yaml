@@ -39,18 +39,45 @@ metadata:
         ]
       }
 spec:
-  entrypoint: numpy-test
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: size
+        value: 2000
+      - name: memory
+        value: 20Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: netapp
   templates:
+    - name: install-deps
+      script:
+        image: python:3.12
+        volumeMounts:
+        - name: tmpdir
+          mountPath: /tmp
+        command: [bash]
+        source: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install numpy
+          
     - name: numpy-test
       inputs:
         parameters:
           - name: size
-            value: 2000
           - name: memory
-            value: 20Gi
       script:
-        image: gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1
-        command: ["python"]
+        image: python:3.12
+        volumeMounts:
+        - name: tmpdir
+          mountPath: /tmp
+        command: ["/tmp/venv/bin/python"]
         env:
           - name: MKL_NUM_THREADS
             value: "1"
@@ -80,3 +107,18 @@ spec:
             limits:
               cpu: "1"
               memory: "{{ inputs.parameters.memory }}"
+
+    - name: workflow-entry
+      dag:
+        tasks:
+        - name: install-numpy
+          template: install-deps
+        - name: run-benchmark
+          template: numpy-test
+          dependencies: [install-numpy]
+          arguments:
+            parameters:
+            - name: size
+              value: "{{workflow.parameters.size}}"
+            - name: memory
+              value: "{{workflow.parameters.memory}}"
