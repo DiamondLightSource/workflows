@@ -7,7 +7,7 @@ spec:
   arguments:
     parameters:
       - name: size
-        value: "1024"
+        value: 1024
   volumeClaimTemplates:
     - metadata:
         name: tmpdir
@@ -89,7 +89,7 @@ spec:
             arguments:
               parameters:
                 - name: size
-                  value: 1024
+                  value: "{{arguments.parameters.size}}"
 
           - name: generate-image
             template: generate-image
