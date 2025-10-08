@@ -25,6 +25,12 @@ kyverno:
   extraValuesFiles: []
   valuesObject:
     admissionController:
+      metricsService:
+        enabled: true
+      metering:
+        collector: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local"
+        port: 4317
+        config: "grpc"
       replicas: 3
       container:
         resources:
