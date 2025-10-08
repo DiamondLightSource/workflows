@@ -1,0 +1,93 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: pytorch-notebook
+spec:
+  entrypoint: workflow-entry
+  arguments:
+    parameters:
+      - name: size
+        value: 1024
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 16Gi
+        storageClassName: netapp
+
+  templates:
+    - name: mount-files
+      script: 
+        image: pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
+        command: [bash]
+        source: |
+              echo '{{ .Files.Get "notebooks/pytorch.ipynb" | b64enc }}' | base64 -d > /tmp/notebook.ipynb
+              echo '{{ .Files.Get "notebooks/pytorch_requirements.txt" | b64enc }}' | base64 -d > /tmp/pytorch_requirements.txt
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+
+    - name: run-notebook
+      script:
+          image: pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
+          command: [bash]
+          source: |
+            python -m venv /tmp/venv
+            /tmp/venv/bin/pip install --no-cache-dir -r /tmp/pytorch_requirements.txt
+            /tmp/venv/bin/python -m ipykernel install --prefix=/tmp/venv --name=venv
+            /tmp/venv/bin/python -m papermill /tmp/notebook.ipynb /tmp/notebook-parametrized.ipynb \
+            -p size '{{`{{workflow.parameters.size}}`}}'
+            /tmp/venv/bin/python -m jupyter nbconvert --execute --allow-errors --to html --output notebook --output-dir /tmp /tmp/notebook-parametrized.ipynb
+          volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+      outputs:
+        artifacts:
+        - name: notebook
+          path: /tmp/notebook.html
+          archive:
+            none: {}
+        - name: "png-file"
+          path: "/tmp/image.png"
+          archive:
+            none: {}
+
+    - name: workflow-entry
+      dag: 
+        tasks:
+          - name: mount-files
+            template: mount-files
+          
+          - name: run-notebook
+            template: run-notebook
+            dependencies: [mount-files]
+
+      podSpecPatch: |
+        containers:
+          - name: main
+            resources:
+              requests:
+                cpu: 1
+                memory: 16Gi
+                nvidia.com/gpu: 1
+              limits:
+                cpu: 1
+                memory: 16Gi
+                nvidia.com/gpu: 1
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      - key: nodetype
+        operator: Equal
+        value: gpu
+        effect: NoSchedule
+      - key: nodegroup
+        operator: Equal
+        value: workflows
+        effect: NoSchedule
+      nodeSelector: 
+        nodetype: gpu
