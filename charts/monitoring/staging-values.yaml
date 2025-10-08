@@ -1,0 +1,56 @@
+grafana:
+  ingress:
+    enabled: false
+  grafana.ini:
+    server:
+      domain: localhost
+      root_url: http://localhost:3000
+      serve_from_sub_path: false
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Viewer
+    auth.generic_oauth:
+      enabled: false
+      client_id: ""
+      client_secret: ""
+  extraSecretMounts: []
+  assertNoLeakedSecrets: false
+
+thanos:
+  existingObjstoreSecret: ""
+  storegateway:
+    enabled: false
+  query:
+    ingress:
+      enabled: false
+  queryFrontend:
+    ingress:
+      enabled: false
+  receive:
+    ingress:
+      enabled: false
+  compactor:
+    enabled: false
+    ingress:
+      enabled: false
+
+prometheus:
+  alertmanager:
+    ingress:
+      enabled: false
+    extraArgs: {}
+  server:
+    ingress:
+      enabled: false
+    baseURL: http://localhost:9090
+  extraScrapeConfigs: |
+    - job_name: 'otel-collector'
+      scheme: http
+      scrape_interval: 15s
+      scrape_timeout: 15s
+      static_configs:
+        - targets:
+          - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b:9090"
