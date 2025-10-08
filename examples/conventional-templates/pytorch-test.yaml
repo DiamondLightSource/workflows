@@ -34,6 +34,10 @@ spec:
           which python
           python -v
           pip freeze
+          echo "Contents of home:"
+          ls .
+          echo "Contents of tmp:"
+          ls /tmp/
 
     - name: matrix-multiplication
       inputs: 
@@ -86,14 +90,14 @@ spec:
           - name: install-dependencies
             template: install-dependencies
           
-          - name: matrix-multiplication
-            template: matrix-multiplication
-            dependencies: [install-dependencies]
-            arguments:
-              parameters:
-                - name: size
-                  value: "{{arguments.parameters.size}}"
+          # - name: matrix-multiplication
+          #   template: matrix-multiplication
+          #   dependencies: [install-dependencies]
+          #   arguments:
+          #     parameters:
+          #       - name: size
+          #         value: "{{arguments.parameters.size}}"
 
-          - name: generate-image
-            template: generate-image
-            dependencies: [matrix-multiplication]
+          # - name: generate-image
+          #   template: generate-image
+          #   dependencies: [matrix-multiplication]
