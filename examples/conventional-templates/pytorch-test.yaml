@@ -54,23 +54,6 @@ spec:
           product = (mat_a @ mat_b)
           np.save("/tmp/output.npy", product.cpu().numpy())
           print("Result saved to /tmp/output.npy")
-        resources:
-          requests:
-            cpu: 1
-            memory: 16Gi
-            nvidia.com/gpu: 1
-          limits:
-            cpu: 1
-            memory: 16Gi
-            nvidia.com/gpu: 1
-      tolerations:
-      - key: nvidia.com/gpu
-        operator: Exists
-        effect: NoSchedule
-      - key: nodetype
-        operator: Equal
-        value: gpu
-        effect: NoSchedule
 
     - name: generate-image
       script:
@@ -115,3 +98,24 @@ spec:
           - name: generate-image
             template: generate-image
             dependencies: [install-dependencies, matrix-multiplication]
+      podSpecPatch: |
+        containers:
+          - name: main
+            resources:
+              requests:
+                cpu: 1
+                memory: 16Gi
+                nvidia.com/gpu: 1
+              limits:
+                cpu: 1
+                memory: 16Gi
+                nvidia.com/gpu: 1
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      - key: nodetype
+        operator: Equal
+        value: gpu
+        effect: NoSchedule
+
