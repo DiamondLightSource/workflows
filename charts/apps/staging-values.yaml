@@ -1,6 +1,6 @@
 argocd:
   enabled: true
-  targetRevision: drh/staging
+  targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
 
@@ -11,7 +11,7 @@ events:
 
 groups:
   enabled: true
-  targetRevision: drh/staging
+  targetRevision: drh/staging-debug
 
 kyverno:
   enabled: true
@@ -38,7 +38,7 @@ kyverno:
 
 sessionspaces:
   enabled: true
-  targetRevision: drh/staging
+  targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
 
@@ -55,18 +55,18 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: drh/staging
+  targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
 
 graphProxy:
   enabled: true
-  targetRevision: drh/staging
+  targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
 
 dashboard:
   enabled: true
-  targetRevision: drh/staging
+  targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
