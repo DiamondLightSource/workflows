@@ -43,9 +43,6 @@ spec:
           - name: tmpdir
             mountPath: /tmp
         command: ["/tmp/venv/bin/python"]
-        resources:
-          limits:
-            nvidia.com/gpu: 1
         source: |
           import torch
           import numpy as np
@@ -102,3 +99,16 @@ spec:
           - name: generate-image
             template: generate-image
             dependencies: [matrix-multiplication]
+  podSpecPath: |
+    containers:
+    - name: main
+      resources:
+        requests:
+          cpu: 1
+          memory: 16Gi
+          nvidia.com/gpu: 1
+        limits:
+          cpu: 1
+          memory: 16Gi
+          nvidia.com/gpu: 1
+
