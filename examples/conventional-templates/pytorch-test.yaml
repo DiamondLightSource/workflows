@@ -29,7 +29,7 @@ spec:
         source: |
           echo "creating a venv and installing dependencies."
           python -m venv /tmp/venv
-          /tmp/venv/bin/pip install --no-cache-dir torch numpy Pillow
+          /tmp/venv/bin/pip install --no-cache-dir numpy Pillow
           echo "done"
 
     - name: matrix-multiplication
@@ -38,11 +38,11 @@ spec:
           - name: size
             value: 1024
       script: 
-        image: python:3.10
+        image: pytorch/pytorch
         volumeMounts:
           - name: tmpdir
             mountPath: /tmp
-        command: ["/tmp/venv/bin/python"]
+        command: ["python"]
         source: |
           import torch
           import numpy as np
@@ -90,7 +90,6 @@ spec:
           
           - name: matrix-multiplication
             template: matrix-multiplication
-            dependencies: [install-dependencies]
             arguments:
               parameters:
                 - name: size
@@ -98,7 +97,7 @@ spec:
 
           - name: generate-image
             template: generate-image
-            dependencies: [matrix-multiplication]
+            dependencies: [install-dependencies, matrix-multiplication]
   podSpecPath: |
     containers:
     - name: main
