@@ -96,7 +96,7 @@ spec:
             arguments:
               parameters:
                 - name: size
-                  value: "{{arguments.parameters.size}}"
+                  value: "{{workflow.parameters.size}}"
 
           - name: generate-image
             template: generate-image
