@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.10...dashboard@v0.1.11) (2025-10-09)
+
+
+### Features
+
+* **frontend:** add fragments to workflows pages ([8bca25e](https://github.com/DiamondLightSource/workflows/commit/8bca25ec30998156be0cd1d2b9f1abac4689dab7))
+* **frontend:** use fragments for Template pages ([3ce12b7](https://github.com/DiamondLightSource/workflows/commit/3ce12b7f4708f310b5bed7883a93c0be123597d2))
+
 ## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.9...dashboard@v0.1.10) (2025-09-26)
 
 
