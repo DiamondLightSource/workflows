@@ -17,7 +17,7 @@ spec:
           requests:
             storage: 16Gi
         storageClassName: netapp
-  
+
   templates:
     - name: install-dependencies
       script:
@@ -54,6 +54,15 @@ spec:
           product = (mat_a @ mat_b)
           np.save("/tmp/output.npy", product.cpu().numpy())
           print("Result saved to /tmp/output.npy")
+        resources:
+          requests:
+            cpu: 1
+            memory: 16Gi
+            nvidia.com/gpu: 1
+          limits:
+            cpu: 1
+            memory: 16Gi
+            nvidia.com/gpu: 1
 
     - name: generate-image
       script:
@@ -98,16 +107,3 @@ spec:
           - name: generate-image
             template: generate-image
             dependencies: [install-dependencies, matrix-multiplication]
-  podSpecPath: |
-    containers:
-    - name: main
-      resources:
-        requests:
-          cpu: 1
-          memory: 16Gi
-          nvidia.com/gpu: 1
-        limits:
-          cpu: 1
-          memory: 16Gi
-          nvidia.com/gpu: 1
-
