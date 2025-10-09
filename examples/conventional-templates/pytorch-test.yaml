@@ -17,6 +17,14 @@ spec:
           requests:
             storage: 16Gi
         storageClassName: netapp
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+    - key: nodetype
+      operator: Equal
+      value: gpu
+      effect: NoSchedule
 
   templates:
     - name: install-dependencies
