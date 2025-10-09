@@ -29,7 +29,7 @@ spec:
         source: |
           echo "creating a venv and installing dependencies."
           python -m venv /tmp/venv
-          /tmp/venv/bin/pip install --no-cache-dir torch numpy
+          /tmp/venv/bin/pip install --no-cache-dir torch numpy Pillow
           echo "done"
           which python
           python -v
