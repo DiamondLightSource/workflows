@@ -31,13 +31,6 @@ spec:
           python -m venv /tmp/venv
           /tmp/venv/bin/pip install --no-cache-dir torch numpy Pillow
           echo "done"
-          which python
-          python -v
-          pip freeze
-          echo "Contents of home:"
-          ls .
-          echo "Contents of tmp:"
-          ls /tmp/
 
     - name: matrix-multiplication
       inputs: 
@@ -50,6 +43,9 @@ spec:
           - name: tmpdir
             mountPath: /tmp
         command: ["/tmp/venv/bin/python"]
+        resources:
+          limits:
+            nvidia.com/gpu: 1
         source: |
           import torch
           import numpy as np
@@ -70,13 +66,18 @@ spec:
           mountPath: /tmp
         command: ["/tmp/venv/bin/python"]
         source: |
+          import os.path
           import numpy as np
           from PIL import Image
           array = np.load("/tmp/output.npy")
+          print(f"Loaded array with shape: {array.shape}")
           array = array.astype(np.uint8)
           print(np.shape(array))
           image = Image.fromarray(array)
+          print("Saving image...")
           image.save("/tmp/image.png", mode="L")
+          if os.path.isfile("/tmp/image.png"):
+            print("Image saved at /tmp/image.png")
       outputs:
         artifacts:
           - name: "png-file"
