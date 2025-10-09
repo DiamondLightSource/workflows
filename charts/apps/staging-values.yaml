@@ -70,3 +70,9 @@ dashboard:
   targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
+
+otel:
+  enabled: true
+  targetRevision: drh/staging-debug
+  extraValuesFiles: []
+  valuesObject: {}
