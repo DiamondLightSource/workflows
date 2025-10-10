@@ -29,3 +29,6 @@ rules:
     - update
     - patch
     - delete
+- apiGroups: ["argoproj.io"]
+  resources: ["workflows"]
+  verbs: ["get", "list"]
