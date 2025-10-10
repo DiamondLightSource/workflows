@@ -37,7 +37,7 @@ kyverno:
           memory: 1Gi
 
 sessionspaces:
-  enabled: true
+  enabled: false
   targetRevision: drh/staging-debug
   extraValueFiles:
     - staging-values.yaml
