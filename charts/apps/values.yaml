@@ -27,6 +27,16 @@ kyverno:
     metricsConfig:
       metricsRefreshInterval: 24h
       metricsExposure:
+        kyverno_client_queries_total:
+          enabled: false
+        kyverno_controller_reconcile_total:
+          enabled: false
+        kyverno_http_requests_duration_seconds:
+          enabled: false
+        kyverno_http_requests_total:
+          enabled: false
+        kyverno_policy_changes_total:
+          enabled: false
         kyverno_policy_execution_duration_seconds:
           enabled: false
           disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
