@@ -216,6 +216,7 @@ export const fakeWorkflowA = {
   status: "Failed" as WorkflowStatus,
   workflow: "workflow1",
   instrumentSession: instrumentSession,
+  creator: "",
 };
 
 export const numpySchema = {
