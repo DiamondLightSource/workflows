@@ -8,7 +8,8 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
     version: 8.6.2
   - name: thanos
-    repository: https://charts.bitnami.com/bitnami
+    # repository: https://charts.bitnami.com/bitnami
+    repository: bitnamilegacy/thanos
     version: 15.8.1
   - name: prometheus
     repository: https://prometheus-community.github.io/helm-charts
