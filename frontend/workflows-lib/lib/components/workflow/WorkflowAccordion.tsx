@@ -47,7 +47,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
       onChange={onChange}
     >
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-        <Box sx={{ display: "flex", flexGrow: 1, gap: 2 }}>
+        <Box sx={{ display: "flex", flexBasis: 0, flexGrow: 5, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}
           {workflowLink && (
             <Link
@@ -62,6 +62,11 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
               workflowName: workflow.name,
             })}
           <Typography>{workflow.name}</Typography>
+        </Box>
+        <Box flexBasis={0} flexGrow={1}>
+          <Typography color="grey">
+            Creator: {workflow.creator || "Unknown"}
+          </Typography>
         </Box>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>

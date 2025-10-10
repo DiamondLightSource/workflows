@@ -22,7 +22,10 @@ describe("WorkflowAccordion Component", () => {
     tasks: [
       { id: "Task-1", name: "Task 1", status: "Succeeded" as TaskStatus },
     ],
+    creator: "abc12345",
   };
+
+  const mockNoCreatorWorkflow = { ...mockWorkflow, creator: "" };
 
   const MockChildComponent = <div>Mocked ChildComponent</div>;
   it("should render the workflow name and status icon", () => {
@@ -35,6 +38,21 @@ describe("WorkflowAccordion Component", () => {
     );
     expect(getByText("Test Workflow")).toBeInTheDocument();
     expect(getByText("Mocked WorkflowStatusIcon")).toBeInTheDocument();
+  });
+
+  test.each([
+    // [test description, expected result, mock workflow]
+    ["should display creator name", "abc12345", mockWorkflow],
+    ["should display unknown if no creator", "Unknown", mockNoCreatorWorkflow],
+  ])("%s", (_, expectedResult, workflow) => {
+    const { getByText } = render(
+      <MemoryRouter>
+        <WorkflowAccordion workflow={workflow}>
+          {MockChildComponent}
+        </WorkflowAccordion>
+      </MemoryRouter>,
+    );
+    expect(getByText(`Creator: ${expectedResult}`)).toBeInTheDocument();
   });
 
   it("should expand the accordion and render children when clicked", () => {
