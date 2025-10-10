@@ -62,6 +62,9 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
               workflowName: workflow.name,
             })}
           <Typography>{workflow.name}</Typography>
+          <Typography color="grey">
+            Creator: {workflow.creator || "Unknown"}
+          </Typography>
         </Box>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>

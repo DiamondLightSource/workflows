@@ -19,6 +19,9 @@ export const BaseWorkflowRelayFragment = graphql`
       proposalNumber
       number
     }
+    creator {
+      creatorId
+    }
     status {
       __typename
     }
@@ -90,6 +93,7 @@ export default function BaseWorkflowRelay({
           name: data.name,
           instrumentSession: data.visit,
           status: statusText as WorkflowStatus,
+          creator: data.creator.creatorId,
         }}
         workflowLink={workflowLink}
         expanded={expanded}
