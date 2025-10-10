@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Kyverno
         run: |
-          helm install kyverno kyverno/kyverno --version 3.5.2 --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false
+          helm install kyverno kyverno/kyverno --version 3.2.6 --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false
           helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' > /tmp/crds.yaml
 
       - name: Install Workflows CRDs
