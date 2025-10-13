@@ -133,6 +133,11 @@ kind: GeneratingPolicy
 metadata:
   name: copy-host-secret-artifact-s3
 spec:
+  evaluation:
+    generateExisting:
+      enabled: true
+    synchronize:
+      enabled: true
   matchConstraints:
     resourceRules:
     - apiGroups:   [""]
@@ -143,6 +148,6 @@ spec:
     - name: targetNs
       expression: "object.metadata.name"
     - name: sourceSecret
-      expression: resource.Get("v1", "secrets", "workflow", "artifact-s3")
+      expression: resource.Get("v1", "secrets", "workflows", "artifact-s3")
   generate:
     - expression: generator.Apply(variables.targetNs, [variables.sourceSecret])
