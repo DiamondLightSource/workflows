@@ -36,6 +36,7 @@ rules:
     - secrets
   verbs:
     - get
+    - list
     - create
     - update
 - apiGroups:
