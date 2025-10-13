@@ -40,15 +40,6 @@ kyverno:
           requests:
             cpu: 5
             memory: 8Gi
-      extraResources:
-        - apiGroups:
-            - '*'
-          resources:
-            - '*'
-          verbs:
-            - get
-            - list
-            - watch
     backgroundController:
       extraArgs:
         genWorkers: 50
@@ -62,15 +53,6 @@ kyverno:
         requests:
           cpu: 6
           memory: 16Gi
-      extraResources:
-        - apiGroups:
-            - '*'
-          resources:
-            - '*'
-          verbs:
-            - get
-            - list
-            - watch
     cleanupController:
       enabled: false
     reportsController:
