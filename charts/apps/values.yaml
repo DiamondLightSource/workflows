@@ -61,6 +61,12 @@ kyverno:
         kyverno_cleanup_controller_deletedobjects:
           enabled: false
           disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_client_queries:
+          enabled: false
+        kyverno_controller_reconcile:
+          enabled: false
+        kyverno_http_requests:
+          enabled: false
     admissionController:
       metering:
         collector: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local"
