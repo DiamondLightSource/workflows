@@ -38,6 +38,9 @@ rules:
     - get
     - create
     - update
-- apiGroups: ["argoproj.io"]
-  resources: ["workflows"]
-  verbs: ["get"]
+- apiGroups:
+    - "argoproj.io"
+  resources: 
+   - workflows
+  verbs:
+    - get
