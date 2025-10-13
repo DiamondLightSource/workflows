@@ -49,16 +49,16 @@ kyverno:
         kyverno_admission_review_duration_seconds:
           enabled: false
           disabledLabelDimensions: ["resource_namespace"]
-        kyverno_policy_rule_info_total:
+        kyverno_policy_rule_info:
           enabled: false
           disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
-        kyverno_policy_results_total:
+        kyverno_policy_results:
           enabled: false
           disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
-        kyverno_admission_requests_total:
-          enabled: false
+        kyverno_admission_requests:
+          enabled: true
           disabledLabelDimensions: ["resource_namespace"]
-        kyverno_cleanup_controller_deletedobjects_total:
+        kyverno_cleanup_controller_deletedobjects:
           enabled: false
           disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
     admissionController:
