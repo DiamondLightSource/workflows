@@ -31,23 +31,23 @@ spec:
           metadata:
             labels:
               workflows.argoproj.io/configmap-type: Parameter
-    - name: copy-artifact-s3-secret
-      match:
-        resources:
-          kinds:
-            - Namespace
-          selector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
-      generate:
-        synchronize: true
-        apiVersion: v1
-        kind: Secret
-        name: artifact-s3
-        namespace: "{{ `{{request.object.metadata.name}}` }}"
-        clone:
-          namespace: workflows
-          name: artifact-s3
+    # - name: copy-artifact-s3-secret
+    #   match:
+    #     resources:
+    #       kinds:
+    #         - Namespace
+    #       selector:
+    #         matchLabels:
+    #           app.kubernetes.io/managed-by: sessionspaces
+    #   generate:
+    #     synchronize: true
+    #     apiVersion: v1
+    #     kind: Secret
+    #     name: artifact-s3
+    #     namespace: "{{ `{{request.object.metadata.name}}` }}"
+    #     clone:
+    #       namespace: workflows
+    #       name: artifact-s3
     - name: generate-visit-member-role-binding
       match:
         resources:
@@ -128,34 +128,21 @@ spec:
             name: argo-workflow
             apiGroup: rbac.authorization.k8s.io
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1alpha1
+kind: GeneratingPolicy
 metadata:
-  name: copy-secret-host-artifact-s3
-  annotations:
-    policies.kyverno.io/title: Copy Host Cluster S3 Artifact Secret
-    policies.kyverno.io/subject: Secret
-    policies.kyverno.io/minversion: 1.15.2
+  name: copy-host-secret-artifact-s3
 spec:
-  background: true
-  rules:
-  - name: copy-secret-host-artifact-s3
-    match:
-      all:
-      - resources:
-          kinds:
-            - Secret
-          names:
-            - host-artifact-s3
-          namespaces:
-            - workflows
-    generate:
-      apiVersion: v1
-      kind: Secret
-      name: artifact-s3
-      namespace: workflows
-      synchronize: true
-      clone:
-        namespace: workflows
-        name: host-artifact-s3
-      generateExisting: true
+  matchConstraints:
+    resourceRules:
+    - apiGroups:   [""]
+      apiVersions: ["v1"]
+      operations:  ["CREATE"]
+      resources:   ["namespaces"]
+  variables:
+    - name: targetNs
+      expression: "object.metadata.name"
+    - name: sourceSecret
+      expression: resource.Get("v1", "secrets", "workflow", "artifact-s3")
+  generate:
+    - expression: generator.Apply(variables.targetNs, [variables.sourceSecret])
