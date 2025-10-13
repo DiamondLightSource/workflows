@@ -16,6 +16,7 @@ rules:
   resources:
     - rolebindings
   verbs:
+    - get
     - create
     - update
     - patch
@@ -29,3 +30,17 @@ rules:
     - update
     - patch
     - delete
+- apiGroups:
+    - ""
+  resources:
+    - secrets
+  verbs:
+    - get
+    - create
+    - update
+- apiGroups:
+    - "argoproj.io"
+  resources:
+   - workflows
+  verbs:
+    - get
