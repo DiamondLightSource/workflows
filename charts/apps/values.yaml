@@ -63,6 +63,7 @@ kyverno:
           disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
         kyverno_client_queries:
           enabled: false
+          disabledLabelDimensions: ["resource_namespace"]
         kyverno_controller_reconcile:
           enabled: false
         kyverno_http_requests:
