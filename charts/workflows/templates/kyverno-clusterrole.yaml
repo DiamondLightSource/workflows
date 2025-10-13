@@ -17,6 +17,7 @@ rules:
     - rolebindings
   verbs:
     - get
+    - list
     - create
     - update
     - patch
