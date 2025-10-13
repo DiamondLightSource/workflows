@@ -62,8 +62,6 @@ kyverno:
           enabled: false
           disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
     admissionController:
-      metricsService:
-        enabled: true
       metering:
         collector: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local"
         port: 4317
