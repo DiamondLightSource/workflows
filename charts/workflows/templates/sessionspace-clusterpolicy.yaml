@@ -137,10 +137,11 @@ metadata:
     policies.kyverno.io/subject: Secret
     policies.kyverno.io/minversion: 1.15.2
 spec:
+  background: true
   rules:
   - name: copy-secret-host-artifact-s3
     match:
-      any:
+      all:
       - resources:
           kinds:
             - Secret
@@ -157,3 +158,4 @@ spec:
       clone:
         namespace: workflows
         name: host-artifact-s3
+      generateExisting: true
