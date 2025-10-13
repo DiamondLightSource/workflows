@@ -127,3 +127,33 @@ spec:
             kind: ClusterRole
             name: argo-workflow
             apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: copy-secret-host-artifact-s3
+  annotations:
+    policies.kyverno.io/title: Copy Host Cluster S3 Artifact Secret
+    policies.kyverno.io/subject: Secret
+    policies.kyverno.io/minversion: 1.15.2
+spec:
+  rules:
+  - name: copy-secret-host-artifact-s3
+    match:
+      any:
+      - resources:
+          kinds:
+            - Secret
+          names:
+            - host-artifact-s3
+          namespaces:
+            - workflows
+    generate:
+      apiVersion: v1
+      kind: Secret
+      name: artifact-s3
+      namespace: workflows
+      synchronize: true
+      clone:
+        namespace: workflows
+        name: host-artifact-s3
