@@ -5,16 +5,16 @@ case, WorkflowTemplates.
 It allows you to configure and point at data, environmental variables and more
 that can be part of your template (manifests) without cluttering one file.
 
-> [!IMPORTANT]
-> Please inform any Data Analysis Workflows Team members of any changes in
-repository structure that is made to ensure we configure the platform to read
-your WorkflowTemplates correctly.
+!!! warning
+    Please inform any Data Analysis Workflows Team members of any changes in
+    repository structure that is made to ensure we configure the platform to read
+    your WorkflowTemplates correctly.
 
-> [!NOTE]
-> This is not an extensive list and a full explanation of Helm and its
-capabilities. This is aimed to show how to setup your repository to helm
-templating for your WorkflowTemplates. For more information about helm and its
-use cases use the read about it [here](https://helm.sh/)
+!!! info
+    This is not an extensive list and a full explanation of Helm and its
+    capabilities. This is aimed to show how to setup your repository to helm
+    templating for your WorkflowTemplates. For more information about helm and its
+    use cases use the read about it [here](https://helm.sh/)
 
 ## Helm Structure
 
@@ -36,18 +36,21 @@ The common chart below shows the core structure of folder of a Helm chart.
 - The data directory can be used to store any files that want to be
 referred to. This is where you have all the flexibility to create subdirectories,
 have different file types.
+
     - It is recommended to have any other data being accessed be found in the data
-    directory
-    - this folder is not part of the main helm structure but is useful to keep
-    your data kept neatly
+    directory.
+
+    - This folder is not part of the main helm structure but is useful to keep
+    your data kept neatly.
+
 - The templates directory contains the WorkflowTemplate yaml files that will be
 read. These files will be similar to the WorkflowTemplates that you have created
 before.
 - The Chart.yaml file has the versioning of the file and will mostly be unchanged
 
-> [!Note]
-> The core structure of the a helm folder can be created using the command
-`helm install {folder_name}`
+!!! note
+    The core structure of the a helm folder can be created using the command
+    `helm install {folder_name}`
 
 ## File Structures
 ### Chart.yaml
@@ -77,79 +80,76 @@ Below is a brief example of a Jupyter notebook that will be mounted in a
 temp-mounted folder and in the session directory and is read on the console.
 The full explanation is in documentation on how to write a workflow.
 
-<details>
-<summary>WorkflowTemplate Example</summary>
+??? example "WorkflowTemplate Example"
+    ```yaml
+    apiVersion: argoproj.io/v1alpha1
+    kind: ClusterWorkflowTemplate
+    metadata:
+      name: notebook-reading
+    spec:
+      entrypoint: notebook-workflow
+      arguments:
+        parameters:
+    - name: visitdir
+            valueFrom:
+              configMapKeyRef:
+                name: sessionspaces
+                key: data_directory
+      volumes:
+        - name: session
+          hostPath:
+            path: "{{`{{ workflow.parameters.visitdir }}`}}"
+            type: Directory
+      volumeClaimTemplates:
+        - metadata:
+            name: tmp
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: netapp
 
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: ClusterWorkflowTemplate
-metadata:
-  name: notebook-reading
-spec:
-  entrypoint: notebook-workflow
-  arguments:
-    parameters:
-- name: visitdir
-        valueFrom:
-          configMapKeyRef:
-            name: sessionspaces
-            key: data_directory
-  volumes:
-    - name: session
-      hostPath:
-        path: "{{`{{ workflow.parameters.visitdir }}`}}"
-        type: Directory
-  volumeClaimTemplates:
-    - metadata:
-        name: tmp
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: netapp
+      templates:
+        - name: read
+          script:
+            image: docker.io/library/python:bookworm
+            command: [bash]
+            source: |
+              cat "{{`{{ workflow.parameters.visitdir }}`}}"/notebook.ipynb
+              cat /tmp/notebook.ipynb
+            volumeMounts:
+              - name: session
+                mountPath: "{{`{{ workflow.parameters.visitdir }}`}}"
 
-  templates:
-    - name: read
-      script:
-        image: docker.io/library/python:bookworm
-        command: [bash]
-        source: |
-          cat "{{`{{ workflow.parameters.visitdir }}`}}"/notebook.ipynb
-          cat /tmp/notebook.ipynb
-        volumeMounts:
-          - name: session
-            mountPath: "{{`{{ workflow.parameters.visitdir }}`}}"
+        - name: mount
+          script:
+            image: docker.io/library/python:bookworm
+            command: [bash]
+            source: |
+              echo '{{ .Files.Get "data/pandas.ipynb" | b64enc }}' | base64 -d > /tmp/notebook.ipynb
+              echo '{{ .Files.Get "data/pandas.ipynb" | b64enc }}' | base64 -d > "{{`{{ workflows.parameters.visitdir}}`}}"/notebook.ipynb
+            volumeMounts:
+              - name: tmp
+                mountPath: /tmp
+              - name: session
+                mountPath: "{{`{{workflow.parameters.visitdir}}`}}"
+          outputs:
+            artifacts:
+              - name: notebook
+                path: /tmp/notebook.ipynb
+                archive:
+                  none: {}
+        - name: notebook-workflow
+          dag:
+            tasks:
+              - name: mount-notebook
+                template: mount
+              - name: read-files
+                template: read
+                dependencies: [mount-notebook]
 
-    - name: mount
-      script:
-        image: docker.io/library/python:bookworm
-        command: [bash]
-        source: |
-          echo '{{ .Files.Get "data/pandas.ipynb" | b64enc }}' | base64 -d > /tmp/notebook.ipynb
-          echo '{{ .Files.Get "data/pandas.ipynb" | b64enc }}' | base64 -d > "{{`{{ workflows.parameters.visitdir}}`}}"/notebook.ipynb
-        volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-          - name: session
-            mountPath: "{{`{{workflow.parameters.visitdir}}`}}"
-      outputs:
-        artifacts:
-          - name: notebook
-            path: /tmp/notebook.ipynb
-            archive:
-              none: {}
-    - name: notebook-workflow
-      dag:
-        tasks:
-          - name: mount-notebook
-            template: mount
-          - name: read-files
-            template: read
-            dependencies: [mount-notebook]
-
-```
-</details>
+    ```
 
 ## Helm Templating and Argo Templating
 
@@ -173,9 +173,9 @@ workflow parameter in Argo, use: `{{`{{workflow.parameters.visitdir}}`}}`
 This ensures Helm renders the template correctly, and Argo can substitute its
 own values at runtime.
 
-> [!NOTE]
-> When using both Helm and Argo templating, always double-wrap Argo variables to
-prevent Helm from evaluating them.
+!!! note
+    When using both Helm and Argo templating, always double-wrap Argo variables to
+    prevent Helm from evaluating them.
 
 ## Having Both Helm and Manifest WorkflowTemplates
 
