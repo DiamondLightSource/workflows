@@ -102,7 +102,7 @@ podman build . -t ptypy-container --target=runtime --build-arg MPI=openmpi --bui
 
 If we wish to publish our container, we could do so by pushing it to
 Diamond's container registry on the Google cloud,
-see [here](https://dev-portal.diamond.ac.uk/guide/kubernetes/tutorials/containers/) details on how to set this up.
+see [here](https://dev-guide.diamond.ac.uk/kubernetes/tutorials/containers/) details on how to set this up.
 Now we can change the tag of our image
 
 ```bash
@@ -119,7 +119,7 @@ podman push gcr.io/diamond-privreg/ptypy/test_openmpi_cupy:0.1
 
 The next step is to create a ```ClusterWorkFlowTemplate``` and push it to the corresponding GitHub
 repository for science workflows, in this case [imaging-workflows](https://github.com/DiamondLightSource/imaging-workflows).
-We run continuos deployment with ArgoCD which will automatically look for existing templates in those
+We run continuous deployment with ArgoCD which will automatically look for existing templates in those
 repositories and make them available to the Argo workflows controller such that the template are visible
 via the [dashboard](https://workflows.diamond.ac.uk) or the graph (once available).
 

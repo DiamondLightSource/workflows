@@ -6,7 +6,7 @@ This guide will describe how to create artifacts and export them at the end of a
 
 ## The Workflow
 
-We start with a basic workflow - this is taken from the [writeable containers example](/how-tos/create-writeable-container) . This is a basic workflow that uses a busybox image to execute some arbitrary bash command - where the bash is defined by a parameter - `command`.
+We start with a basic workflow - this is taken from the [writeable containers example](/workflows/how-tos/create-writeable-container). This is a basic workflow that uses a busybox image to execute some arbitrary bash command - where the bash is defined by a parameter - `command`.
 This workflow also has a local-volume mounted to it to store some files in.
 
 ```yaml
@@ -77,7 +77,7 @@ We must modify the workflow template for it to create an artifact. Add the `outp
           none: { }
 ```
 
-By default, all artifact are tarballs. This can be disabled by adding `none` to the archive, meaning artifact are saved as their raw type. Supported artifact types will be available for preview on the dashboard, but tarballs will have to be downloaded to view their content so we suggest not archiving small artifacts - such as images and text files.
+By default, all artifacts are tarballs. This can be disabled by adding `none` to the archive, meaning artifacts are saved as their raw type. Supported artifact types will be available for preview on the dashboard, but tarballs will have to be downloaded to view their content so we suggest not archiving small artifacts - such as images and text files.
 The complete workflow is provided below for reference.
 
 

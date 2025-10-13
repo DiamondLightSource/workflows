@@ -6,7 +6,7 @@ This guide will describe how to configure and submit a workflow that is then run
 The easiest way to run your application as a workflow is by using containers.
 We therefore recommmend that you build a container for your application and push it to a container registry.
 Check the Diamond developer portal for more details on
-[Working with Containers](https://dev-portal.diamond.ac.uk/guide/kubernetes/tutorials/containers/).
+[Working with Containers](https://dev-guide.diamond.ac.uk/kubernetes/tutorials/containers/).
 
 ## Workflow
 
