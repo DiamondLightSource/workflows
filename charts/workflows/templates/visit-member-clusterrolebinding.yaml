@@ -10,6 +10,3 @@ subjects:
 - kind: ServiceAccount
   name: kyverno-background-controller
   namespace: kyverno
-- kind: ServiceAccount
-  name: kyverno-admission-controller
-  namespace: kyverno
