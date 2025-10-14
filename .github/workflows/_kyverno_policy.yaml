@@ -51,7 +51,7 @@ jobs:
           # To make testing work with this policy in place, it will be required to emulate the existence
           # of a POSIX uid label as part of request.userInfo.extra
           helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy"  or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding") | select(.metadata.name != "workflows-posix-uid-label")' | tee -a /tmp/policies.yaml | kubectl apply -f -
-          cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy")' | kubectl wait --for=condition=Ready --timeout=60s -f -
+          cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy")' | kubectl wait --for=condition=Ready --timeout=60s -f -
 
       - name: Wait for Kyverno
         run: |

@@ -144,6 +144,9 @@ spec:
       apiVersions: ["v1"]
       operations:  ["CREATE"]
       resources:   ["namespaces"]
+    namespaceSelector:
+      matchLabels:
+          app.kubernetes.io/managed-by: sessionspaces
   variables:
     - name: targetNs
       expression: "object.metadata.name"
