@@ -31,23 +31,23 @@ spec:
           metadata:
             labels:
               workflows.argoproj.io/configmap-type: Parameter
-    # - name: copy-artifact-s3-secret
-    #   match:
-    #     resources:
-    #       kinds:
-    #         - Namespace
-    #       selector:
-    #         matchLabels:
-    #           app.kubernetes.io/managed-by: sessionspaces
-    #   generate:
-    #     synchronize: true
-    #     apiVersion: v1
-    #     kind: Secret
-    #     name: artifact-s3
-    #     namespace: "{{ `{{request.object.metadata.name}}` }}"
-    #     clone:
-    #       namespace: workflows
-    #       name: artifact-s3
+    - name: copy-artifact-s3-secret
+      match:
+        resources:
+          kinds:
+            - Namespace
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      generate:
+        synchronize: true
+        apiVersion: v1
+        kind: Secret
+        name: artifact-s3
+        namespace: "{{ `{{request.object.metadata.name}}` }}"
+        clone:
+          namespace: workflows
+          name: artifact-s3
     - name: generate-visit-member-role-binding
       match:
         resources:
@@ -127,27 +127,27 @@ spec:
             kind: ClusterRole
             name: argo-workflow
             apiGroup: rbac.authorization.k8s.io
----
-apiVersion: policies.kyverno.io/v1alpha1
-kind: GeneratingPolicy
-metadata:
-  name: copy-host-secret-artifact-s3
-spec:
-  evaluation:
-    generateExisting:
-      enabled: true
-    synchronize:
-      enabled: true
-  matchConstraints:
-    resourceRules:
-    - apiGroups:   [""]
-      apiVersions: ["v1"]
-      operations:  ["CREATE"]
-      resources:   ["namespaces"]
-  variables:
-    - name: targetNs
-      expression: "object.metadata.name"
-    - name: sourceSecret
-      expression: resource.Get("v1", "secrets", "workflows", "artifact-s3")
-  generate:
-    - expression: generator.Apply(variables.targetNs, [variables.sourceSecret])
+# ---
+# apiVersion: policies.kyverno.io/v1alpha1
+# kind: GeneratingPolicy
+# metadata:
+#   name: copy-host-secret-artifact-s3
+# spec:
+#   evaluation:
+#     generateExisting:
+#       enabled: true
+#     synchronize:
+#       enabled: true
+#   matchConstraints:
+#     resourceRules:
+#     - apiGroups:   [""]
+#       apiVersions: ["v1"]
+#       operations:  ["CREATE"]
+#       resources:   ["namespaces"]
+#   variables:
+#     - name: targetNs
+#       expression: "object.metadata.name"
+#     - name: sourceSecret
+#       expression: resource.Get("v1", "secrets", "workflows", "artifact-s3")
+#   generate:
+#     - expression: generator.Apply(variables.targetNs, [variables.sourceSecret])
