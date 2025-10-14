@@ -1,0 +1,35 @@
+argo-workflows:
+  artifactRepository:
+    s3:
+      bucket: k8s-workflows-staging
+
+oauth2-proxy:
+  alphaConfig:
+    configData:
+      providers:
+        - provider: oidc
+          scope: "openid posix-uid profile email fedid"
+          clientId: workflows-argo-server-staging
+          clientSecretFile: /etc/alpha/secret
+          id: authn
+          oidcConfig:
+            issuerURL: https://authn.diamond.ac.uk/realms/master
+            insecureAllowUnverifiedEmail: true
+            audienceClaims:
+              - aud
+            emailClaim: email
+            userIDClaim: fedid
+  ingress:
+    hosts:
+      - argo-workflows.staging.workflows.diamond.ac.uk
+    path: /
+    tls:
+      - secretName: workflows-tls-cert
+        hosts:
+          - argo-workflows.staging.workflows.diamond.ac.uk
+
+
+postgresql-ha:
+  persistence:
+    storageClass: netapp
+    size: 10Gi

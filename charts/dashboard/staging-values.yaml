@@ -1,0 +1,10 @@
+ingress:
+  hosts:
+    - host: staging.workflows.diamond.ac.uk
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls: true
+  secretName: dashboard-tls-cert
+  host: staging.workflows.diamond.ac.uk
