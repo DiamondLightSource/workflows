@@ -24,9 +24,51 @@ kyverno:
   targetRevision: 3.5.2
   extraValuesFiles: []
   valuesObject:
+    metricsConfig:
+      metricsRefreshInterval: 24h
+      metricsExposure:
+        kyverno_client_queries_total:
+          enabled: true
+        kyverno_controller_reconcile_total:
+          enabled: true
+        kyverno_http_requests_duration_seconds:
+          enabled: true
+        kyverno_http_requests_total:
+          enabled: true
+        kyverno_policy_changes_total:
+          enabled: true
+        kyverno_policy_execution_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+        kyverno_validating_policy_execution_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+        kyverno_image_validating_policy_execution_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+        kyverno_admission_review_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace"]
+        kyverno_policy_rule_info:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_policy_results:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_admission_requests:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace"]
+        kyverno_cleanup_controller_deletedobjects:
+          enabled: false
+          disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_client_queries:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace"]
+        kyverno_controller_reconcile:
+          enabled: true
+        kyverno_http_requests:
+          enabled: true
     admissionController:
-      metricsService:
-        enabled: true
       metering:
         collector: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local"
         port: 4317
