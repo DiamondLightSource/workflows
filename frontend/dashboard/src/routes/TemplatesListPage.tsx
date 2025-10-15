@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import { Link } from "react-router-dom";
-import { Container, Box } from "@mui/material";
+import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { WorkflowsErrorBoundary, WorkflowsNavbar } from "workflows-lib";
+import { WorkflowsNavbar } from "workflows-lib";
 import TemplatesListView from "relay-workflows-lib/lib/views/TemplatesListView";
+import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
 
 const TemplatesListPage: React.FC = () => {
   return (
@@ -11,13 +12,24 @@ const TemplatesListPage: React.FC = () => {
       <WorkflowsNavbar />
       <Breadcrumbs path={window.location.pathname} linkComponent={Link} />
       <Container maxWidth="md">
-        <WorkflowsErrorBoundary>
-          <Suspense>
-            <Box mt={2} mb={2}>
-              <TemplatesListView />
-            </Box>
-          </Suspense>
-        </WorkflowsErrorBoundary>
+        <WorkflowErrorBoundaryWithRetry>
+          {({ fetchKey }) => (
+            <Suspense
+              key={JSON.stringify(fetchKey)}
+              fallback={
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    Loading Templates...
+                  </Typography>
+                </Box>
+              }
+            >
+              <Box mt={2} mb={2}>
+                <TemplatesListView />
+              </Box>
+            </Suspense>
+          )}
+        </WorkflowErrorBoundaryWithRetry>
       </Container>
     </>
   );
