@@ -30,7 +30,7 @@ spec:
                 labels:
                   app.kubernetes.io/managed-by: sessionspaces
         - sleep:
-            duration: 10s
+            duration: 5s
         - assert:
             resource:
               apiVersion: v1
