@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs, visitToText } from "@diamondlightsource/sci-react-ui";
-import { WorkflowsNavbar, WorkflowsErrorBoundary } from "workflows-lib";
+import { WorkflowsNavbar } from "workflows-lib";
 import { parseVisitAndTemplate } from "workflows-lib/lib/utils/commonUtils";
 import TemplateViewRetrigger from "relay-workflows-lib/lib/views/TemplateViewRetrigger";
 import TemplateView from "relay-workflows-lib/lib/views/TemplateView";
+import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
 
 const SingleTemplatePage: React.FC = () => {
   const { templateName, prepopulate } = useParams<{
@@ -39,19 +40,30 @@ const SingleTemplatePage: React.FC = () => {
             </Typography>
           )}
           {templateName && (
-            <WorkflowsErrorBoundary>
-              <Suspense fallback={<div>Loading...</div>}>
-                {workflowName ? (
-                  <TemplateViewRetrigger
-                    templateName={templateName}
-                    workflowName={workflowName}
-                    visit={visit}
-                  />
-                ) : (
-                  <TemplateView templateName={templateName} />
-                )}
-              </Suspense>
-            </WorkflowsErrorBoundary>
+            <WorkflowErrorBoundaryWithRetry>
+              {({ fetchKey }) => (
+                <Suspense
+                  key={`template-${JSON.stringify(workflowName)}-${JSON.stringify(fetchKey)}`}
+                  fallback={
+                    <Box>
+                      <Typography variant="h6" fontWeight="bold">
+                        Loading Template...
+                      </Typography>
+                    </Box>
+                  }
+                >
+                  {workflowName ? (
+                    <TemplateViewRetrigger
+                      templateName={templateName}
+                      workflowName={workflowName}
+                      visit={visit}
+                    />
+                  ) : (
+                    <TemplateView templateName={templateName} />
+                  )}
+                </Suspense>
+              )}
+            </WorkflowErrorBoundaryWithRetry>
           )}
         </Box>
       </Container>

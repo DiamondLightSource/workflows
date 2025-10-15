@@ -1,8 +1,9 @@
 import { Suspense, useEffect, useRef, useState, useCallback } from "react";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { VisitInput, visitToText } from "@diamondlightsource/sci-react-ui";
 import WorkflowListFilterDrawer from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
-import { WorkflowQueryFilter, WorkflowsErrorBoundary } from "workflows-lib";
+import { WorkflowQueryFilter } from "workflows-lib";
+import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
 import { WorkflowListFilterDisplay } from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
 import { useVisitInput, ScrollRestorer } from "../utils/coreUtils";
 import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
@@ -50,6 +51,7 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
   const [workflowQueryFilter, setWorkflowQueryFilter] = useState<
     WorkflowQueryFilter | undefined
   >(undefined);
+  const [filterChangeKey, setFilterChangeKey] = useState(0);
 
   const {
     cursor,
@@ -102,6 +104,11 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
     }
   }, [currentPage, selectedLimit]);
 
+  const handleApplyFilters = useCallback((newFilters: WorkflowQueryFilter) => {
+    setWorkflowQueryFilter(newFilters);
+    setFilterChangeKey((prev) => prev + 1);
+  }, []);
+
   return (
     <>
       <Box width="100%" mb={2}>
@@ -114,9 +121,7 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
             <Suspense>
               <WorkflowListFilterDrawer
                 data={templateData.workflowTemplates}
-                onApplyFilters={(newFilters: WorkflowQueryFilter) => {
-                  setWorkflowQueryFilter(newFilters);
-                }}
+                onApplyFilters={handleApplyFilters}
               />
             </Suspense>
           </Stack>
@@ -128,10 +133,19 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
 
       <Box width="100%" key={visit ? visitToText(visit) : "invalid-visit"}>
         {visit && queryReference && (
-          <WorkflowsErrorBoundary key={JSON.stringify(workflowQueryFilter)}>
-            <Suspense>
-              <ScrollRestorer />
-              {
+          <WorkflowErrorBoundaryWithRetry key={filterChangeKey}>
+            {({ fetchKey }) => (
+              <Suspense
+                key={`${JSON.stringify(workflowQueryFilter)}-${JSON.stringify(fetchKey)}`}
+                fallback={
+                  <Box>
+                    <Typography variant="h6" fontWeight="bold">
+                      Loading Workflows...
+                    </Typography>
+                  </Box>
+                }
+              >
+                <ScrollRestorer />
                 <WorkflowsContent
                   queryReference={queryReference}
                   currentPage={currentPage}
@@ -143,9 +157,9 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
                   isPaginated={isPaginated}
                   setIsPaginated={setIsPaginated}
                 />
-              }
-            </Suspense>
-          </WorkflowsErrorBoundary>
+              </Suspense>
+            )}
+          </WorkflowErrorBoundaryWithRetry>
         )}
       </Box>
     </>
