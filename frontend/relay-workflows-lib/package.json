@@ -26,5 +26,17 @@
   "peerDependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
+  },
+  "relay": {
+    "src": "./src",
+    "schema": "./schema.graphql",
+    "language": "typescript",
+    "artifactDirectory": "./__generated__",
+    "noFutureProofEnums": true,
+    "eagerEsModules": true,
+    "exclude": [
+      "**/__tests__/**",
+      "**/__mocks__/**"
+    ]
   }
 }
