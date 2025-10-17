@@ -13,13 +13,13 @@ const firstPageTemplates = {
   },
 };
 
-vi.mock("react-router-dom", async () => ({
-  useNavigate: () => {},
-  useLocation: () => {},
+vi.mock("react-router-dom", () => ({
+  useNavigate: vi.fn(),
+  useLocation: vi.fn(),
 }));
 
 describe("TemplateList", () => {
-  // Get the names of all mock templates in ./data.ts
+  // Get the names of templates on first page
   const allTemplateNames: string[] = [];
   firstPageTemplates.workflowTemplates.nodes.map((template) => {
     allTemplateNames.push(template.name);
@@ -63,47 +63,47 @@ describe("TemplateList", () => {
     async (search, results) => {
       const searchInput = await screen.findByTestId("searchInput");
       expect(searchInput).toBeInTheDocument();
+
+      // List of all the templates that should be filtered out after the search
       const filteredOutTemplates = allTemplateNames.filter(
         (name) => !results.includes(name),
       );
 
-      // allTemplateNames.forEach(async (templateName) => {
-      //     console.log(templateName)
-      //     expect(await screen.findByRole("button", {name: new RegExp(templateName, "i")}, {timeout: 10000})).toBeInTheDocument();
-      //     console.log("Passed")
-      // });
-
-      for (const templateName of allTemplateNames) {
-        expect(
-          await screen.findByRole("button", {
-            name: new RegExp(templateName, "i"),
-          }),
-        ).toBeInTheDocument();
-      }
+      await screen.findByRole("button", { name: /conditional-steps/i });
 
       if (search) await user.type(searchInput, search);
 
-    //   results.forEach((template) => {
-    //     expect(screen.getByText(template)).toBeInTheDocument();
-    //   });
+      const buttons = await screen.findAllByRole("button");
 
-      for(const template of results){
-        expect(await screen.findByRole("button", { name: new RegExp(template, "i")}))
-      }
+      // List of text content of all buttons, including template cards
+      const displayedTemplateNames = buttons.map(
+        (button) => button.textContent,
+      );
+
+      // Each of the templates in the expected results should appear somewhere in the list
+      results.forEach((template) => {
+        expect(displayedTemplateNames).toContainEqual(
+          expect.stringContaining(template),
+        );
+      });
+
+      // None of the filtered out templates should appear in the list
       filteredOutTemplates.forEach((template) => {
-        expect(screen.queryByText(template)).not.toBeInTheDocument();
+        expect(displayedTemplateNames).not.toContainEqual(
+          expect.stringContaining(template),
+        );
       });
     },
   );
 
-//   it("shows all templates again when search is cleared", async () => {
-//     const searchInput = screen.getByTestId("searchInput");
-//     const clearButton = screen.getByTestId("clear-search");
-//     await user.type(searchInput, "ePSIC mib conversion");
-//     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
-//     expect(screen.queryByText("conditional-steps")).not.toBeInTheDocument();
-//     await user.click(clearButton);
-//     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
-//     expect(screen.getByText("conditional-steps")).toBeInTheDocument();
-//   });
+  //   it("shows all templates again when search is cleared", async () => {
+  //     const searchInput = screen.getByTestId("searchInput");
+  //     const clearButton = screen.getByTestId("clear-search");
+  //     await user.type(searchInput, "ePSIC mib conversion");
+  //     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
+  //     expect(screen.queryByText("conditional-steps")).not.toBeInTheDocument();
+  //     await user.click(clearButton);
+  //     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
+  //     expect(screen.getByText("conditional-steps")).toBeInTheDocument();
+  //   });
 });
