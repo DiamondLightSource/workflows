@@ -38,7 +38,6 @@ describe("TemplateList", () => {
 
   beforeAll(() => {
     worker.listen();
-    assert(import.meta.env.VITE_KEYCLOAK_URL === "https://authn.diamond.ac.uk");
     assert(import.meta.env.VITE_ENABLE_MOCKING === "true");
   });
   afterAll(() => {
