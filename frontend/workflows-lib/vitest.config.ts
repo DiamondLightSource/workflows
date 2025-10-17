@@ -1,9 +1,8 @@
 import { defineConfig } from "vitest/config";
-import viteConfig from "./vite.config";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  ...viteConfig,
-  mode: "test",
+  plugins: [react()],
   test: {
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
