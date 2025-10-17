@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import TemplatesListView from "relay-workflows-lib/lib/views/TemplatesListView";
 import userEvent from "@testing-library/user-event";
 import templateListResponse from "dashboard/src/mocks/responses/templates/templateListResponse.json";
-import { serviceWorker as worker } from "../mocks/worker";
+import {server} from "relay-workflows-lib/tests/mocks/browser.ts"
 import { RelayEnvironmentProvider } from "react-relay";
 import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
 
@@ -37,14 +37,14 @@ describe("TemplateList", () => {
   const user = userEvent.setup();
 
   beforeAll(() => {
-    worker.listen();
+    server.listen();
     assert(import.meta.env.VITE_ENABLE_MOCKING === "true");
   });
   afterAll(() => {
-    worker.close();
+    server.close();
   });
   afterEach(() => {
-    worker.resetHandlers();
+    server.resetHandlers();
   });
 
   beforeEach(async () => {

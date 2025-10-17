@@ -23,5 +23,5 @@
 
     "types": ["vitest/globals"]
   },
-  "include": ["lib", ".storybook/**/*.ts", "stories", "tests"]
+  "include": ["lib", ".storybook/**/*.ts", "stories", "tests", "../relay-workflows-lib/tests/components/TemplateListView.test.tsx"]
 }
