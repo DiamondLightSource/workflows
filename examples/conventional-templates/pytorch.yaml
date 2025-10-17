@@ -121,5 +121,3 @@ spec:
         operator: Equal
         value: workflows
         effect: NoSchedule
-      nodeSelector: 
-        nodetype: gpu
