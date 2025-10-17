@@ -1,0 +1,26 @@
+{
+  "name": "sin-simulate-init",
+  "maintainer": "away-day-group",
+  "title": "Away Day",
+  "description": "Plots a sin curve for a given input.\n",
+  "arguments": {
+    "properties": {
+      "start": {
+        "default": "0",
+        "type": "string"
+      },
+      "step": {
+        "default": "1",
+        "type": "string"
+      },
+      "stop": {
+        "default": "10",
+        "type": "string"
+      }
+    },
+    "required": ["start", "step", "stop"],
+    "type": "object"
+  },
+  "uiSchema": null,
+  "repository": null
+}

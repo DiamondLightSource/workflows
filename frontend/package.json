@@ -10,7 +10,7 @@
     "lint": "eslint && prettier --config .prettierrc --ignore-path ../.gitignore --check \"**/*.{js,ts,tsx,json}\"",
     "format": "prettier --config .prettierrc --write \"**/*.{js,ts,tsx,json}\"",
     "tsc": "tsc --build",
-    "test": "vitest --run",
+    "test": "vitest --run --mode test",
     "precommit": "eslint && tsc --build && vitest --run && prettier --config .prettierrc --check \"**/*.{js,ts,tsx,json}\""
   },
   "dependencies": {

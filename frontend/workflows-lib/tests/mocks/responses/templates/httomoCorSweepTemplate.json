@@ -1,0 +1,629 @@
+{
+  "name": "httomo-cor-sweep",
+  "maintainer": "imaging-httomo-group",
+  "title": null,
+  "description": null,
+  "arguments": {
+    "properties": {
+      "config": {
+        "$defs": {
+          "EmptyDict": {
+            "description": "Empty dict representation",
+            "properties": {},
+            "title": "EmptyDict",
+            "type": "object"
+          },
+          "PreviewKeyword": {
+            "enum": ["begin", "mid", "end"],
+            "title": "PreviewKeyword",
+            "type": "string"
+          },
+          "PreviewParam": {
+            "description": "Preview configuration dict.",
+            "properties": {
+              "angles": {
+                "anyOf": [
+                  {
+                    "$ref": "#/properties/config/$defs/StartStopEntry"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "detector_x": {
+                "anyOf": [
+                  {
+                    "const": "mid",
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/properties/config/$defs/StartStopEntry"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Detector X"
+              },
+              "detector_y": {
+                "anyOf": [
+                  {
+                    "const": "mid",
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/properties/config/$defs/StartStopEntry"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Detector Y"
+              }
+            },
+            "title": "PreviewParam",
+            "type": "object"
+          },
+          "RawAngles": {
+            "description": "Configure rotation angle values to come from a dataset within the input NeXuS/hdf5 file.",
+            "properties": {
+              "data_path": {
+                "title": "Data Path",
+                "type": "string"
+              }
+            },
+            "required": ["data_path"],
+            "title": "RawAngles",
+            "type": "object"
+          },
+          "StandardTomoLoaderConfig": {
+            "description": "Standard tomo loader HTTomo config",
+            "properties": {
+              "method": {
+                "default": "standard_tomo",
+                "title": "Method",
+                "type": "string"
+              },
+              "module_path": {
+                "default": "httomo.data.hdf.loaders",
+                "title": "Module Path",
+                "type": "string"
+              },
+              "parameters": {
+                "$ref": "#/properties/config/$defs/StandardTomoLoaderParams"
+              }
+            },
+            "required": ["parameters"],
+            "title": "StandardTomoLoaderConfig",
+            "type": "object"
+          },
+          "StandardTomoLoaderParams": {
+            "description": "Parameters dict for HTTomo's standard tomo loader",
+            "properties": {
+              "data_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  }
+                ],
+                "title": "Data Path"
+              },
+              "image_key_path": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  }
+                ],
+                "title": "Image Key Path"
+              },
+              "preview": {
+                "anyOf": [
+                  {
+                    "$ref": "#/properties/config/$defs/PreviewParam"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "rotation_angles": {
+                "anyOf": [
+                  {
+                    "$ref": "#/properties/config/$defs/RawAngles"
+                  },
+                  {
+                    "$ref": "#/properties/config/$defs/UserDefinedAngles"
+                  },
+                  {
+                    "const": "auto",
+                    "type": "string"
+                  }
+                ],
+                "title": "Rotation Angles"
+              }
+            },
+            "required": ["data_path", "image_key_path", "rotation_angles"],
+            "title": "StandardTomoLoaderParams",
+            "type": "object"
+          },
+          "StartStopEntry": {
+            "description": "Configuration for a single dimension's previewing in terms of start/stop values.",
+            "properties": {
+              "start": {
+                "anyOf": [
+                  {
+                    "$ref": "#/properties/config/$defs/PreviewKeyword"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Start"
+              },
+              "start_offset": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Start Offset"
+              },
+              "stop": {
+                "anyOf": [
+                  {
+                    "$ref": "#/properties/config/$defs/PreviewKeyword"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Stop"
+              },
+              "stop_offset": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Stop Offset"
+              }
+            },
+            "title": "StartStopEntry",
+            "type": "object"
+          },
+          "SweepConfig": {
+            "description": "Parameter sweep config",
+            "properties": {
+              "start": {
+                "title": "Start",
+                "type": "integer"
+              },
+              "step": {
+                "default": 1,
+                "title": "Step",
+                "type": "integer"
+              },
+              "stop": {
+                "title": "Stop",
+                "type": "integer"
+              }
+            },
+            "required": ["start", "stop"],
+            "title": "SweepConfig",
+            "type": "object"
+          },
+          "TomopyMinusLogConfig": {
+            "description": "tomopy.prep.normalize.minus_log method config",
+            "properties": {
+              "method": {
+                "default": "minus_log",
+                "title": "Method",
+                "type": "string"
+              },
+              "module_path": {
+                "default": "tomopy.prep.normalize",
+                "title": "Module Path",
+                "type": "string"
+              },
+              "parameters": {
+                "$ref": "#/properties/config/$defs/EmptyDict",
+                "default": {}
+              },
+              "save_result": {
+                "default": false,
+                "title": "Save Result",
+                "type": "boolean"
+              }
+            },
+            "title": "TomopyMinusLogConfig",
+            "type": "object"
+          },
+          "TomopyNormalizeConfig": {
+            "description": "tomopy.prep.normalize.normalize method config",
+            "properties": {
+              "method": {
+                "default": "normalize",
+                "title": "Method",
+                "type": "string"
+              },
+              "module_path": {
+                "default": "tomopy.prep.normalize",
+                "title": "Module Path",
+                "type": "string"
+              },
+              "parameters": {
+                "$ref": "#/properties/config/$defs/TomopyNormalizeParams",
+                "default": {}
+              },
+              "save_result": {
+                "default": false,
+                "title": "Save Result",
+                "type": "boolean"
+              }
+            },
+            "title": "TomopyNormalizeConfig",
+            "type": "object"
+          },
+          "TomopyNormalizeParams": {
+            "description": "tomopy.prep.normalize.normalize parameters config",
+            "properties": {
+              "averaging": {
+                "anyOf": [
+                  {
+                    "const": "mean",
+                    "type": "string"
+                  },
+                  {
+                    "const": "median",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Averaging"
+              },
+              "cutoff": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Cutoff"
+              }
+            },
+            "required": ["cutoff", "averaging"],
+            "title": "TomopyNormalizeParams",
+            "type": "object"
+          },
+          "TomopyReconConfig": {
+            "description": "tomopy.recon.algorithm.recon method config",
+            "properties": {
+              "method": {
+                "default": "recon",
+                "title": "Method",
+                "type": "string"
+              },
+              "module_path": {
+                "default": "tomopy.recon.algorithm",
+                "title": "Module Path",
+                "type": "string"
+              },
+              "parameters": {
+                "$ref": "#/properties/config/$defs/TomopyReconConfigParams"
+              },
+              "save_result": {
+                "default": true,
+                "title": "Save Result",
+                "type": "boolean"
+              }
+            },
+            "required": ["parameters"],
+            "title": "TomopyReconConfig",
+            "type": "object"
+          },
+          "TomopyReconConfigParams": {
+            "description": "tomopy.recon.algorithm.recon parameters config",
+            "properties": {
+              "algorithm": {
+                "default": "gridrec",
+                "title": "Algorithm",
+                "type": "string"
+              },
+              "center": {
+                "$ref": "#/properties/config/$defs/SweepConfig"
+              },
+              "init_recon": {
+                "default": null,
+                "title": "Init Recon",
+                "type": "null"
+              },
+              "sinogram_order": {
+                "default": false,
+                "title": "Sinogram Order",
+                "type": "boolean"
+              }
+            },
+            "required": ["center"],
+            "title": "TomopyReconConfigParams",
+            "type": "object"
+          },
+          "UserDefinedAngles": {
+            "description": "Configure rotation angle values to be generated by specifying a start angle, stop angle,\nand the total number of angles.",
+            "properties": {
+              "angles_total": {
+                "title": "Angles Total",
+                "type": "integer"
+              },
+              "start_angle": {
+                "title": "Start Angle",
+                "type": "integer"
+              },
+              "stop_angle": {
+                "title": "Stop Angle",
+                "type": "integer"
+              }
+            },
+            "required": ["start_angle", "stop_angle", "angles_total"],
+            "title": "UserDefinedAngles",
+            "type": "object"
+          }
+        },
+        "description": "An HTTomo center-of-rotation parameter sweep pipeline",
+        "maxItems": 4,
+        "minItems": 4,
+        "prefixItems": [
+          {
+            "$ref": "#/properties/config/$defs/StandardTomoLoaderConfig"
+          },
+          {
+            "$ref": "#/properties/config/$defs/TomopyNormalizeConfig"
+          },
+          {
+            "$ref": "#/properties/config/$defs/TomopyMinusLogConfig"
+          },
+          {
+            "$ref": "#/properties/config/$defs/TomopyReconConfig"
+          }
+        ],
+        "title": "CorSweepPipeline",
+        "type": "array"
+      },
+      "httomo-outdir-name": {
+        "type": "string"
+      },
+      "input": {
+        "type": "string"
+      },
+      "memory": {
+        "default": "20Gi",
+        "pattern": "^[0-9]+[GMK]i$",
+        "type": "string"
+      },
+      "nprocs": {
+        "default": 1,
+        "type": "integer"
+      },
+      "output": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "config",
+      "httomo-outdir-name",
+      "input",
+      "memory",
+      "nprocs",
+      "output"
+    ],
+    "type": "object"
+  },
+  "uiSchema": {
+    "type": "VerticalLayout",
+    "elements": [
+      {
+        "type": "Group",
+        "label": "Workflow Parameters",
+        "elements": [
+          {
+            "type": "HorizontalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "scope": "#/properties/input",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/output",
+                "options": null,
+                "rule": null
+              }
+            ],
+            "options": null,
+            "rule": null
+          }
+        ],
+        "options": null,
+        "rule": null
+      },
+      {
+        "type": "Group",
+        "label": "Loader Configuration",
+        "elements": [
+          {
+            "type": "HorizontalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/data_path/anyOf[0]",
+                "label": "Data Path",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/image_key_path/anyOf[0]",
+                "label": "Image Key Path",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/rotation_angles/anyOf[0]/properties/data_path",
+                "label": "Rotation Angles Path",
+                "options": null,
+                "rule": null
+              }
+            ],
+            "options": null,
+            "rule": null
+          },
+          {
+            "type": "Group",
+            "label": "Preview",
+            "elements": [
+              {
+                "type": "HorizontalLayout",
+                "elements": [
+                  {
+                    "type": "Control",
+                    "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/preview/anyOf[0]/properties/detector_y/anyOf[1]/properties/start",
+                    "options": null,
+                    "rule": null
+                  },
+                  {
+                    "type": "Control",
+                    "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/preview/anyOf[0]/properties/detector_y/anyOf[1]/properties/stop",
+                    "options": null,
+                    "rule": null
+                  }
+                ],
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "HorizontalLayout",
+                "elements": [
+                  {
+                    "type": "Control",
+                    "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/preview/anyOf[0]/properties/detector_x/anyOf[1]/properties/start",
+                    "options": null,
+                    "rule": null
+                  },
+                  {
+                    "type": "Control",
+                    "scope": "#/properties/config/prefixItems[0]/properties/parameters/properties/preview/anyOf[0]/properties/detector_x/anyOf[1]/properties/stop",
+                    "options": null,
+                    "rule": null
+                  }
+                ],
+                "options": null,
+                "rule": null
+              }
+            ],
+            "options": null,
+            "rule": null
+          }
+        ],
+        "options": null,
+        "rule": null
+      },
+      {
+        "type": "Group",
+        "label": "Parameter Sweep Configuration",
+        "elements": [
+          {
+            "type": "HorizontalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "scope": "#/properties/config/prefixItems[3]/properties/parameters/properties/center/properties/start",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/config/prefixItems[3]/properties/parameters/properties/center/properties/stop",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/config/prefixItems[3]/properties/parameters/properties/center/properties/step",
+                "options": null,
+                "rule": null
+              }
+            ],
+            "options": null,
+            "rule": null
+          }
+        ],
+        "options": null,
+        "rule": null
+      },
+      {
+        "type": "Group",
+        "label": "Advanced Configuration",
+        "elements": [
+          {
+            "type": "HorizontalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "scope": "#/properties/memory",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/nprocs",
+                "options": null,
+                "rule": null
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/httomo-outdir-name",
+                "options": null,
+                "rule": null
+              }
+            ],
+            "options": null,
+            "rule": null
+          }
+        ],
+        "options": null,
+        "rule": null
+      }
+    ],
+    "options": null,
+    "rule": null
+  },
+  "repository": null
+}
