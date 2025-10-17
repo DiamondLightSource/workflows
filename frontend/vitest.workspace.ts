@@ -1,1 +1,1 @@
-export default ["workflows-lib"];
+export default ["workflows-lib", "relay-workflows-lib"];
