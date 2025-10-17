@@ -110,7 +110,9 @@ sealedsecrets:
   enabled: true
   targetRevision: 2.16.0
   extraValuesFiles: []
-  valuesObject: {}
+  valuesObject:
+    image:
+      repository: bitnamilegacy/sealed-secrets-controller
 
 workflows:
   enabled: true

@@ -60,6 +60,8 @@ grafana:
     default: grafana-dashboards
 
 thanos:
+  image:
+    repository: bitnamilegacy/thanos
   existingObjstoreSecret: '{{ include "common.names.fullname" . }}-s3'
   serviceAccount:
     create: true

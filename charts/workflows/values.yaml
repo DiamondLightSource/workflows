@@ -58,6 +58,8 @@ argo-workflows:
 postgresql-ha:
   enabled: true
   postgresql:
+    image:
+      repository: bitnamilegacy/postgresql-repmgr
     existingSecret: postgres-passwords
     initdbScriptsSecret: postgres-initdb-script
     podAntiAffinityPreset: hard
@@ -69,6 +71,8 @@ postgresql-ha:
         cpu: 2000m
         memory: 2Gi
   pgpool:
+    image:
+      repository: bitnamilegacy/pgpool
     exisitingSecret: pgpool-passwords
     customUsersSecret: postgres-application-passwords
     resources:
