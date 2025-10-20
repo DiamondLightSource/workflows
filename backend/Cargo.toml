@@ -11,7 +11,7 @@ resolver = "2"
 [workspace.dependencies]
 anyhow = { version = "1.0.100" }
 built = { version = "0.8.0" }
-clap = { version = "4.5.48", features = ["derive", "env"] }
+clap = { version = "4.5.49", features = ["derive", "env"] }
 chrono = { version = "0.4.42" }
 derive_more = { version = "2.0.1" , features = [
     "deref",
@@ -45,5 +45,5 @@ kube = { version = "0.99.0", features = ["runtime", "derive"] }
 opentelemetry = { version = "0.30.0" }
 opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
 axum = { version = "0.8.6" }
-regex = "1.12.1"
+regex = "1.12.2"
 tower-http = { version = "0.6.6", features = ["cors"] }
