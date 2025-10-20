@@ -6,6 +6,12 @@ import templateListResponse from "dashboard/src/mocks/responses/templates/templa
 import { server } from "relay-workflows-lib/tests/mocks/browser.ts";
 import { RelayEnvironmentProvider } from "react-relay";
 import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { Box } from "@mui/material";
+import { TemplateCardFragment$data } from "relay-workflows-lib/lib/components/__generated__/TemplateCardFragment.graphql.ts";
+
+interface MockCardProps {
+  template: TemplateCardFragment$data;
+}
 
 const firstPageTemplates = {
   workflowTemplates: {
@@ -13,13 +19,17 @@ const firstPageTemplates = {
   },
 };
 
+vi.mock("relay-workflows-lib/lib/components/TemplateCard", () => ({
+  TemplateCard: ({ template }: MockCardProps) => <Box>{template.name}</Box>,
+}));
+
 vi.mock("react-router-dom", () => ({
   useNavigate: vi.fn(),
   useLocation: vi.fn(),
 }));
 
 describe("TemplateList", () => {
-  // Get the names of templates on first page
+  // Get the names of all mock templates in ./data.ts
   const allTemplateNames: string[] = [];
   firstPageTemplates.workflowTemplates.nodes.map((template) => {
     allTemplateNames.push(template.name);
@@ -61,36 +71,21 @@ describe("TemplateList", () => {
     "returns a search of '%s' with '%s'",
     async (search, results) => {
       const searchInput = await screen.findByTestId("searchInput");
-      expect(searchInput).toBeInTheDocument();
-
-      // List of all the templates that should be filtered out after the search
       const filteredOutTemplates = allTemplateNames.filter(
         (name) => !results.includes(name),
       );
 
-      await screen.findByRole("button", { name: /conditional-steps/i });
+      allTemplateNames.forEach((templateName) => {
+        expect(screen.getByText(templateName)).toBeInTheDocument();
+      });
 
       if (search) await user.type(searchInput, search);
 
-      const buttons = await screen.findAllByRole("button");
-
-      // List of text content of all buttons, including template cards
-      const displayedTemplateNames = buttons.map(
-        (button) => button.textContent,
-      );
-
-      // Each of the templates in the expected results should appear somewhere in the list
       results.forEach((template) => {
-        expect(displayedTemplateNames).toContainEqual(
-          expect.stringContaining(template),
-        );
+        expect(screen.getByText(template)).toBeInTheDocument();
       });
-
-      // None of the filtered out templates should appear in the list
       filteredOutTemplates.forEach((template) => {
-        expect(displayedTemplateNames).not.toContainEqual(
-          expect.stringContaining(template),
-        );
+        expect(screen.queryByText(template)).not.toBeInTheDocument();
       });
     },
   );
@@ -100,15 +95,13 @@ describe("TemplateList", () => {
     const clearButton = screen.getByTestId("clear-search");
 
     await user.type(searchInput, "ePSIC mib conversion");
+
     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: "conditional-steps" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("conditional-steps")).not.toBeInTheDocument();
 
     await user.click(clearButton);
+
     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "conditional-steps" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("conditional-steps")).toBeInTheDocument();
   });
 });
