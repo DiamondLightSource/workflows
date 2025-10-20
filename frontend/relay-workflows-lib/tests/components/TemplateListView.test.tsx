@@ -48,23 +48,25 @@ describe("TemplateList", () => {
 
   beforeAll(() => {
     server.listen();
-    assert(import.meta.env.VITE_ENABLE_MOCKING === "true");
-  });
-  afterAll(() => {
-    server.close();
-  });
-  afterEach(() => {
-    server.resetHandlers();
   });
 
   beforeEach(async () => {
-    vi.clearAllMocks();
+    console.log = vi.fn();
     const environment = await getRelayEnvironment();
     render(
       <RelayEnvironmentProvider environment={environment}>
-        <TemplatesListView />
+        <TemplatesListView setFilter={() => {}} />
       </RelayEnvironmentProvider>,
     );
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    server.resetHandlers();
+  });
+
+  afterAll(() => {
+    server.close();
   });
 
   test.each(cases)(
