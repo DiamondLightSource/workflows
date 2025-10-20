@@ -12,7 +12,7 @@ serde_json = { workspace = true }
 [build-dependencies]
 reqwest = { workspace = true }
 rustfmt-wrapper = { version = "0.2.1" }
-schemars = { version = "0.8.22" }
+schemars = { version = "1.0.4" }
 serde_json = { workspace = true }
 syn = { version = "2.0.107" }
 typify = { version = "0.5.0" }
