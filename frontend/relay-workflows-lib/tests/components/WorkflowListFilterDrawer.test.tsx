@@ -1,43 +1,69 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import templateListResponse from "dashboard/src/mocks/responses/templates/templateListResponse.json";
 import { WorkflowListFilterDrawer } from "relay-workflows-lib";
+import { WorkflowsListViewTemplatesQuery } from "relay-workflows-lib/lib/views/WorkflowsListView";
 import userEvent from "@testing-library/user-event";
+import { WorkflowQueryFilter } from "workflows-lib";
+import { useLazyLoadQuery } from "react-relay";
+import { WorkflowsListViewTemplatesQuery as WorkflowsListViewTemplatesQueryType } from "relay-workflows-lib/lib/views/__generated__/WorkflowsListViewTemplatesQuery.graphql";
+import { server } from "../mocks/browser";
+import { RelayEnvironmentProvider } from "react-relay";
+import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
 
-vi.mock("relay-runtime", () => ({
-  graphql: () => {},
-}));
+function WorkflowListFilterDrawerWithQuery({
+  onApplyFilter,
+}: {
+  onApplyFilter: (filters: WorkflowQueryFilter) => void;
+}) {
+  const templateData = useLazyLoadQuery<WorkflowsListViewTemplatesQueryType>(
+    WorkflowsListViewTemplatesQuery,
+    {},
+    {},
+  );
 
-vi.mock("react-relay", () => ({
-  graphql: () => {},
-}));
-
-vi.mock("react-relay/hooks", () => ({
-  useLazyLoadQuery: vi.fn(() => templateListResponse),
-}));
+  return (
+    <WorkflowListFilterDrawer
+      data={templateData.workflowTemplates}
+      onApplyFilters={onApplyFilter}
+    />
+  );
+}
 
 describe("WorkflowListFilterDrawer", () => {
   const mockApplyFilter = vi.fn();
   const user = userEvent.setup();
+  beforeAll(() => {
+    server.listen();
+  });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    render(<WorkflowListFilterDrawer onApplyFilters={mockApplyFilter} />);
+    const environment = await getRelayEnvironment();
+
+    render(
+      <RelayEnvironmentProvider environment={environment}>
+        <WorkflowListFilterDrawerWithQuery onApplyFilter={mockApplyFilter} />
+      </RelayEnvironmentProvider>,
+    );
+  });
+
+  afterAll(() => {
+    server.close();
   });
 
   it("displays the list of templates as options", async () => {
-    await user.click(screen.getByRole("button"));
+    await user.click(await screen.findByRole("button"));
 
     const autocomplete = screen.getByRole("combobox", { name: "Template" });
     expect(autocomplete).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Open" }));
 
     const options = await screen.findAllByRole("option");
-    expect(options).toHaveLength(28);
+    expect(options).toHaveLength(3);
   });
 
   it("allows a template to be selected", async () => {
-    await user.click(screen.getByRole("button"));
+    await user.click(await screen.findByRole("button"));
 
     const autocomplete = screen.getByRole("combobox", { name: "Template" });
     expect(autocomplete).toBeInTheDocument();
@@ -45,30 +71,30 @@ describe("WorkflowListFilterDrawer", () => {
 
     expect(autocomplete).toHaveValue("");
     await user.keyboard("{ArrowDown}{Enter}");
-    expect(autocomplete).toHaveValue("conditional-steps");
+    expect(autocomplete).toHaveValue("Template A");
   });
 
   it("filters templates as text is entered", async () => {
-    await user.click(screen.getByRole("button"));
+    await user.click(await screen.findByRole("button"));
     await userEvent.click(screen.getByRole("button", { name: "Open" }));
 
-    await user.keyboard("httomo");
+    await user.keyboard("Template");
     const options = await screen.findAllByRole("option");
     expect(options).toHaveLength(2);
   });
 
   it("updates the filter when applied", async () => {
-    await user.click(screen.getByRole("button"));
+    await user.click(await screen.findByRole("button"));
     const autocomplete = screen.getByRole("combobox", { name: "Template" });
     await userEvent.click(screen.getByRole("button", { name: "Open" }));
     const options = await screen.findAllByRole("option");
     await userEvent.click(options[2]);
-    expect(autocomplete).toHaveValue("e02-mib2x");
+    expect(autocomplete).toHaveValue("Mock C");
     await user.click(screen.getByRole("button", { name: "Apply" }));
 
     expect(mockApplyFilter).toHaveBeenCalledWith({
       creator: undefined,
-      template: "e02-mib2x",
+      template: "Mock C",
       workflowStatusFilter: undefined,
     });
   });

@@ -1,14 +1,14 @@
 import { act, render, renderHook } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import TasksFlow from "../../lib/components/workflow/TasksFlow";
+import TasksFlow from "../../lib/components/TasksFlow";
 import {
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
   usePersistentViewport,
-} from "../../lib/utils/tasksFlowUtils";
+} from "workflows-lib/lib/utils/tasksFlowUtils";
 import { ReactFlow } from "@xyflow/react";
-import { mockTasks } from "./data";
+import { mockTasks } from "workflows-lib/tests/components/data";
 
 describe("TasksFlow Component", () => {
   beforeEach(() => {
@@ -35,19 +35,26 @@ describe("TasksFlow Component", () => {
     { id: "edge-1", source: "node-1", target: "node-2" },
   ]);
 
+  vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
+    useFetchedTasks: vi.fn(() => mockTasks),
+  }));
+
   beforeEach(() => {
-    vi.mock("../../lib/utils/tasksFlowUtils", async (importOriginal) => ({
-      ...(await importOriginal()),
-      buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
-      generateNodesAndEdges: vi.fn().mockReturnValue({
-        nodes: mockNodes,
-        edges: mockEdges,
+    vi.mock(
+      "workflows-lib/lib/utils/tasksFlowUtils",
+      async (importOriginal) => ({
+        ...(await importOriginal()),
+        buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
+        generateNodesAndEdges: vi.fn().mockReturnValue({
+          nodes: mockNodes,
+          edges: mockEdges,
+        }),
+        applyDagreLayout: vi.fn().mockReturnValue({
+          nodes: mockLayoutedNodes,
+          edges: mockLayoutedEdges,
+        }),
       }),
-      applyDagreLayout: vi.fn().mockReturnValue({
-        nodes: mockLayoutedNodes,
-        edges: mockLayoutedEdges,
-      }),
-    }));
+    );
   });
 
   beforeEach(() => {
@@ -63,23 +70,13 @@ describe("TasksFlow Component", () => {
 
   it("should render without crashing", () => {
     const { getByText } = render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        tasks={mockTasks}
-        onNavigate={() => {}}
-      />,
+      <TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />,
     );
     expect(getByText("ReactFlow Mock")).toBeInTheDocument();
   });
 
   it("should build the task tree", () => {
-    render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        tasks={mockTasks}
-        onNavigate={() => {}}
-      />,
-    );
+    render(<TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />);
 
     expect(buildTaskTree).toHaveBeenCalledWith(mockTasks);
   });
@@ -88,7 +85,6 @@ describe("TasksFlow Component", () => {
     render(
       <TasksFlow
         workflowName="mockWorkflowA"
-        tasks={mockTasks}
         highlightedTaskIds={["node-1"]}
         onNavigate={() => {}}
       />,
@@ -98,25 +94,13 @@ describe("TasksFlow Component", () => {
   });
 
   it("should apply the dagre layout", () => {
-    render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        tasks={mockTasks}
-        onNavigate={() => {}}
-      />,
-    );
+    render(<TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />);
 
     expect(applyDagreLayout).toHaveBeenCalledWith(mockNodes, mockEdges);
   });
 
   it("should initialize ReactFlow with the correct nodes and edges", () => {
-    render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        tasks={mockTasks}
-        onNavigate={() => {}}
-      />,
-    );
+    render(<TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />);
 
     expect(ReactFlow).toHaveBeenCalledWith(
       expect.objectContaining({
