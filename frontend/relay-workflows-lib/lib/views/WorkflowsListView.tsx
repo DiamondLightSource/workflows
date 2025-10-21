@@ -32,7 +32,7 @@ export const WorkflowsListViewQuery = graphql`
   }
 `;
 
-const WorkflowsListViewTemplatesQuery = graphql`
+export const WorkflowsListViewTemplatesQuery = graphql`
   query WorkflowsListViewTemplatesQuery {
     workflowTemplates {
       ...WorkflowListFilterDrawerFragment
