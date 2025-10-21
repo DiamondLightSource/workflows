@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "tsc --build && vite build",
     "preview": "vite preview",
-    "relay": "relay-compiler"
+    "relay": "relay-compiler",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@types/relay-test-utils": "^19.0.0",
