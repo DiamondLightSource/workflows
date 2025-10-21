@@ -5,6 +5,7 @@ import { ReactFlowInstance } from "@xyflow/react";
 import { Node, Edge } from "@xyflow/react";
 import { Task } from "workflows-lib/lib/types";
 import "react-resizable/css/styles.css";
+import { mockTasks } from "workflows-lib/tests/components/data";
 
 vi.mock("@xyflow/react", () => ({
   ReactFlow: ({
@@ -21,18 +22,37 @@ vi.mock("@xyflow/react", () => ({
   getNodesBounds: () => ({ width: 100, height: 100 }),
 }));
 
-vi.mock("../../lib/components/workflow/TasksTable", () => ({
+vi.mock("workflows-lib/lib/components/workflow/TasksTable", () => ({
   __esModule: true,
   default: () => <div data-testid="taskstable-mock" />,
 }));
 
-vi.mock("../../lib/components/workflow/TasksFlowUtils", () => ({
-  applyDagreLayout: (nodes: Node, edges: Edge) => ({ nodes, edges }),
-  buildTaskTree: (tasks: Task[]) => tasks,
-  generateNodesAndEdges: () => ({}),
+vi.mock("workflows-lib/lib/utils/tasksFlowUtils", async () => {
+  return {
+    ...(await vi.importActual("workflows-lib/lib/utils/tasksFlowUtils")),
+    applyDagreLayout: (nodes: Node, edges: Edge) => ({ nodes, edges }),
+    buildTaskTree: (tasks: Task[]) => tasks,
+    generateNodesAndEdges: () => ({
+      nodes: [],
+      edges: [],
+    }),
+  };
+});
+
+vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
+  useFetchedTasks: vi.fn(() => mockTasks),
 }));
 
 describe("TasksFlow", () => {
+  const renderTasksFlow = () =>
+    render(
+      <TasksFlow
+        workflowName="mockWorkflowA"
+        isDynamic={true}
+        onNavigate={() => {}}
+      />,
+    );
+
   it("should render Graph when there is no overflow", () => {
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
       width: 200,
@@ -48,13 +68,8 @@ describe("TasksFlow", () => {
       },
     });
 
-    render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        isDynamic={true}
-        onNavigate={() => {}}
-      />,
-    );
+    renderTasksFlow();
+
     expect(screen.getByTestId("reactflow-mock")).toBeInTheDocument();
     expect(screen.queryByTestId("taskstable-mock")).not.toBeInTheDocument();
   });
@@ -74,13 +89,7 @@ describe("TasksFlow", () => {
       },
     });
 
-    render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        isDynamic={true}
-        onNavigate={() => {}}
-      />,
-    );
+    renderTasksFlow();
     expect(screen.getByTestId("taskstable-mock")).toBeInTheDocument();
     expect(screen.queryByTestId("reactflow-mock")).not.toBeInTheDocument();
   });
@@ -88,13 +97,7 @@ describe("TasksFlow", () => {
   it("should clean up event listeners on unmount", () => {
     const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
 
-    const { unmount } = render(
-      <TasksFlow
-        workflowName="mockWorkflowA"
-        isDynamic={true}
-        onNavigate={() => {}}
-      />,
-    );
+    const { unmount } = renderTasksFlow();
     unmount();
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
