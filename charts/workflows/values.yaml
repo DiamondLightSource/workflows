@@ -38,6 +38,21 @@ argo-workflows:
         serviceAccountName: argo-workflow
         ttlStrategy:
           secondsAfterCompletion: 300
+        tolerations:
+        - key: nodegroup
+          operator: Equal
+          value: workflows
+          effect: NoSchedule
+        affinity:
+          nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: nodegroup
+                operator: In
+                values:
+                - workflows
     extraEnv:
       - name: POD_NAMES
         value: "v1"
