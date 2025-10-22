@@ -54,7 +54,7 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: drh/staging-debug-4
   extraValueFiles:
     - staging-values.yaml
 
