@@ -49,14 +49,14 @@ argo-workflows:
           effect: PreferNoSchedule
         affinity:
           nodeAffinity:
-            preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                - key: nodegroup
-                  operator: In
-                  values:
-                  - workflows
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: nodegroup
+                operator: In
+                values:
+                - workflows
     extraEnv:
       - name: POD_NAMES
         value: "v1"
