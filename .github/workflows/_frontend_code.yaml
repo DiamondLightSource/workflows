@@ -52,6 +52,16 @@ jobs:
         working-directory: frontend
         run: yarn --frozen-lockfile
 
+      - name: Download Supergraph Schema Artifact
+        uses: actions/download-artifact@v5.0.0
+        with:
+          name: supergraph
+          path: frontend/relay-workflows-lib
+
+      - name: Compile Relay
+        working-directory: frontend/relay-workflows-lib
+        run: yarn relay
+
       - name: Test
         working-directory: frontend
         run: yarn test
