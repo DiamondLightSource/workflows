@@ -3,8 +3,8 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 import { Box, Pagination, Stack } from "@mui/material";
 import { useClientSidePagination } from "../utils/coreUtils";
 import TemplateSearchField from "workflows-lib/lib/components/template/TemplateSearchField";
-import type { TemplatesListViewQuery as TemplatesListViewQueryType } from "./__generated__/TemplatesListViewQuery.graphql";
-import TemplateCard from "../components/TemplateCard";
+import type { TemplatesListViewQuery as TemplatesListViewQueryType } from "relay-workflows-lib/lib/views/__generated__/TemplatesListViewQuery.graphql";
+import { TemplateCard } from "relay-workflows-lib/lib/components/TemplateCard";
 import { templateMatchesSearch } from "../utils/useTemplateMatchesSearch";
 import { ScienceGroupSelector, WorkflowTemplatesFilter } from "workflows-lib";
 
