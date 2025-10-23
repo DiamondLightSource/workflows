@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: workflow-of-workflows
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: Workflow Of Workflows
+spec:
+  entrypoint: entry
+  templates:
+  - name: entry
+    steps:
+    - - name: auth
+        template: auth
+
+    - - name: test
+        template: curl
+        arguments:
+          parameters:
+          - name: cmd
+            value: |
+              curl --request POST http://{{steps.auth.ip}} -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"mg\", proposalNumber: 36964, number: 1}, parameters: {}){     name   } }" }'
+
+  - name: auth
+    daemon: true
+    retryStrategy:
+      limit: 10
+    container:
+      image: ghcr.io/diamondlightsource/workflows-auth-daemon:0.1.0
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 80
+        initialDelaySeconds: 5
+        periodSeconds: 1
+      env:
+        - name: AUTH_DOMAIN
+          value: https://authn.diamond.ac.uk/realms/master
+        - name: CLIENT_ID
+          value: workflows-cluster
+        - name: LOG_LEVEL
+          value: debug
+        - name: GRAPH_URL
+          value: https://workflows.diamond.ac.uk/graphql
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: token
+              key: token
+      args:
+        - serve
+
+  - name: curl
+    inputs:
+      parameters:
+      - name: cmd
+    container:
+      image: curlimages/curl:8.15.0
+      command: ["/bin/sh", "-c"]
+      args: ["{{inputs.parameters.cmd}}"]
+
