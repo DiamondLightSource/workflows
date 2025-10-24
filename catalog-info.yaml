@@ -1,0 +1,88 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: analysis-platform
+  title: Analysis Platform
+  description: >
+    The data analysis workflows platform deployment. The deployment consists of a backbone of
+    Argo Workflows is deployed alongside accompanying services and a monitoring stack with
+    continuous delivery is achieved with ArgoCD.
+   - argocd
+  tags:
+    - kubernetes
+    - argo-workflows
+    - argo-cd
+    - kyverno
+    - vcluster
+    - monitoring
+spec:
+  owner: group:data-analysis
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analysis-platform-backend
+  title: Analysis platform backend
+  description: Backend services combined with infrastructure to run workflows
+  tags:
+    - rust
+    - kubernetes
+  annotations:
+    github.com/project-slug: DiamondLightSource/workflows/backend
+    diamond.ac.uk/viewdocs-url: https://diamondlightsource.github.io/workflows/docs/
+spec:
+  type: service
+  lifecycle: production
+  owner: group:data-analysis
+  system: analysis-platform
+dependsOn:
+  - ispyb-api
+  # graph-federation when added
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: workflows-cli
+  title: Workflows CLI
+  description: CLI tool to lint, submit workflow templates as well as create repositories that will provide template boilerplate
+  tags:
+    - rust
+  annotations:
+    github.com/project-slug: DiamondLightSource/workflows/workflows-cli
+    diamond.ac.uk/viewdocs-url: https://diamondlightsource.github.io/workflows/docs/
+spec:
+  type: service
+  lifecycle: production
+  owner: group:data-analysis
+  system: analysis-platform
+dependsOn:
+  - analysis-platform-backend
+  - ispyb-api
+  # graph-federation when added
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata
+  name: workflows-frontend
+  title: Workflows Frontend
+  description: Frontend dashboard for workflows platform using material ui (mui) components
+  tags:
+    - typescript
+    - mui
+    - react
+    - yarn
+    - vite
+  annotations:
+    github.com/project-slug: DiamondLightSource/workflows/frontend
+    diamond.ac.uk/viewdocs-url: https://diamondlightsource.github.io/workflows/docs/
+spec:
+  type: service
+  lifecycle: production
+  owner: group:data-analysis
+  system: analysis-platform
+dependsOn:
+  - analysis-platform-backend
+  - sci-react-ui
+  - ispyb-api
+  # graph-federation when it is added
+
