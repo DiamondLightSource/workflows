@@ -14,7 +14,7 @@ opentelemetry-semantic-conventions = "0.31.0"
 opentelemetry_sdk = { workspace = true}
 thiserror = { workspace = true }
 tracing = { workspace = true }
-tracing-opentelemetry = { version = "0.31.0" }
+tracing-opentelemetry = { version = "0.32.0" }
 tracing-subscriber = { workspace = true }
 url = { workspace = true }
 
