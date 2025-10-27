@@ -11,7 +11,7 @@ resolver = "2"
 [workspace.dependencies]
 anyhow = { version = "1.0.100" }
 built = { version = "0.8.0" }
-clap = { version = "4.5.49", features = ["derive", "env"] }
+clap = { version = "4.5.50", features = ["derive", "env"] }
 chrono = { version = "0.4.42" }
 derive_more = { version = "2.0.1" , features = [
     "deref",
@@ -22,7 +22,7 @@ derive_more = { version = "2.0.1" , features = [
 ]}
 dotenvy = { version = "0.15.7" }
 mockito = { version = "1.7.0" }
-reqwest = { version = "0.12.15", default-features = false, features = [
+reqwest = { version = "0.12.24", default-features = false, features = [
     "rustls-tls",
     "json",
     "blocking",
