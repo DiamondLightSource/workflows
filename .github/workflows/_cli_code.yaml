@@ -82,7 +82,7 @@ jobs:
           WORKFLOWS_CLI_TEST_ENABLE_MOCK_COMMAND=1 cargo tarpaulin --out html
 
       - name: Upload coverage report as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage.html
           path: workflows-cli/tarpaulin-report.html
