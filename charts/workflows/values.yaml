@@ -104,6 +104,8 @@ postgresql-ha:
   persistence:
     storageClass: db-nvme-storage
     size: 50Gi
+  metrics:
+    enabled: true
 
 oauth2-proxy:
   enabled: true
