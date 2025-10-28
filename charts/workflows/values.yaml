@@ -106,6 +106,8 @@ postgresql-ha:
     size: 50Gi
   metrics:
     enabled: true
+    image:
+      repository: bitnamilegacy/postgres-exporter
 
 oauth2-proxy:
   enabled: true
