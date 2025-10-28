@@ -51,7 +51,7 @@ vcluster:
                       - staging-values.yaml
                   path: charts/apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
-                  targetRevision: HEAD
+                  targetRevision: drh/staging-debug-4
                 syncPolicy:
                   automated:
                     prune: true
