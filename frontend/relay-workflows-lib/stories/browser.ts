@@ -100,7 +100,6 @@ const handlers = [
             ],
           },
         } as unknown as TemplatesListViewQuery$data,
-        } as unknown as TemplatesListViewQuery$data,
       });
     },
   ),

@@ -7,7 +7,7 @@ import BaseSingleWorkflowView from "./BaseSingleWorkflowView";
 import { graphql } from "react-relay";
 import { useState } from "react";
 
-const SingleWorkflowViewQuery = graphql`
+export const SingleWorkflowViewQuery = graphql`
   query SingleWorkflowViewQuery($visit: VisitInput!, $name: String!) {
     workflow(visit: $visit, name: $name) {
       status {
