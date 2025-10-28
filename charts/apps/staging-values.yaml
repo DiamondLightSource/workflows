@@ -21,8 +21,8 @@ kyverno:
       container:
         resources:
           limits:
-            cpu: 200m
-            memory: 2Gi
+            cpu: 1
+            memory: 8Gi
           requests:
             cpu: 100m
             memory: 1Gi
@@ -30,8 +30,8 @@ kyverno:
       replicas: 1
       resources:
         limits:
-          cpu: 200m
-          memory: 2Gi
+          cpu: 1
+          memory: 8Gi
         requests:
           cpu: 100m
           memory: 1Gi
