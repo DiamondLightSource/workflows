@@ -27,6 +27,8 @@ kyverno:
             cpu: 100m
             memory: 1Gi
     backgroundController:
+      extraArgs:
+        genWorkers: 10
       replicas: 1
       resources:
         limits:
@@ -34,7 +36,7 @@ kyverno:
           memory: 8Gi
         requests:
           cpu: 100m
-          memory: 1Gi
+          memory: 4Gi
 
 sessionspaces:
   enabled: true
