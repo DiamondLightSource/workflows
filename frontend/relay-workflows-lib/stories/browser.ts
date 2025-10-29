@@ -13,6 +13,11 @@ import {
   TemplatesListViewQuery$data,
   TemplatesListViewQuery$variables,
 } from "../lib/views/__generated__/TemplatesListViewQuery.graphql";
+import {
+  WorkflowsListViewTemplatesQuery$data,
+  WorkflowsListViewTemplatesQuery$variables,
+} from "../lib/views/__generated__/WorkflowsListViewTemplatesQuery.graphql";
+import { workflowsListViewTemplatesResponse } from "dashboard/src/mocks/responses/templates/workflowsListViewTemplates";
 
 const api = graphql.link("https://workflows.diamond.ac.uk/graphql");
 
@@ -111,6 +116,14 @@ const handlers = [
       });
     },
   ),
+  api.query<
+    WorkflowsListViewTemplatesQuery$data,
+    WorkflowsListViewTemplatesQuery$variables
+  >("WorkflowsListViewTemplatesQuery", () => {
+    return HttpResponse.json({
+      data: workflowsListViewTemplatesResponse as unknown as WorkflowsListViewTemplatesQuery$data,
+    });
+  }),
 ];
 
 export const server = setupWorker(...handlers);

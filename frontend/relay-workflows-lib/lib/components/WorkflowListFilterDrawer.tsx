@@ -74,7 +74,7 @@ export function WorkflowListFilterDisplay({
   );
 }
 
-function WorkflowListFilterDrawer({
+export function WorkflowListFilterDrawer({
   data,
   onApplyFilters,
 }: WorkflowListFilterDrawerProps) {
