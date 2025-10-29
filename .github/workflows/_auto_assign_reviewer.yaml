@@ -12,10 +12,11 @@ jobs:
     steps:
       - name: Create config for reviewer assignment
         run: |
-          cat > auto_assign_config.yaml << EOF
+          cat > .github/auto_assign_config.yaml << EOF
           addAssignees: reviewer
           runOnDraft: true
           EOF
       - uses: kentaro-m/auto-assign-action@v2.0.0
         with:
-          configuration-path: auto_assign_config.yaml
+          configuration-path: .github/auto_assign_config.yaml
+      - run: rm .github/auto_assign_config.yaml
