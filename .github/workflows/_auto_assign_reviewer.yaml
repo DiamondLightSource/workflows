@@ -1,7 +1,7 @@
-name: 'Auto Assign'
+name: 'Auto Assign Reviewer on PR Review'
 on:
-  pull_request:
-    types: [opened]
+  pull_request_review:
+    types: [submitted, edited]
 
 jobs:
   add-reviews:
@@ -10,13 +10,13 @@ jobs:
       !startsWith(github.head_ref, 'release-please--') &&
       !startsWith(github.head_ref, 'dependabot/')
     steps:
-      - name: Create config for author assignment
+      - name: Create config for reviewer assignment
         run: |
           cat > .github/auto_assign_config.yaml << EOF
-          addAssignees: author
+          addAssignees: reviewer
           runOnDraft: true
           EOF
-      - name: Auto Assign Author
+      - name: Auto Assign Reviewer
         uses: kentaro-m/auto-assign-action@v2.0.0
         with:
           configuration-path: .github/auto_assign_config.yaml
