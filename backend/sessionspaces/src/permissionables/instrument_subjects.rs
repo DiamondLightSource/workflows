@@ -221,6 +221,8 @@ impl InstrumentGroup {
 }
 
 impl InstrumentSubjects {
+    /// Extract information from the LDAP cto get instrument-to-subject mappings
+    /// Returns a mapping of instruments to user IDS who have access to those instruments
     #[instrument(name = "sessionspaces_fetch_instrument_subjects")]
     pub async fn fetch(ldap_connection: &mut Ldap) -> Result<Self, LdapError> {
         let mut instrument_subjects = Self::default();

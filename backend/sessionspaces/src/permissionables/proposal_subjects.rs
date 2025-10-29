@@ -14,6 +14,8 @@ struct ProposalSubjectRow {
 }
 
 impl ProposalSubjects {
+    /// Create mappings for different proposals to their corresponding users that
+    // have access to each proposal
     #[instrument(name = "fetch_proposal_subjects")]
     pub async fn fetch(ispyb_pool: &MySqlPool) -> Result<Self, sqlx::Error> {
         let mut proposal_subjects = Self::default();

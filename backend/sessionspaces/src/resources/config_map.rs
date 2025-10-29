@@ -11,6 +11,7 @@ use tracing::{info, instrument};
 /// The name to be given to the ConfigMap
 const NAME: &str = "sessionspaces";
 
+/// Create configmaps for every instrument session from visit information and visit directory
 #[instrument(name = "sessionspaces_create_configmap", skip(k8s_client, session))]
 pub async fn create_configmap(
     namespace: &str,
