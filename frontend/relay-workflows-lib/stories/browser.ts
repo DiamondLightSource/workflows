@@ -23,6 +23,11 @@ import {
   WorkflowsListViewQuery$variables,
 } from "../lib/views/__generated__/WorkflowsListViewQuery.graphql";
 import { workflowsListViewQueryResponse } from "dashboard/src/mocks/responses/workflows/WorkflowsListViewQueryResponse";
+import {
+  TemplateViewQuery$data,
+  TemplateViewQuery$variables,
+} from "../lib/views/__generated__/TemplateViewQuery.graphql";
+import { templateViewResponse } from "dashboard/src/mocks/responses/templates/templateResponses";
 
 const api = graphql.link("https://workflows.diamond.ac.uk/graphql");
 
@@ -134,6 +139,14 @@ const handlers = [
     () => {
       return HttpResponse.json({
         data: workflowsListViewQueryResponse as unknown as WorkflowsListViewQuery$data,
+      });
+    },
+  ),
+  api.query<TemplateViewQuery$data, TemplateViewQuery$variables>(
+    "TemplateViewQuery",
+    () => {
+      return HttpResponse.json({
+        data: templateViewResponse["conditional-steps"],
       });
     },
   ),
