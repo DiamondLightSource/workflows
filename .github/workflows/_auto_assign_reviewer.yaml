@@ -1,0 +1,15 @@
+name: 'Auto Assign Reviewer on PR Review'
+on:
+  pull_request_review:
+    types: [submitted, edited]
+
+jobs:
+  add-reviews:
+    runs-on: ubuntu-latest
+    if: |
+      !startsWith(github.head_ref, 'release-please--') &&
+      !startsWith(github.head_ref, 'dependabot/')
+    steps:
+      - uses: kentaro-m/auto-assign-action@v2.0.0
+        with:
+          configuration-path: .github/auto_assign_config_reviewer.yaml
