@@ -2,7 +2,7 @@ import React from "react";
 import Tooltip from "@mui/material/Tooltip";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { graphql } from "relay-runtime";
-import { useLazyLoadQuery } from "react-relay/hooks";
+import { useLazyLoadQuery } from "react-relay";
 import { NavLink } from "react-router-dom";
 import { RetriggerWorkflowQuery as RetriggerWorkflowQueryType } from "./__generated__/RetriggerWorkflowQuery.graphql";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
@@ -57,7 +57,7 @@ const RetriggerWorkflowBase: React.FC<RetriggerWorkflowProps> = ({
   );
 };
 
-const RetriggerWorkflow: React.FC<RetriggerWorkflowProps> = (props) => (
+export const RetriggerWorkflow: React.FC<RetriggerWorkflowProps> = (props) => (
   <WorkflowsErrorBoundary fallback={<NoTemplateIcon />}>
     <RetriggerWorkflowBase {...props} />
   </WorkflowsErrorBoundary>
