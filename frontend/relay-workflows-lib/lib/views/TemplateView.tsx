@@ -11,7 +11,7 @@ import { TemplateViewMutation } from "./__generated__/TemplateViewMutation.graph
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
 import { SubmissionFormParametersFragment$key } from "../components/__generated__/SubmissionFormParametersFragment.graphql";
 
-const TemplateViewQuery = graphql`
+export const TemplateViewQuery = graphql`
   query TemplateViewQuery($templateName: String!) {
     workflowTemplate(name: $templateName) {
       ...SubmissionFormFragment
