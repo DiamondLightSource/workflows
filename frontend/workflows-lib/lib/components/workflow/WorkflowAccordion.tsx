@@ -36,16 +36,12 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   workflow,
   children,
   workflowLink = false,
-  expanded = false,
+  expanded,
   onChange,
   retriggerComponent,
 }) => {
   return (
-    <Accordion
-      key={workflow.name}
-      defaultExpanded={expanded}
-      onChange={onChange}
-    >
+    <Accordion key={workflow.name} expanded={expanded} onChange={onChange}>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
         <Box sx={{ display: "flex", flexBasis: 0, flexGrow: 5, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}

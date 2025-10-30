@@ -14,6 +14,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "conditional-steps",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-22T10:35:22+00:00",
@@ -104,6 +107,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "conditional-steps",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-05T17:06:00+00:00",
@@ -194,6 +200,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "conditional-steps",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-19T09:45:55+00:00",
@@ -284,6 +293,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "mount-tmpdir",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-19T09:49:41+00:00",
@@ -342,6 +354,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "notebook",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-19T11:14:17+00:00",
@@ -405,6 +420,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "notebook",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-21T18:12:48+00:00",
@@ -468,6 +486,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "ptycho-tomo-job",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-22T10:27:18+00:00",
@@ -607,6 +628,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "ptycho-tomo-job",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-22T10:27:22+00:00",
@@ -746,6 +770,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "ptycho-tomo-job",
         parameters: {},
+        creator: {
+          creatorId: "abc12345",
+        },
         status: {
           __typename: "WorkflowSucceededStatus",
           startTime: "2025-08-22T10:18:00+00:00",
@@ -888,6 +915,9 @@ export const workflowsListViewQueryResponse = {
           stop: "10",
           step: "1",
           start: "0",
+        },
+        creator: {
+          creatorId: "abc12345",
         },
         status: {
           __typename: "WorkflowSucceededStatus",
