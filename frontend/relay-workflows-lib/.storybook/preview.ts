@@ -1,13 +1,13 @@
 import type { Preview } from "@storybook/react-vite";
-import { server } from "../stories/browser";
+import { worker } from "dashboard/src/mocks/browser";
 
 const preview: Preview = {
   async beforeAll() {
-    await server.start();
+    await worker.start();
   },
   beforeEach() {
     return () => {
-      server.resetHandlers();
+      worker.resetHandlers();
     };
   },
   parameters: {

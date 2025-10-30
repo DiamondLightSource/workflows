@@ -53,17 +53,9 @@ const meta: Meta<typeof TemplateCard> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const mockUp: Story = {
+export const Example: Story = {
   render: (args) => (
     <Wrapper responseIndex={0}>
-      <TemplateCard {...args} />
-    </Wrapper>
-  ),
-};
-
-export const workingExample: Story = {
-  render: (args) => (
-    <Wrapper responseIndex={1}>
       <TemplateCard {...args} />
     </Wrapper>
   ),
