@@ -149,13 +149,30 @@ export const handlers = [
   api.mutation<TemplateViewMutation$data, TemplateViewMutation$variables>(
     "TemplateViewMutation",
     ({ variables }) => {
-      return HttpResponse.json({
-        data: {
-          submitWorkflowTemplate: {
-            name: `${variables.visit.proposalCode}-${variables.templateName}`,
-          },
-        },
-      });
+      switch (variables.visit.proposalCode) {
+        case "er": {
+          return HttpResponse.error();
+        }
+        case "gr": {
+          return HttpResponse.json({
+            data: {
+              submitWorkflowTemplate: {
+                name: `${variables.visit.proposalCode}-${variables.templateName}`,
+              },
+            },
+            errors: [{ message: "Mock GraphQL Error" }],
+          });
+        }
+        default: {
+          return HttpResponse.json({
+            data: {
+              submitWorkflowTemplate: {
+                name: `${variables.visit.proposalCode}-${variables.templateName}`,
+              },
+            },
+          });
+        }
+      }
     },
   ),
 ];
