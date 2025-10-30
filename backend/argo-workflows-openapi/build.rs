@@ -12,7 +12,7 @@ fn main() {
         env::var("ARGO_SERVER_SCHEMA_URL").expect("ARGO_SERVER_SCHEMA_URL environment is not set.");
     let raw_schema = reqwest::blocking::get(&argo_server_schema_url)
         .and_then(|response| response.text())
-        .expect(&format!("Failed to retrieve argo server schema from {argo_server_schema_url}. Is ARGO_SERVER_SCHEMA_URL environment variable set?"));
+        .unwrap_or_else(|_| panic!("Failed to retrieve argo server schema from {argo_server_schema_url}. Is ARGO_SERVER_SCHEMA_URL environment variable set?"));
     let mut schema: RootSchema = serde_json::from_str(&raw_schema).unwrap();
     // The upstream argo workflow API schema does not match with its API response.
     // This is a temporary fix to match the API response.
