@@ -26,7 +26,7 @@ const RenderSubmittedMessageFragment = graphql`
   }
 `;
 
-interface RenderSubmittedMessagePropsList {
+export interface RenderSubmittedMessagePropsList {
   result:
     | SubmissionGraphQLErrorMessage
     | SubmissionNetworkErrorMessage
