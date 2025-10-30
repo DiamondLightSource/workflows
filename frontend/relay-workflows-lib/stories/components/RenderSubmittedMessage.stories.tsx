@@ -121,7 +121,7 @@ export const erroredWorkflow: Story = {
   },
 };
 
-export const erroneousSubmission: Story = {
+export const networkError: Story = {
   args: {
     result: {
       type: "networkError",
@@ -129,6 +129,15 @@ export const erroneousSubmission: Story = {
         name: "404",
         message: "Network Error",
       },
+    },
+  },
+};
+
+export const graphqlError: Story = {
+  args: {
+    result: {
+      type: "graphQLError",
+      errors: [{ message: "GraphQL Error" }],
     },
   },
 };
