@@ -20,7 +20,7 @@ export const useVisitInput = (initialVisitId?: string | null) => {
       const route = location.pathname.split("/")[1]; // Extract the first segment of the path
       const visitid = visitToText(visit);
       localStorage.setItem("instrumentSessionID", visitid);
-      (navigate(`/${route}/${visitid}/`) as Promise<void>)
+      Promise.resolve(navigate(`/${route}/${visitid}/`))
         .then(() => {
           setVisit(visit);
         })
@@ -95,24 +95,6 @@ export function useClientSidePagination<T>(
     totalPages,
     paginatedItems,
   };
-}
-
-export function updateWorkflowsState(
-  fetched: string[],
-  visible: string[],
-  currentNew: string[],
-  setNew: (w: string[]) => void,
-) {
-  const added = fetched.filter((name) => !visible.includes(name));
-
-  const combined = [...new Set([...currentNew, ...added])];
-  const newChanged =
-    combined.length !== currentNew.length ||
-    combined.some((name, i) => name !== currentNew[i]);
-
-  if (newChanged) {
-    setNew(combined);
-  }
 }
 
 export const finishedStatuses = new Set([
