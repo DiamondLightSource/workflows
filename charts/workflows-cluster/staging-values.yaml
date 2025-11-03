@@ -75,6 +75,7 @@ authenticationConfiguration:
         url: https://authn.diamond.ac.uk/realms/master
         audiences:
           - workflows-cluster-staging
+          - graph
         audienceMatchPolicy: MatchAny
       claimMappings:
         username:
