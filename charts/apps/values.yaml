@@ -95,10 +95,16 @@ kyverno:
         requests:
           cpu: 6
           memory: 16Gi
+      podAnnotations:
+        # disable logging to graylog due to very high volume of logs since upgrading to 1.15.2
+        fluentd-ignore: "true"
     cleanupController:
       enabled: false
     reportsController:
       enabled: false
+    features:
+      logging:
+        verbosity: 0
 
 sessionspaces:
   enabled: true
