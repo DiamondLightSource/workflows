@@ -35,8 +35,7 @@ spec:
   owner: group:data-analysis
   system: analysis-platform
   dependsOn:
-    - ispyb-api
-    # graph-federation when added
+    - resource:ispyb-database
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -55,9 +54,8 @@ spec:
   owner: group:data-analysis
   system: analysis-platform
   dependsOn:
-    - analysis-platform-backend
-    - ispyb-api
-    # graph-federation when added
+    - component:analysis-platform-backend
+    - resource:ispyb-database
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -80,7 +78,5 @@ spec:
   owner: group:data-analysis
   system: analysis-platform
   dependsOn:
-    - analysis-platform-backend
-    - sci-react-ui
-    - ispyb-api
-    # graph-federation when it is added
+    - component:analysis-platform-backend
+    - component:sci-react-ui
