@@ -7,7 +7,6 @@ metadata:
     The data analysis workflows platform deployment. The deployment consists of a backbone of
     Argo Workflows is deployed alongside accompanying services and a monitoring stack with
     continuous delivery is achieved with ArgoCD.
-   - argocd
   tags:
     - kubernetes
     - argo-workflows
@@ -35,9 +34,9 @@ spec:
   lifecycle: production
   owner: group:data-analysis
   system: analysis-platform
-dependsOn:
-  - ispyb-api
-  # graph-federation when added
+  dependsOn:
+    - ispyb-api
+    # graph-federation when added
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -55,14 +54,14 @@ spec:
   lifecycle: production
   owner: group:data-analysis
   system: analysis-platform
-dependsOn:
-  - analysis-platform-backend
-  - ispyb-api
-  # graph-federation when added
+  dependsOn:
+    - analysis-platform-backend
+    - ispyb-api
+    # graph-federation when added
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
-metadata
+metadata:
   name: workflows-frontend
   title: Workflows Frontend
   description: Frontend dashboard for workflows platform using material ui (mui) components
@@ -80,9 +79,8 @@ spec:
   lifecycle: production
   owner: group:data-analysis
   system: analysis-platform
-dependsOn:
-  - analysis-platform-backend
-  - sci-react-ui
-  - ispyb-api
-  # graph-federation when it is added
-
+  dependsOn:
+    - analysis-platform-backend
+    - sci-react-ui
+    - ispyb-api
+    # graph-federation when it is added
