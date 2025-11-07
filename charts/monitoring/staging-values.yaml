@@ -1,23 +1,24 @@
+cluster: pollux
+
 grafana:
   ingress:
-    enabled: false
+    enabled: true
+    path: "/"
+    hosts:
+      - grafana.staging.workflows.diamond.ac.uk
+    tls:
+      - hosts:
+          - grafana.staging.workflows.diamond.ac.uk
+        secretName: letsencrypt-grafana-staging-workflows-diamond-ac-uk
   grafana.ini:
     server:
-      domain: localhost
-      root_url: http://localhost:3000
+      domain: grafana.staging.workflows.diamond.ac.uk
+      root_url: https://grafana.staging.workflows.diamond.ac.uk
       serve_from_sub_path: false
-    auth:
-      disable_login_form: true
-    auth.anonymous:
-      enabled: true
-      org_name: Main Org.
-      org_role: Viewer
     auth.generic_oauth:
-      enabled: false
-      client_id: ""
-      client_secret: ""
-  extraSecretMounts: []
-  assertNoLeakedSecrets: false
+      auth_url: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/auth
+      token_url: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+      api_url: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/userinfo
 
 thanos:
   existingObjstoreSecret: ""

@@ -1,3 +1,5 @@
+cluster: argus
+
 grafana:
   rbac:
     create: false
