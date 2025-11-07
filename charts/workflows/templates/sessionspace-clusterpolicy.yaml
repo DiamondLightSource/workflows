@@ -127,7 +127,7 @@ spec:
       apiVersions: ["v1"]
       operations:  ["CREATE"]
       resources:   ["namespaces"]
-    namespaceSelector:
+    objectSelector:
       matchLabels:
           app.kubernetes.io/managed-by: sessionspaces
   variables:
