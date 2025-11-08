@@ -1,3 +1,11 @@
+configuration:
+  keycloakUrl: https://authn.diamond.ac.uk
+  keycloakRealm: master
+  keycloakClient: workflows-dashboard
+  graphUrl: https://staging.workflows.diamond.ac.uk/graphql
+  graphWsUrl: wss://staging.workflows.diamond.ac.uk/graphql/ws
+  sourceDir: "/usr/share/nginx/html"
+
 ingress:
   hosts:
     - host: staging.workflows.diamond.ac.uk
