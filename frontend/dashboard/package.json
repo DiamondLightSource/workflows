@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "keycloak-js": "^26.2.1",
-    "msw": "^2.11.6",
+    "msw": "^2.12.1",
     "react-relay": "20.1.1",
-    "react-router-dom": "^7.9.4",
+    "react-router-dom": "^7.9.5",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
