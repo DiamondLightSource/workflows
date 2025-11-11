@@ -9,4 +9,5 @@ export { default as ScanRangeInput } from "./components/template/controls/ScanRa
 export { default as JsonFormsFileUploadRenderer } from "./components/template/jsonforms/JsonFormsFileUploadRenderer";
 export { default as JsonFormsScanRangeRenderer } from "./components/template/jsonforms/JsonFormsScanRangeRenderer";
 export { default as ScienceGroupSelector } from "./components/template/ScienceGroupSelector";
+export { default as GitHubNavigator } from "./components/common/GitHubNavigator";
 export * from "./types";
