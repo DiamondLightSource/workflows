@@ -43,6 +43,14 @@ rules:
     - update
     - delete
 - apiGroups:
+    - ""
+  resources:
+    - namespaces
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
     - "argoproj.io"
   resources:
    - workflows
