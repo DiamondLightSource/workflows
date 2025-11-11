@@ -104,7 +104,9 @@ kyverno:
       enabled: false
     features:
       logging:
-        verbosity: 0
+        verbosity: 4
+      dumpPayload:
+        enabled: true
 
 sessionspaces:
   enabled: true
