@@ -66,6 +66,19 @@ vcluster:
   experimental:
     deploy:
       vcluster:
+        manifestsTemplate: |-
+          {{- $existing := lookup "v1" "Secret" .Release.Namespace "artifact-s3" -}}
+          {{- if $existing }}
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: artifact-s3
+            namespace: {{ .Release.Namespace }}
+          type: Opaque
+          data:
+            access-key: {{ index $existing.data "access-key" }}
+            secret-key: {{ index $existing.data "secret" }}
+          {{- end }}
         helm:
           - release:
               name: argocd
@@ -122,7 +135,6 @@ vcluster:
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
-            "/s3-artifact": "workflows/artifact-s3"
   rbac:
     clusterRole:
       enabled: false
