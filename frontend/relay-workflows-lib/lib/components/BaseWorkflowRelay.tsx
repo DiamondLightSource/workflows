@@ -10,6 +10,7 @@ import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
 import TasksFlow from "./TasksFlow";
+import GitHubNavigator from "../query-components/GitHubNavigator";
 
 export const BaseWorkflowRelayFragment = graphql`
   fragment BaseWorkflowRelayFragment on Workflow {
@@ -25,6 +26,7 @@ export const BaseWorkflowRelayFragment = graphql`
     status {
       __typename
     }
+    templateRef
     ...WorkflowTasksFragment
   }
 `;
@@ -49,6 +51,7 @@ export default function BaseWorkflowRelay({
   }>();
   const navigate = useNavigate();
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
+  const templateRef = data.templateRef ?? null;
   const statusText = data.status?.__typename ?? "Unknown";
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
@@ -94,11 +97,13 @@ export default function BaseWorkflowRelay({
           instrumentSession: data.visit,
           status: statusText as WorkflowStatus,
           creator: data.creator.creatorId,
+          templateRef: templateRef,
         }}
         workflowLink={workflowLink}
         expanded={expanded}
         onChange={onChange}
         retriggerComponent={RetriggerWorkflow}
+        githubComponent={GitHubNavigator}
       >
         <ResizableBox
           width={Infinity}

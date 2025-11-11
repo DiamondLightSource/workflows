@@ -7,6 +7,7 @@ import { ErrorObject } from "ajv";
 import { JSONObject, Visit } from "../../types";
 import { VisitInput } from "@diamondlightsource/sci-react-ui";
 import { rendererSet } from "../../utils/renderers";
+import GitHubNavigator from "../common/GitHubNavigator";
 
 interface TemplateSubmissionFormProps {
   title: string;
@@ -68,9 +69,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
         Maintainer: {maintainer}
       </Typography>
       {repository && (
-        <Typography variant="body1" align="center">
-          Repository: {repository}
-        </Typography>
+        <GitHubNavigator repository={repository} variant="TextIcon" />
       )}
       <Divider />
       <JsonForms
