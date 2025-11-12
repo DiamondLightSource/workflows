@@ -1,0 +1,26 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-default-localqueue
+spec:
+  validationFailureAction: Enforce
+  generateExisting: true
+  rules:
+  - name: create-localqueue-for-session
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+    generate:
+      synchronize: true
+      apiVersion: kueue.x-k8s.io/v1beta1
+      kind: LocalQueue
+      name: default-queue
+      namespace: "{{request.object.metadata.name}}"
+      data:
+        spec:
+          clusterQueue: default-queue

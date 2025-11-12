@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: offline-
+spec:
+  entrypoint: process-data
+  templates:
+  - name: process-data
+    container:
+      image: busybox
+      command: ["/bin/sh", "-c"]
+      args: ["echo 'Processing offline data (low priority)'; sleep 300"]
+      resources:
+        limits:
+          cpu: "2"
+          memory: "2Gi"

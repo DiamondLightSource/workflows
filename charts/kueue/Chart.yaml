@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kueue
+description: A native Kubernetes scheduler for managing workloads in a fair and efficient way.
+type: application
+
+version: 0.1.0
+dependencies:
+  - name: kueue
+    version: 0.14.3
+    repository: oci://registry.k8s.io/kueue/charts
