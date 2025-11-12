@@ -12,6 +12,7 @@ vcluster:
         apiServer:
           extraArgs:
             - --authentication-config=/etc/authn-config/authn-config.yaml
+            - --max-request-body-bytes=10485760  # 10MB
     backingStore:
       etcd:
         deploy:

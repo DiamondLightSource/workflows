@@ -1,0 +1,26 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: mpi-queue
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: cpu
+        nominalQuota: 80
+      - name: memory
+        nominalQuota: 80Gi
+  preemption:
+    reclaimWithinCohort: Any
+    withinClusterQueue: LowerPriority
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  namespace: mg36964-1
+  name: mpi-queue
+spec:
+  clusterQueue: mpi-queue

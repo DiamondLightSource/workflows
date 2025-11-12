@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mpi-job-creator
+  namespace: mg36964-1
+rules:
+- apiGroups: ["kubeflow.org"]
+  resources: ["mpijobs"]
+  verbs: ["create", "get", "list", "watch", "delete", "patch", "update"]  # Include additional verbs for full lifecycle management if needed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argo-mpi-binding
+  namespace: mg36964-1
+subjects:
+- kind: ServiceAccount
+  name: argo-workflow
+  namespace: mg36964-1
+roleRef:
+  kind: Role
+  name: mpi-job-creator
+  apiGroup: rbac.authorization.k8s.io
