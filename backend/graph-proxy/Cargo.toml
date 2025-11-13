@@ -12,6 +12,7 @@ aws-sdk-s3 = { version = "1.82.0" , features = ["behavior-version-latest"]}
 argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.17", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.17" }
+async-trait = "0.1"
 axum = { workspace = true }
 axum-extra = { version = "0.12.1", features = ["typed-header"] }
 chrono = { workspace = true }

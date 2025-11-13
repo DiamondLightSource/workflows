@@ -6,7 +6,7 @@ use argo_workflows_openapi::{
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Enum, Object, SimpleObject, Union,
+    Context, Enum, Object, SimpleObject, Union, ID,
 };
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
@@ -69,6 +69,11 @@ impl Workflow {
 
 #[Object]
 impl Workflow {
+    /// The unique ID derived from Display for visit and name as <visit>-<name>
+    async fn id(&self) -> ID {
+        ID::from(format!("{}-{}", self.metadata.visit, self.metadata.name))
+    }
+
     /// The name given to the workflow, unique within a given visit
     async fn name(&self) -> &str {
         &self.metadata.name
@@ -630,6 +635,30 @@ impl WorkflowsQuery {
             }));
         Ok(connection)
     }
+}
+
+async fn fetch_workflow(ctx: &Context<'_>, visit: Visit, name: String) -> anyhow::Result<Workflow> {
+    let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+    let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+    let mut url = server_url.clone();
+    url.path_segments_mut()
+        .unwrap()
+        .extend(["api", "v1", "workflows", &visit.to_string(), &name]);
+
+    let request = if let Some(auth_token) = auth_token {
+        CLIENT.get(url).bearer_auth(auth_token.token())
+    } else {
+        CLIENT.get(url)
+    };
+
+    let workflow = request
+        .send()
+        .await?
+        .json::<APIResult<IoArgoprojWorkflowV1alpha1Workflow>>()
+        .await?
+        .into_result()?;
+
+    Ok(Workflow::new(workflow, visit))
 }
 
 /// Information about the creator of a workflow.

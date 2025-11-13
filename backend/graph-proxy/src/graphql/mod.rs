@@ -20,6 +20,7 @@ use self::{
     subscription::WorkflowsSubscription, workflow_templates::WorkflowTemplatesQuery,
     workflows::WorkflowsQuery,
 };
+use async_graphql::NodeQuery;
 use async_graphql::{
     parser::parse_query, InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder,
     SimpleObject,
@@ -48,9 +49,29 @@ pub fn root_schema_builder() -> SchemaBuilder<Query, Mutation, Subscription> {
     .enable_federation()
 }
 
+#[derive(Default)]
+pub struct NodeQuery;
+
+#[Object]
+impl NodeQuery {
+    async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<Workflow> {
+        let id_str = id.as_str();
+        let parts: Vec<&str> = id_str.splitn(2, '-').collect();
+        if parts.len() == 2 {
+            let visit = Visit::from_id(parts[0]);
+            let name = parts[1];
+            crate::graphql::workflows::fetch_workflow(ctx, visit, name.to_string())
+                .await
+                .ok()
+        } else {
+            None
+        }
+    }
+}
+
 /// The root query of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Query(WorkflowsQuery, WorkflowTemplatesQuery);
+pub struct Query(WorkflowsQuery, WorkflowTemplatesQuery, NodeQuery);
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedObject)]
@@ -126,6 +147,22 @@ impl Display for Visit {
             "{}{}-{}",
             self.proposal_code, self.proposal_number, self.number
         )
+    }
+}
+
+impl Visit {
+    pub fn from_display(s: &str) -> Self {
+        // Parse "XY1234-1" into proposal_code, proposal_number, number
+        let (code_and_number, visit_number) = s.rsplit_once('-').unwrap();
+        let (proposal_code, proposal_number_str) = code_and_number.split_at(2);
+        let proposal_number = proposal_number_str.parse::<u32>().unwrap();
+        let number = visit_number.parse::<u32>().unwrap();
+
+        Visit {
+            proposal_code: proposal_code.to_string(),
+            proposal_number,
+            number,
+        }
     }
 }
 

@@ -1715,6 +1715,7 @@ dependencies = [
  "async-graphql",
  "async-graphql-axum",
  "async-stream",
+ "async-trait",
  "aws-credential-types",
  "aws-sdk-s3",
  "axum",
