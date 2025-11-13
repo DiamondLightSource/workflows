@@ -122,7 +122,6 @@ vcluster:
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
-            "/s3-artifact": "workflows/artifact-s3"
   rbac:
     clusterRole:
       enabled: false
