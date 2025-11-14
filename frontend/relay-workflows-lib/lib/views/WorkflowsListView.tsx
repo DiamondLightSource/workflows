@@ -72,7 +72,7 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
     { fetchPolicy: "store-and-network" },
   );
 
-  const [isPaginated, setIsPaginated] = useState(false);
+  const isPaginated = useRef(false);
   const lastPage = useRef(currentPage);
   const lastLimit = useRef(selectedLimit);
 
@@ -98,7 +98,7 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
       currentPage !== lastPage.current ||
       selectedLimit !== lastLimit.current
     ) {
-      setIsPaginated(true);
+      isPaginated.current = true;
       lastPage.current = currentPage;
       lastLimit.current = selectedLimit;
     }
@@ -154,8 +154,7 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
                   onPageChange={goToPage}
                   onLimitChange={changeLimit}
                   updatePageInfo={updatePageInfo}
-                  isPaginated={isPaginated}
-                  setIsPaginated={setIsPaginated}
+                  isPaginated={isPaginated.current}
                 />
               </Suspense>
             )}

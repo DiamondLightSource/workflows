@@ -38,7 +38,6 @@ interface WorkflowsContentProps {
   onLimitChange: (limit: number) => void;
   updatePageInfo: (hasNextPage: boolean, endCursor: string | null) => void;
   isPaginated: boolean;
-  setIsPaginated: (b: boolean) => void;
 }
 
 export default function WorkflowsContent({
@@ -50,7 +49,6 @@ export default function WorkflowsContent({
   onLimitChange,
   updatePageInfo,
   isPaginated,
-  setIsPaginated,
 }: WorkflowsContentProps) {
   const queryData = usePreloadedQuery(WorkflowsListViewQuery, queryReference);
   const data = useFragment<WorkflowsContentFragment$key>(
@@ -60,6 +58,7 @@ export default function WorkflowsContent({
   const pageInfo = data.pageInfo;
   const fetchedWorkflows = data.nodes;
   const prevFetchedRef = useRef<string[]>([]);
+  const isPaginatedRef = useRef<boolean>(isPaginated);
 
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(
     new Set(),
@@ -74,12 +73,12 @@ export default function WorkflowsContent({
     const prevNames = prevFetchedRef.current;
     const fetchedChanged =
       JSON.stringify(currentNames) !== JSON.stringify(prevNames);
-    if (fetchedChanged && isPaginated) {
+    if (fetchedChanged && isPaginatedRef.current) {
       setTimeout(() => {
-        setIsPaginated(false);
+        isPaginatedRef.current = false;
       }, 0);
     }
-  }, [isPaginated, fetchedWorkflows, setIsPaginated]);
+  }, [isPaginatedRef, fetchedWorkflows]);
 
   const handleToggleExpanded = (name: string) => {
     setExpandedWorkflows((prev) => {
