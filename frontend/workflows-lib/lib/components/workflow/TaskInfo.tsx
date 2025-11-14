@@ -9,7 +9,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { ArtifactFilteredList } from "./ArtifactFilteredList";
 import type { Artifact } from "workflows-lib";
 import { ImageInfo, ScrollableImages } from "./ScrollableImages";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { FuzzySearchBar } from "./FuzzySearchBar";
 import { FileTypeDropdown } from "./FileTypeDropdown";
 import Fuse from "fuse.js";
@@ -25,9 +25,6 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>([]);
-  const [filteredArtifactList, setFilteredArtifactList] = useState<Artifact[]>(
-    [],
-  );
 
   const fileTypes = useMemo(() => {
     const types = artifactList
@@ -40,7 +37,7 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
     return types;
   }, [artifactList]);
 
-  useEffect(() => {
+  const filteredArtifactList: Artifact[] = useMemo(() => {
     let filtered = artifactList;
 
     if (selectedFileTypes.length > 0) {
@@ -63,7 +60,7 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
       filtered = results.map((result) => result.item);
     }
 
-    setFilteredArtifactList(filtered);
+    return filtered;
   }, [searchQuery, selectedFileTypes, artifactList]);
 
   const imageArtifactsInfos: ImageInfo[] = useMemo(() => {
