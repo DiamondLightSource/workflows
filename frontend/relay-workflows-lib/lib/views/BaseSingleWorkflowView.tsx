@@ -34,14 +34,32 @@ export default function BaseSingleWorkflowView({
   taskIds,
   fragmentRef,
 }: BaseSingleWorkflowViewProps) {
-  const [artifactList, setArtifactList] = useState<Artifact[]>([]);
-  const [outputTaskIds, setOutputTaskIds] = useState<string[]>([]);
   const data = useFragment(BaseSingleWorkflowViewFragment, fragmentRef);
   const fetchedTasks = useFetchedTasks(data ?? null);
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
   const [filledTaskId, setFilledTaskId] = useState<string | null>(null);
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
+
+  const outputTaskIds: string[] = useMemo(() => {
+    const newOutputTaskIds: string[] = [];
+    const traverse = (tasks: TaskNode[]) => {
+      const sortedTasks = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
+      sortedTasks.forEach((taskNode) => {
+        if (
+          taskNode.children &&
+          taskNode.children.length === 0 &&
+          !newOutputTaskIds.includes(taskNode.id)
+        ) {
+          newOutputTaskIds.push(taskNode.id);
+        } else if (taskNode.children && taskNode.children.length > 0) {
+          traverse(taskNode.children);
+        }
+      });
+    };
+    traverse(taskTree);
+    return newOutputTaskIds;
+  }, [taskTree]);
 
   const handleSelectOutput = () => {
     setSelectedTaskIds(outputTaskIds);
@@ -62,34 +80,14 @@ export default function BaseSingleWorkflowView({
     setSelectedTaskIds(taskIds ?? []);
   }, [taskIds, setSelectedTaskIds]);
 
-  useEffect(() => {
+  const artifactList: Artifact[] = useMemo(() => {
     const filteredTasks = selectedTaskIds.length
       ? selectedTaskIds
           .map((id) => fetchedTasks.find((task) => task.id === id))
           .filter((task): task is Task => !!task)
       : fetchedTasks;
-    setArtifactList(filteredTasks.flatMap((task) => task.artifacts));
+    return filteredTasks.flatMap((task) => task.artifacts);
   }, [selectedTaskIds, fetchedTasks]);
-
-  useEffect(() => {
-    const newOutputTaskIds: string[] = [];
-    const traverse = (tasks: TaskNode[]) => {
-      const sortedTasks = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
-      sortedTasks.forEach((taskNode) => {
-        if (
-          taskNode.children &&
-          taskNode.children.length === 0 &&
-          !newOutputTaskIds.includes(taskNode.id)
-        ) {
-          newOutputTaskIds.push(taskNode.id);
-        } else if (taskNode.children && taskNode.children.length > 0) {
-          traverse(taskNode.children);
-        }
-      });
-    };
-    traverse(taskTree);
-    setOutputTaskIds(newOutputTaskIds);
-  }, [taskTree]);
 
   if (!data || !data.status) {
     return null;
