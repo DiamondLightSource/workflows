@@ -17,12 +17,13 @@ pub mod subscription_integration;
 use crate::RouterState;
 
 use self::{
-    subscription::WorkflowsSubscription, workflow_templates::WorkflowTemplatesQuery,
-    workflows::WorkflowsQuery,
+    subscription::WorkflowsSubscription,
+    workflow_templates::WorkflowTemplatesQuery,
+    workflows::{Workflow, WorkflowsQuery},
 };
 use async_graphql::{
-    parser::parse_query, InputObject, MergedObject, MergedSubscription, Schema, SchemaBuilder,
-    SimpleObject,
+    parser::parse_query, Context, InputObject, MergedObject, MergedSubscription, Object, Schema,
+    SchemaBuilder, SimpleObject, Union, ID,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::extract::State;
@@ -50,11 +51,60 @@ pub fn root_schema_builder() -> SchemaBuilder<Query, Mutation, Subscription> {
 
 /// The root query of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Query(WorkflowsQuery, WorkflowTemplatesQuery);
+pub struct Query(NodeQuery, WorkflowsQuery, WorkflowTemplatesQuery);
+
+/// Provides Relay node resolver for fetching any Node by ID.
+#[derive(Debug, Clone, Default)]
+pub struct NodeQuery;
+
+#[Object]
+impl NodeQuery {
+    async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<NodeValue> {
+        let id_str = id.to_string();
+        let parts: Vec<&str> = id_str.split(':').collect();
+        if parts.len() != 2 {
+            return None;
+        }
+        let visit_display = parts[0];
+        let workflow_name = parts[1];
+
+        let visit_input = match parse_visit_display(visit_display) {
+            Some(v) => v,
+            None => return None,
+        };
+
+        let workflows_query = WorkflowsQuery;
+        match workflows_query
+            .workflow(ctx, visit_input, workflow_name.to_string())
+            .await
+        {
+            Ok(workflow) => Some(NodeValue::Workflow(workflow)),
+            Err(_) => None,
+        }
+    }
+}
+
+/// Helper to parse VisitInput Display back into VisitInput
+fn parse_visit_display(display: &str) -> Option<VisitInput> {
+    let re = regex::Regex::new(r"^([A-Za-z]+)(\d+)-(\d+)$").ok()?;
+    let caps = re.captures(display)?;
+    Some(VisitInput {
+        proposal_code: caps[1].to_string(),
+        proposal_number: caps[2].parse().ok()?,
+        number: caps[3].parse().ok()?,
+    })
+}
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedObject)]
 pub struct Mutation(WorkflowTemplatesMutation);
+
+/// Represents Relay Node types
+#[derive(Union)]
+enum NodeValue {
+    /// A workflow node.
+    Workflow(Workflow),
+}
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedSubscription)]
@@ -131,13 +181,13 @@ impl Display for Visit {
 
 /// A visit to an instrument as part of a session
 #[derive(Debug, Clone, InputObject)]
-struct VisitInput {
+pub struct VisitInput {
     /// Project Proposal Code
-    proposal_code: String,
+    pub proposal_code: String,
     /// Project Proposal Number
-    proposal_number: u32,
+    pub proposal_number: u32,
     /// Session visit Number
-    number: u32,
+    pub number: u32,
 }
 
 impl From<VisitInput> for Visit {
