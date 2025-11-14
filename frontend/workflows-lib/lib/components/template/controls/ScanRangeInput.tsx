@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useReducer } from "react";
 import {
   Box,
   InputAdornment,
@@ -35,74 +35,71 @@ const ScanRangeInput = ({
   visible = true,
   id,
 }: ScanRangeInputProps) => {
-  const [scanRange, setScanRange] = useState({
-    start: String(value.start),
-    end: String(value.end),
-  });
+  interface ScanRangeState {
+    componentError: {
+      start: string;
+      end: string;
+      excluded: string;
+    };
+    excludedRaw: string;
+    start: string;
+    end: string;
+  }
 
-  const [excludedRaw, setExcludedRaw] = useState(
-    (value.excluded ?? []).join(", "),
-  );
-  const [componentError, setComponentError] = useState({
-    start: "",
-    end: "",
-    excluded: "",
-  });
+  interface ScanRangeAction {
+    type: "start" | "end" | "excluded";
+    payload: string;
+  }
 
-  const [hasUserEditedExcluded, setHasUserEditedExcluded] = useState(false);
+  function scanRangeReducer(
+    state: ScanRangeState,
+    action: ScanRangeAction,
+  ): ScanRangeState {
+    const newState = { ...state };
 
-  const validateAndUpdate = useCallback(() => {
+    switch (action.type) {
+      case "start":
+        newState.start = action.payload;
+        break;
+      case "end":
+        newState.end = action.payload;
+        break;
+      case "excluded":
+        newState.excludedRaw = action.payload;
+        break;
+      default:
+        return state;
+    }
+
     const result = validateScanRange(
-      scanRange.start,
-      scanRange.end,
-      excludedRaw,
+      newState.start,
+      newState.end,
+      newState.excludedRaw,
     );
-    setComponentError(result.errors);
+    newState.componentError = result.errors;
 
     if (result.parsed) {
-      const current: ScanRange = {
-        start: Number(scanRange.start),
-        end: Number(scanRange.end),
+      const scanRangeValue = {
+        start: result.parsed.start,
+        end: result.parsed.end,
         excluded: result.parsed.excluded,
       };
-
-      const isEqual =
-        current.start === value.start &&
-        current.end === value.end &&
-        JSON.stringify(current.excluded) ===
-          JSON.stringify(value.excluded ?? []);
-
-      if (!isEqual) {
-        handleChange(name, result.parsed);
-      }
+      handleChange(name, scanRangeValue);
     }
-  }, [scanRange, excludedRaw, handleChange, name, value]);
 
-  const handleFieldChange =
-    (field: keyof typeof scanRange) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setScanRange({ ...scanRange, [field]: event.target.value });
-    };
+    return newState;
+  }
 
-  const handleExcludedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setExcludedRaw(event.target.value);
-    setHasUserEditedExcluded(true);
-  };
-
-  useEffect(() => {
-    setScanRange({
-      start: String(value.start),
-      end: String(value.end),
-    });
-
-    if (!hasUserEditedExcluded) {
-      setExcludedRaw((value.excluded ?? []).join(", "));
-    }
-  }, [value.start, value.end, value.excluded, hasUserEditedExcluded]);
-
-  useEffect(() => {
-    validateAndUpdate();
-  }, [scanRange, excludedRaw, validateAndUpdate]);
+  const [scanRange, handleScanRange] = useReducer(scanRangeReducer, {
+    componentError: {
+      start: "",
+      end: "",
+      excluded: "",
+    },
+    excludedRaw: Array.isArray(value.excluded) ? value.excluded.join(", ") : "",
+    start: String(value.start || ""),
+    end: String(value.end || ""),
+  });
 
   if (!visible) return null;
 
@@ -141,9 +138,11 @@ const ScanRangeInput = ({
           type="number"
           label="Start"
           value={scanRange.start}
-          onChange={handleFieldChange("start")}
-          error={!!componentError.start}
-          helperText={componentError.start || " "}
+          onChange={(event) => {
+            handleScanRange({ type: "start", payload: event.target.value });
+          }}
+          error={!!scanRange.componentError.start}
+          helperText={scanRange.componentError.start || " "}
           disabled={!enabled}
           slotProps={{
             htmlInput: { step: 1 },
@@ -161,9 +160,11 @@ const ScanRangeInput = ({
           type="number"
           label="End"
           value={scanRange.end}
-          onChange={handleFieldChange("end")}
-          error={!!componentError.end}
-          helperText={componentError.end || " "}
+          onChange={(event) => {
+            handleScanRange({ type: "end", payload: event.target.value });
+          }}
+          error={!!scanRange.componentError.end}
+          helperText={scanRange.componentError.end || " "}
           disabled={!enabled}
           slotProps={{
             htmlInput: { step: 1 },
@@ -179,10 +180,12 @@ const ScanRangeInput = ({
 
         <TextField
           label="Excluded"
-          value={excludedRaw}
-          onChange={handleExcludedChange}
-          error={!!componentError.excluded}
-          helperText={componentError.excluded || " "}
+          value={scanRange.excludedRaw}
+          onChange={(event) => {
+            handleScanRange({ type: "excluded", payload: event.target.value });
+          }}
+          error={!!scanRange.componentError.excluded}
+          helperText={scanRange.componentError.excluded || " "}
           disabled={!enabled}
           slotProps={{
             formHelperText: {
