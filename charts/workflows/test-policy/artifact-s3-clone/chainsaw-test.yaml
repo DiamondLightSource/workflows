@@ -1,8 +1,9 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: artifact-s3-clone
+  name: artifact-s3-clone-on-namespace-creation
 spec:
+  concurrent: false
   steps:
     - try:
         - apply:
@@ -29,8 +30,6 @@ spec:
                 name: session
                 labels:
                   app.kubernetes.io/managed-by: sessionspaces
-        - sleep:
-            duration: 10s
         - assert:
             resource:
               apiVersion: v1
@@ -38,3 +37,66 @@ spec:
               metadata:
                 name: artifact-s3
                 namespace: session
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: artifact-s3-clone-on-secret-update
+spec:
+  concurrent: false
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: workflows
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: workflows
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: session
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: session
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: workflows
+              data:
+                access-key: aWQ=
+                secret-key: dXBkYXRlZC1zZWNyZXQK
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: session
+              data:
+                access-key: aWQ=
+                secret-key: dXBkYXRlZC1zZWNyZXQK
