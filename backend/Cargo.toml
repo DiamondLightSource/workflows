@@ -2,7 +2,7 @@
 members = [
     "argo-workflows-openapi",
     "auth-daemon",
-    "graph-proxy",
+    "graph-proxy", "oidc-bff",
     "sessionspaces",
     "telemetry",
 ]

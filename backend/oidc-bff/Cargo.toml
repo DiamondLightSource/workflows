@@ -1,0 +1,11 @@
+[package]
+name = "oidc-bff"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+axum-reverse-proxy = "1.0.3"
+openidconnect = "4.0.1"
+tokio = { workspace = true, features = ["full"] }
