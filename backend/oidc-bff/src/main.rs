@@ -1,3 +1,4 @@
+mod login;
 use std::net::{Ipv4Addr, SocketAddr};
 
 use axum::{
@@ -17,7 +18,7 @@ async fn main() {
 fn create_router() -> Router<()> {
     let proxy: Router<()> = ReverseProxy::new("/api", "https://httpbin.org").into();
     let router: Router<()> = proxy
-    .route("/auth/login", get(login))
+    .route("/auth/login", get(login::login))
     .route("/auth/callback", get(callback))
     .route("/auth/logout", post(logout))
     //.route("/api/*", on(MethodFilter::GET.or( MethodFilter::POST).or( MethodFilter::PUT).or( MethodFilter::DELETE), api));
@@ -34,8 +35,6 @@ async fn serve(router: Router<()>) -> anyhow::Result<()> {
     axum::serve(listener, router).await?;
     Ok(())
 }
-
-async fn login() {}
 
 async fn callback() {}
 
