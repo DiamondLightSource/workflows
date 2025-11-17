@@ -3,8 +3,6 @@ use std::{sync::Arc, time::Duration};
 use moka::future::Cache;
 use openidconnect::{CsrfToken, PkceCodeVerifier};
 
-use crate::pckeverifier::PckeVerifier;
-
 pub type SessionStore = Arc<Cache<String, Session>>;
 
 #[derive(Debug)]
@@ -23,7 +21,7 @@ impl Clone for Session {
 }
 
 impl Session {
-    pub fn new(csrf_token: CsrfToken, pcke_verifier: PckeVerifier) -> Self {
+    pub fn new(csrf_token: CsrfToken, pcke_verifier: PkceCodeVerifier) -> Self {
         Self {
             csrf_token: csrf_token,
             pcke_verifier: pcke_verifier,

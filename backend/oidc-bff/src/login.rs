@@ -10,12 +10,13 @@ use openidconnect::{
     OAuth2TokenResponse, PkceCodeChallenge, RedirectUrl, Scope, TokenResponse,
 };
 
+use crate::Result;
 use crate::config::Config;
-use crate::pckeverifier::PckeVerifier;
 use crate::session::Session;
 use crate::state::AppState;
 
-pub async fn login(State(state): State<AppState>) -> anyhow::Result<Redirect> {
+#[axum::debug_handler]
+pub async fn login(State(state): State<AppState>) -> Result<Redirect> {
     let http_client = reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
         .redirect(reqwest::redirect::Policy::none())

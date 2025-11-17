@@ -1,8 +1,9 @@
 use axum::extract::State;
 
+use crate::Result;
 use crate::state::AppState;
 
-pub async fn callback(State(state): State<AppState>) -> anyhow::Result<()> {
+pub async fn callback(State(state): State<AppState>) -> Result<()> {
     // Once the user has been redirected to the redirect URL, you'll have access to the
     // authorization code. For security reasons, your code should verify that the `state`
     // parameter returned by the server matches `csrf_state`.

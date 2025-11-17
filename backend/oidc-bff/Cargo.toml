@@ -5,11 +5,12 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
-axum.workspace = true
+axum = { workspace = true, features = ["macros"] }
 axum-reverse-proxy = "1.0.3"
 clap.workspace = true
 dotenvy.workspace = true
 moka =  { version = "0.12.11", features = ["future"] }
 openidconnect = "4.0.1"
 serde_json.workspace = true
+thiserror.workspace = true
 tokio = { workspace = true, features = ["full"] }
