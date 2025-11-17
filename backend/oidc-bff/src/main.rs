@@ -1,32 +1,39 @@
+mod config;
+use clap::Parser;
+use config::Config;
 mod login;
 use std::net::{Ipv4Addr, SocketAddr};
+mod session;
+mod state;
+use state::AppState;
+mod callback;
 
 use axum::{
     Router,
-    http::Method,
-    routing::{MethodFilter, get, on, post},
+    routing::{get, post},
 };
 use axum_reverse_proxy::ReverseProxy;
 
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
-    let router = create_router();
+    dotenvy::dotenv().ok();
+    let config: Config = Config::parse();
+    let appstate = AppState::new(config);
+    let router = create_router(appstate);
     serve(router);
 }
 
-fn create_router() -> Router<()> {
-    let proxy: Router<()> = ReverseProxy::new("/api", "https://httpbin.org").into();
-    let router: Router<()> = proxy
-    .route("/auth/login", get(login::login))
-    .route("/auth/callback", get(callback))
-    .route("/auth/logout", post(logout))
-    //.route("/api/*", on(MethodFilter::GET.or( MethodFilter::POST).or( MethodFilter::PUT).or( MethodFilter::DELETE), api));
-    ;
+fn create_router(state: AppState) -> Router<AppState> {
+    let proxy: Router<AppState> = ReverseProxy::new("/api", "https://httpbin.org").into();
+    let router: Router<AppState> = proxy
+        .with_state(state)
+        .route("/auth/login", get(login::login))
+        .route("/auth/callback", get(callback::callback))
+        .route("/auth/logout", post(logout));
     return router;
 }
 
-async fn serve(router: Router<()>) -> anyhow::Result<()> {
+async fn serve(router: Router<AppState>) -> anyhow::Result<()> {
     let port = 80;
     let listener =
         tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port))
