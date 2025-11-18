@@ -20,7 +20,7 @@ pub struct Config {
     #[arg(
         short = 'u',
         long,
-        default_value = "https://authn.diamond.ac.uk/realms/master/"
+        default_value = "https://authn.diamond.ac.uk/realms/master"
     )]
     pub oidc_provider_url: String,
     #[arg(
