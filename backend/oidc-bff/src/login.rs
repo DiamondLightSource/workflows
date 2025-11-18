@@ -9,14 +9,15 @@ use openidconnect::{
     AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
     OAuth2TokenResponse, PkceCodeChallenge, RedirectUrl, Scope, TokenResponse,
 };
+use tower_sessions::Session;
 
 use crate::Result;
+use crate::auth_session_data::AuthSessionData;
 use crate::config::Config;
-use crate::session::Session;
 use crate::state::AppState;
 
 #[axum::debug_handler]
-pub async fn login(State(state): State<AppState>) -> Result<Redirect> {
+pub async fn login(State(state): State<AppState>, session: Session) -> Result<Redirect> {
     let http_client = reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
         .redirect(reqwest::redirect::Policy::none())
@@ -55,8 +56,10 @@ pub async fn login(State(state): State<AppState>) -> Result<Redirect> {
         // Set the PKCE code challenge.
         .set_pkce_challenge(pkce_challenge)
         .url();
-    let session = Session::new(csrf_token, pkce_verifier);
-    state.session.insert(session.id().to_string(), session);
+
+    // Store data in the users session
+    let auth_session_data = AuthSessionData::new(csrf_token, pkce_verifier);
+    session.insert(AuthSessionData::SESSION_KEY, auth_session_data).await?;
 
     Ok(Redirect::temporary(auth_url.as_str()))
 }

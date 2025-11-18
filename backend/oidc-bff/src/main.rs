@@ -1,9 +1,10 @@
 mod config;
 use clap::Parser;
 use config::Config;
+use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer, cookie::time::Duration};
 mod login;
 use std::net::{Ipv4Addr, SocketAddr};
-mod session;
+mod auth_session_data;
 mod state;
 use state::AppState;
 mod callback;
@@ -27,11 +28,20 @@ async fn main() {
 }
 
 fn create_router(state: AppState) -> Router {
+
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
+
+
     let proxy: Router<AppState> = ReverseProxy::new("/api", "https://httpbin.org").into();
     let router = proxy
         .route("/auth/login", get(login::login))
         .route("/auth/callback", get(callback::callback))
-        .route("/auth/logout", post(logout));
+        .route("/auth/logout", post(logout))
+        .layer(session_layer)
+        ;
     let router: Router = router.with_state(state);
     return router;
 }
