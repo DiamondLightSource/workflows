@@ -35,7 +35,7 @@ pub async fn login(State(state): State<AppState>, session: Session) -> Result<Re
     let client = CoreClient::from_provider_metadata(
         provider_metadata,
         ClientId::new(state.config.client_id.to_string()),
-        Some(ClientSecret::new(state.config.client_secret.to_string())),
+        if state.config.client_secret.is_empty() { None } else { Some(ClientSecret::new(state.config.client_secret.to_string())) },
     )
     // Set the URL the user will be redirected to after the authorization process.
     .set_redirect_uri(RedirectUrl::new("http://localhost/callback".to_string())?);
