@@ -13,13 +13,12 @@ impl Clone for AuthSessionData {
         Self {
             csrf_token: self.csrf_token.clone(),
             pcke_verifier: PkceCodeVerifier::new(self.pcke_verifier.secret().clone()),
-            nonce: self.nonce.clone()
+            nonce: self.nonce.clone(),
         }
     }
 }
 
 impl AuthSessionData {
-
     pub const SESSION_KEY: &str = "auth_session_data";
 
     pub fn new(csrf_token: CsrfToken, pcke_verifier: PkceCodeVerifier, nonce: Nonce) -> Self {

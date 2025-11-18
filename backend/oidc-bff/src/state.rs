@@ -7,8 +7,6 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(config: Config) -> Self {
-        AppState {
-            config: config,
-        }
+        AppState { config: config }
     }
 }

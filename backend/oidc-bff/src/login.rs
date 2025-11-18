@@ -1,13 +1,10 @@
 use anyhow::anyhow;
 use axum::extract::State;
 use axum::response::Redirect;
-use openidconnect::core::{
-    CoreAuthenticationFlow, CoreClient, CoreProviderMetadata,
-};
+use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};
 use openidconnect::reqwest;
 use openidconnect::{
-    ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
-    PkceCodeChallenge, RedirectUrl, Scope,
+    ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce, PkceCodeChallenge, RedirectUrl, Scope,
 };
 use tower_sessions::Session;
 
@@ -35,7 +32,11 @@ pub async fn login(State(state): State<AppState>, session: Session) -> Result<Re
     let client = CoreClient::from_provider_metadata(
         provider_metadata,
         ClientId::new(state.config.client_id.to_string()),
-        if state.config.client_secret.is_empty() { None } else { Some(ClientSecret::new(state.config.client_secret.to_string())) },
+        if state.config.client_secret.is_empty() {
+            None
+        } else {
+            Some(ClientSecret::new(state.config.client_secret.to_string()))
+        },
     )
     // Set the URL the user will be redirected to after the authorization process.
     .set_redirect_uri(RedirectUrl::new("http://localhost/callback".to_string())?);
@@ -59,7 +60,9 @@ pub async fn login(State(state): State<AppState>, session: Session) -> Result<Re
 
     // Store data in the users session
     let auth_session_data = AuthSessionData::new(csrf_token, pkce_verifier, nonce);
-    session.insert(AuthSessionData::SESSION_KEY, auth_session_data).await?;
+    session
+        .insert(AuthSessionData::SESSION_KEY, auth_session_data)
+        .await?;
 
     Ok(Redirect::temporary(auth_url.as_str()))
 }

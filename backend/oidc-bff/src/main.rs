@@ -19,39 +19,34 @@ use axum::{
 use axum_reverse_proxy::ReverseProxy;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     let config: Config = Config::parse();
+    let port = config.port;
     let appstate = AppState::new(config);
     let router = create_router(appstate);
-    let _ = serve(router).await;
+    serve(router, port).await
 }
 
 fn create_router(state: AppState) -> Router {
-
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
         .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
 
-
-    let proxy: Router<AppState> = ReverseProxy::new("/api", "https://httpbin.org").into();
-    let router = proxy
+    // let proxy: Router<AppState> = ReverseProxy::new("/api", "https://httpbin.org").into();
+    let router = Router::new() //proxy
         .route("/auth/login", get(login::login))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        .layer(session_layer)
-        ;
+        .layer(session_layer);
     let router: Router = router.with_state(state);
     return router;
 }
 
-async fn serve(router: Router) -> anyhow::Result<()> {
-    let port = 80;
+async fn serve(router: Router, port: u16) -> Result<()> {
     let listener =
-        tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port))
-            .await
-            .unwrap();
+        tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port)).await?;
     let service = router.into_make_service();
     axum::serve(listener, service).await?;
     Ok(())

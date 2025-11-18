@@ -3,6 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
+#[derive(Debug)]
 pub struct Error(anyhow::Error);
 
 impl IntoResponse for Error {

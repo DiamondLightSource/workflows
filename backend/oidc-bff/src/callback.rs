@@ -1,7 +1,10 @@
 use axum::debug_handler;
 use axum::extract::{Query, State};
-use openidconnect::{AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse, TokenResponse, reqwest};
 use openidconnect::core::{CoreClient, CoreProviderMetadata, CoreUserInfoClaims};
+use openidconnect::{
+    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse,
+    TokenResponse, reqwest,
+};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
@@ -17,16 +20,22 @@ pub struct CallbackQuery {
 use anyhow::anyhow;
 
 #[debug_handler]
-pub async fn callback(State(state): State<AppState>, Query(params): Query<CallbackQuery>, session: Session) -> Result<String> {
-
+pub async fn callback(
+    State(state): State<AppState>,
+    Query(params): Query<CallbackQuery>,
+    session: Session,
+) -> Result<String> {
     // Retrieve data from the users session
-    let auth_session_data: AuthSessionData = session.get(AuthSessionData::SESSION_KEY).await?.ok_or(anyhow!("session expired"))?;
+    let auth_session_data: AuthSessionData = session
+        .get(AuthSessionData::SESSION_KEY)
+        .await?
+        .ok_or(anyhow!("session expired"))?;
 
     let http_client = reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
         .redirect(reqwest::redirect::Policy::none())
         .build()?;
-    
+
     // Use OpenID Connect Discovery to fetch the provider metadata.
     let provider_metadata = CoreProviderMetadata::discover_async(
         IssuerUrl::new(state.config.oidc_provider_url.to_string())?,
@@ -48,12 +57,9 @@ pub async fn callback(State(state): State<AppState>, Query(params): Query<Callba
         return Err(anyhow!("invalid state").into());
     }
 
-
     // Now you can exchange it for an access token and ID token.
     let token_response = client
-        .exchange_code(AuthorizationCode::new(
-            params.code.to_string(),
-        ))?
+        .exchange_code(AuthorizationCode::new(params.code.to_string()))?
         // Set the PKCE code verifier.
         .set_pkce_verifier(auth_session_data.pcke_verifier)
         .request_async(&http_client)
