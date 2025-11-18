@@ -39,8 +39,10 @@ pub async fn login(State(state): State<AppState>, session: Session) -> Result<Re
         },
     )
     // Set the URL the user will be redirected to after the authorization process.
-    .set_redirect_uri(RedirectUrl::new("http://localhost/callback".to_string())?);
-
+    // .set_redirect_uri(RedirectUrl::new("https://localhost/callback".to_string())?);
+    .set_redirect_uri(RedirectUrl::new("http://localhost:5173/auth/callback".to_string())?);
+    // .set_redirect_uri(RedirectUrl::new("https://workflows.diamond.ac.uk".to_string())?)
+    ;
     // Generate a PKCE challenge.
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 

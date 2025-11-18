@@ -7,7 +7,8 @@ pub struct Config {
         short = 'i',
         long,
         env = "WORKFLOWS_OIDC_BFF_CLIENT_ID",
-        default_value = "workflows-cluster"
+        // default_value = "workflows-dashboard"
+        default_value = "workflows-ui-dev"
     )]
     pub client_id: String,
     #[arg(
@@ -27,7 +28,7 @@ pub struct Config {
         short = 'p',
         long,
         env = "WORKFLOWS_OIDC_BFF_PORT",
-        default_value = "52000"
+        default_value = "5173"
     )]
     pub port: u16,
 }
