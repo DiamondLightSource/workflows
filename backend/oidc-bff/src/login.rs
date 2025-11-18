@@ -2,12 +2,12 @@ use anyhow::anyhow;
 use axum::extract::State;
 use axum::response::Redirect;
 use openidconnect::core::{
-    CoreAuthenticationFlow, CoreClient, CoreProviderMetadata, CoreUserInfoClaims,
+    CoreAuthenticationFlow, CoreClient, CoreProviderMetadata,
 };
 use openidconnect::reqwest;
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
-    OAuth2TokenResponse, PkceCodeChallenge, RedirectUrl, Scope, TokenResponse,
+    ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
+    PkceCodeChallenge, RedirectUrl, Scope,
 };
 use tower_sessions::Session;
 
@@ -58,7 +58,7 @@ pub async fn login(State(state): State<AppState>, session: Session) -> Result<Re
         .url();
 
     // Store data in the users session
-    let auth_session_data = AuthSessionData::new(csrf_token, pkce_verifier);
+    let auth_session_data = AuthSessionData::new(csrf_token, pkce_verifier, nonce);
     session.insert(AuthSessionData::SESSION_KEY, auth_session_data).await?;
 
     Ok(Redirect::temporary(auth_url.as_str()))
