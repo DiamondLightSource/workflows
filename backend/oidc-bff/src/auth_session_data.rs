@@ -28,7 +28,4 @@ impl AuthSessionData {
             nonce: nonce,
         }
     }
-    pub fn id(&self) -> &str {
-        self.csrf_token.secret().as_str()
-    }
 }

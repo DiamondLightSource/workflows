@@ -8,6 +8,7 @@ mod auth_session_data;
 mod state;
 use state::AppState;
 mod callback;
+mod counter;
 mod error;
 
 type Result<T> = std::result::Result<T, error::Error>;
@@ -38,6 +39,8 @@ fn create_router(state: AppState) -> Router {
     // let proxy: Router<AppState> = ReverseProxy::new("/api", "https://httpbin.org").into();
     let router = Router::new() //proxy
         .route("/auth/login", get(login::login))
+        .route("/read", get(counter::counter_read))
+        .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
         .layer(session_layer);

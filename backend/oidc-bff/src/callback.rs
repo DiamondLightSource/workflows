@@ -1,9 +1,11 @@
+use std::borrow::Cow;
+
 use axum::debug_handler;
 use axum::extract::{Query, State};
 use openidconnect::core::{CoreClient, CoreProviderMetadata, CoreUserInfoClaims};
 use openidconnect::{
     AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse,
-    TokenResponse, reqwest,
+    RedirectUrl, TokenResponse, reqwest,
 };
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
@@ -46,7 +48,11 @@ pub async fn callback(
     let client = CoreClient::from_provider_metadata(
         provider_metadata,
         ClientId::new(state.config.client_id.to_string()),
-        Some(ClientSecret::new(state.config.client_secret.to_string())),
+        if state.config.client_secret.is_empty() {
+            None
+        } else {
+            Some(ClientSecret::new(state.config.client_secret.to_string()))
+        },
     );
 
     // Once the user has been redirected to the redirect URL, you'll have access to the
@@ -57,11 +63,15 @@ pub async fn callback(
         return Err(anyhow!("invalid state").into());
     }
 
+    let redirect_url = Cow::Owned(RedirectUrl::new(
+        "http://localhost:5173/auth/callback".to_string(),
+    )?);
     // Now you can exchange it for an access token and ID token.
     let token_response = client
         .exchange_code(AuthorizationCode::new(params.code.to_string()))?
         // Set the PKCE code verifier.
         .set_pkce_verifier(auth_session_data.pcke_verifier)
+        .set_redirect_uri(redirect_url)
         .request_async(&http_client)
         .await?;
 
