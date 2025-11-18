@@ -11,6 +11,7 @@ clap.workspace = true
 dotenvy.workspace = true
 moka =  { version = "0.12.11", features = ["future"] }
 openidconnect = "4.0.1"
+serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["full"] }
