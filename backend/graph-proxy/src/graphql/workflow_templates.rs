@@ -9,9 +9,15 @@ use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Json, Object,
+    Context, Json, Object, SimpleObject,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
+use kube::{
+    api::{ApiResource, DynamicObject},
+    core::GroupVersionKind,
+    Api, Client,
+};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
@@ -27,6 +33,19 @@ enum WorkflowTemplateParsingError {
     UiSchemaError(#[from] UiSchemaError),
     #[error("Could not parse parameter schema {0}")]
     MalformParameterSchema(#[from] serde_json::Error),
+}
+
+/// Information about where the template is stored
+#[derive(Debug, Serialize, Deserialize, SimpleObject, PartialEq)]
+struct TemplateSource {
+    #[serde(rename(deserialize = "repoURL"))]
+    /// The URL of the GitHub repository
+    repository_url: String,
+    /// The path to the template within the repository
+    path: String,
+    #[serde(rename(deserialize = "targetRevision"))]
+    /// The current tracked branch of the repository
+    target_revision: String,
 }
 
 /// A Template which specifies how to produce a [`Workflow`]
@@ -86,6 +105,41 @@ impl WorkflowTemplate {
     /// A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
     async fn ui_schema(&self) -> Result<Option<Json<UiSchema>>, WorkflowTemplateParsingError> {
         Ok(UiSchema::new(&self.metadata.annotations)?.map(Json))
+    }
+
+    /// Information about where the template is obtained from
+    async fn template_source(
+        &self,
+    ) -> Result<Option<TemplateSource>, WorkflowTemplateParsingError> {
+        let instance = match self.metadata.labels.get("argocd.argoproj.io/instance") {
+            Some(val) => val,
+            None => return Err(WorkflowTemplateParsingError::MissingInstanceLabel),
+        };
+
+        let client = Client::try_default().await.unwrap();
+        let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "application");
+        let api = Api::<DynamicObject>::namespaced_with(
+            client,
+            "argocd",
+            &ApiResource::from_gvk_with_plural(&gvk, "applications"),
+        );
+
+        let obj = match api.get(instance).await {
+            Ok(obj) => obj,
+            Err(_) => return Ok(None),
+        };
+
+        let data = obj
+            .data
+            .get("spec")
+            .and_then(|s| s.get("source"))
+            .cloned()
+            .unwrap_or(Value::Null);
+
+        match serde_json::from_value(data) {
+            Ok(source) => Ok(Some(source)),
+            Err(_) => Ok(None),
+        }
     }
 }
 
