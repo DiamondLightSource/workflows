@@ -34,6 +34,11 @@ async fn main() -> Result<()> {
     let config: Config = Config::parse();
     let port = config.port;
     let appstate = AppState::new(config);
+    
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .expect("Failed to install rust TLS cryptography");
+
     let router = create_router(appstate);
     serve(router, port).await
 }
@@ -45,16 +50,18 @@ fn create_router(state: AppState) -> Router {
         // .with_expiry(Expiry::OnInactivity(Duration::seconds(600)))
         ;
 
-    let proxy: Router = ReverseProxy::new("/api", "https://workflows.diamond.ac.uk/graphql").into();
-    let proxy = proxy.layer(middleware::from_fn(inject_token_from_session));
+    let proxy: Router<AppState> = ReverseProxy::new("/api", "https://workflows.diamond.ac.uk/graphql").into();
+    let proxy = proxy.layer(middleware::from_fn(inject_token_from_session)).layer(session_layer.clone());
     let router = Router::new() //proxy
+        .layer(session_layer)
         .route("/auth/login", get(login::login))
         .route("/read", get(counter::counter_read))
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        .layer(session_layer)
-        .nest_service("/api", proxy);
+        .merge(proxy)
+        //.nest_service("/api", proxy);
+        ;
     let router: Router = router.with_state(state);
     return router;
 }
@@ -70,7 +77,7 @@ async fn serve(router: Router, port: u16) -> Result<()> {
 async fn logout() {}
 
 async fn inject_token_from_session(
-    mut req: Request<Body>,
+    mut req: Request,
     next: middleware::Next,
 ) -> axum::response::Response {
     // Extract the session from request extensions
