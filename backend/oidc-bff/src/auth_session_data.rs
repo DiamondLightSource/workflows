@@ -20,6 +20,7 @@ impl Clone for AuthSessionData {
 
 impl AuthSessionData {
     pub const SESSION_KEY: &str = "auth_session_data";
+    pub const ACCESS_TOKEN_KEY: &str = "access_token";
 
     pub fn new(csrf_token: CsrfToken, pcke_verifier: PkceCodeVerifier, nonce: Nonce) -> Self {
         Self {

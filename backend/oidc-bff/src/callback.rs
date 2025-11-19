@@ -29,7 +29,7 @@ pub async fn callback(
 ) -> Result<String> {
     // Retrieve data from the users session
     let auth_session_data: AuthSessionData = session
-        .get(AuthSessionData::SESSION_KEY)
+        .remove(AuthSessionData::SESSION_KEY)
         .await?
         .ok_or(anyhow!("session expired"))?;
 
@@ -119,5 +119,10 @@ pub async fn callback(
 
     // See the OAuth2TokenResponse trait for a listing of other available fields such as
     // access_token() and refresh_token().
+
+    let access_token = token_response.access_token();
+    session
+        .insert(AuthSessionData::ACCESS_TOKEN_KEY, access_token)
+        .await?;
     Ok(response)
 }
