@@ -50,17 +50,17 @@ fn create_router(state: AppState) -> Router {
         // .with_expiry(Expiry::OnInactivity(Duration::seconds(600)))
         ;
 
-    let proxy: Router<AppState> = ReverseProxy::new("/api", "https://workflows.diamond.ac.uk/graphql").into();
-    let proxy = proxy.layer(middleware::from_fn(inject_token_from_session)).layer(session_layer.clone());
-    let router = Router::new() //proxy
-        .layer(session_layer)
+    let proxy: Router<()> = ReverseProxy::new("/", "https://workflows.diamond.ac.uk/graphql").into();
+    let proxy = proxy;
+    let router = Router::new()
+        .nest_service("/api", proxy)
+        .route_layer(middleware::from_fn(inject_token_from_session))
         .route("/auth/login", get(login::login))
         .route("/read", get(counter::counter_read))
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        .merge(proxy)
-        //.nest_service("/api", proxy);
+        .layer(session_layer)
         ;
     let router: Router = router.with_state(state);
     return router;
