@@ -1,7 +1,7 @@
 mod config;
 use clap::Parser;
 use config::Config;
-use openidconnect::AccessToken;
+use openidconnect::{AccessToken, RefreshToken};
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
 mod login;
 use std::net::{Ipv4Addr, SocketAddr};
@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
     let config: Config = Config::parse();
     let port = config.port;
     let appstate = AppState::new(config);
-    
+
     rustls::crypto::ring::default_provider()
         .install_default()
         .expect("Failed to install rust TLS cryptography");
@@ -50,7 +50,8 @@ fn create_router(state: AppState) -> Router {
         // .with_expiry(Expiry::OnInactivity(Duration::seconds(600)))
         ;
 
-    let proxy: Router<()> = ReverseProxy::new("/", "https://workflows.diamond.ac.uk/graphql").into();
+    let proxy: Router<()> =
+        ReverseProxy::new("/", "https://workflows.diamond.ac.uk/graphql").into();
     let proxy = proxy;
     let router = Router::new()
         .nest_service("/api", proxy)
@@ -60,8 +61,7 @@ fn create_router(state: AppState) -> Router {
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        .layer(session_layer)
-        ;
+        .layer(session_layer);
     let router: Router = router.with_state(state);
     return router;
 }
@@ -95,6 +95,9 @@ async fn inject_token_from_session(
         .flatten();
 
     if let Some(token) = token {
+
+        // token = refresh_token(token);
+
         let value = format!("Bearer {}", token.secret());
         req.headers_mut().insert(
             http::header::AUTHORIZATION,
@@ -103,4 +106,8 @@ async fn inject_token_from_session(
     }
 
     next.run(req).await
+}
+
+async fn refresh_token(token: AccessToken, refresh_token: RefreshToken) {
+    
 }

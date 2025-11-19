@@ -4,8 +4,7 @@ use axum::debug_handler;
 use axum::extract::{Query, State};
 use openidconnect::core::{CoreClient, CoreProviderMetadata, CoreUserInfoClaims};
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse,
-    RedirectUrl, TokenResponse, reqwest,
+    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, OAuth2TokenResponse, RedirectUrl, TokenResponse, reqwest
 };
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
@@ -59,7 +58,7 @@ pub async fn callback(
     // authorization code. For security reasons, your code should verify that the `state`
     // parameter returned by the server matches `csrf_state`.
 
-    if auth_session_data.csrf_token.secret() != &params.state {
+    if auth_session_data.csrf_token != CsrfToken::new(params.state) {
         return Err(anyhow!("invalid state").into());
     }
 

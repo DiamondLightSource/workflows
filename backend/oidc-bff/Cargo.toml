@@ -10,7 +10,7 @@ axum-reverse-proxy = "1.0.3"
 clap.workspace = true
 dotenvy.workspace = true
 moka =  { version = "0.12.11", features = ["future"] }
-openidconnect = "4.0.1"
+openidconnect = { version = "4.0.1", features = ["timing-resistant-secret-traits"]}
 rustls = { version = "0.23.35", features = ["ring"] }
 serde.workspace = true
 serde_json.workspace = true
