@@ -2,9 +2,9 @@ use super::{
     parameter_schema::{ArgumentSchema, ParameterSchemaError, Schema},
     ui_schema::{UiSchema, UiSchemaError},
     workflows::Workflow,
-    VisitInput, CLIENT,
+    VisitInput,
 };
-use crate::{graphql::filters::WorkflowTemplatesFilter, ArgoServerUrl};
+use crate::{ArgoServerUrl, graphql::{CLIENT, filters::WorkflowTemplatesFilter}};
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
@@ -12,7 +12,8 @@ use async_graphql::{
     Context, Json, Object,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
-use serde_json::Value;
+use kube::{Api, Client, ResourceExt, api::{ApiResource, DynamicObject, ListParams}, core::GroupVersionKind};
+use serde_json::{Value};
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 
@@ -86,6 +87,42 @@ impl WorkflowTemplate {
     /// A JSON Forms UI Schema describing how to render the arguments of the Workflow Template
     async fn ui_schema(&self) -> Result<Option<Json<UiSchema>>, WorkflowTemplateParsingError> {
         Ok(UiSchema::new(&self.metadata.annotations)?.map(Json))
+    }
+
+    async fn template_url(&self) -> anyhow::Result<&String> {
+        let instance = match self.metadata
+        .labels
+        .get("argocd.argoproj.io/instance") {
+            Some(val) => val,
+            None => return Err(anyhow!("Missing Instance"))
+        };
+        
+        let client = Client::try_default().await?;
+        let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "applications");
+        let api = Api::<DynamicObject>::all_with(
+            client,
+            &ApiResource::from_gvk_with_plural(&gvk, "applications")
+        );
+        let obj = api.get("example-manifests-group").await?;
+        let name = obj.name_any();
+        let annotations = obj.metadata.annotations.clone().unwrap_or_default();
+
+        println!("Object: {name}");
+        println!("  Annotations: {:?}", annotations);
+
+        // let list = api.list(&ListParams::default()).await?;
+        // for obj in list {
+        //     let name = obj.name_any();
+        //     let labels = obj.metadata.labels.clone().unwrap_or_default();
+        //     let annotations = obj.metadata.annotations.clone().unwrap_or_default();
+        //     let data = obj.data.clone();
+        //     println!("Object: {name}");
+        //     println!("  Labels: {:?}", labels);
+        //     println!("  Annotations: {:?}", annotations);
+        //     println!("  Data: {:?}", data);
+        // }
+
+        Ok(instance)
     }
 }
 
