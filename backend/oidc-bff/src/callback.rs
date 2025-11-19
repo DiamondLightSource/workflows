@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
 use crate::Result;
-use crate::auth_session_data::AuthSessionData;
+use crate::auth_session_data::{LoginSessionData, TokenSessionData};
 use crate::state::AppState;
 
 #[derive(Serialize, Deserialize)]
@@ -27,8 +27,8 @@ pub async fn callback(
     session: Session,
 ) -> Result<String> {
     // Retrieve data from the users session
-    let auth_session_data: AuthSessionData = session
-        .remove(AuthSessionData::SESSION_KEY)
+    let auth_session_data: LoginSessionData = session
+        .remove(LoginSessionData::SESSION_KEY)
         .await?
         .ok_or(anyhow!("session expired"))?;
 
@@ -118,10 +118,11 @@ pub async fn callback(
 
     // See the OAuth2TokenResponse trait for a listing of other available fields such as
     // access_token() and refresh_token().
-
     let access_token = token_response.access_token();
+    let refresh_token = token_response.refresh_token().ok_or_else(|| anyhow!("Server did not return a refresh token"))?;
+    let token_data = TokenSessionData::new(access_token.clone(), refresh_token.clone());
     session
-        .insert(AuthSessionData::ACCESS_TOKEN_KEY, access_token)
+        .insert(TokenSessionData::SESSION_KEY, token_data)
         .await?;
     Ok(response)
 }

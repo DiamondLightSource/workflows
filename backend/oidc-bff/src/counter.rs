@@ -2,7 +2,7 @@ use axum::response::IntoResponse;
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
-use crate::auth_session_data::AuthSessionData;
+use crate::auth_session_data::LoginSessionData;
 
 const COUNTER_KEY: &str = "counter";
 
@@ -20,7 +20,7 @@ pub async fn counter_write(session: Session) -> impl IntoResponse {
 pub async fn counter_read(session: Session) -> impl IntoResponse {
     let counter: Counter = session.get(COUNTER_KEY).await.unwrap().unwrap_or_default();
     let auth_session_data = session
-        .get::<AuthSessionData>(AuthSessionData::SESSION_KEY)
+        .get::<LoginSessionData>(LoginSessionData::SESSION_KEY)
         .await;
     format!(
         "Reading current count: {}, auth_session_data={:?}",

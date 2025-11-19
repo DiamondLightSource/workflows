@@ -9,7 +9,7 @@ use openidconnect::{
 use tower_sessions::Session;
 
 use crate::Result;
-use crate::auth_session_data::AuthSessionData;
+use crate::auth_session_data::LoginSessionData;
 use crate::config::Config;
 use crate::state::AppState;
 
@@ -62,9 +62,9 @@ pub async fn login(State(state): State<AppState>, session: Session) -> Result<Re
         .url();
 
     // Store data in the users session
-    let auth_session_data = AuthSessionData::new(csrf_token, pkce_verifier, nonce);
+    let auth_session_data = LoginSessionData::new(csrf_token, pkce_verifier, nonce);
     session
-        .insert(AuthSessionData::SESSION_KEY, auth_session_data)
+        .insert(LoginSessionData::SESSION_KEY, auth_session_data)
         .await?;
 
     Ok(Redirect::temporary(auth_url.as_str()))
