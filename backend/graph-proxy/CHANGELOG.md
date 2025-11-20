@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.12...graph-proxy@v0.1.13) (2025-11-20)
+
+
+### Features
+
+* **graph-proxy:** implement Node on Workflow for refetchable fragments ([6fa7e14](https://github.com/DiamondLightSource/workflows/commit/6fa7e141eaf6136a8ec1745024d07f39a7625d65))
+
 ## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.11...graph-proxy@v0.1.12) (2025-10-08)
 
 
