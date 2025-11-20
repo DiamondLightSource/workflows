@@ -1,7 +1,9 @@
 use clap::Parser;
 use clap::arg;
+use serde::Deserialize;
+use serde::Serialize;
 
-#[derive(Debug, Parser, Clone)]
+#[derive(Debug, Parser, Clone, Serialize, Deserialize)]
 pub struct Config {
     #[arg(
         short = 'i',

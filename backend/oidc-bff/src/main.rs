@@ -3,9 +3,7 @@ use bytes::BytesMut;
 use clap::Parser;
 use config::Config;
 use openidconnect::{
-    AccessToken, ClientId, ClientSecret, IssuerUrl, RefreshToken,
-    core::{CoreClient, CoreProviderMetadata},
-    reqwest,
+    AccessToken, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse, RefreshToken, RefreshTokenRequest, core::{CoreClient, CoreProviderMetadata}, reqwest
 };
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
 mod login;
@@ -25,13 +23,7 @@ use anyhow::anyhow;
 type Result<T> = std::result::Result<T, error::Error>;
 
 use axum::{
-    Router,
-    body::Body,
-    debug_handler,
-    extract::{Request, State},
-    http::{self, HeaderValue, StatusCode},
-    middleware,
-    routing::{get, post},
+    Json, Router, body::Body, debug_handler, extract::{Request, State}, http::{self, HeaderValue, StatusCode}, middleware, response::IntoResponse, routing::{get, post}
 };
 use axum_reverse_proxy::ReverseProxy;
 
@@ -64,7 +56,7 @@ fn create_router(state: Arc<AppState>) -> Router {
     let proxy = proxy;
     let router = Router::new()
         .nest_service("/api", proxy)
-        .layer(middleware::from_fn_with_state(
+        .route_layer(middleware::from_fn_with_state(
             state.clone(),
             inject_token_from_session,
         ))
@@ -73,6 +65,7 @@ fn create_router(state: Arc<AppState>) -> Router {
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
+        .route("/debug", get(debug))
         .layer(session_layer)
         .with_state(state);
     return router;
@@ -108,7 +101,6 @@ async fn inject_token_from_session(
         .flatten();
 
     if let Some(token) = token {
-        // token = refresh_token(token);
 
         let value = format!("Bearer {}", token.access_token.secret());
         let mut req = clone_request(req).await?;
@@ -116,16 +108,11 @@ async fn inject_token_from_session(
             http::header::AUTHORIZATION,
             HeaderValue::from_str(&value).unwrap(),
         );
+        req.0.headers_mut().remove(http::header::COOKIE);
         let response = next.clone().run(req.0).await;
 
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
-            // Retrieve data from the users session
-            let auth_session_data: LoginSessionData = session
-                .remove(LoginSessionData::SESSION_KEY)
-                .await?
-                .ok_or(anyhow!("session expired"))?;
-
             let http_client = reqwest::ClientBuilder::new()
                 // Following redirects opens the client up to SSRF vulnerabilities.
                 .redirect(reqwest::redirect::Policy::none())
@@ -148,10 +135,22 @@ async fn inject_token_from_session(
                 },
             );
 
+            let token_response = client.exchange_refresh_token(&token.refresh_token)?.request_async(&http_client).await?;
+
+            let access_token = token_response.access_token();
+            let refresh_token = token_response
+                .refresh_token()
+                .ok_or_else(|| anyhow!("Server did not return a refresh token"))?;
+            let token_data = TokenSessionData::new(access_token.clone(), refresh_token.clone());
+            session
+                .insert(TokenSessionData::SESSION_KEY, token_data)
+                .await?;
+
             req.1.headers_mut().insert(
                 http::header::AUTHORIZATION,
                 HeaderValue::from_str(&value).unwrap(),
             );
+            req.1.headers_mut().remove(http::header::COOKIE);
             Ok(next.run(req.1).await)
         } else {
             Ok(response)
@@ -168,4 +167,16 @@ async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Bod
     let req1 = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
     let req2 = Request::from_parts(parts, Body::from(bytes));
     Ok((req1, req2))
+}
+
+async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
+    let auth_session_data: Option<LoginSessionData> = session
+                .get(LoginSessionData::SESSION_KEY)
+                .await?;
+
+    let token_session_data: Option<TokenSessionData> = session
+                .get(TokenSessionData::SESSION_KEY)
+                .await?;
+
+    Ok(Json((state, auth_session_data, token_session_data)))
 }

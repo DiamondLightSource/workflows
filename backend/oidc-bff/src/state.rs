@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::config::Config;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppState {
     pub config: Config,
 }
