@@ -3,7 +3,10 @@ use bytes::BytesMut;
 use clap::Parser;
 use config::Config;
 use openidconnect::{
-    AccessToken, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse, RefreshToken, RefreshTokenRequest, core::{CoreClient, CoreProviderMetadata}, reqwest
+    AccessToken, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse, RefreshToken,
+    RefreshTokenRequest,
+    core::{CoreClient, CoreProviderMetadata},
+    reqwest,
 };
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
 mod login;
@@ -23,7 +26,14 @@ use anyhow::anyhow;
 type Result<T> = std::result::Result<T, error::Error>;
 
 use axum::{
-    Json, Router, body::Body, debug_handler, extract::{Request, State}, http::{self, HeaderValue, StatusCode}, middleware, response::IntoResponse, routing::{get, post}
+    Json, Router,
+    body::Body,
+    debug_handler,
+    extract::{FromRequest, Request, State},
+    http::{self, HeaderValue, StatusCode},
+    middleware,
+    response::IntoResponse,
+    routing::{get, post},
 };
 use axum_reverse_proxy::ReverseProxy;
 
@@ -56,7 +66,7 @@ fn create_router(state: Arc<AppState>) -> Router {
     let proxy = proxy;
     let router = Router::new()
         .nest_service("/api", proxy)
-        .route_layer(middleware::from_fn_with_state(
+        .layer(middleware::from_fn_with_state(
             state.clone(),
             inject_token_from_session,
         ))
@@ -83,25 +93,20 @@ async fn logout() {}
 
 async fn inject_token_from_session(
     State(state): State<Arc<AppState>>,
+    session: Session,
     req: Request,
     next: middleware::Next,
 ) -> Result<impl axum::response::IntoResponse> {
     // Extract the session from request extensions
-    let session = req
-        .extensions()
-        .get::<Session>()
-        .expect("Session extension missing")
-        .clone();
+    // let session = req
+    //     .extensions()
+    //     .get::<Session>()
+    //     .expect("Session extension missing").clone();
 
     // Read token from session
-    let token: Option<TokenSessionData> = session
-        .get(TokenSessionData::SESSION_KEY)
-        .await
-        .ok()
-        .flatten();
-
+    let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await?;
+    println!("DEBUG Token is:{:?}", token);
     if let Some(token) = token {
-
         let value = format!("Bearer {}", token.access_token.secret());
         let mut req = clone_request(req).await?;
         req.0.headers_mut().insert(
@@ -135,7 +140,10 @@ async fn inject_token_from_session(
                 },
             );
 
-            let token_response = client.exchange_refresh_token(&token.refresh_token)?.request_async(&http_client).await?;
+            let token_response = client
+                .exchange_refresh_token(&token.refresh_token)?
+                .request_async(&http_client)
+                .await?;
 
             let access_token = token_response.access_token();
             let refresh_token = token_response
@@ -170,13 +178,11 @@ async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Bod
 }
 
 async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
-    let auth_session_data: Option<LoginSessionData> = session
-                .get(LoginSessionData::SESSION_KEY)
-                .await?;
+    let auth_session_data: Option<LoginSessionData> =
+        session.get(LoginSessionData::SESSION_KEY).await?;
 
-    let token_session_data: Option<TokenSessionData> = session
-                .get(TokenSessionData::SESSION_KEY)
-                .await?;
+    let token_session_data: Option<TokenSessionData> =
+        session.get(TokenSessionData::SESSION_KEY).await?;
 
     Ok(Json((state, auth_session_data, token_session_data)))
 }
