@@ -1,10 +1,11 @@
 mod config;
+use bytes::BytesMut;
 use clap::Parser;
 use config::Config;
 use openidconnect::{AccessToken, ClientId, ClientSecret, IssuerUrl, RefreshToken, core::{CoreClient, CoreProviderMetadata}, reqwest};
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
 mod login;
-use std::net::{Ipv4Addr, SocketAddr};
+use std::{net::{Ipv4Addr, SocketAddr}, sync::{Arc, Mutex}};
 mod auth_session_data;
 mod state;
 use state::AppState;
@@ -104,12 +105,12 @@ async fn inject_token_from_session (
         // token = refresh_token(token);
 
         let value = format!("Bearer {}", token.access_token.secret());
-        let req = req.clone();
-        req.headers_mut().insert(
+        let mut req = clone_request(req).await?;
+        req.0.headers_mut().insert(
             http::header::AUTHORIZATION,
             HeaderValue::from_str(&value).unwrap(),
         );
-        let response = next.run(req).await;
+        let response = next.run(req.0).await;
 
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
@@ -142,11 +143,11 @@ async fn inject_token_from_session (
             );
 
 
-            req.headers_mut().insert(
+            req.1.headers_mut().insert(
                 http::header::AUTHORIZATION,
                 HeaderValue::from_str(&value).unwrap(),
             );
-            Ok(next.run(req).await)
+            Ok(next.run(req.1).await)
         } else {
             Ok(response)
         }
@@ -155,4 +156,23 @@ async fn inject_token_from_session (
     }
 
     
+}
+
+// fn clone_request(req: Request) -> (Request<Body>, Request<Body>) {
+//     let (parts, body) = req.into_parts();
+//     let buf = Arc::new(Mutex::new(bytes::BytesMut::new()));
+//     let wrapped = BufferedBody::new(body, buf.clone());
+//     let attempt_req = axum::http::Request::from_parts(
+//                 parts.clone(),
+//                 Body::from_stream(wrapped.into_data_stream()),
+//             );
+// }
+
+async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Body>)> {
+    // TODO: an inefficient method of cloning a request, improve this
+    let (parts, body) = req.into_parts();
+    let bytes = http_body_util::BodyExt::collect(body).await?.to_bytes();
+    let req1 = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
+    let req2 = Request::from_parts(parts, Body::from(bytes));
+    Ok((req1, req2))
 }
