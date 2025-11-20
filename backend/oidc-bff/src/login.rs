@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::anyhow;
 use axum::extract::State;
 use axum::response::Redirect;
@@ -14,7 +16,7 @@ use crate::config::Config;
 use crate::state::AppState;
 
 #[axum::debug_handler]
-pub async fn login(State(state): State<AppState>, session: Session) -> Result<Redirect> {
+pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Result<Redirect> {
     let http_client = reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
         .redirect(reqwest::redirect::Policy::none())

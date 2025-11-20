@@ -1,10 +1,12 @@
 use std::borrow::Cow;
+use std::sync::Arc;
 
 use axum::debug_handler;
 use axum::extract::{Query, State};
 use openidconnect::core::{CoreClient, CoreProviderMetadata, CoreUserInfoClaims};
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, OAuth2TokenResponse, RedirectUrl, TokenResponse, reqwest
+    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl,
+    OAuth2TokenResponse, RedirectUrl, TokenResponse, reqwest,
 };
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
@@ -22,7 +24,7 @@ use anyhow::anyhow;
 
 #[debug_handler]
 pub async fn callback(
-    State(state): State<AppState>,
+    State(state): State<Arc<AppState>>,
     Query(params): Query<CallbackQuery>,
     session: Session,
 ) -> Result<String> {
@@ -119,7 +121,9 @@ pub async fn callback(
     // See the OAuth2TokenResponse trait for a listing of other available fields such as
     // access_token() and refresh_token().
     let access_token = token_response.access_token();
-    let refresh_token = token_response.refresh_token().ok_or_else(|| anyhow!("Server did not return a refresh token"))?;
+    let refresh_token = token_response
+        .refresh_token()
+        .ok_or_else(|| anyhow!("Server did not return a refresh token"))?;
     let token_data = TokenSessionData::new(access_token.clone(), refresh_token.clone());
     session
         .insert(TokenSessionData::SESSION_KEY, token_data)

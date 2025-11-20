@@ -2,10 +2,17 @@ mod config;
 use bytes::BytesMut;
 use clap::Parser;
 use config::Config;
-use openidconnect::{AccessToken, ClientId, ClientSecret, IssuerUrl, RefreshToken, core::{CoreClient, CoreProviderMetadata}, reqwest};
+use openidconnect::{
+    AccessToken, ClientId, ClientSecret, IssuerUrl, RefreshToken,
+    core::{CoreClient, CoreProviderMetadata},
+    reqwest,
+};
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
 mod login;
-use std::{net::{Ipv4Addr, SocketAddr}, sync::{Arc, Mutex}};
+use std::{
+    net::{Ipv4Addr, SocketAddr},
+    sync::{Arc, Mutex},
+};
 mod auth_session_data;
 mod state;
 use state::AppState;
@@ -21,7 +28,7 @@ use axum::{
     Router,
     body::Body,
     debug_handler,
-    extract::Request,
+    extract::{Request, State},
     http::{self, HeaderValue, StatusCode},
     middleware,
     routing::{get, post},
@@ -35,7 +42,7 @@ async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     let config: Config = Config::parse();
     let port = config.port;
-    let appstate = AppState::new(config);
+    let appstate = Arc::new(AppState::new(config));
 
     rustls::crypto::ring::default_provider()
         .install_default()
@@ -45,7 +52,7 @@ async fn main() -> Result<()> {
     serve(router, port).await
 }
 
-fn create_router(state: AppState) -> Router {
+fn create_router(state: Arc<AppState>) -> Router {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
@@ -57,14 +64,17 @@ fn create_router(state: AppState) -> Router {
     let proxy = proxy;
     let router = Router::new()
         .nest_service("/api", proxy)
-        .route_layer(middleware::from_fn(inject_token_from_session))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            inject_token_from_session,
+        ))
         .route("/auth/login", get(login::login))
         .route("/read", get(counter::counter_read))
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        .layer(session_layer);
-    let router: Router = router.with_state(state);
+        .layer(session_layer)
+        .with_state(state);
     return router;
 }
 
@@ -78,20 +88,17 @@ async fn serve(router: Router, port: u16) -> Result<()> {
 
 async fn logout() {}
 
-async fn inject_token_from_session (
-    mut req: Request,
+async fn inject_token_from_session(
+    State(state): State<Arc<AppState>>,
+    req: Request,
     next: middleware::Next,
 ) -> Result<impl axum::response::IntoResponse> {
     // Extract the session from request extensions
     let session = req
         .extensions()
         .get::<Session>()
-        .expect("Session extension missing");
-
-    let state = req
-        .extensions()
-        .get::<AppState>()
-        .expect("AppState extension missing");
+        .expect("Session extension missing")
+        .clone();
 
     // Read token from session
     let token: Option<TokenSessionData> = session
@@ -101,7 +108,6 @@ async fn inject_token_from_session (
         .flatten();
 
     if let Some(token) = token {
-
         // token = refresh_token(token);
 
         let value = format!("Bearer {}", token.access_token.secret());
@@ -110,7 +116,7 @@ async fn inject_token_from_session (
             http::header::AUTHORIZATION,
             HeaderValue::from_str(&value).unwrap(),
         );
-        let response = next.run(req.0).await;
+        let response = next.clone().run(req.0).await;
 
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
@@ -142,7 +148,6 @@ async fn inject_token_from_session (
                 },
             );
 
-
             req.1.headers_mut().insert(
                 http::header::AUTHORIZATION,
                 HeaderValue::from_str(&value).unwrap(),
@@ -154,19 +159,7 @@ async fn inject_token_from_session (
     } else {
         Ok(next.run(req).await)
     }
-
-    
 }
-
-// fn clone_request(req: Request) -> (Request<Body>, Request<Body>) {
-//     let (parts, body) = req.into_parts();
-//     let buf = Arc::new(Mutex::new(bytes::BytesMut::new()));
-//     let wrapped = BufferedBody::new(body, buf.clone());
-//     let attempt_req = axum::http::Request::from_parts(
-//                 parts.clone(),
-//                 Body::from_stream(wrapped.into_data_stream()),
-//             );
-// }
 
 async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Body>)> {
     // TODO: an inefficient method of cloning a request, improve this

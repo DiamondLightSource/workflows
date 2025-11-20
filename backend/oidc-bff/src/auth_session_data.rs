@@ -18,7 +18,10 @@ impl TokenSessionData {
     pub const SESSION_KEY: &str = "token_session_data";
 
     pub fn new(access_token: AccessToken, refresh_token: RefreshToken) -> Self {
-        Self {access_token:access_token, refresh_token:refresh_token}
+        Self {
+            access_token: access_token,
+            refresh_token: refresh_token,
+        }
     }
 }
 

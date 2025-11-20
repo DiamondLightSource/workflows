@@ -1,3 +1,1 @@
-async fn api() {
-    
-}
+async fn api() {}
