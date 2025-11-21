@@ -101,7 +101,6 @@ async fn inject_token_from_session(
 
     // Read token from session
     let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await?;
-    println!("DEBUG Token is:{:?}", token);
     if let Some(token) = token {
         let value = format!("Bearer {}", token.access_token.secret());
         let mut req = clone_request(req).await?;
@@ -140,11 +139,7 @@ async fn inject_token_from_session(
                 .request_async(&http_client)
                 .await?;
 
-            let access_token = token_response.access_token();
-            let refresh_token = token_response
-                .refresh_token()
-                .ok_or_else(|| anyhow!("Server did not return a refresh token"))?;
-            let token_data = TokenSessionData::new(access_token.clone(), refresh_token.clone());
+            let token_data = TokenSessionData::from_token_response(&token_response)?;
             session
                 .insert(TokenSessionData::SESSION_KEY, token_data)
                 .await?;
