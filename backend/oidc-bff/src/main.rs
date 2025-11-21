@@ -1,24 +1,20 @@
 mod config;
-use bytes::BytesMut;
 use clap::Parser;
 use config::Config;
-use http_body_util::BodyExt;
 use openidconnect::{
-    AccessToken, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse, RefreshToken,
-    RefreshTokenRequest,
+    ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse,
     core::{CoreClient, CoreProviderMetadata},
     reqwest,
 };
-use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
+use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 mod login;
 use std::{
     net::{Ipv4Addr, SocketAddr},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 mod auth_session_data;
 mod state;
 use state::AppState;
-mod api;
 mod callback;
 mod counter;
 mod error;
@@ -29,8 +25,7 @@ type Result<T> = std::result::Result<T, error::Error>;
 use axum::{
     Json, Router,
     body::Body,
-    debug_handler,
-    extract::{FromRequest, Request, State},
+    extract::{Request, State},
     http::{self, HeaderValue, StatusCode},
     middleware,
     response::IntoResponse,
@@ -116,7 +111,6 @@ async fn inject_token_from_session(
         );
         req.0.headers_mut().remove(http::header::COOKIE);
         let response = next.clone().run(req.0).await;
-        let body = response.body().clone();
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
             let http_client = reqwest::ClientBuilder::new()

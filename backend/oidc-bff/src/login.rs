@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use anyhow::anyhow;
 use axum::extract::State;
 use axum::response::Redirect;
 use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};
@@ -12,7 +11,6 @@ use tower_sessions::Session;
 
 use crate::Result;
 use crate::auth_session_data::LoginSessionData;
-use crate::config::Config;
 use crate::state::AppState;
 
 #[axum::debug_handler]
