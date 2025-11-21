@@ -27,13 +27,8 @@ pub async fn inject_token_from_session(
     // Read token from session
     let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await?;
     if let Some(token) = token {
-        let value = format!("Bearer {}", token.access_token.secret());
         let mut req = clone_request(req).await?;
-        req.0.headers_mut().insert(
-            http::header::AUTHORIZATION,
-            HeaderValue::from_str(&value).unwrap(),
-        );
-        req.0.headers_mut().remove(http::header::COOKIE);
+        prepare_headers(&mut req.0, &token);
         let response = next.clone().run(req.0).await;
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
@@ -64,16 +59,11 @@ pub async fn inject_token_from_session(
                 .request_async(&http_client)
                 .await?;
 
-            let token_data = TokenSessionData::from_token_response(&token_response)?;
+            let token = TokenSessionData::from_token_response(&token_response)?;
+            prepare_headers(&mut req.1, &token);
             session
-                .insert(TokenSessionData::SESSION_KEY, token_data)
+                .insert(TokenSessionData::SESSION_KEY, token)
                 .await?;
-
-            req.1.headers_mut().insert(
-                http::header::AUTHORIZATION,
-                HeaderValue::from_str(&value).unwrap(),
-            );
-            req.1.headers_mut().remove(http::header::COOKIE);
             Ok(next.run(req.1).await)
         } else {
             Ok(response)
@@ -90,4 +80,13 @@ async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Bod
     let req1 = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
     let req2 = Request::from_parts(parts, Body::from(bytes));
     Ok((req1, req2))
+}
+
+fn prepare_headers(req: &mut Request, token: &TokenSessionData) {
+    let value = format!("Bearer {}", token.access_token.secret());
+    req.headers_mut().insert(
+            http::header::AUTHORIZATION,
+            HeaderValue::from_str(&value).unwrap(),
+        );
+        req.headers_mut().remove(http::header::COOKIE);
 }
