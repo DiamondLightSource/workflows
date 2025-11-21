@@ -2,6 +2,7 @@ mod config;
 use bytes::BytesMut;
 use clap::Parser;
 use config::Config;
+use http_body_util::BodyExt;
 use openidconnect::{
     AccessToken, ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse, RefreshToken,
     RefreshTokenRequest,
@@ -62,7 +63,7 @@ fn create_router(state: Arc<AppState>) -> Router {
         ;
 
     let proxy: Router<()> =
-        ReverseProxy::new("/", "https://workflows.diamond.ac.uk/graphql").into();
+        ReverseProxy::new("/", "https://staging.workflows.diamond.ac.uk/graphql").into();
     let proxy = proxy;
     let router = Router::new()
         .nest_service("/api", proxy)
@@ -115,7 +116,7 @@ async fn inject_token_from_session(
         );
         req.0.headers_mut().remove(http::header::COOKIE);
         let response = next.clone().run(req.0).await;
-
+        let body = response.body().clone();
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
             let http_client = reqwest::ClientBuilder::new()
