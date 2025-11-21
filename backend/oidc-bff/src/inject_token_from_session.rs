@@ -1,13 +1,11 @@
+use crate::state::AppState;
 use openidconnect::{
     ClientId, ClientSecret, IssuerUrl,
     core::{CoreClient, CoreProviderMetadata},
     reqwest,
 };
-use crate::state::AppState;
-use std::{
-    sync::Arc,
-};
-use tower_sessions::{Session};
+use std::sync::Arc;
+use tower_sessions::Session;
 
 use axum::{
     body::Body,
@@ -18,7 +16,7 @@ use axum::{
 
 use crate::Result;
 
-use crate::auth_session_data::{TokenSessionData};
+use crate::auth_session_data::TokenSessionData;
 
 pub async fn inject_token_from_session(
     State(state): State<Arc<AppState>>,
