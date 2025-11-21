@@ -1,11 +1,6 @@
 mod config;
 use clap::Parser;
 use config::Config;
-use openidconnect::{
-    ClientId, ClientSecret, IssuerUrl, OAuth2TokenResponse,
-    core::{CoreClient, CoreProviderMetadata},
-    reqwest,
-};
 use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 mod login;
 use std::{
@@ -18,15 +13,12 @@ use state::AppState;
 mod callback;
 mod counter;
 mod error;
-use anyhow::anyhow;
 
 type Result<T> = std::result::Result<T, error::Error>;
 
 use axum::{
     Json, Router,
-    body::Body,
-    extract::{Request, State},
-    http::{self, HeaderValue, StatusCode},
+    extract::State,
     middleware,
     response::IntoResponse,
     routing::{get, post},
@@ -61,7 +53,8 @@ fn create_router(state: Arc<AppState>) -> Router {
     let proxy: Router<()> =
         ReverseProxy::new("/", "https://staging.workflows.diamond.ac.uk/graphql").into();
     let proxy = proxy;
-    let router = Router::new()
+    
+    Router::new()
         .nest_service("/api", proxy)
         .layer(middleware::from_fn_with_state(
             state.clone(),
@@ -74,8 +67,7 @@ fn create_router(state: Arc<AppState>) -> Router {
         .route("/auth/logout", post(logout))
         .route("/debug", get(debug))
         .layer(session_layer)
-        .with_state(state);
-    return router;
+        .with_state(state)
 }
 
 async fn serve(router: Router, port: u16) -> Result<()> {

@@ -1,10 +1,8 @@
 use std::borrow::Cow;
 use std::sync::Arc;
-use std::time::{Duration, SystemTime};
 
 use axum::debug_handler;
 use axum::extract::{Query, State};
-use chrono::Utc;
 use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use openidconnect::{
     AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl,

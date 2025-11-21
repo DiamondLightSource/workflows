@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::Result;
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
-use openidconnect::{AccessToken, CsrfToken, Nonce, PkceCodeVerifier, RefreshToken, TokenResponse};
+use openidconnect::{AccessToken, CsrfToken, Nonce, PkceCodeVerifier, RefreshToken};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -29,9 +29,9 @@ impl TokenSessionData {
         refresh_token: RefreshToken,
     ) -> Self {
         Self {
-            access_token: access_token,
-            access_token_expires_at: access_token_expires_at,
-            refresh_token: refresh_token,
+            access_token,
+            access_token_expires_at,
+            refresh_token,
         }
     }
 
@@ -68,9 +68,9 @@ impl LoginSessionData {
 
     pub fn new(csrf_token: CsrfToken, pcke_verifier: PkceCodeVerifier, nonce: Nonce) -> Self {
         Self {
-            csrf_token: csrf_token,
-            pcke_verifier: pcke_verifier,
-            nonce: nonce,
+            csrf_token,
+            pcke_verifier,
+            nonce,
         }
     }
 }
