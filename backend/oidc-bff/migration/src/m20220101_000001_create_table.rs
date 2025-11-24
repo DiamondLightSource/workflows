@@ -44,7 +44,6 @@ impl MigrationTrait for Migration {
                     )
                     .primary_key(
                         Index::create()
-                            .col(OidcTokens::Issuer)
                             .col(OidcTokens::Subject)
                             .primary(),
                     )
