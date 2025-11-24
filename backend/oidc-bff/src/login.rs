@@ -15,32 +15,9 @@ use crate::state::AppState;
 
 #[axum::debug_handler]
 pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Result<Redirect> {
-    let http_client = reqwest::ClientBuilder::new()
-        // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(reqwest::redirect::Policy::none())
-        .build()?;
-
-    // Use OpenID Connect Discovery to fetch the provider metadata.
-    let provider_metadata = CoreProviderMetadata::discover_async(
-        IssuerUrl::new(state.config.oidc_provider_url.to_string())?,
-        &http_client,
-    )
-    .await?;
-
-    // Create an OpenID Connect client by specifying the client ID, client secret, authorization URL
-    // and token URL.
-    let client = CoreClient::from_provider_metadata(
-        provider_metadata,
-        ClientId::new(state.config.client_id.to_string()),
-        if state.config.client_secret.is_empty() {
-            None
-        } else {
-            Some(ClientSecret::new(state.config.client_secret.to_string()))
-        },
-    )
     // Set the URL the user will be redirected to after the authorization process.
     // .set_redirect_uri(RedirectUrl::new("https://localhost/callback".to_string())?);
-    .set_redirect_uri(RedirectUrl::new(
+    let oidc_client = state.oidc_client.clone().set_redirect_uri(RedirectUrl::new(
         "http://localhost:5173/auth/callback".to_string(),
     )?);
     // .set_redirect_uri(RedirectUrl::new("https://workflows.diamond.ac.uk".to_string())?)
@@ -48,7 +25,7 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     // Generate the full authorization URL.
-    let (auth_url, csrf_token, nonce) = client
+    let (auth_url, csrf_token, nonce) = oidc_client
         .authorize_url(
             CoreAuthenticationFlow::AuthorizationCode,
             CsrfToken::new_random,
