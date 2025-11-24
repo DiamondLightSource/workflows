@@ -26,21 +26,16 @@ pub async fn inject_token_from_session(
 ) -> Result<impl axum::response::IntoResponse> {
     // Read token from session
     let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await?;
-    if let Some(token) = token {
+    if let Some(mut token) = token {
+        if (token.access_token_is_expired()) {
+            token = refresh_token_and_update_session(&state, &token, &session).await?;
+        }
         let mut req = clone_request(req).await?;
         prepare_headers(&mut req.0, &token);
         let response = next.clone().run(req.0).await;
-        if response.status() == StatusCode::UNAUTHORIZED || token.access_token_is_expired() {
-            // Attempt the refresh
-            let token_response = state
-                .oidc_client
-                .exchange_refresh_token(&token.refresh_token)?
-                .request_async(&state.http_client)
-                .await?;
-
-            let token = TokenSessionData::from_token_response(&token_response)?;
+        if response.status() == StatusCode::UNAUTHORIZED {
+            token = refresh_token_and_update_session(&state, &token, &session).await?;
             prepare_headers(&mut req.1, &token);
-            session.insert(TokenSessionData::SESSION_KEY, token).await?;
             Ok(next.run(req.1).await)
         } else {
             Ok(response)
@@ -66,4 +61,26 @@ fn prepare_headers(req: &mut Request, token: &TokenSessionData) {
         HeaderValue::from_str(&value).unwrap(),
     );
     req.headers_mut().remove(http::header::COOKIE);
+}
+
+async fn refresh_token_and_update_session(
+    state: &AppState,
+    token: &TokenSessionData,
+    session: &Session,
+) -> Result<TokenSessionData> {
+    let token = refresh_token(state, token).await?;
+    session
+        .insert(TokenSessionData::SESSION_KEY, token.clone())
+        .await?;
+    Ok(token)
+}
+
+async fn refresh_token(state: &AppState, token: &TokenSessionData) -> Result<TokenSessionData> {
+    let token_response = state
+        .oidc_client
+        .exchange_refresh_token(&token.refresh_token)?
+        .request_async(&state.http_client)
+        .await?;
+    let token = TokenSessionData::from_token_response(&token_response)?;
+    Ok(token)
 }
