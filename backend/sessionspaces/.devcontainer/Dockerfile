@@ -1,3 +1,3 @@
-FROM docker.io/library/rust:1.91.0-bookworm
+FROM docker.io/library/rust:1.91.1-bookworm
 
 RUN rustup component add rustfmt clippy
