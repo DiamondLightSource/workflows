@@ -32,31 +32,10 @@ pub async fn inject_token_from_session(
         let response = next.clone().run(req.0).await;
         if response.status() == StatusCode::UNAUTHORIZED {
             // Attempt the refresh
-            let http_client = reqwest::ClientBuilder::new()
-                // Following redirects opens the client up to SSRF vulnerabilities.
-                .redirect(reqwest::redirect::Policy::none())
-                .build()?;
-
-            // Use OpenID Connect Discovery to fetch the provider metadata.
-            let provider_metadata = CoreProviderMetadata::discover_async(
-                IssuerUrl::new(state.config.oidc_provider_url.to_string())?,
-                &http_client,
-            )
-            .await?;
-
-            let client = CoreClient::from_provider_metadata(
-                provider_metadata,
-                ClientId::new(state.config.client_id.to_string()),
-                if state.config.client_secret.is_empty() {
-                    None
-                } else {
-                    Some(ClientSecret::new(state.config.client_secret.to_string()))
-                },
-            );
-
-            let token_response = client
+            let token_response = state
+                .oidc_client
                 .exchange_refresh_token(&token.refresh_token)?
-                .request_async(&http_client)
+                .request_async(&state.http_client)
                 .await?;
 
             let token = TokenSessionData::from_token_response(&token_response)?;
