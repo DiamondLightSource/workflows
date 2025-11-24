@@ -28,6 +28,7 @@ use axum_reverse_proxy::ReverseProxy;
 
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
 mod inject_token_from_session;
+mod entity;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -35,6 +36,8 @@ async fn main() -> Result<()> {
     let config: Config = Config::parse();
     let port = config.port;
     let appstate = Arc::new(AppState::new(config).await?);
+
+    database::migrate_database(&appstate.database_connection).await?;
 
     rustls::crypto::ring::default_provider()
         .install_default()
@@ -95,9 +98,4 @@ async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<i
     )))
 }
 
-// async fn migrate_database(connection: &DatabaseConnection) -> Result<()> {
-//     use migration::{Migrator, MigratorTrait};
 
-//     Migrator::up(connection, None).await?;
-//     Ok(())
-// }

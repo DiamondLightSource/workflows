@@ -20,7 +20,7 @@ pub struct AppState {
         EndpointMaybeSet,
         EndpointMaybeSet,
     >,
-    database_connection: DatabaseConnection,
+    pub database_connection: DatabaseConnection,
 }
 
 impl AppState {
