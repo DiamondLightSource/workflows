@@ -1,6 +1,8 @@
 use oauth2::{ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet, reqwest};
 use openidconnect::IssuerUrl;
 use openidconnect::core::{CoreClient, CoreProviderMetadata};
+use sea_orm::Database;
+use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 
 use crate::Result;
@@ -18,6 +20,7 @@ pub struct AppState {
         EndpointMaybeSet,
         EndpointMaybeSet,
     >,
+    database_connection: DatabaseConnection,
 }
 
 impl AppState {
@@ -44,10 +47,21 @@ impl AppState {
             },
         );
 
+        let database_url = format!(
+            "postgres://{}:{}@{}:{}/{}",
+            config.postgres_user,
+            config.postgres_password,
+            config.postgres_hostname,
+            config.postgres_port,
+            config.postgres_database
+        );
+        let database_connection = Database::connect(&database_url).await?;
+
         Ok(AppState {
             config,
             http_client,
             oidc_client,
+            database_connection,
         })
     }
 }

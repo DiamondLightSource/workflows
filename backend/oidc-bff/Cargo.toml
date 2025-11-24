@@ -23,3 +23,4 @@ thiserror.workspace = true
 tokio = { workspace = true, features = ["full"] }
 tower-sessions = "0.14.0"
 sea-orm = { version = "2.0.0-rc", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono" ] }
+migration = { version = "0.1.0", path = "migration" }

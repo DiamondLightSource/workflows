@@ -12,6 +12,7 @@ mod state;
 use state::AppState;
 mod callback;
 mod counter;
+mod database;
 mod error;
 
 type Result<T> = std::result::Result<T, error::Error>;
@@ -93,3 +94,10 @@ async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<i
         token_session_data,
     )))
 }
+
+// async fn migrate_database(connection: &DatabaseConnection) -> Result<()> {
+//     use migration::{Migrator, MigratorTrait};
+
+//     Migrator::up(connection, None).await?;
+//     Ok(())
+// }

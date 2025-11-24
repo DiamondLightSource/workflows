@@ -33,4 +33,26 @@ pub struct Config {
         default_value = "5173"
     )]
     pub port: u16,
+    #[arg(long, env = "WORKFLOWS_OIDC_POSTGRES_USER", default_value = "postgres")]
+    pub postgres_user: String,
+    #[arg(
+        long,
+        env = "WORKFLOWS_OIDC_POSTGRES_PASSWORD",
+        default_value = "postgres"
+    )]
+    pub postgres_password: String,
+    #[arg(
+        long,
+        env = "WORKFLOWS_OIDC_POSTGRES_DATABASE",
+        default_value = "postgres"
+    )]
+    pub postgres_database: String,
+    #[arg(
+        long,
+        env = "WORKFLOWS_OIDC_POSTGRES_HOSTNAME",
+        default_value = "localhost"
+    )]
+    pub postgres_hostname: String,
+    #[arg(long, env = "WORKFLOWS_OIDC_POSTGRES_PORT", default_value = "5432")]
+    pub postgres_port: u16,
 }
