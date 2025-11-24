@@ -13,7 +13,7 @@
 	// "forwardPorts": [5432],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "cargo install diesel_cli --no-default-features --features postgres"
+	"postCreateCommand": "cargo install sea-orm-cli"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
