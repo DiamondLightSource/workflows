@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     let config: Config = Config::parse();
     let port = config.port;
-    let appstate = Arc::new(AppState::new(config));
+    let appstate = Arc::new(AppState::new(config).await?);
 
     rustls::crypto::ring::default_provider()
         .install_default()
@@ -53,7 +53,7 @@ fn create_router(state: Arc<AppState>) -> Router {
     let proxy: Router<()> =
         ReverseProxy::new("/", "https://staging.workflows.diamond.ac.uk/graphql").into();
     let proxy = proxy;
-    
+
     Router::new()
         .nest_service("/api", proxy)
         .layer(middleware::from_fn_with_state(
@@ -87,5 +87,9 @@ async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<i
     let token_session_data: Option<TokenSessionData> =
         session.get(TokenSessionData::SESSION_KEY).await?;
 
-    Ok(Json((state, auth_session_data, token_session_data)))
+    Ok(Json((
+        state.config.clone(),
+        auth_session_data,
+        token_session_data,
+    )))
 }

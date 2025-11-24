@@ -61,9 +61,7 @@ pub async fn inject_token_from_session(
 
             let token = TokenSessionData::from_token_response(&token_response)?;
             prepare_headers(&mut req.1, &token);
-            session
-                .insert(TokenSessionData::SESSION_KEY, token)
-                .await?;
+            session.insert(TokenSessionData::SESSION_KEY, token).await?;
             Ok(next.run(req.1).await)
         } else {
             Ok(response)
@@ -85,8 +83,8 @@ async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Bod
 fn prepare_headers(req: &mut Request, token: &TokenSessionData) {
     let value = format!("Bearer {}", token.access_token.secret());
     req.headers_mut().insert(
-            http::header::AUTHORIZATION,
-            HeaderValue::from_str(&value).unwrap(),
-        );
-        req.headers_mut().remove(http::header::COOKIE);
+        http::header::AUTHORIZATION,
+        HeaderValue::from_str(&value).unwrap(),
+    );
+    req.headers_mut().remove(http::header::COOKIE);
 }
