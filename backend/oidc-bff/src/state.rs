@@ -9,8 +9,8 @@ use crate::config::Config;
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub config: Config,
-    http_client: reqwest::Client,
-    oidc_client: openidconnect::core::CoreClient<
+    pub http_client: reqwest::Client,
+    pub oidc_client: openidconnect::core::CoreClient<
         EndpointSet,
         EndpointNotSet,
         EndpointNotSet,

@@ -34,28 +34,6 @@ pub async fn callback(
         .await?
         .ok_or(anyhow!("session expired"))?;
 
-    let http_client = reqwest::ClientBuilder::new()
-        // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(reqwest::redirect::Policy::none())
-        .build()?;
-
-    // Use OpenID Connect Discovery to fetch the provider metadata.
-    let provider_metadata = CoreProviderMetadata::discover_async(
-        IssuerUrl::new(state.config.oidc_provider_url.to_string())?,
-        &http_client,
-    )
-    .await?;
-
-    let client = CoreClient::from_provider_metadata(
-        provider_metadata,
-        ClientId::new(state.config.client_id.to_string()),
-        if state.config.client_secret.is_empty() {
-            None
-        } else {
-            Some(ClientSecret::new(state.config.client_secret.to_string()))
-        },
-    );
-
     // Once the user has been redirected to the redirect URL, you'll have access to the
     // authorization code. For security reasons, your code should verify that the `state`
     // parameter returned by the server matches `csrf_state`.
@@ -68,19 +46,20 @@ pub async fn callback(
         "http://localhost:5173/auth/callback".to_string(),
     )?);
     // Now you can exchange it for an access token and ID token.
-    let token_response = client
+    let token_response = state
+        .oidc_client
         .exchange_code(AuthorizationCode::new(params.code.to_string()))?
         // Set the PKCE code verifier.
         .set_pkce_verifier(auth_session_data.pcke_verifier)
         .set_redirect_uri(redirect_url)
-        .request_async(&http_client)
+        .request_async(&state.http_client)
         .await?;
 
     // Extract the ID token claims after verifying its authenticity and nonce.
     let id_token = token_response
         .id_token()
         .ok_or_else(|| anyhow!("Server did not return an ID token"))?;
-    let id_token_verifier = client.id_token_verifier();
+    let id_token_verifier = state.oidc_client.id_token_verifier();
     let claims = id_token.claims(&id_token_verifier, &auth_session_data.nonce)?;
 
     // Verify the access token hash to ensure that the access token hasn't been substituted for
