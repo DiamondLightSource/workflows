@@ -51,6 +51,10 @@ impl TokenSessionData {
             refresh_token,
         ))
     }
+
+    pub fn access_token_is_expired(&self) -> bool {
+        self.access_token_expires_at <= Utc::now()
+    }
 }
 
 impl Clone for LoginSessionData {

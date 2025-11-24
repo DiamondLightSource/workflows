@@ -30,7 +30,7 @@ pub async fn inject_token_from_session(
         let mut req = clone_request(req).await?;
         prepare_headers(&mut req.0, &token);
         let response = next.clone().run(req.0).await;
-        if response.status() == StatusCode::UNAUTHORIZED {
+        if response.status() == StatusCode::UNAUTHORIZED || token.access_token_is_expired() {
             // Attempt the refresh
             let token_response = state
                 .oidc_client
