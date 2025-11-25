@@ -55,4 +55,16 @@ pub struct Config {
     pub postgres_hostname: String,
     #[arg(long, env = "WORKFLOWS_OIDC_POSTGRES_PORT", default_value = "5432")]
     pub postgres_port: u16,
+    #[arg(
+        long,
+        env = "WORKFLOWS_OIDC_ENCRYPTION_PUBLIC_KEY",
+        default_value = "/8MLLEwz7CkTkUv9y1pq6Gcv2Aomlhpq7shhv95Lil0="
+    )]
+    pub encryption_public_key: String,
+    #[arg(
+        long,
+        env = "WORKFLOWS_OIDC_ENCRYPTION_PRIVATE_KEY",
+        default_value = "7f3saJVP6ISBaarRJ5KyNF0IFezCFDEmC556ygO3kQk="
+    )]
+    pub encryption_private_key: String,
 }

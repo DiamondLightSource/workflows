@@ -1,13 +1,14 @@
+use crate::Result;
+use crate::config::Config;
+use anyhow::anyhow;
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use oauth2::{ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet, reqwest};
 use openidconnect::IssuerUrl;
 use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
-
-use crate::Result;
-use crate::config::Config;
-
+use sodiumoxide::crypto::box_::PublicKey;
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub config: Config,
@@ -21,6 +22,7 @@ pub struct AppState {
         EndpointMaybeSet,
     >,
     pub database_connection: DatabaseConnection,
+    pub public_key: PublicKey,
 }
 
 impl AppState {
@@ -57,11 +59,15 @@ impl AppState {
         );
         let database_connection = Database::connect(&database_url).await?;
 
+        let public_key = PublicKey::from_slice(&BASE64.decode(&config.encryption_public_key)?)
+            .ok_or(anyhow!("Invalid public key"))?;
+
         Ok(AppState {
             config,
             http_client,
             oidc_client,
             database_connection,
+            public_key,
         })
     }
 }

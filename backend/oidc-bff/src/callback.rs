@@ -13,6 +13,7 @@ use tower_sessions::Session;
 
 use crate::Result;
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
+use crate::database::write_token_to_database;
 use crate::state::AppState;
 
 #[derive(Serialize, Deserialize)]
@@ -104,6 +105,7 @@ pub async fn callback(
         claims.issuer().clone(),
         claims.subject().clone(),
     )?;
+    write_token_to_database(&state.database_connection, &token_data, &state.public_key).await?;
     session
         .insert(TokenSessionData::SESSION_KEY, token_data)
         .await?;
