@@ -27,8 +27,8 @@ use axum::{
 use axum_reverse_proxy::ReverseProxy;
 
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
-mod inject_token_from_session;
 mod entity;
+mod inject_token_from_session;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -97,5 +97,3 @@ async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<i
         token_session_data,
     )))
 }
-
-

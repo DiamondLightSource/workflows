@@ -99,7 +99,11 @@ pub async fn callback(
 
     // See the OAuth2TokenResponse trait for a listing of other available fields such as
     // access_token() and refresh_token().
-    let token_data = TokenSessionData::from_token_response(&token_response)?;
+    let token_data = TokenSessionData::from_token_response(
+        &token_response,
+        claims.issuer().clone(),
+        claims.subject().clone(),
+    )?;
     session
         .insert(TokenSessionData::SESSION_KEY, token_data)
         .await?;

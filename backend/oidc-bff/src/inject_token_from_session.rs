@@ -1,6 +1,6 @@
 use crate::state::AppState;
 use openidconnect::{
-    ClientId, ClientSecret, IssuerUrl,
+    ClientId, ClientSecret, IssuerUrl, TokenResponse,
     core::{CoreClient, CoreProviderMetadata},
     reqwest,
 };
@@ -81,6 +81,6 @@ async fn refresh_token(state: &AppState, token: &TokenSessionData) -> Result<Tok
         .exchange_refresh_token(&token.refresh_token)?
         .request_async(&state.http_client)
         .await?;
-    let token = TokenSessionData::from_token_response(&token_response)?;
+    let token = token.update_tokens(&token_response);
     Ok(token)
 }
