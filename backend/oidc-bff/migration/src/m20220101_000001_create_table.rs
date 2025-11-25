@@ -11,25 +11,14 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(OidcTokens::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(OidcTokens::Issuer)
-                            .text()
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(OidcTokens::Subject)
-                            .text()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(OidcTokens::Issuer).text().not_null())
+                    .col(ColumnDef::new(OidcTokens::Subject).text().not_null())
                     .col(
                         ColumnDef::new(OidcTokens::EncryptedRefreshToken)
                             .binary()
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(OidcTokens::ExpiresAt)
-                            .timestamp_with_time_zone(),
-                    )
+                    .col(ColumnDef::new(OidcTokens::ExpiresAt).timestamp_with_time_zone())
                     .col(
                         ColumnDef::new(OidcTokens::CreatedAt)
                             .timestamp_with_time_zone()
@@ -42,11 +31,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
-                    .primary_key(
-                        Index::create()
-                            .col(OidcTokens::Subject)
-                            .primary(),
-                    )
+                    .primary_key(Index::create().col(OidcTokens::Subject).primary())
                     .to_owned(),
             )
             .await

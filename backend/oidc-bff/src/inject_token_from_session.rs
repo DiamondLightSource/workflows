@@ -1,4 +1,4 @@
-use crate::state::AppState;
+use crate::{database::write_token_to_database, state::AppState};
 use openidconnect::{
     ClientId, ClientSecret, IssuerUrl, TokenResponse,
     core::{CoreClient, CoreProviderMetadata},
@@ -69,6 +69,7 @@ async fn refresh_token_and_update_session(
     session: &Session,
 ) -> Result<TokenSessionData> {
     let token = refresh_token(state, token).await?;
+    write_token_to_database(&state.database_connection, &token, &state.public_key).await?;
     session
         .insert(TokenSessionData::SESSION_KEY, token.clone())
         .await?;
