@@ -6,7 +6,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    - oidc-bff
+    app: oidc-bff
   ports:
     - name: oidc-bff
       port: 80
