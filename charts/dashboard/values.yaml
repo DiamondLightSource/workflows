@@ -68,7 +68,7 @@ serviceAccount:
   name: ""
   annotations: []
 
-oidc-bff:
+oidcBff:
   image:
     registry: ghcr.io
     repository: diamondlightsource/workflows-oidc-bff

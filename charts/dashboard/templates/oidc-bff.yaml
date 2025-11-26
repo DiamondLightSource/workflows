@@ -53,24 +53,24 @@ spec:
             periodSeconds: 5
           env:
             - name: WORKFLOWS_OIDC_BFF_CLIENT_ID
-              value: {{ .Values.oidc-bff.configuration.clientId | quote }}
+              value: {{ .Values.oidcBff.configuration.clientId | quote }}
             - name: WORKFLOWS_OIDC_BFF_CLIENT_SECRET
-              value: {{ .Values.oidc-bff.configuration.clientSecret | quote }}
+              value: {{ .Values.oidcBff.configuration.clientSecret | quote }}
             - name: WORKFLOWS_OIDC_BFF_PORT
-              value: {{ .Values.oidc-bff.configuration.port | quote }}
+              value: {{ .Values.oidcBff.configuration.port | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_USER
-              value: {{ .Values.oidc-bff.configuration.postgres.user | quote }}
+              value: {{ .Values.oidcBff.configuration.postgres.user | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_PASSWORD
-              value: {{ .Values.oidc-bff.configuration.postgres.password | quote }}
+              value: {{ .Values.oidcBff.configuration.postgres.password | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_DATABASE
-              value: {{ .Values.oidc-bff.configuration.postgres.database | quote }}
+              value: {{ .Values.oidcBff.configuration.postgres.database | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_HOSTNAME
-              value: {{ .Values.oidc-bff.configuration.postgres.hostname | quote }}
+              value: {{ .Values.oidcBff.configuration.postgres.hostname | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_PORT
-              value: {{ .Values.oidc-bff.configuration.postgres.port | quote }}
+              value: {{ .Values.oidcBff.configuration.postgres.port | quote }}
             - name: WORKFLOWS_OIDC_ENCRYPTION_PUBLIC_KEY
-              value: {{ .Values.oidc-bff.configuration.encryption.publicKey | quote }}
+              value: {{ .Values.oidcBff.configuration.encryption.publicKey | quote }}
             - name: WORKFLOWS_OIDC_ENCRYPTION_PRIVATE_KEY
-              value: {{ .Values.oidc-bff.configuration.encryption.privateKey | quote }}
+              value: {{ .Values.oidcBff.configuration.encryption.privateKey | quote }}
             - name: WORKFLOWS_OIDC_BFF_OIDC_PROVIDER_URL
-              value: {{ .Values.oidc-bff.configuration.oidcProviderUrl | quote }}
+              value: {{ .Values.oidcBff.configuration.oidcProviderUrl | quote }}
