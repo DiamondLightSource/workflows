@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: oidc-bff
-          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.oidc.image "global" $.Values.global "chart" $.Chart ) }}
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.oidcBff.image "global" $.Values.global "chart" $.Chart ) }}
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           ports:
             - containerPort: 80
