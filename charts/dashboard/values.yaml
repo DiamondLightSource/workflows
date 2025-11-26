@@ -72,7 +72,7 @@ oidc-bff:
   image:
     registry: ghcr.io
     repository: diamondlightsource/workflows-oidc-bff
-    tag: ""
+    tag: "davehadley"
     digest: ""
     pullPolicy: IfNotPresent
     pullSecrets: []
