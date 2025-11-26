@@ -43,6 +43,19 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+          service:
+            name: dashboard
+            port: 80
+        - path: /api
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
+        - path: /auth
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
   tls: false
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -54,3 +67,26 @@ serviceAccount:
   create: true
   name: ""
   annotations: []
+
+oidc-bff:
+  image:
+    registry: ghcr.io
+    repository: diamondlightsource/workflows-oidc-bff
+    tag: ""
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  configuration:
+    clientId: "workflows-ui-dev"
+    clientSecret: ""
+    port: "5173"
+    oidcProviderUrl: "https://authn.diamond.ac.uk/realms/master"
+    postgres:
+      user: "postgres"
+      password: "postgres"
+      database: "postgres"
+      hostname: "postgres.database.svc.cluster.local"
+      port: "5432"
+    encryption:
+      publicKey: "/8MLLEwz7CkTkUv9y1pq6Gcv2Aomlhpq7shhv95Lil0="
+      privateKey: "7f3saJVP6ISBaarRJ5KyNF0IFezCFDEmC556ygO3kQk="

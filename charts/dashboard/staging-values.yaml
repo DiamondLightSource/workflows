@@ -12,6 +12,19 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+          service:
+            name: dashboard
+            port: 80
+        - path: /api
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
+        - path: /auth
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
 
   tls: true
   secretName: dashboard-tls-cert
