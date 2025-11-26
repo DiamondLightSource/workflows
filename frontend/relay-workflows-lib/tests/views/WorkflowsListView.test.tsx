@@ -8,6 +8,18 @@ import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { workflowsListViewTemplatesResponse } from "dashboard/src/mocks/responses/templates/workflowsListViewTemplates";
 import workflowsListResponse from "dashboard/src/mocks/responses/workflows/workflowsListResponse.json";
+import * as WorkflowsContent from "relay-workflows-lib/lib/components/WorkflowsContent";
+
+vi.mock(
+  import("relay-workflows-lib/lib/components/WorkflowsContent"),
+  async (importOriginal) => {
+    const original = await importOriginal();
+    return {
+      ...original,
+      default: vi.fn(original.default),
+    };
+  },
+);
 
 describe("WorkflowsListView", () => {
   const user = userEvent.setup();
@@ -29,6 +41,7 @@ describe("WorkflowsListView", () => {
   });
 
   afterAll(() => {
+    vi.restoreAllMocks();
     server.close();
   });
 
@@ -47,10 +60,11 @@ describe("WorkflowsListView", () => {
   });
 
   it("passes the mock template list query data to the filter drawer", async () => {
+    vi.mocked(WorkflowsContent.default).mockImplementationOnce(() => <></>);
     await user.click(
       await screen.findByRole("button", { name: "Add filters" }),
     );
-    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    await user.click(screen.getByRole("button", { name: "Open" }));
     workflowsListViewTemplatesResponse.workflowTemplates.nodes.forEach(
       (template) => {
         expect(screen.getByText(template.name)).toBeInTheDocument();

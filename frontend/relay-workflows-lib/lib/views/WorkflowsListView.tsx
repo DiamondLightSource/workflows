@@ -10,7 +10,7 @@ import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
 import { WorkflowsListViewQuery as WorkflowsListViewQueryType } from "./__generated__/WorkflowsListViewQuery.graphql";
 import { useServerSidePagination } from "../utils/useServerSidePagination";
 import { WorkflowsListViewTemplatesQuery as WorkflowsListViewTemplatesQueryType } from "./__generated__/WorkflowsListViewTemplatesQuery.graphql";
-import WorkflowsContent from "../components/WorkflowsContent";
+import WorkflowsContent from "relay-workflows-lib/lib/components/WorkflowsContent";
 
 export const WorkflowsListViewQuery = graphql`
   query WorkflowsListViewQuery(
