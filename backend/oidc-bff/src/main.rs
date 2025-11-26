@@ -29,6 +29,7 @@ use axum_reverse_proxy::ReverseProxy;
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
 mod entity;
 mod inject_token_from_session;
+mod healthcheck;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -69,7 +70,8 @@ fn create_router(state: Arc<AppState>) -> Router {
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        .route("/debug", get(debug))
+        // .route("/debug", get(debug))
+        .route("/healthcheck", get(healthcheck::healthcheck))
         .layer(session_layer)
         .with_state(state)
 }
