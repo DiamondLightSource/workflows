@@ -94,7 +94,7 @@ oidcBff:
     encryption:
       publicKeySecret:
         name: token-encryption-public-key
-        key: data
+        key: key
       privateKeySecret:
         name: token-encryption-private-key
-        key: data
+        key: key
