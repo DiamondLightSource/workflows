@@ -63,7 +63,7 @@ vcluster:
           byName:
             "/letsencrypt-argo-cd-staging-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-argo-workflows-staging-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
-            "/letsencrypt-staging-workflows-diamond-ac-uk": "dashboard/dashboard-tls-cert"
+            "/letsencrypt-staging-workflows-diamond-ac-uk": "workflows/dashboard-tls-cert"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
