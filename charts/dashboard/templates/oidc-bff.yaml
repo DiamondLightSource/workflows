@@ -60,9 +60,15 @@ spec:
             - name: WORKFLOWS_OIDC_BFF_PORT
               value: {{ .Values.oidcBff.configuration.port | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_USER
-              value: {{ .Values.oidcBff.configuration.postgres.user | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oidcBff.configuration.postgres.userNameSecret.name }}
+                  key: {{ .Values.oidcBff.configuration.postgres.userNameSecret.key }}
             - name: WORKFLOWS_OIDC_POSTGRES_PASSWORD
-              value: {{ .Values.oidcBff.configuration.postgres.password | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oidcBff.configuration.postgres.passwordSecret.name }}
+                  key: {{ .Values.oidcBff.configuration.postgres.passwordSecret.key }}
             - name: WORKFLOWS_OIDC_POSTGRES_DATABASE
               value: {{ .Values.oidcBff.configuration.postgres.database | quote }}
             - name: WORKFLOWS_OIDC_POSTGRES_HOSTNAME
@@ -70,8 +76,15 @@ spec:
             - name: WORKFLOWS_OIDC_POSTGRES_PORT
               value: {{ .Values.oidcBff.configuration.postgres.port | quote }}
             - name: WORKFLOWS_OIDC_ENCRYPTION_PUBLIC_KEY
-              value: {{ .Values.oidcBff.configuration.encryption.publicKey | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oidcBff.configuration.encryption.publicKeySecret.name }}
+                  key: {{ .Values.oidcBff.configuration.encryption.publicKeySecret.key }}
             - name: WORKFLOWS_OIDC_ENCRYPTION_PRIVATE_KEY
-              value: {{ .Values.oidcBff.configuration.encryption.privateKey | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oidcBff.configuration.encryption.privateKeySecret.name }}
+                  key: {{ .Values.oidcBff.configuration.encryption.privateKeySecret.key }}
+
             - name: WORKFLOWS_OIDC_BFF_OIDC_PROVIDER_URL
               value: {{ .Values.oidcBff.configuration.oidcProviderUrl | quote }}

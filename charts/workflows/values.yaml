@@ -28,11 +28,11 @@ argo-workflows:
         database: argo_workflows
         tableName: workflows
         userNameSecret:
-          name: postgres-application-passwords
-          key: usernames
+          name: postgres-argo-workflows-password
+          key: username
         passwordSecret:
-          name: postgres-application-passwords
-          key: passwords
+          name: postgres-argo-workflows-password
+          key: password
     workflowDefaults:
       spec:
         serviceAccountName: argo-workflow

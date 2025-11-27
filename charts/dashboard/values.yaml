@@ -82,11 +82,19 @@ oidcBff:
     port: "5173"
     oidcProviderUrl: "https://authn.diamond.ac.uk/realms/master"
     postgres:
-      user: "postgres"
-      password: "postgres"
-      database: "postgres"
+      userNameSecret:
+        name: postgres-argo-workflows-password
+        key: username
+      passwordSecret:
+        name: postgres-argo-workflows-password
+        key: password
+      database: "auth_service"
       hostname: "postgres.database.svc.cluster.local"
       port: "5432"
     encryption:
-      publicKey: "/8MLLEwz7CkTkUv9y1pq6Gcv2Aomlhpq7shhv95Lil0="
-      privateKey: "7f3saJVP6ISBaarRJ5KyNF0IFezCFDEmC556ygO3kQk="
+      publicKeySecret:
+        name: token-encryption-public-key
+        key: data
+      privateKeySecret:
+        name: token-encryption-private-key
+        key: data

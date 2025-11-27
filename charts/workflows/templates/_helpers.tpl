@@ -2,7 +2,7 @@
 Create a new password for the argo_workflows user in postgres
 */}}
 {{- define "workflows.argoWorkflowsPostgresPassword" }}
-{{- $existing := (lookup "v1" "Secret" .Release.Namespace "postgres-application-passwords") }}
+{{- $existing := (lookup "v1" "Secret" .Release.Namespace "postgres-argo-workflows-password") }}
   {{- if $existing }}
     {{- index $existing.data "password" | b64dec }}
   {{- else }}
@@ -16,7 +16,7 @@ Create a new password for the argo_workflows user in postgres
 Create a new password for the auth_user in postgres
 */}}
 {{- define "workflows.authServicePostgresPassword" }}
-{{- $existing := (lookup "v1" "Secret" .Release.Namespace "postgres-application-passwords") }}
+{{- $existing := (lookup "v1" "Secret" .Release.Namespace "postgres-auth_user-password") }}
   {{- if $existing }}
     {{- index $existing.data "password" | b64dec }}
   {{- else }}
