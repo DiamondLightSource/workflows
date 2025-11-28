@@ -73,28 +73,8 @@ oidcBff:
     registry: ghcr.io
     repository: diamondlightsource/workflows-oidc-bff
     tag: "davehadley"
-    digest: "sha256:b58a8063f66c88e5979fdab812d27e5c1b50ecd784f6faa9dc94b4d5ffbda6a0"
+    digest: "sha256:bf66426f67758aaeee0653cda1b93a3b44bd03ce5a4f565c8c871ab4b3e8ee29"
     pullPolicy: IfNotPresent
     pullSecrets: []
   configuration:
-    clientId: "workflows-ui-dev"
-    clientSecret: ""
-    port: "5173"
-    oidcProviderUrl: "https://authn.diamond.ac.uk/realms/master"
-    postgres:
-      userNameSecret:
-        name: postgres-argo-workflows-password
-        key: username
-      passwordSecret:
-        name: postgres-argo-workflows-password
-        key: password
-      database: "auth_service"
-      hostname: "workflows-postgresql-ha-pgpool"
-      port: "5432"
-    encryption:
-      publicKeySecret:
-        name: token-encryption-public-key
-        key: key
-      privateKeySecret:
-        name: token-encryption-private-key
-        key: key
+    secretName: oidc-bff-config

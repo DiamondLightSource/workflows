@@ -91,35 +91,30 @@ spec:
 
             - name: RUST_BACKTRACE
               value: "1"
+          volumeMounts:
+            - name: oidc-bff-config
+              mountPath: /etc/oidc-bff
+              readOnly: true
+      volumes:
+        - name: oidc-bff-config
+          secret:
+            secretName: {{ .Values.oidcBff.configuration.secretName | default "oidc-bff-config" }}
+            items:
+              - key: config.yaml
+                path: config.yaml
 ---
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
   creationTimestamp: null
-  name: token-encryption-public-key
+  name: oidc-bff-config
   namespace: workflows
 spec:
   encryptedData:
-    key: AgCCFrp1WSw/0LK9Fnhfb89l00t/HuqJGORdWKRAQCD5cGBQJgYYqpSJKXtDwjMcFenbQP46ZnZcb3KZnWjvezHSWvKeHWf8MN8h3b4V7L4vNFU8o7WSk/M0h2Gu2uXqE/MN35ij4I1bUvn8xAwWsugqvcgSM6iD4H0FmWofst6+zJIFwF3s41xn5O49B4SOuOdThFG5XKyUIvCiDMPshof9n8Enj2P49kRrKA8j/lt+3rd863RwyBcF/M1DSabpPIqW/imas1dcUk4Mk9JcZjw3DtSo+CflvEz/+Z1qkb5T1QmGfvillLqOo8gqKZ7IWGqmAZTmuPXCc1DehNacSHcrZJYHIWnl5v2kGm+JwXG5CwhLEpFsIJqmeRejoHrnQrW8bSuODxBnmf9GyTAI2GgnIeafgDwn608qg1/HWDISTm1WuNOejcyID6Jge4O0WX2vDmoCB1WgIdKypvvzXNejFjFQ/yhYZ/LXf4YdhnMbNsxOgw02tCgxfasjXwmdfeKtyIyt7bQbDSqsri5lCzuwwHjuuXPYsuhr7HqsESwp9jHISxMTpAs9Jrw2YUgFRPSqt0XO1ok2j6NliUydRWLPqThd2CJrgQxlN/BMv+CEFSHQA/axCZNFwMnj4lR9dG+UhzIawv33SWQ1BypD2r8u5xbulAc8ejadCkOKm6Do6L5wslfGYK1n4LW9/FR+gfflWSZY0HG/7mfV52nypJjg7M8hSPe2EQW25nVO/NhLGA==
+    config.yaml: AgCQo4A3ZV8a7g1EgfXdEKZzRo6CP+jXx6gnzwJe5e9yuj6akMTdGyBZEuWSviHR9VlnE9uKmFFWqAAl4dl3uTYSnqdVzaTRfH60GOcv1BPfISmVmvCGHVTY+5l+3R7sy57sOJe7aIT1v0j5/SNwanW/QJS7lC5L3fOzJFfTmGcJYLsjXTkOy8W8bab0EmBPMXgv43hoSUc7P9vj7UzoLdbn67aisFS3pkdI2hOGquoMum/wjZPrUO3BJwu8JPrBpPUQubqdKeeeFTnkH0jSZu+BbygWsCeUVRdVRp2lgW826qynIVj5l7lYNbz5RxM51e5QGX/+FyOcZ6KEfRT952m5UyYchGl5m2Dx6YptWPGku1a8TIi6bP31wnxBLAW0atqwFgLQpyytEJVV+HA7PrnzeS9pXC8j9CGBBhJt4RfeRJa9q2dO6XA53hvzrr/TRkPmmsTyMTe5VB92H3vliv38LpVskujJUi/IL2+rtynlsgI/FDpwpo2Py11XwW4nVC3gaww2cfvwTfhVXnz1rry2q1wxVIcxWm7LF6FDChjvJgi4oHq+V1s9slgsst40P9IyPjqrrVodys82O8zLrwSewyG3iNB0xKx0ZTqGeoIbGyL2FpM2QAMJ8h2HD9aahmFWlyy7AIyemZKYcchD4aYhp+eNygJbNG9TFKcRLXzKTo9JkEYj5EwBxriIA18VfRpz1CDNqlQK2IpL9EkvqJcv1WOAOm7xugVA0irj/S9zzG7vDLfLUWdksdjZ5MRYO9/CkCJB7wV4DFW6mtsm+LM6PeNX+nqtnA/j1L5rib9//HHCET0u4kslLdPwLCcQL77d+sQxpuQng5WTRxfxnsUOXgVR3TGkVqBZYW5WBvyzOdEwcmn0TsyTIUtMDl5gjqsk5QbhYOIvTUMfiq7fisL1jtRkExqqdqv0a2VcywLDv87tcQhn56kfwJEsP5K+Fh/ArNhZ2HB3UbLN1/QkqN1MHU5Yn44wsfXOJ0Q8jXL/KsVINSyQx7ebnfo8bHDa5d4Ac8RizIHvSGDMaWKI3MZOb9Q3lAaJnGoE9lZdwerXTobIw0L+7RTNBXGzWjqvYotbYq7crQHYdGsh6wpP1Wni0gjo/Aj2GeBBENVeQwQHepwchrVHm7yPI6R5zNlIJJutXQPlyTiPdgL45fe5KHD7GZjjkHrDbVeYySF0xbrVu1pTrf0MzOi8y8Z0PF2RyYPutZ8b+wCtxrTWeu7d+K2uHSpkItFgDf6IEtSPOQvgBAUPQ0fsM5ug
   template:
     metadata:
       creationTimestamp: null
-      name: token-encryption-public-key
-      namespace: workflows
-    type: Opaque
----
-apiVersion: bitnami.com/v1alpha1
-kind: SealedSecret
-metadata:
-  creationTimestamp: null
-  name: token-encryption-private-key
-  namespace: workflows
-spec:
-  encryptedData:
-    key: AgAD/Cj6YayUMmGHCrmk34fXooOhjOcF/Me6+/CGgh4FjZHh0l6SYrpPBrtYG+rXlbsBp7M5EV9BnJOx2sVvQBMu2u8dSP3kgqYWSNZ3pyXft0Vk3ddsamAwILz+bWMuDnJ7WLxFI/Y0fS9B5mcmSdf6iIGaTLDaJIbSPcgGqFT22nWY8I2g6YWK+/fqmm3zNdDsVMrg7zz6u1NJmVERom0VNM4dRa3j7YoAVHlSOcD0mOiJ3TpLF5gsdi9+dZdcTHElWChJArW9PzhJmIFbVJLfZohR9kmBVqa55uZgLf4RL7TEAEMJZjmxnXJV7LTz0ix90o2aMtupCBHRXZIIpbglNt38UJSiEiImcYLv7xq+HsqOxH8OFPbrntIgQIyGjCvIy54gtAA/Tk+CCcvAqnQSJORcaKqOBsClkjvKTGBmsZRGOV/na/PjAKHkrjpWx+tBtGoIVlyFlgtsMVwXFUr234qBz8Aln/mRkoB2vmSkFMeloq4JPt36cf+MVd7KfZxhdBLhvcDX99V57GuWRmaZSdfKz4z5LErXuJMQyxWzlYIkNkuRPHPCzJdrE44Lok+Ztfzy5IGjHmfAj0H1su3plG6+7VXoNgK8Z2p009e+FDDrOlIm6VN4RVRHDQDw1CNDO6MWOWsqUoogJiosHUlGSx8MPj4jgKwXBI4VCiZIqByJgfdQRHmfeeTn3y7tfoFlW2X3x+hVWIoZaMSN1QLau9/1tbAoAIjGG0GeH9BnBA==
-  template:
-    metadata:
-      creationTimestamp: null
-      name: token-encryption-private-key
+      name: oidc-bff-config
       namespace: workflows
     type: Opaque
