@@ -28,13 +28,27 @@ use axum_reverse_proxy::ReverseProxy;
 
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
 mod entity;
-mod inject_token_from_session;
 mod healthcheck;
+mod inject_token_from_session;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about)]
+struct Args {
+    /// Path to config file (JSON or YAML)
+    #[arg(
+        short,
+        long,
+        env = "WORKFLOWS_OIDC_BFF_CONFIG",
+        default_value = "config.yaml"
+    )]
+    config: String,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
-    let config: Config = Config::parse();
+    let args: Args = Args::try_parse()?;
+    let config = Config::from_file(args.config)?;
     let port = config.port;
     let appstate = Arc::new(AppState::new(config).await?);
 

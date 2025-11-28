@@ -32,3 +32,4 @@ sea-orm = { version = "2.0.0-rc", features = [ "sqlx-postgres", "runtime-tokio-r
 migration = { version = "0.1.0", path = "migration" }
 sodiumoxide = "0.2.7"
 base64 = "0.22.1"
+serde_yaml = "0.9.34"
