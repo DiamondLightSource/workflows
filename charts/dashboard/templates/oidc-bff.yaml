@@ -53,42 +53,8 @@ spec:
             failureThreshold: 3
             periodSeconds: 5
           env:
-            - name: WORKFLOWS_OIDC_BFF_CLIENT_ID
-              value: {{ .Values.oidcBff.configuration.clientId | quote }}
-            - name: WORKFLOWS_OIDC_BFF_CLIENT_SECRET
-              value: {{ .Values.oidcBff.configuration.clientSecret | quote }}
-            - name: WORKFLOWS_OIDC_BFF_PORT
-              value: {{ .Values.oidcBff.configuration.port | quote }}
-            - name: WORKFLOWS_OIDC_POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.oidcBff.configuration.postgres.userNameSecret.name }}
-                  key: {{ .Values.oidcBff.configuration.postgres.userNameSecret.key }}
-            - name: WORKFLOWS_OIDC_POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.oidcBff.configuration.postgres.passwordSecret.name }}
-                  key: {{ .Values.oidcBff.configuration.postgres.passwordSecret.key }}
-            - name: WORKFLOWS_OIDC_POSTGRES_DATABASE
-              value: {{ .Values.oidcBff.configuration.postgres.database | quote }}
-            - name: WORKFLOWS_OIDC_POSTGRES_HOSTNAME
-              value: {{ .Values.oidcBff.configuration.postgres.hostname | quote }}
-            - name: WORKFLOWS_OIDC_POSTGRES_PORT
-              value: {{ .Values.oidcBff.configuration.postgres.port | quote }}
-            - name: WORKFLOWS_OIDC_ENCRYPTION_PUBLIC_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.oidcBff.configuration.encryption.publicKeySecret.name }}
-                  key: {{ .Values.oidcBff.configuration.encryption.publicKeySecret.key }}
-            - name: WORKFLOWS_OIDC_ENCRYPTION_PRIVATE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.oidcBff.configuration.encryption.privateKeySecret.name }}
-                  key: {{ .Values.oidcBff.configuration.encryption.privateKeySecret.key }}
-
-            - name: WORKFLOWS_OIDC_BFF_OIDC_PROVIDER_URL
-              value: {{ .Values.oidcBff.configuration.oidcProviderUrl | quote }}
-
+            - name: WORKFLOWS_OIDC_BFF_CONFIG
+              value: "/etc/oidc-bff/config.yaml"
             - name: RUST_BACKTRACE
               value: "1"
           volumeMounts:
