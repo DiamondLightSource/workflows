@@ -78,7 +78,9 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
   return (
     <Accordion sx={{ width: "100%", my: 0 }} defaultExpanded>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-        <Typography variant="h6">Output Information</Typography>
+        <Typography variant="h6" component="h2">
+          Output Information
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Box

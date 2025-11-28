@@ -5,6 +5,7 @@ import {
   AccordionSummary,
   Box,
   styled,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
@@ -46,11 +47,14 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
         <Box sx={{ display: "flex", flexBasis: 0, flexGrow: 5, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}
           {workflowLink && (
-            <Link
-              to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}
-            >
-              <OpenInNewIcon />
-            </Link>
+            <Tooltip title="Open workflow in tab">
+              <Link
+                to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}
+                aria-label={`Open workflow ${workflow.name} in tab`}
+              >
+                <OpenInNewIcon />
+              </Link>
+            </Tooltip>
           )}
           {retriggerComponent &&
             React.createElement(retriggerComponent, {
@@ -60,7 +64,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
           <Typography>{workflow.name}</Typography>
         </Box>
         <Box flexBasis={0} flexGrow={1}>
-          <Typography color="grey">
+          <Typography color="#757575">
             Creator: {workflow.creator || "Unknown"}
           </Typography>
         </Box>
