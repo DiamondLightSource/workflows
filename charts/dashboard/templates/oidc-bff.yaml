@@ -90,7 +90,7 @@ spec:
               value: {{ .Values.oidcBff.configuration.oidcProviderUrl | quote }}
 
             - name: RUST_BACKTRACE
-              value: 1
+              value: "1"
 ---
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
