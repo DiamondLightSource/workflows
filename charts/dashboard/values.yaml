@@ -89,7 +89,7 @@ oidcBff:
         name: postgres-argo-workflows-password
         key: password
       database: "auth_service"
-      hostname: "postgres.database.svc.cluster.local"
+      hostname: "workflows-postgresql-ha-pgpool"
       port: "5432"
     encryption:
       publicKeySecret:
