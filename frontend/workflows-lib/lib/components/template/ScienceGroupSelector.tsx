@@ -46,8 +46,10 @@ export default function ScienceGroupSelector({
     <>
       <Stack direction="row" spacing={1}>
         <FormControl sx={{ width: 300 }}>
-          <InputLabel>Science Group</InputLabel>
+          <InputLabel id="science-group-label">Science Group</InputLabel>
           <Select
+            labelId="science-group-label"
+            id="science-group-select"
             onChange={handleSelect}
             value={scienceGroup[0] ?? ""}
             input={<OutlinedInput label="Science Group" />}

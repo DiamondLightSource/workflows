@@ -150,6 +150,7 @@ const ScrollableImages = ({
               size="small"
               sx={{ minWidth: 36, width: 36, height: 36 }}
               data-testid="prev-button"
+              aria-label="previous image"
             >
               <ArrowBackIcon fontSize="small" />
             </Button>
@@ -201,6 +202,7 @@ const ScrollableImages = ({
               size="small"
               sx={{ minWidth: 36, width: 36, height: 36 }}
               data-testid="next-button"
+              aria-label="next image"
             >
               <ArrowForwardIcon fontSize="small" />
             </Button>
@@ -210,6 +212,7 @@ const ScrollableImages = ({
           <Box sx={{ display: "flex" }}>
             <Box
               data-testid="numeration"
+              aria-label="Enter image number"
               component="input"
               type="number"
               value={numberValue}

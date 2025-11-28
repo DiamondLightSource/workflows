@@ -44,14 +44,16 @@ const RetriggerWorkflowBase: React.FC<RetriggerWorkflowProps> = ({
   const templateName = data.workflow.templateRef;
 
   return templateName ? (
-    <NavLink
-      title="Rerun workflow"
-      to={`/templates/${templateName}/${visitToText(
-        instrumentSession,
-      )}-${workflowName}`}
-    >
-      <RefreshIcon />
-    </NavLink>
+    <Tooltip title="Rerun workflow">
+      <NavLink
+        title="Rerun workflow"
+        to={`/templates/${templateName}/${visitToText(
+          instrumentSession,
+        )}-${workflowName}`}
+      >
+        <RefreshIcon />
+      </NavLink>
+    </Tooltip>
   ) : (
     <NoTemplateIcon />
   );

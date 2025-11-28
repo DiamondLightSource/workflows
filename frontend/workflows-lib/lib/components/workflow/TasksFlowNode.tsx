@@ -61,7 +61,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
       >
         <Tooltip title={data.label}>
           <Typography
-            variant="subtitle1"
+            component="h3"
             noWrap
             sx={{
               fontWeight: 500,

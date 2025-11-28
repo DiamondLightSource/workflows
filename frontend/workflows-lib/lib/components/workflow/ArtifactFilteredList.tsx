@@ -82,6 +82,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                 >
                   <Typography
                     variant="h6"
+                    component="h3"
                     sx={{ flexGrow: 1, textAlign: "left" }}
                   >
                     Output Name
@@ -124,6 +125,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                 >
                   <Typography
                     variant="h6"
+                    component="h3"
                     sx={{ flexGrow: 1, textAlign: "left" }}
                   >
                     Parent Task
@@ -132,7 +134,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                     sx={{
                       marginLeft: "auto",
                       color:
-                        sortType.name === "parentTask" ? "inherit" : "#888",
+                        sortType.name === "parentTask" ? "inherit" : "#737373",
                       position: "absolute",
                       right: "10px",
                       fontSize: "1.3em",
@@ -181,7 +183,7 @@ export const ArtifactFilteredList: React.FC<ArtifactFilteredListProps> = ({
                     overflow: "hidden",
                     whiteSpace: "nowrap",
                     maxWidth: "200px",
-                    color: "#777",
+                    color: "#737373",
                   }}
                 >
                   {artifact.parentTask || "N/A"}

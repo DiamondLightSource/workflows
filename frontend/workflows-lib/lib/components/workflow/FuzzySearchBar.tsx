@@ -44,7 +44,7 @@ export const FuzzySearchBar: React.FC<SearchBarProps> = ({
         setLocalQuery(e.target.value);
       }}
       placeholder="Search by name or parent task"
-      sx={{ width: "70%", marginRight: 0.5 }}
+      sx={{ width: "70%", marginRight: 0.5, color: "#737373" }}
       slotProps={{
         htmlInput: {
           "data-testid": "searchOutputs",
