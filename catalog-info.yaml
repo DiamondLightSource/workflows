@@ -67,7 +67,7 @@ metadata:
     - typescript
     - mui
     - react
-    - yarn
+    - pnpm
     - vite
   annotations:
     github.com/project-slug: DiamondLightSource/workflows/frontend

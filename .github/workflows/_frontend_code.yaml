@@ -10,32 +10,40 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6.0.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "22.x"
+          version: latest
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install Dependencies
         working-directory: frontend
-        run: yarn --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Download Supergraph Schema Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v6
         with:
           name: supergraph
           path: frontend/relay-workflows-lib
 
       - name: Compile Relay
         working-directory: frontend/relay-workflows-lib
-        run: yarn relay
+        run: pnpm relay
 
-      - name: Build Typescript
+      - name: Build TypeScript
         working-directory: frontend/
-        run: yarn tsc
+        run: pnpm run tsc
 
       - name: Lint TypeScript Code
         working-directory: frontend
-        run: yarn lint
+        run: pnpm run lint
 
   test:
     runs-on: ubuntu-latest
@@ -43,25 +51,33 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6.0.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "22.x"
+          version: latest
+          run_install: false
 
-      - name: Install dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install Dependencies
         working-directory: frontend
-        run: yarn --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Download Supergraph Schema Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v6
         with:
           name: supergraph
           path: frontend/relay-workflows-lib
 
       - name: Compile Relay
         working-directory: frontend/relay-workflows-lib
-        run: yarn relay
+        run: pnpm run relay
 
       - name: Test
         working-directory: frontend
-        run: yarn test
+        run: pnpm run test

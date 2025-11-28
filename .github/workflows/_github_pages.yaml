@@ -10,15 +10,19 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: false
+
       - name: Setup Node
-        uses: actions/setup-node@v6.0.0
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install Yarn Dependencies
-        uses: borales/actions-yarn@v5.0.0
-        with:
-          cmd: global add markdownlint-cli2 markdown-it-admon
+      - name: Install Global Dependencies
+        run: pnpm add -g markdownlint-cli2 markdown-it-admon
 
       - name: Lint with markdownlint-cli2
         run: >
@@ -57,18 +61,26 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v6.0.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "22.x"
+          version: latest
+          run_install: false
+
+      - name: Setup Node Cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install Dependencies
         working-directory: frontend
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build Storybook
         working-directory: frontend/workflows-lib
-        run: yarn build-storybook --output-dir storybook-static
+        run: pnpm run build-storybook --output-dir storybook-static
 
       - name: Upload Storybook Artifact
         uses: actions/upload-artifact@v5
@@ -91,16 +103,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v5.0.0
+        uses: actions/configure-pages@v5
 
       - name: Download Docs Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v6
         with:
           name: docs
           path: docs
 
       - name: Download Storybook Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v6
         with:
           name: storybook
           path: storybook
@@ -111,19 +123,19 @@ jobs:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v5
         with:
-          separate-directories: true 
+          separate-directories: true
 
       - name: Download Merged Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v6
         with:
           name: merged-artifacts
           path: merged-artifacts
 
       - name: Upload Merged Artifact
-        uses: actions/upload-pages-artifact@v4.0.0
+        uses: actions/upload-pages-artifact@v4
         with:
           path: merged-artifacts
 
       - name: Publish Docs to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4.0.5
+        uses: actions/deploy-pages@v4

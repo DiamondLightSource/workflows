@@ -1,0 +1,4 @@
+packages:
+  - "workflows-lib"
+  - "relay-workflows-lib"
+  - "dashboard"

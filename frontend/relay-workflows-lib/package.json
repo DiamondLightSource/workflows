@@ -16,7 +16,7 @@
     "@types/relay-test-utils": "^19.0.0",
     "react-relay": "^20.1.1",
     "relay-test-utils": "^20.1.1",
-    "workflows-lib": "*"
+    "workflows-lib": "workspace:*"
   },
   "devDependencies": {
     "@jsonforms/core": "^3.6.0",

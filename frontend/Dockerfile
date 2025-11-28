@@ -2,18 +2,18 @@ FROM docker.io/library/node:25-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY ./yarn.lock ./package.json .
+COPY ./pnpm-lock.yaml ./package.json .
 COPY ./dashboard/package.json ./dashboard/package.json
 COPY ./relay-workflows-lib ./relay-workflows-lib
 COPY ./workflows-lib ./workflows-lib
-RUN yarn install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 COPY ./supergraph.graphql ./relay-workflows-lib/supergraph.graphql
-RUN yarn run --cwd=relay-workflows-lib relay
+RUN pnpm run --cwd=relay-workflows-lib relay
 
 COPY ./supergraph.graphql ./dashboard/supergraph.graphql
-RUN yarn run --cwd=dashboard build
+RUN pnpm run --cwd=dashboard build
 
 FROM docker.io/library/nginx:1.29.3-alpine-slim as nginx
 

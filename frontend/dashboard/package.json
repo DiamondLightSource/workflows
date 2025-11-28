@@ -16,8 +16,8 @@
     "msw": "^2.12.1",
     "react-relay": "20.1.1",
     "react-router-dom": "^7.9.5",
-    "relay-workflows-lib": "*",
-    "workflows-lib": "*"
+    "relay-workflows-lib": "workspace:*",
+    "workflows-lib": "workspace:*"
   },
   "devDependencies": {
     "@types/react-relay": "18.2.1",

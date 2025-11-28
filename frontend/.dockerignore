@@ -1,11 +1,15 @@
-.yarn/cache
-.yarn/install-state.gz
 
+# Pnpm store cache
+.pnpm-store
+
+# Build outputs
 **/dist
 **/dist-types
 
+# Dependencies
 **/node_modules
 
+# Local configs
 *.local.yaml
 
 Dockerfile
