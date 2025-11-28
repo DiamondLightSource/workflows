@@ -139,7 +139,7 @@ const WorkflowsListView: React.FC<WorkflowsListViewProps> = ({
                 key={`${JSON.stringify(workflowQueryFilter)}-${JSON.stringify(fetchKey)}`}
                 fallback={
                   <Box>
-                    <Typography variant="h6" fontWeight="bold">
+                    <Typography variant="h6" component="h2" fontWeight="bold">
                       Loading Workflows...
                     </Typography>
                   </Box>

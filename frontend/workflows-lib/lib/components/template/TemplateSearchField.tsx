@@ -23,6 +23,8 @@ export default function TemplateSearchField({
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
       <TextField
+        id="search-templates"
+        label="Search templates"
         onChange={(e) => {
           setSearchBoxContents(e.target.value);
         }}
@@ -33,14 +35,17 @@ export default function TemplateSearchField({
             startAdornment: <Search />,
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={handleClear} data-testid="clear-search">
+                <IconButton
+                  onClick={handleClear}
+                  data-testid="clear-search"
+                  aria-label="Clear Search"
+                >
                   <Clear />
                 </IconButton>
               </InputAdornment>
             ),
           },
         }}
-        aria-label="Search templates"
         value={searchBoxContents}
       />
     </Box>

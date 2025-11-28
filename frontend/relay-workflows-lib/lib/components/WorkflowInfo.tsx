@@ -59,7 +59,9 @@ export default function WorkflowInfo({ fragmentRef }: WorkflowInfoProps) {
   return (
     <Accordion sx={{ width: "100%" }} defaultExpanded>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-        <Typography variant="h6">Workflow Information</Typography>
+        <Typography variant="h6" component="h2">
+          Workflow Information
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Typography variant="body1">
