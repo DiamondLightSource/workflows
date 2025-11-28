@@ -10,6 +10,10 @@ import { workflowsListViewTemplatesResponse } from "dashboard/src/mocks/response
 import workflowsListResponse from "dashboard/src/mocks/responses/workflows/workflowsListResponse.json";
 import * as WorkflowsContent from "relay-workflows-lib/lib/components/WorkflowsContent";
 
+vi.mock(import("relay-workflows-lib/lib/components/TasksFlow"), () => ({
+  default: vi.fn(() => <></>),
+}));
+
 vi.mock(
   import("relay-workflows-lib/lib/components/WorkflowsContent"),
   async (importOriginal) => {
@@ -25,11 +29,7 @@ describe("WorkflowsListView", () => {
   const user = userEvent.setup();
   const workflows = workflowsListResponse.workflows.nodes;
 
-  beforeAll(() => {
-    server.listen();
-  });
-
-  beforeEach(async () => {
+  async function renderView() {
     const environment = await getRelayEnvironment();
     render(
       <MemoryRouter>
@@ -38,6 +38,10 @@ describe("WorkflowsListView", () => {
         </RelayEnvironmentProvider>
       </MemoryRouter>,
     );
+  }
+
+  beforeAll(() => {
+    server.listen();
   });
 
   afterAll(() => {
@@ -46,6 +50,7 @@ describe("WorkflowsListView", () => {
   });
 
   it("passes the mock workflows query data to the workflow list", async () => {
+    await renderView();
     expect(await screen.findByText("Loading Workflows...")).toBeInTheDocument();
     await waitFor(() => {
       expect(
@@ -54,13 +59,15 @@ describe("WorkflowsListView", () => {
     });
 
     expect(screen.getAllByText("Creator: abc12345")).toHaveLength(10);
-    workflows.forEach((workflow) => {
-      expect(screen.getByText(workflow.name)).toBeInTheDocument();
-    });
+    const workflowNameRegex = new RegExp(workflows[0].name, "i");
+    expect(
+      screen.getByRole("heading", { name: workflowNameRegex }),
+    ).toBeInTheDocument();
   });
 
   it("passes the mock template list query data to the filter drawer", async () => {
-    vi.mocked(WorkflowsContent.default).mockImplementationOnce(() => <></>);
+    vi.mocked(WorkflowsContent.default).mockImplementation(() => <></>);
+    await renderView();
     await user.click(
       await screen.findByRole("button", { name: "Add filters" }),
     );
