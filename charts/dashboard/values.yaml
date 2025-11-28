@@ -73,7 +73,7 @@ oidcBff:
     registry: ghcr.io
     repository: diamondlightsource/workflows-oidc-bff
     tag: "davehadley"
-    digest: "sha256:2a8b08d42afdee1da6263580d322ceeeacdfb0621bebc654d26166e22e12561c"
+    digest: "sha256:af10be3eba53344de3bbfe2a082e1e2e5d7c6089735a1d95bde7b926f025782f"
     pullPolicy: IfNotPresent
     pullSecrets: []
   configuration:

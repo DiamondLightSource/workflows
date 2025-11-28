@@ -10,7 +10,7 @@ path = "src/bin/keygen.rs"
 publish = false
 
 [dependencies]
-anyhow.workspace = true
+anyhow = { workspace = true, features = ["backtrace"] }
 axum = { workspace = true, features = ["macros"] }
 axum-reverse-proxy = "1.0.3"
 bytes = "1.11.0"

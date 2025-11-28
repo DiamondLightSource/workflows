@@ -88,6 +88,9 @@ spec:
 
             - name: WORKFLOWS_OIDC_BFF_OIDC_PROVIDER_URL
               value: {{ .Values.oidcBff.configuration.oidcProviderUrl | quote }}
+
+            - name: RUST_BACKTRACE
+              value: 1
 ---
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
