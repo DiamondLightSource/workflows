@@ -48,3 +48,22 @@ rules:
    - workflows
   verbs:
     - get
+- apiGroups:
+    - "kueue.x-k8s.io"
+  resources:
+    - localqueues
+  verbs:
+    - get
+    - list
+    - create
+    - update
+    - delete
+    - patch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
