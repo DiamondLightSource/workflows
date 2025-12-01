@@ -1,0 +1,29 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: localqueue
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+  - try:
+    - apply:
+        resource:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: test-session-ns
+            labels:
+              app.kubernetes.io/managed-by: sessionspaces
+    - assert:
+        resource:
+          apiVersion: kueue.x-k8s.io/v1beta1
+          kind: LocalQueue
+          metadata:
+            name: default-queue
+            namespace: test-session-ns
+          spec:
+            clusterQueue: default-queue
+
