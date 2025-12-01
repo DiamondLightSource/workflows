@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
@@ -92,7 +92,7 @@ jobs:
     needs: [test, lint]
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install musl
         run: |
