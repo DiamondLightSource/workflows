@@ -1,0 +1,50 @@
+kueue:
+  controllerManager:
+    manager:
+      resources:
+        limits:
+          cpu: "8"
+          memory: 16Gi
+        requests:
+          cpu: '4'
+          memory: 8Gi
+  managerConfig:
+    controllerManagerConfigYaml: |-
+      apiVersion: config.kueue.x-k8s.io/v1beta1
+      kind: Configuration
+      health:
+        healthProbeBindAddress: :8081
+      metrics:
+        bindAddress: :8443
+        enableClusterQueueResources: true
+      webhook:
+        port: 9443
+      leaderElection:
+        leaderElect: true
+        resourceName: c1f6bfd2.kueue.x-k8s.io
+      controller:
+        groupKindConcurrency:
+          Job.batch: 50
+          Pod: 50
+          Workload.kueue.x-k8s.io: 50
+          LocalQueue.kueue.x-k8s.io: 10
+          ClusterQueue.kueue.x-k8s.io: 10
+          ResourceFlavor.kueue.x-k8s.io: 10
+      clientConnection:
+        qps: 300
+        burst: 500
+      integrations:
+        frameworks:
+        - "batch/job"
+        - "kubeflow.org/mpijob"
+        - "ray.io/rayjob"
+        - "ray.io/raycluster"
+        - "jobset.x-k8s.io/jobset"
+        - "trainer.kubeflow.org/trainjob"
+        - "kubeflow.org/paddlejob"
+        - "kubeflow.org/pytorchjob"
+        - "kubeflow.org/tfjob"
+        - "kubeflow.org/xgboostjob"
+        - "kubeflow.org/jaxjob"
+        - "workload.codeflare.dev/appwrapper"
+        - "pod"
