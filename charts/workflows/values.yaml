@@ -92,7 +92,7 @@ postgresql-ha:
   pgpool:
     image:
       repository: bitnamilegacy/pgpool
-    exisitingSecret: pgpool-passwords
+    existingSecret: pgpool-passwords
     customUsersSecret: postgres-application-passwords
     resources:
       requests:
