@@ -48,3 +48,5 @@ kueue:
         - "kubeflow.org/jaxjob"
         - "workload.codeflare.dev/appwrapper"
         - "pod"
+
+createDefaultLocalQueues: true
