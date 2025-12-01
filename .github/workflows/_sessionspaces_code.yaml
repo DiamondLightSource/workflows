@@ -29,7 +29,7 @@ jobs:
           components: clippy,rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.8.1
+        uses: Swatinem/rust-cache@v2.8.2
         with:
           workspaces: backend
           shared-key: backend/sessionspaces
@@ -51,7 +51,7 @@ jobs:
           --deny warnings
 
       - name: Check Dependencies with Cargo Deny
-        uses: EmbarkStudios/cargo-deny-action@v2.0.13
+        uses: EmbarkStudios/cargo-deny-action@v2.0.14
         with:
           command: check licenses ban
           manifest-path: backend/Cargo.toml
@@ -79,7 +79,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.8.1
+        uses: Swatinem/rust-cache@v2.8.2
         with:
           workspaces: backend
           shared-key: backend/sessionspaces
