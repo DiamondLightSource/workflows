@@ -42,9 +42,9 @@ pub async fn callback(
     if auth_session_data.csrf_token != CsrfToken::new(params.state) {
         return Err(anyhow!("invalid state").into());
     }
-    let url_prefix = "https://staging.workflows.diamond.ac.uk"; // TODO: this should come from config
     let redirect_url = Cow::Owned(RedirectUrl::new(
-        format!("{}/auth/callback", url_prefix).to_string(),
+        // "http://localhost:5173/auth/callback".to_string(),
+        "https://staging.workflows.diamond.ac.uk/auth/callback".to_string(),
     )?);
     // Now you can exchange it for an access token and ID token.
     let token_response = state

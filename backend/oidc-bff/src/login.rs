@@ -18,7 +18,8 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
     // Set the URL the user will be redirected to after the authorization process.
     // .set_redirect_uri(RedirectUrl::new("https://localhost/callback".to_string())?);
     let oidc_client = state.oidc_client.clone().set_redirect_uri(RedirectUrl::new(
-        "http://localhost:5173/auth/callback".to_string(),
+        // "http://localhost:5173/auth/callback".to_string(),
+        "https://staging.workflows.diamond.ac.uk/auth/callback".to_string(),
     )?);
     // .set_redirect_uri(RedirectUrl::new("https://workflows.diamond.ac.uk".to_string())?)
     // Generate a PKCE challenge.
