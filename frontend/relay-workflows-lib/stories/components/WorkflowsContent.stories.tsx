@@ -68,6 +68,5 @@ export const Default: Story = {
     onPageChange: () => {},
     onLimitChange: () => {},
     updatePageInfo: () => {},
-    setIsPaginated: () => {},
   },
 };
