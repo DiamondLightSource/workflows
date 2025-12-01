@@ -10,7 +10,7 @@ spec:
   ports:
     - name: oidc-bff
       port: 80
-      targetPort: oidc-bff
+      targetPort: 80
       protocol: TCP
 ---
 apiVersion: apps/v1
