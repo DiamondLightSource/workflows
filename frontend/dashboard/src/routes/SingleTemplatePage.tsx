@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
-import { Breadcrumbs, visitToText } from "@diamondlightsource/sci-react-ui";
+import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import { WorkflowsNavbar } from "workflows-lib";
 import { parseVisitAndTemplate } from "workflows-lib/lib/utils/commonUtils";
 import TemplateViewRetrigger from "relay-workflows-lib/lib/views/TemplateViewRetrigger";
@@ -31,14 +31,6 @@ const SingleTemplatePage: React.FC = () => {
           mt={2}
           mb={10}
         >
-          {workflowName && (
-            <Typography align="center" mb={5}>
-              Using initial parameters from{" "}
-              <Link to={`/workflows/${visitToText(visit)}/${workflowName}`}>
-                {workflowName}
-              </Link>
-            </Typography>
-          )}
           {templateName && (
             <WorkflowErrorBoundaryWithRetry>
               {({ fetchKey }) => (
@@ -59,7 +51,7 @@ const SingleTemplatePage: React.FC = () => {
                       visit={visit}
                     />
                   ) : (
-                    <TemplateView templateName={templateName} />
+                    <TemplateView templateName={templateName} visit={visit} />
                   )}
                 </Suspense>
               )}

@@ -18,6 +18,7 @@ interface TemplateSubmissionFormProps {
   prepopulatedParameters?: JSONObject;
   visit?: Visit;
   onSubmit: (visit: Visit, parameters: object) => void;
+  parameterMessage?: React.JSX.Element;
 }
 
 const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
@@ -30,6 +31,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   prepopulatedParameters,
   visit,
   onSubmit,
+  parameterMessage,
 }) => {
   const theme = useTheme();
   const validator = createAjv({ useDefaults: true, coerceTypes: true });
@@ -73,6 +75,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
         </Typography>
       )}
       <Divider />
+      {parameterMessage}
       <JsonForms
         schema={parametersSchema}
         uischema={parametersUISchema ?? undefined}

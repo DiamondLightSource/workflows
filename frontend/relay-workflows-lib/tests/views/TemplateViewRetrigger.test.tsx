@@ -38,4 +38,14 @@ describe("TemplateViewRetrigger", () => {
       screen.getByRole("spinbutton", { name: "Dimension in x (row)" }),
     ).toHaveValue(128);
   });
+
+  it("shows a link to the reused workflow", () => {
+    expect(
+      screen.getByText(/Parameter values have been reused from/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "e02-mib2x" })).toHaveAttribute(
+      "href",
+      "/workflows/mg36964-1/e02-mib2x",
+    );
+  });
 });
