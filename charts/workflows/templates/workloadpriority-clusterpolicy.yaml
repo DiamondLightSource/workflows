@@ -94,3 +94,21 @@ spec:
               - standard
               - live
               - test
+
+    - name: validate-kueue-labels
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            operations:
+            - CREATE
+            - UPDATE
+      validate:
+        message: "Workload priority labels must match the workflows.diamond.ac.uk/type annotation."
+        deny:
+          conditions:
+            all:
+            - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\"  }}` }}"
+              operator: NotEquals
+              value: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" == 'live' && 'high' || request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" == 'test' && 'low' || 'medium'  }}` }}"
