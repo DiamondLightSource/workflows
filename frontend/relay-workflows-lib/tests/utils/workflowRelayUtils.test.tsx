@@ -4,6 +4,7 @@ import { WorkflowTasksFragment$key } from "../../lib/graphql/__generated__/Workf
 import {
   useFetchedTasks,
   useSelectedTaskIds,
+  mergeParameters,
 } from "../../lib/utils/workflowRelayUtils";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
@@ -19,6 +20,8 @@ import {
 } from "react-relay";
 import { server } from "../mocks/browser";
 import { Suspense } from "react";
+import { SubmissionFormParametersFragment$data } from "../../lib/components/__generated__/SubmissionFormParametersFragment.graphql";
+import e02Mib2xRetriggerResponse from "dashboard/src/mocks/responses/templates/e02Mib2xRetriggerResponse.json";
 
 beforeAll(() => {
   server.listen();
@@ -124,4 +127,20 @@ test("useFetchedTasks", async () => {
   await waitFor(() => screen.getByTestId("fetched-task"));
   expect(screen.getByTestId("fetched-task")).toHaveTextContent("Data");
   expect(screen.getByTestId("data-comparison")).toHaveTextContent("true");
+});
+
+test("mergeParameters", () => {
+  const mockSearchParams = new URLSearchParams(
+    "?mib_path=/test/path/&Scan_X=512",
+  );
+  const mockReusedData =
+    e02Mib2xRetriggerResponse as SubmissionFormParametersFragment$data;
+  expect(mergeParameters(mockReusedData, mockSearchParams)).toEqual(
+    expect.objectContaining({
+      Scan_X: "512",
+      Scan_Y: 128,
+      memory: "8Gi",
+      mib_path: "/test/path/",
+    }),
+  );
 });

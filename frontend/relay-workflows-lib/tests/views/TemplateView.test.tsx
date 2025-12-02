@@ -7,7 +7,7 @@ import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
 import { MemoryRouter } from "react-router-dom";
 import TemplateView from "../../lib/views/TemplateView";
 
-describe("TemplateView", () => {
+describe("TemplateView queries", () => {
   const user = userEvent.setup();
 
   beforeAll(() => {
@@ -26,11 +26,15 @@ describe("TemplateView", () => {
     );
   });
 
+  afterEach(() => {
+    server.resetHandlers();
+  });
+
   afterAll(() => {
     server.close();
   });
 
-  it("passes fragment data to the submission form correctly", async () => {
+  it("populates the submission form with default values", async () => {
     expect(await screen.findByText("Away Day")).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Step" })).toHaveValue("1");
     expect(screen.getByRole("textbox", { name: "Stop" })).toHaveValue("10");
@@ -82,5 +86,37 @@ describe("TemplateView", () => {
     expect(await screen.findByText("Submissions")).toBeVisible();
     expect(screen.getByText(/Submission error type GraphQL/)).toBeVisible();
     expect(screen.getByText(/Mock GraphQL Error/)).toBeInTheDocument();
+  });
+});
+
+describe("TemplateView params", () => {
+  beforeAll(() => {
+    server.listen();
+  });
+
+  afterEach(() => {
+    server.resetHandlers();
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
+  async function renderWithPath(path: string) {
+    const environment = await getRelayEnvironment();
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <RelayEnvironmentProvider environment={environment}>
+          <TemplateView templateName={"sin-simulate-artifact"} />
+        </RelayEnvironmentProvider>
+      </MemoryRouter>,
+    );
+  }
+
+  it("populates the visit field from the path", async () => {
+    await renderWithPath("/templates/sin-simulate-artifact/mg36964-1");
+    expect(screen.getByRole("textbox", { name: "Visit" })).toHaveValue(
+      "mg36964-1",
+    );
   });
 });
