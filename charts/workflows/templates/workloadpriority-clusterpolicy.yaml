@@ -74,3 +74,23 @@ spec:
               labels:
                 kueue.x-k8s.io/queue-name: default-queue
                 kueue.x-k8s.io/priority-class: low
+
+    - name: validate-workflow-type
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            operations:
+            - CREATE
+      validate:
+        message: "The annotation workflows.diamond.ac.uk/type must be 'standard', 'live', or 'test'."
+        deny:
+          conditions:
+            all:
+            - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" || 'standard' }}` }}"
+              operator: AnyNotIn
+              value:
+              - standard
+              - live
+              - test

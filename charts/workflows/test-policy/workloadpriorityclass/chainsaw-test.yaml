@@ -83,3 +83,12 @@ spec:
                   labels:
                     kueue.x-k8s.io/queue-name: default-queue
                     kueue.x-k8s.io/priority-class: low
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: invalid
+                annotations:
+                  workflows.diamond.ac.uk/type: "processing"
+              spec: {}
