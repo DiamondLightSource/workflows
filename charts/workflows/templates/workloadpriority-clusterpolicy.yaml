@@ -1,0 +1,53 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: workloadpriority
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: standard-workload-priority
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            operations:
+              - CREATE
+      preconditions:
+        all:
+        - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" || 'standard' }}` }}"
+          operator: Equals
+          value: "standard"
+        - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
+          operator: Equals
+          value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            podMetadata:
+              labels:
+                kueue.x-k8s.io/queue-name: default-queue
+                kueue.x-k8s.io/priority-class: medium
+
+    - name: live-workload-priority
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            annotations:
+              workflows.diamond.ac.uk/type: "live"
+            operations:
+              - CREATE
+      preconditions:
+        all:
+        - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
+          operator: Equals
+          value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            podMetadata:
+              labels:
+                kueue.x-k8s.io/queue-name: default-queue
+                kueue.x-k8s.io/priority-class: high
