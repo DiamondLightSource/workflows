@@ -51,3 +51,26 @@ spec:
               labels:
                 kueue.x-k8s.io/queue-name: default-queue
                 kueue.x-k8s.io/priority-class: high
+
+    - name: low-workload-priority
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            annotations:
+              workflows.diamond.ac.uk/type: "test"
+            operations:
+              - CREATE
+      preconditions:
+        all:
+        - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
+          operator: Equals
+          value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            podMetadata:
+              labels:
+                kueue.x-k8s.io/queue-name: default-queue
+                kueue.x-k8s.io/priority-class: low
