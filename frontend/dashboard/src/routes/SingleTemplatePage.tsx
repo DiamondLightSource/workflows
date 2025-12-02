@@ -59,7 +59,7 @@ const SingleTemplatePage: React.FC = () => {
                       visit={visit}
                     />
                   ) : (
-                    <TemplateView templateName={templateName} />
+                    <TemplateView templateName={templateName} visit={visit} />
                   )}
                 </Suspense>
               )}
