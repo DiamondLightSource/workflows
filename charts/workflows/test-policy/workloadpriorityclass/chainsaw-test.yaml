@@ -1,0 +1,65 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: workloadpriorityclass
+spec:
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+                annotations:
+                  workflows.diamond.ac.uk/type: "standard"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+                    kueue.x-k8s.io/priority-class: medium
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: default
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+                    kueue.x-k8s.io/priority-class: medium
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: live
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: live
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+                    kueue.x-k8s.io/priority-class: high
