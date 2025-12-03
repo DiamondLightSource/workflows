@@ -48,5 +48,9 @@ kueue:
         - "kubeflow.org/jaxjob"
         - "workload.codeflare.dev/appwrapper"
         - "pod"
+      objectRetentionPolicies:
+        workloads:
+          afterFinished: "30s"
+          afterDeactivatedByKueue: "30s"
 
 createDefaultLocalQueues: true
