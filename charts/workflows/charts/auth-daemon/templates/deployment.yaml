@@ -1,0 +1,84 @@
+{{- if $.Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  replicas: {{ $.Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
+    spec:
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      retryStrategy:
+        limit: 10
+      containers:
+        - name: auth-daemon
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values "chart" $.Chart )}}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ $.Values.healthPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 1
+          ports:
+            - name: auth-daemon
+              protocol: TCP
+              targetPort: {{ $.Values.port }}
+              containerPort: {{ $.Values.port }}
+          resources:
+            {{- $.Values.resources | toYaml | nindent 12 }}
+          env:
+            - name: PORT
+              value: "{{ $.Values.healthPort }}"
+            - name: AUTH_DOMAIN
+              value: {{ $.Values.config.authDomain }}
+            - name: CLIENT_ID
+              value: {{ $.Values.config.clientId }}
+            - name: LOG_LEVEL
+              value: {{ $.Values.config.logLevel }}
+            - name: GRAPH_URL
+              value: {{ $.Values.config.graphUrl }}
+            - name: DB_HOST
+              value: {{ $.Values.config.dbHost }}
+            - name: DB_PORT
+              value: "{{ $.Values.config.dbPort }}"
+            - name: DB_NAME
+              value: {{ $.Values.config.dbName }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-argo-workflows-password
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-argo-workflows-password
+                  key: password
+          args:
+            - serve
+          {{- with $.Values.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+{{- end }}

@@ -33,3 +33,33 @@ postgresql-ha:
   persistence:
     storageClass: netapp
     size: 10Gi
+
+auth-daemon:
+  enabled: true
+  replicaCount: 1
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+  image:
+    registry: ghcr.io
+    repository: /diamondlightsource/workflows-auth-daemon
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  healthPort: 8080
+  port: 80
+  podAnnotations: {}
+  resources:
+    limits:
+      cpu: 1Gi
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  config:
+    authDomain: "https://authn.diamond.ac.uk/realms/master"
+    clientId: "workflows-cluster-staging"
+    graphUrl: "https://staging.workflows.diamond.ac.uk/graphql"
+    dbHost: "workflows-postgresql-ha-pgpool"
+    dbPort: 5432
+    dbName: "argo_service"
+    logLevel: "debug"

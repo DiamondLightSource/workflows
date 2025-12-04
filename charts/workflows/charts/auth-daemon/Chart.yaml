@@ -1,0 +1,10 @@
+apiVersion: v2
+name: auth-daemon
+description: A daemon service to handle authentication tasks
+type: application
+
+version: 0.1.0
+dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts

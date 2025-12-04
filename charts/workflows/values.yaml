@@ -196,3 +196,6 @@ bitnamisecret:
 
 s3mock:
   enabled: false
+
+auth-daemon:
+  enabled: false

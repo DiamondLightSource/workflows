@@ -22,3 +22,7 @@ dependencies:
     repository: file://./charts/s3mock/
     version: 0.1.0
     condition: s3mock.enabled
+  - name: auth-daemon
+    repository: file://./charts/auth-daemon/
+    version: 0.1.0
+    condition: auth-daemon.enabled
