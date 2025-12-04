@@ -1,14 +1,11 @@
 import { useFragment } from "react-relay";
-import {
-  JSONObject,
-  SubmissionForm as SubmissionFormBase,
-  Visit,
-} from "workflows-lib";
+import { SubmissionForm as SubmissionFormBase, Visit } from "workflows-lib";
 import { JsonSchema, UISchemaElement } from "@jsonforms/core";
 import { graphql } from "react-relay";
 import { SubmissionFormFragment$key } from "./__generated__/SubmissionFormFragment.graphql";
 import { SubmissionFormParametersFragment$key } from "./__generated__/SubmissionFormParametersFragment.graphql";
 import { useSearchParams } from "react-router-dom";
+import { mergeParameters } from "../utils/workflowRelayUtils";
 
 export const SubmissionFormFragment = graphql`
   fragment SubmissionFormFragment on WorkflowTemplate {
@@ -45,9 +42,11 @@ const SubmissionForm = ({
     prepopulatedParameters,
   );
   const [searchParams] = useSearchParams();
-  const searchParameterData = Object.fromEntries(
-    searchParams.entries(),
-  ) as JSONObject;
+
+  const autofilledParameters = mergeParameters(
+    reusedParameterData,
+    searchParams,
+  );
 
   return (
     <SubmissionFormBase
@@ -58,11 +57,7 @@ const SubmissionForm = ({
       parametersSchema={data.arguments as JsonSchema}
       parametersUISchema={data.uiSchema as UISchemaElement}
       visit={visit}
-      prepopulatedParameters={
-        reusedParameterData
-          ? (reusedParameterData.parameters as JSONObject)
-          : searchParameterData
-      }
+      prepopulatedParameters={autofilledParameters}
       onSubmit={onSubmit}
     />
   );

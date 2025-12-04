@@ -109,4 +109,21 @@ describe("SingleTemplatePage", () => {
       screen.getByRole("link", { name: "mock-workflow-1" }),
     ).toHaveAttribute("href", "/workflows/mg36964-1/mock-workflow-1");
   });
+
+  it("renders a message if search parameters are detected", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1?test=yes");
+    expect(
+      screen.getByText(/overridden by query parameters/i),
+    ).toBeInTheDocument();
+  });
+
+  it("renders both messages if both reused parameters and search parameters are specified", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1?messages=2");
+    expect(
+      screen.getByText(/Using initial parameters from/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/overridden by query parameters/i),
+    ).toBeInTheDocument();
+  });
 });

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs, visitToText } from "@diamondlightsource/sci-react-ui";
 import { WorkflowsNavbar } from "workflows-lib";
@@ -19,6 +19,31 @@ const SingleTemplatePage: React.FC = () => {
     undefined,
   ];
 
+  const [searchParams] = useSearchParams();
+  const isSearchParams = !!searchParams.size;
+
+  const message: React.JSX.Element[] = [
+    workflowName ? (
+      <>
+        Using initial parameters from{" "}
+        <Link to={`/workflows/${visitToText(visit)}/${workflowName}`}>
+          {workflowName}
+        </Link>
+        {". "}
+      </>
+    ) : (
+      <></>
+    ),
+    isSearchParams ? (
+      <>
+        Initial parameters may have been overridden by query parameters from the
+        URL.
+      </>
+    ) : (
+      <></>
+    ),
+  ];
+
   return (
     <>
       <WorkflowsNavbar />
@@ -31,12 +56,9 @@ const SingleTemplatePage: React.FC = () => {
           mt={2}
           mb={10}
         >
-          {workflowName && (
+          {(workflowName || isSearchParams) && (
             <Typography align="center" mb={5}>
-              Using initial parameters from{" "}
-              <Link to={`/workflows/${visitToText(visit)}/${workflowName}`}>
-                {workflowName}
-              </Link>
+              {message}
             </Typography>
           )}
           {templateName && (
