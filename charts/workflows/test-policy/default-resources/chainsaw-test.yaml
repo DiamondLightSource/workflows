@@ -1,0 +1,204 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: default-workflow-resources
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow-defaults
+              spec:
+                entrypoint: main
+                templates:
+                  - name: main
+                    steps:
+                      - - name: step1
+                          template: container-step
+                      - - name: step2
+                          template: script-step
+                  - name: container-step
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello"]
+                  - name: container-step-1
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        requests:
+                          memory: "300Mi"
+                  - name: container-step-2
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        requests:
+                          cpu: "2"
+                  - name: container-step-3
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        limits:
+                          memory: "300Mi"
+                  - name: container-step-4
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        limits:
+                          cpu: "2"
+                  - name: script-step
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                  - name: script-step-1
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        requests:
+                          cpu: "2"
+                  - name: script-step-2
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        requests:
+                          memory: "200Mi"
+                  - name: script-step-3
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        limits:
+                          cpu: "2"
+                  - name: script-step-4
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        limits:
+                          memory: "200Mi"
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow-defaults
+              spec:
+                templates:
+                  - name: main
+                    steps:
+                      - - name: step1
+                          template: container-step
+                      - - name: step2
+                          template: script-step
+                  - name: container-step
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello"]
+                      resources:
+                        limits:
+                          cpu: "1"
+                          memory: "100Mi"
+                  - name: container-step-1
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        requests:
+                          cpu: "1"
+                          memory: "300Mi"
+                  - name: container-step-2
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        requests:
+                          cpu: "2"
+                          memory: "100Mi"
+                  - name: container-step-3
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        limits:
+                          cpu: "1"
+                          memory: "300Mi"
+                  - name: container-step-4
+                    container:
+                      image: alpine:latest
+                      command: [echo, "hello-1"]
+                      resources:
+                        limits:
+                          cpu: "2"
+                          memory: "100Mi"
+                  - name: script-step
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        limits:
+                          cpu: "1"
+                          memory: "100Mi"
+                  - name: script-step-1
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        requests:
+                          cpu: "2"
+                          memory: "100Mi"
+                  - name: script-step-2
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        requests:
+                          cpu: "1"
+                          memory: "200Mi"
+                  - name: script-step-3
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        limits:
+                          cpu: "2"
+                          memory: "100Mi"
+                  - name: script-step-4
+                    script:
+                      image: python:alpine
+                      command: [python]
+                      source: |
+                        print("hello")
+                      resources:
+                        limits:
+                          cpu: "1"
+                          memory: "200Mi"
