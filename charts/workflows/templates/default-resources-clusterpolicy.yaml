@@ -1,0 +1,155 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-workflow-resources
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: default-workflow-resources
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            operations:
+            - CREATE
+            - UPDATE
+      mutate:
+        foreach:
+          # Set default resource limits for container templates
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.container || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.container.resources || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/container/resources
+              op: add
+              value:
+                limits:
+                  cpu: "1"
+                  memory: "100Mi"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.container.resources.limits || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.container.resources.limits.cpu || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/container/resources/limits/cpu
+              op: add
+              value: "1"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.container.resources.limits || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.container.resources.limits.memory || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/container/resources/limits/memory
+              op: add
+              value: "100Mi"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.container.resources.requests || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.container.resources.requests.cpu || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/container/resources/requests/cpu
+              op: add
+              value: "1"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.container.resources.requests || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.container.resources.requests.memory || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/container/resources/requests/memory
+              op: add
+              value: "100Mi"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.script || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.script.resources || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/script/resources
+              op: add
+              value:
+                limits:
+                  cpu: "1"
+                  memory: "100Mi"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.script.resources.limits || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.script.resources.limits.cpu || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/script/resources/limits/cpu
+              op: add
+              value: "1"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.script.resources.limits || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.script.resources.limits.memory || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/script/resources/limits/memory
+              op: add
+              value: "100Mi"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.script.resources.requests || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.script.resources.requests.cpu || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/script/resources/requests/cpu
+              op: add
+              value: "1"
+        - list: "request.object.spec.templates"
+          preconditions:
+            all:
+            - key: "{{ element.script.resources.requests || '' }}"
+              operator: NotEquals
+              value: ""
+            - key: "{{ element.script.resources.requests.memory || '' }}"
+              operator: Equals
+              value: ""
+          patchesJson6902: |-
+            - path: /spec/templates/{{elementIndex}}/script/resources/requests/memory
+              op: add
+              value: "100Mi"
