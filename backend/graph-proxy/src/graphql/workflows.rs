@@ -1,5 +1,5 @@
 use super::{Visit, VisitInput, CLIENT};
-use crate::{graphql::filters::WorkflowFilter, ArgoServerUrl, S3Bucket};
+use crate::{ArgoServerUrl, S3Bucket, graphql::{auth_guard::AuthGuard, filters::WorkflowFilter}};
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
@@ -77,6 +77,7 @@ impl Workflow {
     }
 
     /// The name given to the workflow, unique within a given visit
+    #[graphql(guard = AuthGuard)]
     async fn name(&self) -> &str {
         &self.metadata.name
     }
@@ -1648,5 +1649,30 @@ mod tests {
             }
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+
+    #[tokio::test]
+    async fn unauthenticated_query_returns_null() {
+        let schema = root_schema_builder()
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let query = r#"
+            query {{
+                workflow(name: "workflowName", visit: {{proposalCode: "xy", proposalNumber: 1234, number: 5678}}) {{
+                    name
+                }}
+            }}
+        "#;
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        let expected_data = json!({
+            "workflow": {
+                "name": null
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+        let error_code = resp.errors[0].extensions.as_ref().unwrap().get("code").unwrap().to_string();
+        assert_eq!(error_code, "UNAUTHENTICATED");
     }
 }

@@ -14,7 +14,7 @@ mod subscription;
 /// Axum-specific websocket handling to support subscriptions
 pub mod subscription_integration;
 
-use crate::RouterState;
+use crate::{RouterState, graphql::validate_auth::ValidatedAuthToken};
 
 use self::{
     subscription::WorkflowsSubscription,
@@ -35,6 +35,8 @@ use lazy_static::lazy_static;
 use opentelemetry::KeyValue;
 use std::fmt::Display;
 use workflow_templates::WorkflowTemplatesMutation;
+mod auth_guard;
+mod validate_auth;
 
 /// The root schema of the service
 pub type RootSchema = Schema<Query, Mutation, Subscription>;
@@ -150,7 +152,7 @@ pub async fn graphql_handler(
             .add(1, &[KeyValue::new("request_type", "unparseable")]);
     };
 
-    let auth_token = auth_token_header.map(|header| header.0);
+    let auth_token = ValidatedAuthToken::from_typed_header(auth_token_header);
     state.schema.execute(query.data(auth_token)).await.into()
 }
 
