@@ -120,7 +120,7 @@ const ScrollableImages = ({
     };
   }, [handlePrev, handleNext]);
 
-  useEffect(() => {
+  useCallback(() => {
     if (currentIndex >= imageListLength && imageListLength) {
       setCurrentIndexWrapper(imageListLength - 1);
     }
