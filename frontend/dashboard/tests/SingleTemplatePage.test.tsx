@@ -1,0 +1,129 @@
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import SingleTemplatePage from "../src/routes/SingleTemplatePage";
+import { Visit } from "@diamondlightsource/sci-react-ui";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+
+vi.mock("relay-workflows-lib/lib/views/TemplateView", () => ({
+  default: ({
+    templateName,
+    visit,
+  }: {
+    templateName: string;
+    visit: Visit;
+  }) => (
+    <p>
+      TemplateView for {templateName} in visit {visit.proposalCode}
+      {visit.proposalNumber}-{visit.number}
+    </p>
+  ),
+}));
+
+vi.mock("relay-workflows-lib/lib/views/TemplateViewRetrigger", () => ({
+  default: ({
+    templateName,
+    workflowName,
+    visit,
+  }: {
+    templateName: string;
+    workflowName: string;
+    visit: Visit;
+  }) => (
+    <p>
+      TemplateViewRetrigger for {templateName} in visit {visit.proposalCode}
+      {visit.proposalNumber}-{visit.number} using workflow {workflowName}
+    </p>
+  ),
+}));
+
+vi.mock("workflows-lib", async () => ({
+  ...(await vi.importActual("workflows-lib")),
+  WorkflowsNavbar: () => <></>,
+}));
+
+vi.mock("@diamondlightsource/sci-react-ui", async () => ({
+  ...(await vi.importActual("@diamondlightsource/sci-react-ui")),
+  Breadcrumbs: () => <></>,
+}));
+
+describe("SingleTemplatePage", () => {
+  function renderWithPath(path: string) {
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route
+            path="templates/:templateName/:prepopulate"
+            element={<SingleTemplatePage />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  it("does not render a view if no visit is provided", () => {
+    renderWithPath("/templates/e02-mib2x");
+    expect(screen.queryAllByRole("text")).toHaveLength(0);
+  });
+
+  it("renders a TemplateView when no workflow name is provided", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1");
+    expect(screen.getByText(/TemplateView /i)).toBeInTheDocument();
+  });
+
+  it("passes the visit from the address to the TemplateView", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1");
+    expect(screen.getByText(/mg36964-1/i)).toBeInTheDocument();
+  });
+
+  it("passes the template name from the address to the TemplateView", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1");
+    expect(screen.getByText(/e02-mib2x/i)).toBeInTheDocument();
+  });
+
+  it("renders a TemplateViewRetrigger when a workflow name is provided", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1");
+    expect(screen.getByText(/TemplateViewRetrigger/i)).toBeInTheDocument();
+  });
+
+  it("passes the visit from the address to the TemplateViewRetrigger", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1");
+    expect(screen.getByText(/mg36964-1/i)).toBeInTheDocument();
+  });
+
+  it("passes the template name from the address to the TemplateViewRetrigger", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1");
+    expect(screen.getByText(/e02-mib2x/i)).toBeInTheDocument();
+  });
+
+  it("passes the workflow name from the address to the TemplateViewRetrigger", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1");
+    expect(screen.getByText(/workflow mock-workflow-1/i)).toBeInTheDocument();
+  });
+
+  it("renders a message linking to the reused workflow", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1");
+    expect(
+      screen.getByText(/Using initial parameters from/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "mock-workflow-1" }),
+    ).toHaveAttribute("href", "/workflows/mg36964-1/mock-workflow-1");
+  });
+
+  it("renders a message if search parameters are detected", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1?test=yes");
+    expect(
+      screen.getByText(/overridden by query parameters/i),
+    ).toBeInTheDocument();
+  });
+
+  it("renders both messages if both reused parameters and search parameters are specified", () => {
+    renderWithPath("/templates/e02-mib2x/mg36964-1-mock-workflow-1?messages=2");
+    expect(
+      screen.getByText(/Using initial parameters from/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/overridden by query parameters/i),
+    ).toBeInTheDocument();
+  });
+});

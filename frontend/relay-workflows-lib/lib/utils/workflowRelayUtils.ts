@@ -5,6 +5,8 @@ import { isWorkflowWithTasks } from "../utils/coreUtils";
 import { useFragment } from "react-relay";
 import { WorkflowTasksFragment } from "../graphql/WorkflowTasksFragment";
 import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTasksFragment.graphql";
+import { JSONObject } from "workflows-lib";
+import { SubmissionFormParametersFragment$data } from "../components/__generated__/SubmissionFormParametersFragment.graphql";
 
 export function updateSearchParamsWithTaskIds(
   updatedTaskIds: string[],
@@ -80,4 +82,15 @@ export function useFetchedTasks(
   }, [data]);
 
   return fetchedTasks;
+}
+
+export function mergeParameters(
+  reusedParameterData: SubmissionFormParametersFragment$data | null | undefined,
+  searchParams: URLSearchParams,
+) {
+  const searchParameterData = Object.fromEntries(searchParams.entries());
+  return {
+    ...reusedParameterData?.parameters,
+    ...searchParameterData,
+  } as JSONObject;
 }

@@ -4,7 +4,7 @@ import { Visit } from "workflows-lib";
 import { TemplateViewRetriggerQuery as TemplateViewRetriggerQueryType } from "./__generated__/TemplateViewRetriggerQuery.graphql";
 import TemplateView from "./TemplateView";
 
-const TemplateViewRetriggerQuery = graphql`
+export const TemplateViewRetriggerQuery = graphql`
   query TemplateViewRetriggerQuery(
     $visit: VisitInput!
     $workflowName: String!

@@ -2,6 +2,6 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    projects: ["workflows-lib", "relay-workflows-lib"],
+    projects: ["workflows-lib", "relay-workflows-lib", "dashboard"],
   },
 });
