@@ -77,7 +77,6 @@ impl Workflow {
     }
 
     /// The name given to the workflow, unique within a given visit
-    #[graphql(guard = AuthGuard)]
     async fn name(&self) -> &str {
         &self.metadata.name
     }
@@ -548,6 +547,7 @@ pub struct WorkflowsQuery;
 impl WorkflowsQuery {
     /// Get a single [`Workflow`] by proposal, visit, and name
     #[instrument(name = "graph_proxy_workflow", skip(self, ctx))]
+    #[graphql(guard = AuthGuard)]
     pub async fn workflow(
         &self,
         ctx: &Context<'_>,
@@ -670,6 +670,8 @@ impl WorkflowCreator {
 
 #[cfg(test)]
 mod tests {
+    use crate::graphql::auth_guard::AuthErrorCode;
+    use crate::graphql::validate_auth::ValidatedAuthToken;
     use crate::graphql::{root_schema_builder, Authorization, Bearer, Visit};
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
     use serde_json::json;
@@ -1655,24 +1657,21 @@ mod tests {
     #[tokio::test]
     async fn unauthenticated_query_returns_null() {
         let schema = root_schema_builder()
-            .data(None::<Authorization<Bearer>>)
+            .data(ValidatedAuthToken::Missing)
             .finish();
         let query = r#"
-            query {{
-                workflow(name: "workflowName", visit: {{proposalCode: "xy", proposalNumber: 1234, number: 5678}}) {{
+            query {
+                workflow(name: "workflowName", visit: {proposalCode: "xy", proposalNumber: 1234, number: 5678}) {
                     name
-                }}
-            }}
-        "#;
-        let resp = schema.execute(query).await.into_result().unwrap();
-
-        let expected_data = json!({
-            "workflow": {
-                "name": null
+                }
             }
-        });
-        assert_eq!(resp.data.into_json().unwrap(), expected_data);
-        let error_code = resp.errors[0].extensions.as_ref().unwrap().get("code").unwrap().to_string();
-        assert_eq!(error_code, "UNAUTHENTICATED");
+        "#;
+        let resp = schema.execute(query).await;
+
+        let expected_data = json!(null);
+        assert_eq!(resp.data.into_json().expect("invalid response json"), expected_data);
+        let error_code = resp.errors[0].extensions.as_ref().expect("missing extensions").get("code").expect("missing code").clone().into_json().expect("invaldi json");
+        let expected_value = json!(AuthErrorCode::UNAUTHENTICATED.to_string());
+        assert_eq!(error_code, expected_value);
     }
 }
