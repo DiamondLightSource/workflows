@@ -63,7 +63,7 @@ workflows:
 
 graphProxy:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: nl/add-github-link-to-templates-and-workflows
   extraValueFiles:
     - staging-values.yaml
 
