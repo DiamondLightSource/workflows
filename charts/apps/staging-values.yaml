@@ -78,3 +78,9 @@ otel:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+kueue:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}

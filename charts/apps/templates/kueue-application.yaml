@@ -1,0 +1,34 @@
+{{- if .Values.kueue.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kueue
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  destination:
+    namespace: kueue
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/kueue
+    targetRevision: {{ .Values.kueue.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.kueue.extraValueFiles }}
+        {{- .Values.kueue.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.kueue.valuesObject }}
+      valuesObject:
+        {{- .Values.kueue.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}
