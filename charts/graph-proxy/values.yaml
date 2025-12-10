@@ -1,8 +1,8 @@
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-graph-proxy
-  tag: ""
-  digest: ""
+  tag: "jamesdoingstuff"
+  digest: "sha256:767cc360b7ff13692d6f6209b8eb2a168274011e3a126f5c7b997b9ac7f55b46"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
