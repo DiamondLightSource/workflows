@@ -96,14 +96,18 @@ impl WorkflowTemplate {
             Some(val) => val,
             None => return Err(anyhow!("Missing Instance"))
         };
+        println!("Got the instance");
         
         let client = Client::try_default().await?;
+        println!("Made client");
         let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "application");
         let api = Api::<DynamicObject>::all_with(
             client,
             &ApiResource::from_gvk_with_plural(&gvk, "applications")
         );
+        println!("Set up api");
         let obj = api.get("example-manifests-group").await?;
+        println!("Acquired object");
         let name = obj.name_any();
         let annotations = obj.metadata.annotations.clone().unwrap_or_default();
 
