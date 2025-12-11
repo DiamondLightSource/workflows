@@ -101,8 +101,9 @@ impl WorkflowTemplate {
         let client = Client::try_default().await?;
         println!("Made client");
         let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "application");
-        let api = Api::<DynamicObject>::all_with(
+        let api = Api::<DynamicObject>::namespaced_with(
             client,
+            "argocd",
             &ApiResource::from_gvk_with_plural(&gvk, "applications")
         );
         println!("Set up api");
