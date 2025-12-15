@@ -10,14 +10,9 @@ vcluster:
             persistence:
               volumeClaim:
                 storageClass: netapp
-            highAvailability:
-              replicas: 1
     coredns:
       deployment:
-        replicas: 1
-    statefulSet:
-      highAvailability:
-        replicas: 1
+        replicas: 2
 
   experimental:
     deploy:
