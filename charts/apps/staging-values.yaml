@@ -10,11 +10,11 @@ events:
     - staging-values.yaml
 
 groups:
-  enabled: true
+  enabled: false
   targetRevision: HEAD
 
 kyverno:
-  enabled: true
+  enabled: false
   valuesObject:
     admissionController:
       replicas: 1
@@ -39,13 +39,13 @@ kyverno:
           memory: 4Gi
 
 sessionspaces:
-  enabled: true
+  enabled: false
   targetRevision: HEAD
   extraValueFiles:
     - staging-values.yaml
 
 sealedsecrets:
-  enabled: true
+  enabled: false
   valuesObject:
     resources:
       limits:
@@ -56,25 +56,25 @@ sealedsecrets:
         memory: 256Mi
 
 workflows:
-  enabled: true
+  enabled: false
   targetRevision: HEAD
   extraValueFiles:
     - staging-values.yaml
 
 graphProxy:
-  enabled: true
+  enabled: false
   targetRevision: HEAD
   extraValueFiles:
     - staging-values.yaml
 
 dashboard:
-  enabled: true
+  enabled: false
   targetRevision: HEAD
   extraValueFiles:
     - staging-values.yaml
 
 otel:
-  enabled: true
+  enabled: false
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}

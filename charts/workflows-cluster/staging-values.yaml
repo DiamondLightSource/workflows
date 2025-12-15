@@ -10,9 +10,14 @@ vcluster:
             persistence:
               volumeClaim:
                 storageClass: netapp
+            highAvailability:
+              replicas: 1
     coredns:
       deployment:
-        replicas: 2
+        replicas: 1
+    statefulSet:
+      highAvailability:
+        replicas: 1
 
   experimental:
     deploy:
@@ -51,7 +56,7 @@ vcluster:
                       - staging-values.yaml
                   path: charts/apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
-                  targetRevision: HEAD
+                  targetRevision: drh/debug-staging-helm-upgrade
                 syncPolicy:
                   automated:
                     prune: true
