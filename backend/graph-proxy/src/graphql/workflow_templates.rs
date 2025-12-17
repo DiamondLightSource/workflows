@@ -127,6 +127,10 @@ impl WorkflowTemplate {
 
         let obj = api.get(&instance).await.unwrap();
         let annotations = obj.metadata.annotations.clone().unwrap_or_default();
+        println!("Annotations: ");
+        for (key, value) in &annotations {
+            println!("{}: {}", key, value);
+        }
         let path = match annotations.get("path") {
             Some(path) => path,
             None => &String::from(""),
