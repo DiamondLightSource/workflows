@@ -1,3 +1,4 @@
+import { RawScanRange } from "../../lib/components/template/controls/ScanRangeInput";
 import {
   isStrictPositiveInteger,
   parseExcludedScans,
@@ -65,60 +66,100 @@ describe("parseExcludedScans", () => {
 
 describe("validateScanRange", () => {
   it("validates correct input", () => {
-    const result = validateScanRange("1", "10", "3, 4, 5");
+    const result = validateScanRange({
+      start: "1",
+      end: "10",
+      excludedRaw: "3, 4, 5",
+    } as RawScanRange);
     expect(result.errors).toEqual({ start: "", end: "", excluded: "" });
     expect(result.parsed).toEqual({ start: 1, end: 10, excluded: [3, 4, 5] });
   });
 
   it("returns error for invalid start", () => {
-    const result = validateScanRange("abc", "10", "3, 4");
+    const result = validateScanRange({
+      start: "abc",
+      end: "10",
+      excludedRaw: "3, 4",
+    } as RawScanRange);
     expect(result.errors.start).toBe("Start must be a positive integer");
     expect(result.parsed).toBeUndefined();
   });
 
   it("returns error for invalid end", () => {
-    const result = validateScanRange("1", "abc", "3, 4");
+    const result = validateScanRange({
+      start: "1",
+      end: "abc",
+      excludedRaw: "3, 4",
+    } as RawScanRange);
     expect(result.errors.end).toBe("End must be a positive integer");
     expect(result.parsed).toBeUndefined();
   });
 
   it("returns error when end < start", () => {
-    const result = validateScanRange("10", "5", "3, 4");
+    const result = validateScanRange({
+      start: "10",
+      end: "5",
+      excludedRaw: "3, 4",
+    } as RawScanRange);
     expect(result.errors.end).toBe("End cannot be less than start");
     expect(result.parsed).toBeUndefined();
   });
 
   it("returns error for excluded values out of range", () => {
-    const result = validateScanRange("1", "5", "2, 6");
+    const result = validateScanRange({
+      start: "1",
+      end: "5",
+      excludedRaw: "2, 6",
+    } as RawScanRange);
     expect(result.errors.excluded).toBe("Excluded values out of range");
     expect(result.parsed).toBeUndefined();
   });
 
   it("returns error for invalid excluded format", () => {
-    const result = validateScanRange("1", "10", "abc");
+    const result = validateScanRange({
+      start: "1",
+      end: "10",
+      excludedRaw: "abc",
+    } as RawScanRange);
     expect(result.errors.excluded).toBe("Must be positive integers or ranges");
     expect(result.parsed).toBeUndefined();
   });
 
   it("returns empty excluded array for empty input", () => {
-    const result = validateScanRange("1", "10", "");
+    const result = validateScanRange({
+      start: "1",
+      end: "10",
+      excludedRaw: "",
+    } as RawScanRange);
     expect(result.errors.excluded).toBe("");
     expect(result.parsed?.excluded).toEqual([]);
   });
   it("handles duplicates", () => {
-    const result = validateScanRange("1", "10", "1, 1, 9");
+    const result = validateScanRange({
+      start: "1",
+      end: "10",
+      excludedRaw: "1, 1, 9",
+    } as RawScanRange);
     expect(result.errors).toEqual({ start: "", end: "", excluded: "" });
     expect(result.parsed?.excluded).toEqual([1, 9]);
   });
 
   it("handles overlapping ranges", () => {
-    const result = validateScanRange("1", "10", "3-5, 4-6");
+    const result = validateScanRange({
+      start: "1",
+      end: "10",
+      excludedRaw: "3-5, 4-6",
+    });
     expect(result.errors).toEqual({ start: "", end: "", excluded: "" });
     expect(result.parsed?.excluded).toEqual([3, 4, 5, 6]);
   });
 
   it("handles mixed excluded input", () => {
-    const result = validateScanRange("1", "10", "3, 3-5, [4, 5]");
+    const result = validateScanRange({
+      start: "1",
+      end: "10",
+      excludedRaw: "3, 3-5, [4, 5]",
+    });
     expect(result.errors).toEqual({ start: "", end: "", excluded: "" });
     expect(result.parsed?.excluded).toEqual([3, 4, 5]);
   });

@@ -1,3 +1,4 @@
+import { RawScanRange } from "../components/template/controls/ScanRangeInput";
 import { ScanRange } from "../types";
 
 export const isStrictPositiveInteger = (value: string): boolean =>
@@ -50,22 +51,22 @@ export interface ScanRangeValidationResult {
 }
 
 export const validateScanRange = (
-  startStr: string,
-  endStr: string,
-  excludedRaw: string,
+  scanRange: RawScanRange,
 ): ScanRangeValidationResult => {
-  const validStart = isStrictPositiveInteger(startStr);
-  const validEnd = isStrictPositiveInteger(endStr);
+  const validStart = isStrictPositiveInteger(scanRange.start);
+  const validEnd = isStrictPositiveInteger(scanRange.end);
 
-  const newStart = parseInt(startStr, 10);
-  const newEnd = parseInt(endStr, 10);
+  const newStart = parseInt(scanRange.start, 10);
+  const newEnd = parseInt(scanRange.end, 10);
 
   let excludedScans: number[] = [];
   let excludedError = "";
 
   try {
     excludedScans =
-      excludedRaw.trim() === "" ? [] : parseExcludedScans(excludedRaw);
+      scanRange.excludedRaw.trim() === ""
+        ? []
+        : parseExcludedScans(scanRange.excludedRaw);
     const outOfRange = excludedScans.filter(
       (num) => num < newStart || num > newEnd,
     );
