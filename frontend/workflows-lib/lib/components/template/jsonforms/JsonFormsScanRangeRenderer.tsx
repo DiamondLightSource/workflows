@@ -5,7 +5,6 @@ import { withJsonFormsControlProps } from "@jsonforms/react";
 import { ControlProps } from "@jsonforms/core";
 import ScanRangeInput from "../controls/ScanRangeInput";
 import { ScanRange } from "../../../types";
-import { useMemo } from "react";
 
 const ScanRangeControl = ({
   data,
@@ -23,18 +22,14 @@ const ScanRangeControl = ({
     handleChange(path, value);
   };
 
-  const localValue: ScanRange = useMemo(() => {
-    return {
-      start: data?.start,
-      end: data?.end,
-      excluded: data?.excluded ?? [],
-    };
-  }, [data]);
-
   return (
     <ScanRangeInput
       name={path}
-      value={localValue}
+      value={{
+        start: data?.start,
+        end: data?.end,
+        excluded: data?.excluded ?? [],
+      }}
       handleChange={handleBufferedChange}
       label={label}
       description={description}
