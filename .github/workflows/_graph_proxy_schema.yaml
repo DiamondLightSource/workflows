@@ -10,7 +10,7 @@ jobs:
       ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install stable toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
