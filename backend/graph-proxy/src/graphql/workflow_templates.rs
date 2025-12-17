@@ -4,16 +4,23 @@ use super::{
     workflows::Workflow,
     VisitInput,
 };
-use crate::{ArgoServerUrl, graphql::{CLIENT, filters::WorkflowTemplatesFilter}};
+use crate::{
+    graphql::{filters::WorkflowTemplatesFilter, CLIENT},
+    ArgoServerUrl,
+};
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Json, Object, SimpleObject
+    Context, Json, Object, SimpleObject,
 };
 use axum_extra::headers::{authorization::Bearer, Authorization};
-use kube::{Api, Client, api::{ApiResource, DynamicObject}, core::GroupVersionKind};
-use serde_json::{Value};
+use kube::{
+    api::{ApiResource, DynamicObject},
+    core::GroupVersionKind,
+    Api, Client,
+};
+use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
 
@@ -40,7 +47,7 @@ impl GitHubPath {
     fn new(repo: impl Into<String>, path: impl Into<String>) -> Self {
         Self {
             repo: repo.into(),
-            path: path.into()
+            path: path.into(),
         }
     }
 }
@@ -105,37 +112,36 @@ impl WorkflowTemplate {
     }
 
     async fn template_url(&self) -> Result<GitHubPath, WorkflowTemplateParsingError> {
-        let instance = match self.metadata
-        .labels
-        .get("argocd.argoproj.io/instance") {
+        let instance = match self.metadata.labels.get("argocd.argoproj.io/instance") {
             Some(val) => val,
             None => return Err(WorkflowTemplateParsingError::MissingInstanceLabel),
         };
-        
+
         let client = Client::try_default().await.unwrap();
         let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "application");
         let api = Api::<DynamicObject>::namespaced_with(
             client,
             "argocd",
-            &ApiResource::from_gvk_with_plural(&gvk, "applications")
+            &ApiResource::from_gvk_with_plural(&gvk, "applications"),
         );
 
         let obj = api.get(&instance).await.unwrap();
         let annotations = obj.metadata.annotations.clone().unwrap_or_default();
         let path = match annotations.get("path") {
             Some(path) => path,
-            None => &String::from("")
+            None => &String::from(""),
         };
-        let repo = match self.metadata
+        let repo = match self
+            .metadata
             .annotations
-            .get("workflows.diamond.ac.uk/repository") {
-                Some(repo) => repo,
-                None => &String::from("")
-            };
+            .get("workflows.diamond.ac.uk/repository")
+        {
+            Some(repo) => repo,
+            None => &String::from(""),
+        };
 
         Ok(GitHubPath::new(repo, path))
 
-        
         // let list = api.list(&ListParams::default()).await?;
         // for obj in list {
         //     let name = obj.name_any();
