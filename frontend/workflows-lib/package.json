@@ -37,7 +37,7 @@
     "@types/jest": "^30.0.0",
     "@types/react-resizable": "^3.0.8",
     "react-resizable": "^3.0.5",
-    "storybook": "^9.1.16",
+    "storybook": "^9.1.17",
     "@storybook/addon-docs": "^10.0.6"
   },
   "eslintConfig": {
