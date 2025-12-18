@@ -20,6 +20,7 @@ use kube::{
     core::GroupVersionKind,
     Api, Client,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, ops::Deref};
 use tracing::{debug, instrument};
@@ -37,20 +38,22 @@ enum WorkflowTemplateParsingError {
     MalformParameterSchema(#[from] serde_json::Error),
 }
 
-#[derive(Debug, Clone, SimpleObject, Eq, PartialEq)]
+#[derive(Debug,  Serialize, Deserialize, Default, Clone, SimpleObject, Eq, PartialEq)]
 struct GitHubPath {
-    repo: String,
     path: String,
+    repo_url: String,
+    target_revision: String,
 }
 
-impl GitHubPath {
-    fn new(repo: impl Into<String>, path: impl Into<String>) -> Self {
-        Self {
-            repo: repo.into(),
-            path: path.into(),
-        }
-    }
-}
+// impl GitHubPath {
+//     fn new(repo_url: impl Into<String>, path: impl Into<String>, target_revision: impl Into<String>) -> Self {
+//         Self {
+//             repo_url: repo_url.into(),
+//             path: path.into(),
+//             target_revision: target_revision.into(),
+//         }
+//     }
+// }
 
 /// A Template which specifies how to produce a [`Workflow`]
 #[derive(Debug, derive_more::Deref, derive_more::From)]
@@ -112,6 +115,7 @@ impl WorkflowTemplate {
     }
 
     async fn template_url(&self) -> Result<GitHubPath, WorkflowTemplateParsingError> {
+
         let instance = match self.metadata.labels.get("argocd.argoproj.io/instance") {
             Some(val) => val,
             None => return Err(WorkflowTemplateParsingError::MissingInstanceLabel),
@@ -126,25 +130,23 @@ impl WorkflowTemplate {
         );
 
         let obj = api.get(&instance).await.unwrap();
-        let annotations = obj.metadata.annotations.clone().unwrap_or_default();
-        println!("Annotations: ");
-        for (key, value) in &annotations {
-            println!("{}: {}", key, value);
-        }
-        let path = match annotations.get("path") {
-            Some(path) => path,
-            None => &String::from(""),
-        };
-        let repo = match self
-            .metadata
-            .annotations
-            .get("workflows.diamond.ac.uk/repository")
-        {
-            Some(repo) => repo,
-            None => &String::from(""),
+        let group_annotations = obj.metadata.annotations.clone().unwrap_or_default();
+        let last_config =
+            match group_annotations.get("kubectl.kubernetes.io/last-applied-configuration") {
+                Some(s) => s,
+                None => "",
+            };
+
+        let last_config_val: Value = serde_json::from_str(&last_config)?;
+        let source: GitHubPath = match last_config_val.get("spec") {
+            Some(val) => match val.get("source") {
+                Some(src) => serde_json::from_value(src.clone()).unwrap(),
+                None => GitHubPath {..Default::default()}
+            }
+            None => GitHubPath {..Default::default()}
         };
 
-        Ok(GitHubPath::new(repo, path))
+        Ok(source)
 
         // let list = api.list(&ListParams::default()).await?;
         // for obj in list {
