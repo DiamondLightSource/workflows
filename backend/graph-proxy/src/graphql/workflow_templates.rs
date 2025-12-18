@@ -38,10 +38,12 @@ enum WorkflowTemplateParsingError {
     MalformParameterSchema(#[from] serde_json::Error),
 }
 
-#[derive(Debug,  Serialize, Deserialize, Default, Clone, SimpleObject, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone, SimpleObject, Eq, PartialEq)]
 struct GitHubPath {
     path: String,
+    #[serde(rename = "repoURL")]
     repo_url: String,
+    #[serde(rename = "targetRevision")]
     target_revision: String,
 }
 
@@ -115,7 +117,6 @@ impl WorkflowTemplate {
     }
 
     async fn template_url(&self) -> Result<GitHubPath, WorkflowTemplateParsingError> {
-
         let instance = match self.metadata.labels.get("argocd.argoproj.io/instance") {
             Some(val) => val,
             None => return Err(WorkflowTemplateParsingError::MissingInstanceLabel),
@@ -141,9 +142,13 @@ impl WorkflowTemplate {
         let source: GitHubPath = match last_config_val.get("spec") {
             Some(val) => match val.get("source") {
                 Some(src) => serde_json::from_value(src.clone()).unwrap(),
-                None => GitHubPath {..Default::default()}
-            }
-            None => GitHubPath {..Default::default()}
+                None => GitHubPath {
+                    ..Default::default()
+                },
+            },
+            None => GitHubPath {
+                ..Default::default()
+            },
         };
 
         Ok(source)
