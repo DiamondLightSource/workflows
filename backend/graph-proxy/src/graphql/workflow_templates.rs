@@ -38,12 +38,16 @@ enum WorkflowTemplateParsingError {
     MalformParameterSchema(#[from] serde_json::Error),
 }
 
+/// Information about where the template is stored
 #[derive(Debug, Serialize, Deserialize, Default, Clone, SimpleObject, Eq, PartialEq)]
 struct GitHubPath {
+    /// The path to the template within the repository
     path: String,
     #[serde(rename = "repoURL")]
+    /// The URL of the GitHub repository
     repo_url: String,
     #[serde(rename = "targetRevision")]
+    /// The current tracked branch of the repository
     target_revision: String,
 }
 
@@ -116,6 +120,7 @@ impl WorkflowTemplate {
         Ok(UiSchema::new(&self.metadata.annotations)?.map(Json))
     }
 
+    /// Information about the location of the template
     async fn template_url(&self) -> Result<GitHubPath, WorkflowTemplateParsingError> {
         let instance = match self.metadata.labels.get("argocd.argoproj.io/instance") {
             Some(val) => val,
@@ -130,7 +135,7 @@ impl WorkflowTemplate {
             &ApiResource::from_gvk_with_plural(&gvk, "applications"),
         );
 
-        let obj = api.get(&instance).await.unwrap();
+        let obj = api.get(instance).await.unwrap();
         let group_annotations = obj.metadata.annotations.clone().unwrap_or_default();
         let last_config =
             match group_annotations.get("kubectl.kubernetes.io/last-applied-configuration") {
@@ -138,7 +143,7 @@ impl WorkflowTemplate {
                 None => "",
             };
 
-        let last_config_val: Value = serde_json::from_str(&last_config)?;
+        let last_config_val: Value = serde_json::from_str(last_config)?;
         let source: GitHubPath = match last_config_val.get("spec") {
             Some(val) => match val.get("source") {
                 Some(src) => serde_json::from_value(src.clone()).unwrap(),
