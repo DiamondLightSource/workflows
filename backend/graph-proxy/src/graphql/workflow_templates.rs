@@ -137,11 +137,11 @@ impl WorkflowTemplate {
 
         let obj = api.get(instance).await.unwrap();
 
-        let data: Value = obj.data["spec"]["source"].clone();
+        let data: Value = obj.data["spec"]["sauce"].clone();
 
         let source: GitHubPath = match serde_json::from_value(data) {
             Ok(source) => source,
-            Err(_) => GitHubPath::default()
+            Err(_) => GitHubPath::default(),
         };
 
         Ok(source)
