@@ -57,7 +57,7 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: drh/bff-pkce-dev
   extraValueFiles:
     - staging-values.yaml
 
@@ -69,7 +69,7 @@ graphProxy:
 
 dashboard:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: drh/bff-pkce-dev
   extraValueFiles:
     - staging-values.yaml
 

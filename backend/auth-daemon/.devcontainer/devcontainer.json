@@ -24,5 +24,11 @@
     }
   },
   "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
-  "workspaceFolder": "/workspace/"
+  "workspaceFolder": "/workspace/",
+  "capAdd": [
+    "SYS_PTRACE"
+  ],
+  "securityOpt": [
+    "seccomp=unconfined"
+  ]
 }

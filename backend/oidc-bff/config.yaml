@@ -1,0 +1,11 @@
+client_id: "workflows-ui-dev"
+client_secret: ""
+oidc_provider_url: "https://authn.diamond.ac.uk/realms/master"
+port: 5173
+postgres_user: "postgres"
+postgres_password: "postgres"
+postgres_database: "postgres"
+postgres_hostname: "localhost"
+postgres_port: 5432
+encryption_public_key: "/8MLLEwz7CkTkUv9y1pq6Gcv2Aomlhpq7shhv95Lil0="
+encryption_private_key: "7f3saJVP6ISBaarRJ5KyNF0IFezCFDEmC556ygO3kQk="
