@@ -127,9 +127,8 @@ impl WorkflowTemplate {
 
         let obj = api.get(instance).await.unwrap();
 
-        let data: Value = obj.data["spec"]["source"].clone();
-        let new_source: GitHubPath = serde_json::from_value(data).unwrap();
-        
+        let data: Value = obj.data["spec"]["sauce"].clone();
+        let new_source: GitHubPath = serde_json::from_value(data)?;
 
         Ok(new_source)
     }
