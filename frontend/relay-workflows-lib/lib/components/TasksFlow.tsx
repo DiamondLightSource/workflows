@@ -204,7 +204,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
           panOnDrag={true}
           preventScrolling={false}
           defaultViewport={defaultViewport}
-          fitView={false}
+          fitView={true}
           style={{ width: "100%", height: "100%", overflow: "auto" }}
         />
       )}

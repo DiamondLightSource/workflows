@@ -112,7 +112,7 @@ describe("TasksFlow Component", () => {
         nodes: mockLayoutedNodes,
         edges: mockLayoutedEdges,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        nodeTypes: expect.objectContaining({ custom: expect.any(Function) }),
+        nodeTypes: { custom: expect.any(Function) },
         nodesDraggable: false,
         nodesConnectable: false,
         elementsSelectable: true,
@@ -121,7 +121,7 @@ describe("TasksFlow Component", () => {
         zoomOnDoubleClick: false,
         panOnDrag: true,
         preventScrolling: false,
-        fitView: false,
+        fitView: true,
         style: { width: "100%", overflow: "auto", height: "100%" },
       }),
       {},

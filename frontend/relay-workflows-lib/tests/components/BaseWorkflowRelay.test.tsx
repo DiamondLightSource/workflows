@@ -78,8 +78,8 @@ describe("BaseWorkflowRelay", () => {
     expect(screen.queryByText("even")).not.toBeVisible();
 
     await user.click(accordionButton);
-
     expect(accordionButton).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("even")).toBeVisible();
+    expect(screen.getByText("React Flow")).toBeVisible();
+    expect(screen.getByText("even")).toBeInTheDocument();
   });
 });

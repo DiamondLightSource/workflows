@@ -46,7 +46,6 @@ const RetriggerWorkflowBase: React.FC<RetriggerWorkflowProps> = ({
   return templateName ? (
     <Tooltip title="Rerun workflow">
       <NavLink
-        title="Rerun workflow"
         to={`/templates/${templateName}/${visitToText(
           instrumentSession,
         )}-${workflowName}`}

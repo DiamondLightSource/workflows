@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useReducer } from "react";
 import {
   Box,
   InputAdornment,
@@ -9,6 +9,12 @@ import {
 import { InfoOutlined } from "@mui/icons-material";
 import { validateScanRange } from "../../../utils/validationUtils";
 import { ScanRange } from "../../../types";
+
+export interface RawScanRange {
+  excludedRaw: string;
+  start: string;
+  end: string;
+}
 
 export interface ScanRangeInputProps {
   name: string;
@@ -35,76 +41,81 @@ const ScanRangeInput = ({
   visible = true,
   id,
 }: ScanRangeInputProps) => {
-  const [scanRange, setScanRange] = useState({
-    start: String(value.start),
-    end: String(value.end),
-  });
+  interface ScanRangeState {
+    componentError: {
+      start: string;
+      end: string;
+      excluded: string;
+    };
+    rawRange: RawScanRange;
+  }
 
-  const [excludedRaw, setExcludedRaw] = useState(
-    (value.excluded ?? []).join(", "),
-  );
-  const [componentError, setComponentError] = useState({
-    start: "",
-    end: "",
-    excluded: "",
-  });
+  type ScanRangeType = "start" | "end" | "excluded";
 
-  const [hasUserEditedExcluded, setHasUserEditedExcluded] = useState(false);
+  interface ScanRangeAction {
+    type: ScanRangeType;
+    payload: string;
+  }
 
-  const validateAndUpdate = useCallback(() => {
-    const result = validateScanRange(
-      scanRange.start,
-      scanRange.end,
-      excludedRaw,
-    );
-    setComponentError(result.errors);
+  function scanRangeReducer(
+    state: ScanRangeState,
+    action: ScanRangeAction,
+  ): ScanRangeState {
+    const newState = { ...state };
+
+    switch (action.type) {
+      case "start":
+        newState.rawRange.start = action.payload;
+        break;
+      case "end":
+        newState.rawRange.end = action.payload;
+        break;
+      case "excluded":
+        newState.rawRange.excludedRaw = action.payload;
+        break;
+      default:
+        return state;
+    }
+
+    const result = validateScanRange(newState.rawRange);
+    newState.componentError = result.errors;
 
     if (result.parsed) {
-      const current: ScanRange = {
-        start: Number(scanRange.start),
-        end: Number(scanRange.end),
+      const scanRangeValue = {
+        start: result.parsed.start,
+        end: result.parsed.end,
         excluded: result.parsed.excluded,
       };
-
-      const isEqual =
-        current.start === value.start &&
-        current.end === value.end &&
-        JSON.stringify(current.excluded) ===
-          JSON.stringify(value.excluded ?? []);
-
-      if (!isEqual) {
-        handleChange(name, result.parsed);
-      }
+      handleChange(name, scanRangeValue);
     }
-  }, [scanRange, excludedRaw, handleChange, name, value]);
 
-  const handleFieldChange =
-    (field: keyof typeof scanRange) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setScanRange({ ...scanRange, [field]: event.target.value });
-    };
+    return newState;
+  }
 
-  const handleExcludedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setExcludedRaw(event.target.value);
-    setHasUserEditedExcluded(true);
-  };
-
-  useEffect(() => {
-    setScanRange({
-      start: String(value.start),
-      end: String(value.end),
-    });
-
-    if (!hasUserEditedExcluded) {
-      setExcludedRaw((value.excluded ?? []).join(", "));
-    }
-  }, [value.start, value.end, value.excluded, hasUserEditedExcluded]);
-
-  useEffect(() => {
-    validateAndUpdate();
-  }, [scanRange, excludedRaw, validateAndUpdate]);
+  const [scanRange, dispatch] = useReducer(scanRangeReducer, {
+    componentError: {
+      start: "",
+      end: "",
+      excluded: "",
+    },
+    rawRange: {
+      excludedRaw: Array.isArray(value.excluded)
+        ? value.excluded.join(", ")
+        : "",
+      start: String(value.start || ""),
+      end: String(value.end || ""),
+    },
+  });
 
   if (!visible) return null;
+
+  const handleScanRangeChange =
+    (
+      type: ScanRangeType,
+    ): React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =>
+    (event) => {
+      dispatch({ type: type, payload: event.target.value });
+    };
 
   return (
     <Box
@@ -140,13 +151,13 @@ const ScanRangeInput = ({
         <TextField
           type="number"
           label="Start"
-          value={scanRange.start}
-          onChange={handleFieldChange("start")}
-          error={!!componentError.start}
-          helperText={componentError.start || " "}
+          value={scanRange.rawRange.start}
+          onChange={handleScanRangeChange("start")}
+          error={!!scanRange.componentError.start}
+          helperText={scanRange.componentError.start || " "}
           disabled={!enabled}
           slotProps={{
-            htmlInput: { step: 1 },
+            htmlInput: { step: 1, min: 0 },
             formHelperText: {
               sx: { minHeight: "3em", whiteSpace: "pre-wrap" },
             },
@@ -160,13 +171,13 @@ const ScanRangeInput = ({
         <TextField
           type="number"
           label="End"
-          value={scanRange.end}
-          onChange={handleFieldChange("end")}
-          error={!!componentError.end}
-          helperText={componentError.end || " "}
+          value={scanRange.rawRange.end}
+          onChange={handleScanRangeChange("end")}
+          error={!!scanRange.componentError.end}
+          helperText={scanRange.componentError.end || " "}
           disabled={!enabled}
           slotProps={{
-            htmlInput: { step: 1 },
+            htmlInput: { step: 1, min: 0 },
             formHelperText: {
               sx: { minHeight: "3em", whiteSpace: "pre-wrap" },
             },
@@ -179,10 +190,10 @@ const ScanRangeInput = ({
 
         <TextField
           label="Excluded"
-          value={excludedRaw}
-          onChange={handleExcludedChange}
-          error={!!componentError.excluded}
-          helperText={componentError.excluded || " "}
+          value={scanRange.rawRange.excludedRaw}
+          onChange={handleScanRangeChange("excluded")}
+          error={!!scanRange.componentError.excluded}
+          helperText={scanRange.componentError.excluded || " "}
           disabled={!enabled}
           slotProps={{
             formHelperText: {

@@ -38,7 +38,7 @@ interface WorkflowsContentProps {
   onLimitChange: (limit: number) => void;
   updatePageInfo: (hasNextPage: boolean, endCursor: string | null) => void;
   isPaginated: boolean;
-  setIsPaginated: (b: boolean) => void;
+  setIsPaginated: (isPaginated: boolean) => void;
 }
 
 export default function WorkflowsContent({
@@ -60,6 +60,7 @@ export default function WorkflowsContent({
   const pageInfo = data.pageInfo;
   const fetchedWorkflows = data.nodes;
   const prevFetchedRef = useRef<string[]>([]);
+  const isPaginatedRef = useRef<boolean>(isPaginated);
 
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(
     new Set(),
@@ -74,12 +75,13 @@ export default function WorkflowsContent({
     const prevNames = prevFetchedRef.current;
     const fetchedChanged =
       JSON.stringify(currentNames) !== JSON.stringify(prevNames);
-    if (fetchedChanged && isPaginated) {
+    if (fetchedChanged && isPaginatedRef.current) {
       setTimeout(() => {
+        isPaginatedRef.current = false;
         setIsPaginated(false);
       }, 0);
     }
-  }, [isPaginated, fetchedWorkflows, setIsPaginated]);
+  }, [isPaginatedRef, fetchedWorkflows, setIsPaginated]);
 
   const handleToggleExpanded = (name: string) => {
     setExpandedWorkflows((prev) => {

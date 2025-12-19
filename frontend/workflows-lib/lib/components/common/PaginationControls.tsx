@@ -42,11 +42,12 @@ export default function PaginationControls({
         boundaryCount={0}
       />
       <FormControl sx={{ width: 80 }}>
-        <InputLabel id="workflows-limit-label">Workflows Limit</InputLabel>
+        <InputLabel id="workflows-limit-label">Limit</InputLabel>
         <Select
           labelId="workflows-limit-label"
           id="workflows-limit-select"
           size="small"
+          label="Limit"
           value={selectedLimit.toString()}
           onChange={(e) => {
             onLimitChange(Number(e.target.value));
