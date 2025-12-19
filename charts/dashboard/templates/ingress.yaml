@@ -32,9 +32,9 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "common.names.fullname" $ }}
+                name: {{ .service.name }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: {{ .service.port }}
           {{- end }}
     {{- end }}
 {{- end }}
