@@ -27,9 +27,6 @@ RUN mkdir graph-proxy/src \
 
 RUN cargo build --release --package telemetry
 
-RUN touch --date @0 graph-proxy/src/main.rs \
-    && cargo build --release --package graph-proxy
-
 COPY . .
 
 RUN touch graph-proxy/src/main.rs \
