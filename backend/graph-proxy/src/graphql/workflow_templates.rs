@@ -22,7 +22,7 @@ use kube::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{collections::HashMap, ops::Deref};
+use std::{collections::HashMap, ops::Deref, ptr::NonNull};
 use tracing::{debug, instrument};
 
 #[derive(Debug, thiserror::Error)]
@@ -41,25 +41,15 @@ enum WorkflowTemplateParsingError {
 /// Information about where the template is stored
 #[derive(Debug, Serialize, Deserialize, Default, Clone, SimpleObject, Eq, PartialEq)]
 struct GitHubPath {
-    /// The path to the template within the repository
-    path: String,
     #[serde(rename = "repoURL")]
     /// The URL of the GitHub repository
     repo_url: String,
+    /// The path to the template within the repository
+    path: String,
     #[serde(rename = "targetRevision")]
     /// The current tracked branch of the repository
     target_revision: String,
 }
-
-// impl GitHubPath {
-//     fn new(repo_url: impl Into<String>, path: impl Into<String>, target_revision: impl Into<String>) -> Self {
-//         Self {
-//             repo_url: repo_url.into(),
-//             path: path.into(),
-//             target_revision: target_revision.into(),
-//         }
-//     }
-// }
 
 /// A Template which specifies how to produce a [`Workflow`]
 #[derive(Debug, derive_more::Deref, derive_more::From)]
@@ -136,39 +126,12 @@ impl WorkflowTemplate {
         );
 
         let obj = api.get(instance).await.unwrap();
-        let group_annotations = obj.metadata.annotations.clone().unwrap_or_default();
-        let last_config =
-            match group_annotations.get("kubectl.kubernetes.io/last-applied-configuration") {
-                Some(s) => s,
-                None => "",
-            };
 
-        let last_config_val: Value = serde_json::from_str(last_config)?;
-        let source: GitHubPath = match last_config_val.get("spec") {
-            Some(val) => match val.get("source") {
-                Some(src) => serde_json::from_value(src.clone()).unwrap(),
-                None => GitHubPath {
-                    ..Default::default()
-                },
-            },
-            None => GitHubPath {
-                ..Default::default()
-            },
-        };
+        let data: Value = obj.data["spec"]["source"].clone();
+        let new_source: GitHubPath = serde_json::from_value(data).unwrap();
+        
 
-        Ok(source)
-
-        // let list = api.list(&ListParams::default()).await?;
-        // for obj in list {
-        //     let name = obj.name_any();
-        //     let labels = obj.metadata.labels.clone().unwrap_or_default();
-        //     let annotations = obj.metadata.annotations.clone().unwrap_or_default();
-        //     let data = obj.data.clone();
-        //     println!("Object: {name}");
-        //     println!("  Labels: {:?}", labels);
-        //     println!("  Annotations: {:?}", annotations);
-        //     println!("  Data: {:?}", data);
-        // }
+        Ok(new_source)
     }
 }
 
