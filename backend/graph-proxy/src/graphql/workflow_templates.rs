@@ -51,6 +51,16 @@ struct GitHubPath {
     target_revision: String,
 }
 
+// impl GitHubPath {
+//     fn new(repo_url: impl Into<String>, path: impl Into<String>, target_revision: impl Into<String>) -> Self {
+//         Self {
+//             repo_url: repo_url.into(),
+//             path: path.into(),
+//             target_revision: target_revision.into()
+//         }
+//     }
+// }
+
 /// A Template which specifies how to produce a [`Workflow`]
 #[derive(Debug, derive_more::Deref, derive_more::From)]
 struct WorkflowTemplate(argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate);
@@ -127,10 +137,14 @@ impl WorkflowTemplate {
 
         let obj = api.get(instance).await.unwrap();
 
-        let data: Value = obj.data["spec"]["sauce"].clone();
-        let new_source: GitHubPath = serde_json::from_value(data)?;
+        let data: Value = obj.data["spec"]["source"].clone();
 
-        Ok(new_source)
+        let source: GitHubPath = match serde_json::from_value(data) {
+            Ok(source) => source,
+            Err(_) => GitHubPath::default()
+        };
+
+        Ok(source)
     }
 }
 
