@@ -19,6 +19,10 @@ oauth2-proxy:
               - aud
             emailClaim: email
             userIDClaim: fedid
+            extraAudiences:
+              - workflows-dashboard-staging
+              - workflows-cluster-staging
+              - graph
   ingress:
     hosts:
       - argo-workflows.staging.workflows.diamond.ac.uk

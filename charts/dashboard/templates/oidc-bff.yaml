@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oidc-bff
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    app: oidc-bff
+  ports:
+    - name: oidc-bff
+      port: 80
+      targetPort: 80
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oidc-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oidc-bff
+  template:
+    metadata:
+      labels:
+        app: oidc-bff
+    spec:
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.oidcBff.image) "context" $ ) }}
+      containers:
+        - name: oidc-bff
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.oidcBff.image "global" $.Values.global "chart" $.Chart ) }}
+          imagePullPolicy: {{ $.Values.oidcBff.image.pullPolicy }}
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          startupProbe:
+            httpGet:
+             path: /healthcheck
+             port: 80
+            failureThreshold: 3
+            periodSeconds: 5
+          env:
+            - name: WORKFLOWS_OIDC_BFF_CONFIG
+              value: "/etc/oidc-bff/config.yaml"
+            - name: RUST_BACKTRACE
+              value: "1"
+          volumeMounts:
+            - name: oidc-bff-config
+              mountPath: /etc/oidc-bff
+              readOnly: true
+      volumes:
+        - name: oidc-bff-config
+          secret:
+            secretName: {{ .Values.oidcBff.configuration.secretName | default "oidc-bff-config" }}
+            items:
+              - key: config.yaml
+                path: config.yaml
