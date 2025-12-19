@@ -63,6 +63,20 @@ jobs:
       contents: read
       packages: write
 
+  oidc_bff_code:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_oidc_bff_code.yaml
+
+  oidc_bff_container:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: oidc_bff_code
+    uses: ./.github/workflows/_oidc_bff_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
   supergraph_update:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository

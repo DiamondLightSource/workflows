@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-of-workflows-1
+  labels:
+    workflows.diamond.ac.uk/science-group: workflows-examples
+  annotations:
+    workflows.argoproj.io/title: Workflow Of Workflows
+spec:
+  entrypoint: entry
+  templates:
+  - name: entry
+    steps:
+    - - name: auth
+        template: auth
+
+    - - name: test
+        template: curl
+        arguments:
+          parameters:
+          - name: cmd
+            value: |
+              curl --request POST http://{{steps.auth.ip}}:6000 -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"bi\", proposalNumber: 22491, number: 1}, parameters: {}){     name   } }" }'
+
+  - name: auth
+    daemon: true
+    retryStrategy:
+      limit: 10
+    inputs:
+      artifacts:
+      - name: auth-config
+        path: /etc/workflows-auth-daemon/config.yaml
+        raw:
+          data: |
+            client_id: "workflows-dashboard-staging"
+            client_secret: ""
+            oidc_provider_url: "https://authn.diamond.ac.uk/realms/master"
+            port: 6000
+            postgres_user: "auth_user"
+            postgres_password: "redacted"
+            postgres_database: "auth_service"
+            postgres_hostname: "workflows-postgresql-ha-pgpool.workflows.svc.cluster.local"
+            postgres_port: 5432
+            encryption_public_key: "redacted"
+            encryption_private_key: "redacted"
+            graph_url: "https://staging.workflows.diamond.ac.uk/graphql"
+
+    container:
+      image: ghcr.io/diamondlightsource/workflows-auth-daemon@sha256:728e9b59d3e6734c7ffc30cfa0dc73057268c13875441b4f2d2188b543834c41
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 6000
+        initialDelaySeconds: 5
+        periodSeconds: 1
+      env:
+        - name: WORKFLOWS_AUTH_DAEMON_CONFIG
+          value: /etc/workflows-auth-daemon/config.yaml
+        - name: WORKFLOWS_AUTH_DAEMON_SUBJECT
+          value: d4cd0e39-c80a-434d-81d2-0ed81be969e2
+        - name: RUST_BACKTRACE
+          value: "1"
+      args:
+        - serve
+
+  - name: curl
+    inputs:
+      parameters:
+      - name: cmd
+    container:
+      image: curlimages/curl:8.15.0
+      command: ["/bin/sh", "-c"]
+      args: ["{{inputs.parameters.cmd}}"]
+
