@@ -12,10 +12,10 @@
     "relay": "relay-compiler"
   },
   "dependencies": {
-    "keycloak-js": "^26.2.1",
-    "msw": "^2.12.1",
+    "keycloak-js": "^26.2.2",
+    "msw": "^2.12.7",
     "react-relay": "20.1.1",
-    "react-router-dom": "^7.9.5",
+    "react-router-dom": "^7.11.0",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
