@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.13...graph-proxy@v0.1.14) (2026-01-07)
+
+
+### Features
+
+* **graph-proxy:** add template url fields to graph ([9fc3f6d](https://github.com/DiamondLightSource/workflows/commit/9fc3f6de81e24f52a82c966543cd7c4496e56dea))
+
 ## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.12...graph-proxy@v0.1.13) (2025-11-20)
 
 
