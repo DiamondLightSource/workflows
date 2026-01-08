@@ -2,11 +2,19 @@ import { materialCells } from "@jsonforms/material-renderers";
 import { JsonSchema, UISchemaElement, createAjv } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 import React, { useState } from "react";
-import { Divider, Snackbar, Stack, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Snackbar,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { ErrorObject } from "ajv";
 import { JSONObject, Visit } from "../../types";
 import { VisitInput } from "@diamondlightsource/sci-react-ui";
 import { rendererSet } from "../../utils/renderers";
+import RepositoryLinkBase from "workflows-lib/lib/components/common/RepositoryLinkBase";
 
 interface TemplateSubmissionFormProps {
   title: string;
@@ -69,11 +77,9 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
       <Typography variant="body1" align="center">
         Maintainer: {maintainer}
       </Typography>
-      {repository && (
-        <Typography variant="body1" align="center">
-          Repository: {repository}
-        </Typography>
-      )}
+      <Box alignSelf="center">
+        <RepositoryLinkBase repository={repository} variant="TextIcon" />
+      </Box>
       <Divider />
       {parameterMessage}
       <JsonForms

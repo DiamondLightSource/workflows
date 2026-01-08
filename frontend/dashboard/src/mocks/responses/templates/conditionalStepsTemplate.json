@@ -9,5 +9,10 @@
     "type": "object"
   },
   "uiSchema": null,
-  "repository": "https://github.com/DiamondLightSource/workflows"
+  "repository": "https://github.com/DiamondLightSource/workflows",
+  "templateSource": {
+    "repositoryUrl": "https://github.com/DiamondLightSource/workflows",
+    "path": "examples/conventional-templates",
+    "targetRevision": "HEAD"
+  }
 }

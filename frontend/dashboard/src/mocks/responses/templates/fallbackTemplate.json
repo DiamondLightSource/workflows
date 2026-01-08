@@ -50,5 +50,6 @@
     "options": null,
     "rule": null
   },
-  "repository": "https://github.com/DiamondLightSource/workflows"
+  "repository": "https://github.com/DiamondLightSource/workflows",
+  "templateSource": null
 }

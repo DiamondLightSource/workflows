@@ -59,6 +59,7 @@ export interface Template {
   title?: string | null;
   maintainer: string;
   repository?: string | null;
+  source?: TemplateSource;
 }
 
 export interface WorkflowQueryFilter {
@@ -141,4 +142,10 @@ export interface JSONObject {
 export type ArtifactSortType = {
   name: "name" | "parentTask";
   order: boolean;
+};
+
+export type TemplateSource = {
+  repositoryUrl?: string;
+  path?: string;
+  targetRevision?: string;
 };

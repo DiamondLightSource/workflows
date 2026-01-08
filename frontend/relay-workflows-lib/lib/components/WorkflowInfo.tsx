@@ -2,12 +2,17 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Icon,
+  Stack,
   Typography,
+  useTheme,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { WorkflowInfoFragment$key } from "./__generated__/WorkflowInfoFragment.graphql";
+import RepositoryLink from "../query-components/RepositoryLink";
+import { Link } from "react-router-dom";
 
 const WorkflowInfoFragment = graphql`
   fragment WorkflowInfoFragment on Workflow {
@@ -56,6 +61,7 @@ interface WorkflowInfoProps {
 
 export default function WorkflowInfo({ fragmentRef }: WorkflowInfoProps) {
   const workflow = useFragment(WorkflowInfoFragment, fragmentRef);
+  const theme = useTheme();
   return (
     <Accordion sx={{ width: "100%" }} defaultExpanded>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
@@ -64,9 +70,22 @@ export default function WorkflowInfo({ fragmentRef }: WorkflowInfoProps) {
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography variant="body1">
-          <strong>Template:</strong> {workflow.templateRef}
-        </Typography>
+        {workflow.templateRef && (
+          <Stack direction="row" spacing={theme.spacing(1)}>
+            <Typography variant="body1">
+              <strong>Template:</strong>{" "}
+              <Link
+                to={`/templates/${workflow.templateRef}`}
+                style={{ color: theme.palette.primary.main }}
+              >
+                {workflow.templateRef}
+              </Link>
+            </Typography>
+            <Icon>
+              <RepositoryLink templateRef={workflow.templateRef} />
+            </Icon>
+          </Stack>
+        )}
         <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
           <strong>Parameters:</strong>{" "}
           {JSON.stringify(workflow.parameters, null, 2)}

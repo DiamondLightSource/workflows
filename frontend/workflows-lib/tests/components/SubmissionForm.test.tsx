@@ -7,6 +7,7 @@ import {
 import TemplateSubmissionForm from "../../lib/components/template/SubmissionForm";
 import "@testing-library/jest-dom";
 import * as jsonforms from "@jsonforms/react";
+import { screen } from "@testing-library/react";
 
 const mockParameterSchema = {
   type: "object",
@@ -166,6 +167,24 @@ describe("SubmissionForm Component", () => {
         memory: "20Gi",
         size: 2000,
       },
+    );
+  });
+
+  it("renders a repository link component", () => {
+    render(
+      <TemplateSubmissionForm
+        title="Numpy Benchmark"
+        maintainer="AGroup"
+        parametersSchema={mockParameterSchema}
+        onSubmit={vi.fn()}
+        repository={"https://github.com/DiamondLightSource/workflows/"}
+      />,
+    );
+
+    expect(screen.getByText("Visit the repository")).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "https://github.com/DiamondLightSource/workflows/",
     );
   });
 });

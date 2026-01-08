@@ -22,5 +22,6 @@
     "type": "object"
   },
   "uiSchema": null,
-  "repository": null
+  "repository": null,
+  "templateSource": null
 }
