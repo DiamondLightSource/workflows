@@ -25,6 +25,11 @@ interface WorkflowProps {
     instrumentSession: Visit;
     workflowName: string;
   }>;
+  githubComponent?: React.ComponentType<{
+    variant?: "Icon" | "TextIcon";
+    instrumentSession: Visit;
+    workflowName: string;
+  }>;
 }
 
 const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
@@ -40,6 +45,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   expanded,
   onChange,
   retriggerComponent,
+  githubComponent,
 }) => {
   return (
     <Accordion key={workflow.name} expanded={expanded} onChange={onChange}>
@@ -58,6 +64,11 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
           )}
           {retriggerComponent &&
             React.createElement(retriggerComponent, {
+              instrumentSession: workflow.instrumentSession,
+              workflowName: workflow.name,
+            })}
+          {githubComponent &&
+            React.createElement(githubComponent, {
               instrumentSession: workflow.instrumentSession,
               workflowName: workflow.name,
             })}

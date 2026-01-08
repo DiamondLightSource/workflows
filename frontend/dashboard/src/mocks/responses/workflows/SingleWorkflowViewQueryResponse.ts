@@ -8,6 +8,9 @@ export const singleWorkflowViewQueryResponse = {
     },
     templateRef: "conditional-steps",
     parameters: {},
+    creator: {
+      creatorId: "abc12345",
+    },
     status: {
       __typename: "WorkflowSucceededStatus",
       startTime: "2025-08-22T10:35:22+00:00",

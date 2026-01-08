@@ -625,5 +625,10 @@
     "options": null,
     "rule": null
   },
-  "repository": null
+  "repository": null,
+  "templateSource": {
+    "repositoryUrl": "https://github.com/DiamondLightSource/imaging-workflows",
+    "path": "httomo",
+    "targetRevision": "HEAD"
+  }
 }

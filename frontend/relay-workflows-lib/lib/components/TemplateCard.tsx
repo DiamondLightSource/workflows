@@ -7,6 +7,7 @@ import { Container, Box, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { graphql, useFragment } from "react-relay";
 import type { TemplateCardFragment$key } from "./__generated__/TemplateCardFragment.graphql";
+import { RepositoryLinkBase } from "workflows-lib";
 
 const templateCardFragment = graphql`
   fragment TemplateCardFragment on WorkflowTemplate {
@@ -15,6 +16,11 @@ const templateCardFragment = graphql`
     description
     maintainer
     repository
+    templateSource {
+      repositoryUrl
+      path
+      targetRevision
+    }
   }
 `;
 
@@ -63,14 +69,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
                   alignItems="center"
                 >
                   <Typography>{data.name}</Typography>
-                  {data.repository && (
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      Repository: {data.repository}
-                    </Typography>
-                  )}
+                  <RepositoryLinkBase
+                    repository={data.repository ?? data.templateSource}
+                  />
                 </Box>
                 {data.description && (
                   <Typography variant="caption">{data.description}</Typography>

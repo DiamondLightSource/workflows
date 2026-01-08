@@ -9,6 +9,7 @@ import { mergeParameters } from "../utils/workflowRelayUtils";
 import { Stack, Typography, useTheme } from "@mui/material";
 import { Info } from "@mui/icons-material";
 import { visitToText } from "@diamondlightsource/sci-react-ui";
+import { templateSourceToLink } from "workflows-lib/lib/utils/commonUtils";
 
 export const SubmissionFormFragment = graphql`
   fragment SubmissionFormFragment on WorkflowTemplate {
@@ -19,6 +20,11 @@ export const SubmissionFormFragment = graphql`
     arguments
     uiSchema
     repository
+    templateSource {
+      repositoryUrl
+      path
+      targetRevision
+    }
   }
 `;
 
@@ -42,6 +48,8 @@ const SubmissionForm = ({
   workflowName?: string;
 }) => {
   const data = useFragment(SubmissionFormFragment, template);
+  const repositoryUrl =
+    data.repository ?? templateSourceToLink(data.templateSource);
   const reusedParameterData = useFragment(
     SubmissionFormParametersFragment,
     prepopulatedParameters,
@@ -97,7 +105,7 @@ const SubmissionForm = ({
     <SubmissionFormBase
       title={data.title ?? data.name}
       maintainer={data.maintainer}
-      repository={data.repository}
+      repository={repositoryUrl}
       description={data.description ?? undefined}
       parametersSchema={parametersSchema}
       parametersUISchema={data.uiSchema as UISchemaElement}

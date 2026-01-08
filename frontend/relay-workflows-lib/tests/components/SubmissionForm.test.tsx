@@ -108,7 +108,9 @@ describe("SubmissionForm", () => {
     );
 
     expect(
-      screen.getByText(/values from the URL link: 'Scan_X', 'reshape_option'/i),
+      await screen.findByText(
+        /values from the URL link: 'Scan_X', 'reshape_option'/i,
+      ),
     ).toBeInTheDocument();
   });
 

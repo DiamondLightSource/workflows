@@ -60,6 +60,14 @@ import {
   MockRenderSubmittedMessageQuery$data,
   MockRenderSubmittedMessageQuery$variables,
 } from "relay-workflows-lib/stories/mock-queries/__generated__/MockRenderSubmittedMessageQuery.graphql";
+import {
+  RepositoryLinkQuery$data,
+  RepositoryLinkQuery$variables,
+} from "relay-workflows-lib/lib/query-components/__generated__/RepositoryLinkQuery.graphql";
+import {
+  RepositoryLinkQueryResponse,
+  RepositoryLinkQueryResponseFallback,
+} from "./responses/workflows/RepositoryQueryResponse";
 
 const api = graphql.link("https://workflows.diamond.ac.uk/graphql");
 
@@ -241,4 +249,17 @@ export const handlers = [
         });
     }
   }),
+
+  api.query<RepositoryLinkQuery$data, RepositoryLinkQuery$variables>(
+    "RepositoryLinkQuery",
+    ({ variables }) => {
+      const response =
+        variables.name === "conditional-steps"
+          ? RepositoryLinkQueryResponse
+          : RepositoryLinkQueryResponseFallback;
+      return HttpResponse.json({
+        data: response,
+      });
+    },
+  ),
 ];
