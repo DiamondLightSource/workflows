@@ -3,6 +3,7 @@ kind: Test
 metadata:
   name: artifact-s3-clone
 spec:
+  concurrent: false
   steps:
     - try:
         - apply:
@@ -29,8 +30,6 @@ spec:
                 name: session
                 labels:
                   app.kubernetes.io/managed-by: sessionspaces
-        - sleep:
-            duration: 10s
         - assert:
             resource:
               apiVersion: v1
