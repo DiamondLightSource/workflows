@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.10...dashboard@v0.1.11) (2026-01-09)
+
+
+### Features
+
+* **frontend:** add fragments to workflows pages ([8bca25e](https://github.com/DiamondLightSource/workflows/commit/8bca25ec30998156be0cd1d2b9f1abac4689dab7))
+* **frontend:** add stories for relay-workflows-lib components ([518e8db](https://github.com/DiamondLightSource/workflows/commit/518e8db7242e8e3ae4b7608017d1564370b65ac0))
+* **frontend:** added a science group template filter ([f2aa966](https://github.com/DiamondLightSource/workflows/commit/f2aa96675bf5839b9c8b9922f01eeb7e8bc5cbd1))
+* **frontend:** support autofilling parameter values from search params ([d5cae5c](https://github.com/DiamondLightSource/workflows/commit/d5cae5c60856456928db2111daa4a880ef9f37b4))
+* **frontend:** use fragments for Template pages ([3ce12b7](https://github.com/DiamondLightSource/workflows/commit/3ce12b7f4708f310b5bed7883a93c0be123597d2))
+
+
+### Bug Fixes
+
+* **frontend:** added graphql errorboundaries to retry any failed queries ([a182bd6](https://github.com/DiamondLightSource/workflows/commit/a182bd6d20ba87cd962f05bcc64984495553e517))
+
 ## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.9...dashboard@v0.1.10) (2025-09-26)
 
 
