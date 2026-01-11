@@ -3,7 +3,7 @@ destination:
 
 argocd:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: drh/new-keycloak-clients-dev
   extraValuesFiles: []
   valuesObject: {}
 
