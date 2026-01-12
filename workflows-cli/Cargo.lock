@@ -78,9 +78,9 @@ checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
 
 [[package]]
 name = "clap"
-version = "4.5.49"
+version = "4.5.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4512b90fa68d3a9932cea5184017c5d200f5921df706d45e853537dea51508f"
+checksum = "c6e6ff9dcd79cff5cd969a17a545d79e84ab086e444102a591e288a8aa3ce394"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -88,9 +88,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.49"
+version = "4.5.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0025e98baa12e766c67ba13ff4695a887a1eba19569aad00a472546795bd6730"
+checksum = "fa42cf4d2b7a41bc8f663a7cab4031ebafa1bf3875705bfaf8466dc60ab52c00"
 dependencies = [
  "anstream",
  "anstyle",
@@ -430,15 +430,15 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.145"
+version = "1.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "402a6f66d8c709116cf22f558eab210f5a50187f702eb4d7e5ef38d9a7f1c79c"
+checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
 dependencies = [
  "itoa",
  "memchr",
- "ryu",
  "serde",
  "serde_core",
+ "zmij",
 ]
 
 [[package]]
@@ -499,9 +499,9 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "syn"
-version = "2.0.107"
+version = "2.0.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a26dbd934e5451d21ef060c018dae56fc073894c5a7896f882928a76e6d081b"
+checksum = "d4d107df263a3013ef9b1879b0df87d706ff80f65a86ea879bd9c31f9b307c2a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -622,3 +622,9 @@ dependencies = [
  "encoding_rs",
  "hashlink",
 ]
+
+[[package]]
+name = "zmij"
+version = "1.0.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac93432f5b761b22864c774aac244fa5c0fd877678a4c37ebf6cf42208f9c9ec"
