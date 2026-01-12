@@ -47,19 +47,7 @@ grafana:
       use_refresh_token: true
       email_attribute_path: id
       allow_assign_grafana_admin: true
-      role_attribute_path: >
-        (
-          email=='benedikt.daurer@diamond.ac.uk' ||
-          email=='thomas.thomas@diamond.ac.uk' ||
-          email=='vigneshwar.shanmugasundar@diamond.ac.uk' ||
-          email=='david.hadley@diamond.ac.uk' ||
-          email=='jacob.williamson.daurer@diamond.ac.uk' ||
-          email=='n.leung@diamond.ac.uk' ||
-          email=='james.gilbert@diamond.ac.uk' ||
-          email=='victoria.beilsten-edmands@diamond.ac.uk' ||
-          email=='teo.ching@diamond.ac.uk' ||
-        )
-        && 'GrafanaAdmin' || 'Viewer'
+      role_attribute_path: (email=='teo.ching@diamond.ac.uk' || email=='benedikt.daurer@diamond.ac.uk' || email=='thomas.thomas@diamond.ac.uk' || email=='vigneshwar.shanmugasundar@diamond.ac.uk' || email=='david.hadley@diamond.ac.uk' || email=='jacob.williamson@diamond.ac.uk' || email=='n.leung@diamond.ac.uk' || email=='james.gilbert@diamond.ac.uk' || email=='victoria.beilsten-edmands@diamond.ac.uk') && 'GrafanaAdmin' || 'Viewer'
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
