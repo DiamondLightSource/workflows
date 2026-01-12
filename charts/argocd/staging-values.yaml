@@ -30,7 +30,7 @@ argo-cd:
   applicationSet:
     podAnnotations:
       prometheus.io/scrape: "true"
-      prometheus.io/port: "8080"
+      prometheus.io/port: "8086"
 
 ingress:
   enabled: true
