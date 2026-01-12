@@ -1,4 +1,4 @@
-FROM docker.io/library/rust:1.91.1-bookworm
+FROM docker.io/library/rust:1.92.0-bookworm
 
 ENV WORKFLOWS_HOME="/workspace/workflows-cli"
 
