@@ -57,7 +57,7 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: drh/new-keycloak-clients-dev
+  targetRevision: HEAD
   extraValueFiles:
     - staging-values.yaml
 
