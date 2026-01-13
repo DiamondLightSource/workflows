@@ -12,26 +12,6 @@ argo-cd:
           - profile
           - email
 
-  repoServer:
-    podAnnotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "8084"
-  controller:
-    resources:
-      limits:
-        cpu: 3
-        memory: 6Gi
-      requests:
-        cpu: 2
-        memory: 4Gi
-    podAnnotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "8082"
-  applicationSet:
-    podAnnotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "8086"
-
 ingress:
   enabled: true
   host: argo-cd.staging.workflows.diamond.ac.uk
