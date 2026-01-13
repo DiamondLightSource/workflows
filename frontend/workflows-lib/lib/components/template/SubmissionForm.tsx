@@ -2,7 +2,7 @@ import { materialCells } from "@jsonforms/material-renderers";
 import { JsonSchema, UISchemaElement, createAjv } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 import React, { useState } from "react";
-import { Divider, Snackbar, Stack, Typography, useTheme } from "@mui/material";
+import { Divider, Snackbar, Stack, Typography, Link, useTheme } from "@mui/material";
 import { ErrorObject } from "ajv";
 import { JSONObject, Visit } from "../../types";
 import { VisitInput } from "@diamondlightsource/sci-react-ui";
@@ -71,7 +71,7 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
       </Typography>
       {repository && (
         <Typography variant="body1" align="center">
-          Repository: {repository}
+          Repository: <Link href="{repository}">{repository}</Link>
         </Typography>
       )}
       <Divider />
