@@ -80,7 +80,7 @@ ingress:
 authenticationConfiguration:
   jwt:
     - issuer:
-        url: https://identity-dev.diamond.ac.uk/realms/dls
+        url: https://authn.diamond.ac.uk/realms/master
         audiences:
           - workflows-cluster-staging
           - graph
