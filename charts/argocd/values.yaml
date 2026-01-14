@@ -30,9 +30,10 @@ argo-cd:
         g, thomas.thomas@diamond.ac.uk, role:admin
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
+        g, jacob.williamson@diamond.ac.uk, role:admin
+        g, n.leung@diamond.ac.uk, role:admin
         g, james.gilbert@diamond.ac.uk, role:admin
         g, victoria.beilsten-edmands@diamond.ac.uk, role:admin
-        g, teo.ching@diamond.ac.uk, role:admin
 
   repoServer:
     podAnnotations:
