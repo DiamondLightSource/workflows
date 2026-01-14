@@ -21,7 +21,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: analysis-platform-backend
-  title: Analysis platform backend
+  title: Analysis Platform Backend
   description: Backend services combined with infrastructure to run workflows
   tags:
     - rust
@@ -40,8 +40,8 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: workflows-cli
-  title: Workflows CLI
+  name: analysis-platform-cli
+  title: Analysis Platform CLI
   description: CLI tool to lint, submit workflow templates as well as create repositories that will provide template boilerplate
   tags:
     - rust
@@ -60,13 +60,14 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: workflows-frontend
-  title: Workflows Frontend
+  name: analysis-platform-frontend
+  title: Analysis Platform Frontend
   description: Frontend dashboard for workflows platform using material ui (mui) components
   tags:
     - typescript
     - mui
     - react
+    - react-18
     - yarn
     - vite
   annotations:
