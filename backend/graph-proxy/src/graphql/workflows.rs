@@ -614,12 +614,20 @@ impl WorkflowsQuery {
         } else {
             CLIENT.get(url)
         };
-        let workflows_response = request
+
+        let api_result = request
             .send()
             .await?
             .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowList>>()
-            .await?
-            .into_result()?;
+            .await?;
+
+        let workflows_response = match api_result.into_result() {
+            Ok(res) => res,
+            Err(_) => {
+                return Ok(Connection::new(false, false));
+            }
+        };
+
         let workflows = workflows_response
             .items
             .into_iter()
@@ -1543,6 +1551,64 @@ mod tests {
         );
         schema.execute(query2).await.into_result().unwrap();
         workflows_endpoint2.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn no_workflows_response() {
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+        let mut workflows_response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflows_response_file_path.push("test-assets");
+        workflows_response_file_path.push("get-workflows-null.json");
+
+        let workflows_endpoint = server
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
+            .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
+                "listOptions.labelSelector".to_string(),
+                "workflows.argoproj.io/creator-preferred-username=abc12345".to_string(),
+            )]))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(&workflows_response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url.clone()))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+
+        let query = format!(
+            r#"
+            query {{
+                workflows(
+                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
+                    filter: {{ creator: "abc12345" }}
+                ) {{
+                    nodes {{
+                        name
+                    }}
+                }}
+            }}
+        "#,
+            visit.proposal_code, visit.proposal_number, visit.number,
+        );
+
+        let expected = json!({
+            "workflows": {
+              "nodes": []
+            }
+        });
+
+        let response = schema.execute(query).await.into_result().unwrap();
+        workflows_endpoint.assert_async().await;
+        assert_eq!(response.data.into_json().unwrap(), expected);
     }
 
     #[tokio::test]

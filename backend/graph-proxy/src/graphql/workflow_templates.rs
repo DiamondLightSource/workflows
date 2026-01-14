@@ -216,15 +216,23 @@ impl WorkflowTemplatesQuery {
         } else {
             CLIENT.get(url)
         };
-        let workflow_templates_response =
+
+        let api_result =
             request
                 .send()
                 .await?
                 .json::<APIResult<
                     argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplateList,
                 >>()
-                .await?
-                .into_result()?;
+                .await?;
+
+        let workflow_templates_response = match api_result.into_result() {
+            Ok(res) => res,
+            Err(_) => {
+                return Ok(Connection::new(false, false));
+            }
+        };
+
         let workflow_templates = workflow_templates_response
             .items
             .into_iter()
@@ -458,5 +466,50 @@ mod tests {
 
         assert_eq!(expected, actual);
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn no_templates_response() {
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-templates-null.json");
+
+        let workflows_endpoint = server
+            .mock("GET", "/api/v1/cluster-workflow-templates")
+            .match_query(mockito::Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(&response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url()).unwrap();
+        let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+
+        let query = r#"
+            query {
+                workflowTemplates(
+                    filter: { scienceGroup: MX }
+                ) {
+                    nodes {
+                        name
+                    }
+                }
+            }
+        "#;
+
+        let expected = json!({
+            "workflowTemplates": {
+              "nodes": []
+            }
+        });
+
+        let response = schema.execute(query).await.into_result().unwrap();
+        workflows_endpoint.assert_async().await;
+        assert_eq!(response.data.into_json().unwrap(), expected);
     }
 }
