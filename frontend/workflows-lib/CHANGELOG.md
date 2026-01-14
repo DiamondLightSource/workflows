@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.5...workflows-lib@v0.1.6) (2026-01-09)
+
+
+### Features
+
+* **example:** reformatted code ([f13784a](https://github.com/DiamondLightSource/workflows/commit/f13784ad9c269f1265595a8429b4664cee070f15))
+* **frontend:** add autocomplete to workflow template filter ([7aa8fb7](https://github.com/DiamondLightSource/workflows/commit/7aa8fb7a8496bfd06dc38d3e127f21607872e8ab))
+* **frontend:** add extra fields to custom renderers ([705b1e1](https://github.com/DiamondLightSource/workflows/commit/705b1e1d75823ab87f71094bdd4376006e524db2))
+* **frontend:** add file type dropdown filter ([9ce298a](https://github.com/DiamondLightSource/workflows/commit/9ce298ae70fce17b77c09d589e29d954b97aaada))
+* **frontend:** add fragments to workflows pages ([8bca25e](https://github.com/DiamondLightSource/workflows/commit/8bca25ec30998156be0cd1d2b9f1abac4689dab7))
+* **frontend:** add live workflow status icon to submission message ([b03cc37](https://github.com/DiamondLightSource/workflows/commit/b03cc3709a2cceffe722f880483e2a26273bcc39))
+* **frontend:** add ScanRangeInput component and json forms renderer ([0a13368](https://github.com/DiamondLightSource/workflows/commit/0a1336864f54a8f1c3a80495611eeb0b93175fe4))
+* **frontend:** add search filter to template list ([74d2ead](https://github.com/DiamondLightSource/workflows/commit/74d2ead67bad90bfcc682c5b6659d0d8e2b5d6a0))
+* **frontend:** add sliding list of images ([32cae44](https://github.com/DiamondLightSource/workflows/commit/32cae44b129463f231a416f9add5956e6f67091c))
+* **frontend:** add table view of the artefacts shown ([23b70a0](https://github.com/DiamondLightSource/workflows/commit/23b70a087b7753ff823e252f74b9cbd715af73e5))
+* **frontend:** added a science group template filter ([f2aa966](https://github.com/DiamondLightSource/workflows/commit/f2aa96675bf5839b9c8b9922f01eeb7e8bc5cbd1))
+* **frontend:** added fuzzy find search bar ([2ff4d07](https://github.com/DiamondLightSource/workflows/commit/2ff4d0724aa13a6ddcb722d5c221fade528ba911))
+* **frontend:** added table sorting ([464d871](https://github.com/DiamondLightSource/workflows/commit/464d871c577324a1c8d09b44e89b0bbb3b10a063))
+* **frontend:** allow all image types ([7c0ab6b](https://github.com/DiamondLightSource/workflows/commit/7c0ab6ba878d82bd852739e9532a48eae85aca87))
+* **frontend:** changed navigation link to workflow name page ([7cb4a20](https://github.com/DiamondLightSource/workflows/commit/7cb4a2065b191a83475a2f351d071e9e3ec7d8e9))
+* **frontend:** display creator name in workflow list ([1c7c97f](https://github.com/DiamondLightSource/workflows/commit/1c7c97fa60f5bfce52aa6377c8c25f242f7a5f4d))
+* **frontend:** fill task when artifact is hovered over ([5610b2a](https://github.com/DiamondLightSource/workflows/commit/5610b2a230a76866fc8c692fc6b490448c9af13f))
+* **frontend:** filter workflows by template ([15990b6](https://github.com/DiamondLightSource/workflows/commit/15990b616bc62b93f21badf2ea2ec65e01d89716))
+* **frontend:** make custom renderers available to form ([6cd595c](https://github.com/DiamondLightSource/workflows/commit/6cd595c84d154fc7a981a9392de2ab6bc2b9d048))
+* **frontend:** make filled task more visible ([9396d54](https://github.com/DiamondLightSource/workflows/commit/9396d548cf94f7363e432e22c082ffd544eb7539))
+* **frontend:** support autofilling parameter values from search params ([d5cae5c](https://github.com/DiamondLightSource/workflows/commit/d5cae5c60856456928db2111daa4a880ef9f37b4))
+* **frontend:** use accordion for artifact list ([7fa8b21](https://github.com/DiamondLightSource/workflows/commit/7fa8b21626a7190a0050ca47850b9dc00be86bdd))
+* **frontend:** use fragments for Template pages ([3ce12b7](https://github.com/DiamondLightSource/workflows/commit/3ce12b7f4708f310b5bed7883a93c0be123597d2))
+
+
+### Bug Fixes
+
+* **frontend:** added graphql errorboundaries to retry any failed queries ([a182bd6](https://github.com/DiamondLightSource/workflows/commit/a182bd6d20ba87cd962f05bcc64984495553e517))
+* **frontend:** fix bugs caused by tasks with the same name ([a8c39f5](https://github.com/DiamondLightSource/workflows/commit/a8c39f572aa6168b1bbbe8ee29d933bda03f1475))
+* **frontend:** fixed rebase issue regarding artifact parent-task-id ([153611d](https://github.com/DiamondLightSource/workflows/commit/153611dd5e55c8444e3e221cdaea4412560085ad))
+* **frontend:** improve accessibility of UI ([d25c8a0](https://github.com/DiamondLightSource/workflows/commit/d25c8a0a7f5d20a8bca8f0da144c995f847d3293))
+* **frontend:** prevent pagination limit label clashing & remove extra tooltip title ([efdc080](https://github.com/DiamondLightSource/workflows/commit/efdc0802ab01e9d9ee65c304892cdf1a29c0bc8b))
+* **workflows-lib:** correct reactflow for 'steps' type ([b116395](https://github.com/DiamondLightSource/workflows/commit/b116395c274317d76f50fd3c2ace2a06ad84a9e9))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.4...workflows-lib@v0.1.5) (2025-07-16)
 
 
