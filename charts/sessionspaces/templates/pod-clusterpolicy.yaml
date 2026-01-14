@@ -1,8 +1,9 @@
-{{- if $.Values.policy.create }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: {{ include "common.names.fullname" $ }}-pod
+  name: sessionspaces-pod
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
 spec:
   background: false
   validationFailureAction: Enforce
@@ -16,46 +17,51 @@ spec:
           namespaceSelector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  training.kubeflow.org/job-name: "*"
       context:
         - name: namespace
           variable:
-            value: "{{ `{{request.object.metadata.namespace}}` }}"
+            value: "{{request.object.metadata.namespace}}"
         - name: workflow
           variable:
             jmesPath: request.object.metadata.ownerReferences[0].name
         - name: uid
           apiCall:
-            urlPath: /apis/argoproj.io/v1alpha1/namespaces/{{ `{{ namespace }}` }}/workflows/{{ `{{ workflow }}` }}
+            urlPath: /apis/argoproj.io/v1alpha1/namespaces/{{ namespace }}/workflows/{{ workflow }}
             jmesPath: 'metadata.labels | "workflows.diamond.ac.uk/creator-posix-uid"'
         - name: values
           configMap:
             name: sessionspaces
-            namespace: "{{ `{{ namespace }}` }}"
+            namespace: "{{ namespace }}"
       mutate:
         patchStrategicMerge:
           spec:
             securityContext:
-              runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-              runAsUser: "{{ `{{ uid | parse_json(@).to_number(@) }}` }}"
+              runAsGroup: "{{values.data.gid | parse_json(@).to_number(@)}}"
+              runAsUser: "{{ uid | parse_json(@).to_number(@) }}"
             containers:
               - (name): "*"
                 securityContext:
-                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-                  runAsUser: "{{ `{{ uid | parse_json(@).to_number(@) }}` }}"
+                  runAsGroup: "{{values.data.gid | parse_json(@).to_number(@)}}"
+                  runAsUser: "{{ uid | parse_json(@).to_number(@) }}"
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
             initContainers:
               - (name): "*"
                 securityContext:
-                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-                  runAsUser: "{{ `{{ uid | parse_json(@).to_number(@) }}` }}"
+                  runAsGroup: "{{values.data.gid | parse_json(@).to_number(@)}}"
+                  runAsUser: "{{ uid | parse_json(@).to_number(@) }}"
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
             ephemeralContainers:
               - (name): "*"
                 securityContext:
-                  runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
-                  runAsUser: "{{ `{{ uid | parse_json(@).to_number(@) }}` }}"
+                  runAsGroup: "{{values.data.gid | parse_json(@).to_number(@)}}"
+                  runAsUser: "{{ uid | parse_json(@).to_number(@) }}"
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
-{{- end }}          

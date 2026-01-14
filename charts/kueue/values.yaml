@@ -33,6 +33,15 @@ kueue:
       clientConnection:
         qps: 300
         burst: 500
+      waitForPodsReady:
+        enable: true
+        timeout: 5m
+        blockAdmission: true
+        requeuingStrategy:
+          timestamp: Eviction
+          backoffLimitCount: 3
+          backoffBaseSeconds: 60
+          backoffMaxSeconds: 3600
       integrations:
         frameworks:
         - "batch/job"
