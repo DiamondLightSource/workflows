@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.14...graph-proxy@v0.1.15) (2026-01-16)
+
+
+### Bug Fixes
+
+* **graph-proxy:** handle null query results ([de77503](https://github.com/DiamondLightSource/workflows/commit/de7750388f56a3ad6f59e8a84125074d95cdf15b))
+
 ## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.13...graph-proxy@v0.1.14) (2026-01-07)
 
 
