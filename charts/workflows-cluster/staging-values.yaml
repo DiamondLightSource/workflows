@@ -51,7 +51,7 @@ vcluster:
                       - staging-values.yaml
                   path: charts/apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
-                  targetRevision: drh/new-keycloak-clients-dev
+                  targetRevision: HEAD
                 syncPolicy:
                   automated:
                     prune: true
@@ -80,7 +80,7 @@ ingress:
 authenticationConfiguration:
   jwt:
     - issuer:
-        url: https://authn.diamond.ac.uk/realms/master
+        url: https://identity-dev.diamond.ac.uk/realms/dls
         audiences:
           - workflows-cluster-staging
           - graph
@@ -94,9 +94,9 @@ authenticationConfiguration:
           prefix: "oidc:"
         uid:
           claim: fedid
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: 'string(claims.posix_uid)'
+        # extra:
+        # - key: 'workflows.diamond.ac.uk/posixuid'
+        #   valueExpression: 'string(claims.posix_uid)'
       userValidationRules:
       - expression: "!user.username.startsWith('system:')"
         message: 'username cannot use reserved system: prefix'
