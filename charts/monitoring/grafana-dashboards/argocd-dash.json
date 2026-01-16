@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 9,
   "links": [],
   "panels": [
     {
@@ -639,8 +639,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -831,8 +830,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1067,8 +1065,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1125,7 +1122,7 @@
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 13
+            "y": 60
           },
           "id": 56,
           "options": {
@@ -1209,8 +1206,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1247,7 +1243,7 @@
             "h": 5,
             "w": 24,
             "x": 0,
-            "y": 19
+            "y": 66
           },
           "id": 73,
           "options": {
@@ -1359,7 +1355,7 @@
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 705
+            "y": 8
           },
           "id": 58,
           "options": {
@@ -1419,7 +1415,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 711
+            "y": 14
           },
           "id": 60,
           "options": {
@@ -1584,7 +1580,7 @@
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 718
+            "y": 21
           },
           "id": 80,
           "options": {
@@ -1632,7 +1628,7 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 724
+            "y": 27
           },
           "id": 96,
           "options": {
@@ -1665,7 +1661,7 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 724
+            "y": 27
           },
           "id": 98,
           "options": {
@@ -1765,7 +1761,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 1046
+            "y": 9
           },
           "id": 34,
           "options": {
@@ -1910,7 +1906,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 1053
+            "y": 16
           },
           "id": 108,
           "options": {
@@ -2013,7 +2009,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 1060
+            "y": 23
           },
           "id": 62,
           "options": {
@@ -2159,10 +2155,12 @@
           "datasource": {
             "uid": "Prometheus"
           },
-          "expr": "go_memstats_heap_alloc_bytes{job=\"argocd-applicationset-controller-metrics\",namespace=~\"$namespace\"}",
+          "editorMode": "code",
+          "expr": "go_memstats_heap_alloc_bytes{app_kubernetes_io_component=\"applicationset-controller\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{namespace}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -2302,10 +2300,12 @@
           "datasource": {
             "uid": "Prometheus"
           },
-          "expr": "irate(process_cpu_seconds_total{job=\"argocd-applicationset-controller-metrics\",namespace=~\"$namespace\"}[1m])",
+          "editorMode": "code",
+          "expr": "irate(process_cpu_seconds_total{app_kubernetes_io_component=\"applicationset-controller\"}[1m])",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{namespace}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -2403,10 +2403,12 @@
           "datasource": {
             "uid": "Prometheus"
           },
-          "expr": "go_goroutines{job=\"argocd-applicationset-controller-metrics\",namespace=~\"$namespace\"}",
+          "editorMode": "code",
+          "expr": "go_goroutines{app_kubernetes_io_component=\"applicationset-controller\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{namespace}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -2470,8 +2472,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2487,7 +2488,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 1090
+            "y": 1137
           },
           "id": 90,
           "options": {
@@ -2568,8 +2569,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2606,7 +2606,7 @@
             "h": 6,
             "w": 24,
             "x": 0,
-            "y": 1318
+            "y": 1365
           },
           "id": 92,
           "options": {
@@ -2687,8 +2687,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2704,7 +2703,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 1324
+            "y": 1371
           },
           "id": 86,
           "options": {
@@ -3524,7 +3523,7 @@
       {
         "current": {
           "text": "Prometheus",
-          "value": "prometheus"
+          "value": "PBFA97CFB590B2093"
         },
         "includeAll": false,
         "name": "datasource",
@@ -3558,16 +3557,11 @@
         "auto_count": 30,
         "auto_min": "1m",
         "current": {
-          "text": "auto",
-          "value": "$__auto_interval_interval"
+          "text": "$__auto",
+          "value": "$__auto"
         },
         "name": "interval",
         "options": [
-          {
-            "selected": true,
-            "text": "auto",
-            "value": "$__auto_interval_interval"
-          },
           {
             "selected": false,
             "text": "1m",
@@ -3663,17 +3657,12 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "All",
+          "text": "$__all",
           "value": "$__all"
         },
         "includeAll": true,
         "name": "health_status",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "Healthy",
@@ -3711,17 +3700,12 @@
       {
         "allValue": ".*",
         "current": {
-          "text": "All",
+          "text": "$__all",
           "value": "$__all"
         },
         "includeAll": true,
         "name": "sync_status",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "Synced",
@@ -3749,8 +3733,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "ArgoCD",
-  "uid": "LCAgc9rWz",
-  "version": 1,
+  "title": "ArgoCD Test",
+  "uid": "argocdtest",
+  "version": 6,
   "weekStart": ""
 }
