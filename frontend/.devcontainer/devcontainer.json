@@ -22,5 +22,6 @@
   },
   "runArgs": ["--security-opt=label=type:container_runtime_t"],
   "workspaceMount": "source=../,target=/workspace,type=bind",
-  "workspaceFolder": "/workspace"
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "echo \"source /usr/share/bash-completion/completions/git\" >> ~/.bashrc"
 }
