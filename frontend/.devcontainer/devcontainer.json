@@ -16,7 +16,8 @@
         "ms-kubernetes-tools.vscode-kubernetes-tools",
         "tamasfe.even-better-toml",
         "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint"
+        "dbaeumer.vscode-eslint",
+        "YoavBls.pretty-ts-errors"
       ]
     }
   },
