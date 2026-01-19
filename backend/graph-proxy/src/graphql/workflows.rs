@@ -623,7 +623,10 @@ impl WorkflowsQuery {
 
         let workflows_response = match api_result.into_result() {
             Ok(res) => res,
-            Err(_) => {
+            Err(err) => {
+                if err.clone().message.is_some_and(|s| s == "Unauthorized") {
+                    return Err(err.into());
+                };
                 return Ok(Connection::new(false, false));
             }
         };
