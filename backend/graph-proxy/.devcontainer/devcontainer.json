@@ -35,6 +35,7 @@
   "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
   "workspaceFolder": "/workspace/",
   "runArgs": [
-      "--network=host"
-  ]
+    "--network=host"
+  ],
+  "postCreateCommand": "echo \"source /usr/share/bash-completion/completions/git\" >> ~/.bashrc"
 }
