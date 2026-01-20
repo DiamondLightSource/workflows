@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: example-template
+  spec:
+      templates:
+        - name: my-template
+          metrics:
+            prometheus:
+              - name: template_result_count
+                help: "Count of template executions by status"
+                labels:
+                  - key: template
+                    value: my-template
+                  - key: status
+                    value: "{{status}}"
+                counter:
+                  value: "1"
+          container:
+            image: alpine
+            command: ["sh", "-c"]
+            args: ["echo hi"]
+
