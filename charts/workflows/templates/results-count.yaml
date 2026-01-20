@@ -13,7 +13,7 @@ metadata:
                   - key: template
                     value: my-template
                   - key: status
-                    value: '{{ "{{status}}" }}'
+                    value: "{{status}}"
                 counter:
                   value: "1"
           container:
