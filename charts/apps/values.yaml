@@ -149,3 +149,9 @@ kueue:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+mpiOperator:
+  enabled: true
+  targetRevision: v0.7.0
+  extraValuesFiles: []
+  valuesObject: {}
