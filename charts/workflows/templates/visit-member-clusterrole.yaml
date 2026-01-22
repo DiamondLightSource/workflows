@@ -35,5 +35,4 @@ rules:
     verbs:
       - create
       - update
-      - delete
       - patch
