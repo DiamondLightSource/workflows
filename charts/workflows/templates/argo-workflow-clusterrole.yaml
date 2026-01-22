@@ -29,3 +29,9 @@ rules:
     "workflowartifactgctasks/status",
     ]
   verbs: ["patch"] 
+- apiGroups: ["kubeflow.org"]
+  resources: ["mpijobs"]
+  verbs: ["create", "get", "list", "watch", "update", "delete"]
+- apiGroups: ["kubeflow.org"]
+  resources: ["mpijobs/status"]
+  verbs: ["get", "watch"]
