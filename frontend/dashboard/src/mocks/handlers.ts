@@ -1,4 +1,4 @@
-import { graphql, HttpResponse } from "msw";
+import { graphql, HttpResponse, http } from "msw";
 import {
   RetriggerWorkflowQuery$data,
   RetriggerWorkflowQuery$variables,
@@ -262,4 +262,12 @@ export const handlers = [
       });
     },
   ),
+
+  // Catch all remaining unintercepted queries
+  api.operation(({ operationName }) => {
+    console.warn("Unhandled GraphQL operation:", operationName);
+  }),
+
+  // Intercept WS connection upgrade
+  http.get("https://workflows.diamond.ac.uk/graphql/ws", () => {}),
 ];
