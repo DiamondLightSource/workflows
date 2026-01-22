@@ -1,0 +1,32 @@
+{{- if .Values.mpiOperator.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mpi-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  destination:
+    namespace: mpi-operator
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/kubeflow/mpi-operator.git
+    path: deploy/v2beta1
+    targetRevision: {{ .Values.kueue.targetRevision }}
+  ignoreDifferences:
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+      jsonPointers:
+        - /rules
+      name: kubeflow-mpijobs-admin
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+{{- end }}
