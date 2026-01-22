@@ -1,0 +1,34 @@
+# ResourceFlavor targeting cloud-24 node by hostname
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: cloud-24-flavor
+spec:
+  nodeLabels:
+    kubernetes.io/hostname: cs05r-sc-cloud-24.diamond.ac.uk
+---
+# ClusterQueue using the cloud-24 flavor
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: cloud-24-cluster-queue
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory"]
+    flavors:
+    - name: cloud-24-flavor
+      resources:
+      - name: cpu
+        nominalQuota: 8
+      - name: memory
+        nominalQuota: 32Gi
+---
+# LocalQueue in your namespace
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: cloud-24-queue
+  namespace: au34214-1
+spec:
+  clusterQueue: cloud-24-cluster-queue
