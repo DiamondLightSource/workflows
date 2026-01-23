@@ -67,3 +67,11 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - "kubeflow.org"
+  resources:
+  - mpijobs
+  verbs:
+  - get
+  - list
+  - watch
