@@ -49,6 +49,10 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.15.0/config/components/crd/bases/kueue.x-k8s.io_clusterqueues.yaml
           kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.15.0/config/components/crd/bases/kueue.x-k8s.io_localqueues.yaml
 
+      - name: Install mpi-operator CRDs
+        run: |
+          kubectl apply --server-side -f https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.7.0/deploy/v2beta1/mpi-operator.yaml
+
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
           helm template sessionspaces charts/sessionspaces | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
