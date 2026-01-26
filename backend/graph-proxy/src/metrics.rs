@@ -11,7 +11,7 @@ pub type MetricsState = Arc<Metrics>;
 pub struct Metrics {
     /// Total requests on all routes
     pub total_requests: Counter<u64>,
-    pub graphql_request_latency_ms: Histogram<f64>,
+    pub request_duration_ms: Histogram<f64>,
 }
 
 impl Metrics {
@@ -25,14 +25,14 @@ impl Metrics {
             .build();
 
         let graphql_request_latency_ms = meter
-            .f64_histogram("graph_proxy_graphql_request_latency_ms")
-            .with_description("GraphQL request latency")
+            .f64_histogram("graph_proxy_request_duration_ms")
+            .with_description("GraphQL request duration")
             .with_unit("ms")
             .build();
 
         Metrics {
             total_requests,
-            graphql_request_latency_ms,
+            request_duration_ms,
         }
     }
 }
