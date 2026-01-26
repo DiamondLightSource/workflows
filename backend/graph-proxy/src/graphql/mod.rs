@@ -116,7 +116,9 @@ pub async fn graphql_handler(
     auth_token_header: Option<TypedHeader<Authorization<Bearer>>>,
     request: GraphQLRequest,
 ) -> GraphQLResponse {
+    let start = std::time::Instant::now();
     let query = request.into_inner();
+    let mut request_type = "unparseable";
 
     if let Ok(query) = parse_query(&query.query) {
         let operation = query.operations;
@@ -130,19 +132,34 @@ pub async fn graphql_handler(
                 .map(|operation| operation.1.node.ty)
                 .collect(),
         };
+        let mut has_query = false;
+        let mut has_mutation = false;
         for operation in operations {
             match operation {
-                async_graphql::parser::types::OperationType::Query => state
-                    .metrics_state
-                    .total_requests
-                    .add(1, &[KeyValue::new("request_type", "query")]),
-                async_graphql::parser::types::OperationType::Mutation => state
-                    .metrics_state
-                    .total_requests
-                    .add(1, &[KeyValue::new("request_type", "mutation")]),
+                async_graphql::parser::types::OperationType::Query => {
+                    has_query = true;
+                    state
+                        .metrics_state
+                        .total_requests
+                        .add(1, &[KeyValue::new("request_type", "query")])
+                }
+                async_graphql::parser::types::OperationType::Mutation => {
+                    has_mutation = true;
+                    state
+                        .metrics_state
+                        .total_requests
+                        .add(1, &[KeyValue::new("request_type", "mutation")])
+                }
                 async_graphql::parser::types::OperationType::Subscription => {}
             };
         }
+        request_type = if has_mutation{
+            "mutation"
+        } else if has_query {
+            "query"
+        } else {
+            "query"
+        };
     } else {
         state
             .metrics_state
@@ -151,7 +168,22 @@ pub async fn graphql_handler(
     };
 
     let auth_token = auth_token_header.map(|header| header.0);
-    state.schema.execute(query.data(auth_token)).await.into()
+    /// state.schema.execute(query.data(auth_token)).await.into()
+    let response = state.schema.execute(query.data(auth_token)).await;
+    let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+    let status = if response.errors.is_empty() {
+        "ok"
+    } else {
+        "error"
+    };
+    state.metrics_state.request_duration_ms.record(
+        elapsed_ms,
+        &[
+            KeyValue::new("request_type", request_type),
+            KeyValue::new("status", status),
+        ],
+    );
+    response.into()
 }
 
 lazy_static! {
