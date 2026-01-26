@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use opentelemetry::metrics::{Counter, MeterProvider};
+use opentelemetry::metrics::{Counter, Histogram, MeterProvider};
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 
 /// Thread-safe wrapper for OTEL metrics
