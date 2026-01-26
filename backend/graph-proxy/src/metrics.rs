@@ -11,6 +11,7 @@ pub type MetricsState = Arc<Metrics>;
 pub struct Metrics {
     /// Total requests on all routes
     pub total_requests: Counter<u64>,
+    /// Request duration on every request
     pub request_duration_ms: Histogram<f64>,
 }
 
