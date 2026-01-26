@@ -24,7 +24,7 @@ impl Metrics {
             .with_description("The total requests on all routes made since the last restart.")
             .build();
 
-        let graphql_request_latency_ms = meter
+        let request_duration_ms = meter
             .f64_histogram("graph_proxy_request_duration_ms")
             .with_description("GraphQL request duration")
             .with_unit("ms")
