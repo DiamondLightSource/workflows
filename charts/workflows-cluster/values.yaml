@@ -125,8 +125,7 @@ vcluster:
             "/s3-artifact": "workflows/artifact-s3"
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
-            "/postgres-application-passwords": "workflows/postgres-application-passwords"
-            "/postgres-initdb-script": "workflows/postgres-initdb-script"
+            "/postgres-postgres-auth-service-password": "workflows/postgres-postgres-auth-service-password"
   rbac:
     clusterRole:
       enabled: false
