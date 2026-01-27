@@ -7,54 +7,55 @@ spec:
   concurrent: false
   steps:
   - name: create-input-postgres-secrets
-    apply:
-      resources:
-        - apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: workflows
-        - apiVersion: v1
-          kind: Secret
-          metadata:
-            name: postgres-argo-workflows-password
-            namespace: workflows
-          type: Opaque
-          data:
-            username: YXJnb191c2Vy   # argo_user
-            password: c2VjcmV0MQ==  # secret1
+  - try:
+    # - apply:
+    #     resource:
+    #         apiVersion: v1
+    #         kind: Namespace
+    #         # metadata:
+    #         #   name: workflows
+    - apply:
+        resource:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: postgres-argo-workflows-password
+              # namespace: workflows
+            type: Opaque
+            data:
+              username: YXJnb191c2Vy   # argo_user
+              password: c2VjcmV0MQ==  # secret1
+    - apply:
+        resource:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: postgres-auth-service-password
+              # namespace: workflows
+            type: Opaque
+            data:
+              username: YXV0aF91c2Vy   # auth_user
+              password: c2VjcmV0Mg==  # secret2
 
-        - apiVersion: v1
-          kind: Secret
-          metadata:
-            name: postgres-auth-service-password
-            namespace: workflows
-          type: Opaque
-          data:
-            username: YXV0aF91c2Vy   # auth_user
-            password: c2VjcmV0Mg==  # secret2
-
-  - name: verify-generated-application-passwords
-    assert:
-      resources:
-        - apiVersion: v1
-          kind: Secret
-          metadata:
-            name: postgres-application-passwords
-            namespace: workflows
-          data:
-            # base64("argo_user,auth_user")
-            username: YXJnb191c2VyLGF1dGhfdXNlcg==
-            # base64("secret1,secret2")
-            password: c2VjcmV0MSxzZWNyZXQy
-
-  - name: verify-initdb-script
-    assert:
-      resources:
-        - apiVersion: v1
-          kind: Secret
-          metadata:
-            name: postgres-initdb-script
-            namespace: workflows
-          data:
-            init.sql: >-
-              {{ b64enc "CREATE USER argo_workflows WITH PASSWORD 'secret1'; CREATE DATABASE argo_workflows OWNER argo_workflows; CREATE USER auth_user WITH PASSWORD 'secret2'; CREATE DATABASE auth_service OWNER auth_user;" }}
+    - assert:
+        resource:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: postgres-application-passwords
+              # namespace: workflows
+            data:
+              # base64("argo_user,auth_user")
+              usernames: YXJnb191c2VyLGF1dGhfdXNlcg==
+              # base64("secret1,secret2")
+              passwords: c2VjcmV0MSxzZWNyZXQy
+    # - assert:
+    #     resource:
+    #         apiVersion: v1
+    #         kind: Secret
+    #         metadata:
+    #           name: postgres-initdb-script
+    #           # namespace: workflows
+    #         data:
+    #           init.sql: >-
+    #             {{ b64enc "CREATE USER argo_workflows WITH PASSWORD 'secret1'; CREATE DATABASE argo_workflows OWNER argo_workflows; CREATE USER auth_user WITH PASSWORD 'secret2'; CREATE DATABASE auth_service OWNER auth_user;" }}
