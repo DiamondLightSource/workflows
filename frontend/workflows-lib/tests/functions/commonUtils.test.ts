@@ -2,6 +2,7 @@ import { Visit } from "@diamondlightsource/sci-react-ui";
 import {
   visitTextToVisit,
   parseVisitAndTemplate,
+  formatErrorMessage,
 } from "../../lib/utils/commonUtils";
 
 describe("visitTextToVisit", () => {
@@ -83,6 +84,41 @@ describe("parseVisitAndTemplate", () => {
     (proposalCode, proposalNumber, number, templateName) => {
       const input = `${proposalCode}${proposalNumber.toString()}-${number.toString()}-${templateName}`;
       expect(parseVisitAndTemplate(input)).toBeNull();
+    },
+  );
+});
+
+describe("formatErrorMessage", () => {
+  it("should return an auth error for templates", () => {
+    const input =
+      "No data returned for operation `TemplatesListViewQuery`, got error(s): Unauthorized";
+    expect(formatErrorMessage(input)).toBe(
+      "You are not authorised to access the templates.",
+    );
+  });
+
+  it("should return a template auth error for WorkflowsListViewTemplatesQuery", () => {
+    const input =
+      "No data returned for operation `WorkflowsListViewTemplatesQuery`, got error(s): Unauthorized";
+    expect(formatErrorMessage(input)).toBe(
+      "You are not authorised to access the templates.",
+    );
+  });
+
+  it("should return an auth error for workflows", () => {
+    const input =
+      "No data returned for operation `WorkflowsListViewQuery`, got error(s): Unauthorized";
+    expect(formatErrorMessage(input)).toBe(
+      "You are not authorised to access this visit.",
+    );
+  });
+
+  test.each(["Unknown error", "", undefined])(
+    "%s should return a default message",
+    (input) => {
+      expect(formatErrorMessage(input)).toBe(
+        "Something went wrong with the GraphQL query.",
+      );
     },
   );
 });

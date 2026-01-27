@@ -1,7 +1,8 @@
-import { render, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { describe, it, expect } from "vitest";
 import WorkflowErrorBoundaryWithRetry from "../../lib/components/workflow/WorkflowErrorBoundaryWithRetry";
+import * as commonUtils from "../../lib/utils/commonUtils";
 
 describe("WorkflowsErrorBoundaryWithRetry", () => {
   it("renders with children", () => {
@@ -59,5 +60,26 @@ describe("WorkflowsErrorBoundaryWithRetry", () => {
       },
       { timeout: 4000 },
     );
+  });
+
+  it("does not retry for an unauthorised query", () => {
+    const TestAuthError = () => {
+      throw new Error(
+        "No data returned for operation `TemplatesListViewQuery`, got error(s): Unauthorized",
+      );
+    };
+
+    const formatMessage = vi.spyOn(commonUtils, "formatErrorMessage");
+
+    render(
+      <WorkflowErrorBoundaryWithRetry>
+        {() => <TestAuthError />}
+      </WorkflowErrorBoundaryWithRetry>,
+    );
+
+    expect(
+      screen.queryByText("Trying to Refetch Data..."),
+    ).not.toBeInTheDocument();
+    expect(formatMessage).toHaveBeenCalled();
   });
 });

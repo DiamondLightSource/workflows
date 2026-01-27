@@ -1,5 +1,6 @@
 import { Typography } from "@mui/material";
 import React, { Component, ReactNode } from "react";
+import { formatErrorMessage } from "workflows-lib/lib/utils/commonUtils";
 
 interface ErrorBoundaryProps {
   children: (props: { fetchKey: number }) => ReactNode;
@@ -14,6 +15,7 @@ interface ErrorBoundaryState {
   error: Error | null;
   fetchKey: number;
   retryCount: number;
+  isUnauthorized: boolean;
 }
 
 class WorkflowErrorBoundaryWithRetry extends Component<
@@ -29,6 +31,7 @@ class WorkflowErrorBoundaryWithRetry extends Component<
       error: null,
       fetchKey: 0,
       retryCount: 0,
+      isUnauthorized: false,
     };
   }
 
@@ -46,9 +49,16 @@ class WorkflowErrorBoundaryWithRetry extends Component<
       errorInfo,
     );
 
+    if (error.message.includes("Unauthorized")) {
+      this.setState((prev) => ({
+        ...prev,
+        isUnauthorized: true,
+      }));
+    }
+
     const maxRetries = this.props.maxRetries ?? 2;
 
-    if (this.state.retryCount < maxRetries) {
+    if (!this.state.isUnauthorized && this.state.retryCount < maxRetries) {
       this.retryTimeoutId = setTimeout(
         () => {
           this._retry();
@@ -75,17 +85,18 @@ class WorkflowErrorBoundaryWithRetry extends Component<
 
   render() {
     const { children, fallback, maxRetries = 2 } = this.props;
-    const { hasError, error, fetchKey, retryCount } = this.state;
+    const { hasError, error, fetchKey, retryCount, isUnauthorized } =
+      this.state;
 
     if (hasError && error) {
-      if (retryCount >= maxRetries) {
+      if (isUnauthorized || retryCount >= maxRetries) {
         if (typeof fallback === "function") {
           return fallback({ error, retry: this._retry });
         }
         return (
           fallback || (
             <Typography variant="h6" fontWeight="bold">
-              Something went wrong with the GraphQL query.
+              {formatErrorMessage(error.message)}
             </Typography>
           )
         );
