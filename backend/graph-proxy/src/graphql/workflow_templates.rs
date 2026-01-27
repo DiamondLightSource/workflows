@@ -228,7 +228,10 @@ impl WorkflowTemplatesQuery {
 
         let workflow_templates_response = match api_result.into_result() {
             Ok(res) => res,
-            Err(_) => {
+            Err(err) => {
+                if err.message.as_deref() == Some("Unauthorized") {
+                    return Err(err.into());
+                }
                 return Ok(Connection::new(false, false));
             }
         };
