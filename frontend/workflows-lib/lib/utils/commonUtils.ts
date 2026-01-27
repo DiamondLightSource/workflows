@@ -54,3 +54,13 @@ export function templateSourceToLink(
   }
   return repo + "/tree/" + rev + "/" + path;
 }
+
+export function formatErrorMessage(errorMessage: string | undefined) {
+  const defaultMessage = "Something went wrong with the GraphQL query.";
+  const authWorkflowsMessage = "You are not authorised to access this visit.";
+  const authTemplateMessage = "You are not authorised to access the templates.";
+
+  if (errorMessage?.includes("Template")) return authTemplateMessage;
+  if (errorMessage?.includes("Workflow")) return authWorkflowsMessage;
+  return defaultMessage;
+}
