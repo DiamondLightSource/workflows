@@ -1,8 +1,8 @@
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-graph-proxy
-  tag: ""
-  digest: ""
+  tag: "jamesdoingstuff"
+  digest: "sha256:f549b5360b9fb2c1431da725cb5c26605feba678d12f4fd0366ab40bb1a29f3a"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -11,7 +11,7 @@ kubernetesApiUrl: https://kubernetes.default
 prefixPath: /graphql
 
 deployment:
-  replicas: 3
+  replicas: 1
   annotations: []
   podAnnotations: []
   resources:
