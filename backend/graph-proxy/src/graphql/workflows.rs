@@ -121,6 +121,7 @@ impl Workflow {
     }
 }
 
+/// Metadata of a workflow
 #[derive(Debug)]
 pub(super) struct Metadata {
     /// The name given to the workflow, unique within a given visit
@@ -379,6 +380,7 @@ impl Artifact<'_> {
     }
 }
 
+/// Get filename of the artifact in s3 bucket
 fn artifact_filename(
     manifest: &IoArgoprojWorkflowV1alpha1Artifact,
 ) -> Result<&str, WorkflowParsingError> {
@@ -471,6 +473,7 @@ impl Task {
     }
 }
 
+/// Fetch missing task information
 async fn fetch_missing_task_info(
     mut url: Url,
     token: Option<Authorization<Bearer>>,
