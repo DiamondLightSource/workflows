@@ -13,6 +13,10 @@ argo-workflows:
       bucket: k8s-workflows-test
       region: unsupported
   controller:
+    metricsConfig:
+      enabled: true
+      secure: false
+      scheme: http
     replicas: 2
     podAnnotations:
       prometheus.io/scrape: "true"
