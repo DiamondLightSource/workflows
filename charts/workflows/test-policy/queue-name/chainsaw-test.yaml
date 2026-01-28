@@ -1,0 +1,64 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: queue-name
+spec:
+  steps:
+    - name: default-queue
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+
+    - name: custom-queue-is-rejected
+      try:
+        - apply:
+            expect:
+              - check:
+                  ($error != null): true
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: custom-queue-workflow
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: custom-queue
+
+    - name: explicit-default-queue-is-allowed
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit-default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit-default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
