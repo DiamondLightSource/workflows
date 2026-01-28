@@ -43,7 +43,8 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
     let auth_session_data = LoginSessionData::new(csrf_token, pkce_verifier, nonce);
     session
         .insert(LoginSessionData::SESSION_KEY, auth_session_data)
-        .await?;
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to save session: {}", e))?;
 
     Ok(Redirect::temporary(auth_url.as_str()))
 }

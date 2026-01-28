@@ -396,10 +396,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "auth-common"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "http-body-util",
+ "oauth2",
+ "openidconnect",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sodiumoxide",
+ "tracing",
+]
+
+[[package]]
 name = "auth-daemon"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "auth-common",
  "axum",
  "axum-reverse-proxy",
  "axum-test",
@@ -413,7 +433,6 @@ dependencies = [
  "mockito",
  "oauth2",
  "oauth2-test-server",
- "oidc-bff",
  "openidconnect",
  "regex",
  "reqwest",
@@ -3842,6 +3861,7 @@ name = "oidc-bff"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "auth-common",
  "axum",
  "axum-reverse-proxy",
  "base64 0.22.1",
@@ -3864,6 +3884,8 @@ dependencies = [
  "thiserror 2.0.17",
  "tokio",
  "tower-sessions",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

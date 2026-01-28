@@ -6,6 +6,7 @@ license-file = "../../LICENSE"
 
 [dependencies]
 anyhow.workspace = true
+auth-common = { path = "../auth-common" }
 axum = { workspace = true, features = ["json"] }
 axum-reverse-proxy = "1.0.3"
 clap = { workspace = true, features = ["env"] }
@@ -22,7 +23,6 @@ tower-http = { workspace = true, features = ["cors"] }
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 url.workspace = true
-oidc-bff = { path = "../oidc-bff" }
 sea-orm = { workspace = true, features = ["sqlx-sqlite", "sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 chrono.workspace = true
 sodiumoxide = "0.2.7"

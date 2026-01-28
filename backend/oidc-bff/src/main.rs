@@ -49,7 +49,8 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
-    let args: Args = Args::try_parse()?;
+    let args: Args = Args::try_parse()
+        .map_err(|e| anyhow::anyhow!("CLI argument error: {}", e))?;
     let config = Config::from_file(args.config)?;
     let port = config.port;
     let appstate = Arc::new(AppState::new(config).await?);
@@ -110,7 +111,8 @@ async fn logout(
 ) -> Result<impl IntoResponse> {
     // Get the token data to find the subject for database deletion
     let token_session_data: Option<TokenSessionData> =
-        session.get(TokenSessionData::SESSION_KEY).await?;
+        session.get(TokenSessionData::SESSION_KEY).await
+            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
 
     // If we have token data, delete it from the database
     if let Some(token_data) = token_session_data {
@@ -122,17 +124,20 @@ async fn logout(
     }
 
     // Clear the entire session (removes both login and token data)
-    session.flush().await?;
+    session.flush().await
+        .map_err(|e| anyhow::anyhow!("Failed to flush session: {}", e))?;
 
     Ok(axum::http::StatusCode::OK)
 }
 
 async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
     let auth_session_data: Option<LoginSessionData> =
-        session.get(LoginSessionData::SESSION_KEY).await?;
+        session.get(LoginSessionData::SESSION_KEY).await
+            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
 
     let token_session_data: Option<TokenSessionData> =
-        session.get(TokenSessionData::SESSION_KEY).await?;
+        session.get(TokenSessionData::SESSION_KEY).await
+            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
 
     Ok(Json((
         state.config.clone(),

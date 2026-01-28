@@ -2,9 +2,7 @@
 use chrono::{DateTime, Utc};
 use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
-use std::time::Duration;
-use openidconnect::{AccessToken, IssuerUrl, RefreshToken, SubjectIdentifier};
-use serde::{Deserialize, Serialize};
+use openidconnect::{IssuerUrl, SubjectIdentifier};
 use tokio::sync::RwLock;
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use oauth2::{ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet, reqwest};
@@ -14,6 +12,9 @@ use crate::config::Config;
 use crate::Result;
 use crate::database::read_token_from_database;
 use anyhow::anyhow;
+
+// Re-export TokenData from auth-common
+pub use auth_common::TokenData;
 
 pub struct RouterState {
     pub config: Config,
@@ -51,14 +52,16 @@ impl RouterState {
         let http_client = reqwest::ClientBuilder::new()
             // Following redirects opens the client up to SSRF vulnerabilities.
             .redirect(reqwest::redirect::Policy::none())
-            .build()?;
+            .build()
+            .map_err(|e| anyhow!("Failed to build HTTP client: {}", e))?;
 
         // Use OpenID Connect Discovery to fetch the provider metadata.
         let provider_metadata = CoreProviderMetadata::discover_async(
             IssuerUrl::new(config.oidc_provider_url.to_string())?,
             &http_client,
         )
-        .await?;
+        .await
+        .map_err(|e| anyhow!("OIDC discovery failed: {}", e))?;
 
         let oidc_client = CoreClient::from_provider_metadata(
             provider_metadata,
@@ -89,79 +92,6 @@ impl RouterState {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct TokenData {
-    pub issuer: IssuerUrl,
-    pub subject: SubjectIdentifier,
-    pub access_token: Option<AccessToken>,
-    pub access_token_expires_at: DateTime<Utc>,
-    pub refresh_token: RefreshToken,
-}
-
-impl TokenData {
-
-    pub fn new(
-        issuer: IssuerUrl,
-        subject: SubjectIdentifier,
-        access_token: Option<AccessToken>,
-        access_token_expires_at: DateTime<Utc>,
-        refresh_token: RefreshToken,
-    ) -> Self {
-        Self {
-            issuer,
-            subject,
-            access_token,
-            access_token_expires_at,
-            refresh_token,
-        }
-    }
-
-    pub fn from_token_response<T: oauth2::TokenResponse>(
-        token_response: &T,
-        issuer: IssuerUrl,
-        subject: SubjectIdentifier,
-    ) -> Result<Self> {
-        let access_token = token_response.access_token().clone();
-        let refresh_token = token_response
-            .refresh_token()
-            .ok_or_else(|| anyhow!("Token Response did not return a refresh token"))?
-            .clone();
-        let access_token_expires_at = Utc::now()
-            + token_response
-                .expires_in()
-                .unwrap_or_else(|| Duration::from_secs(60));
-        Ok(Self::new(
-            issuer,
-            subject,
-            Some(access_token),
-            access_token_expires_at,
-            refresh_token,
-        ))
-    }
-
-    pub fn update_tokens_mut<T: oauth2::TokenResponse>(&mut self, token_response: &T) {
-        let access_token = token_response.access_token().clone();
-        let refresh_token = token_response.refresh_token();
-        let access_token_expires_at = Utc::now()
-            + token_response
-                .expires_in()
-                .unwrap_or_else(|| Duration::from_secs(60));
-        if let Some(refresh_token) = refresh_token {
-            self.refresh_token = refresh_token.clone();
-        }
-        self.access_token = Some(access_token);
-        self.access_token_expires_at = access_token_expires_at;
-    }
-
-    pub fn update_tokens<T: oauth2::TokenResponse>(&self, token_response: &T) -> Self {
-        let mut clone = self.clone();
-        clone.update_tokens_mut(token_response);
-        clone
-    }
-
-    pub fn access_token_is_expired(&self) -> bool {
-        self.access_token_expires_at <= Utc::now() || self.access_token.is_none()
-    }
-}
+// TokenData is now provided by auth_common - see `pub use auth_common::TokenData;` above
 
 

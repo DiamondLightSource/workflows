@@ -175,7 +175,7 @@ mod tests {
         let public_key = sodiumoxide::crypto::box_::PublicKey::from_slice(&BASE64.decode("ZpJ703xR7atXbGXI20FkQk3J1qjLxodTP6yk92yPVGM=")?).expect("valid key");
         let encrypted_refresh_token = sodiumoxide::crypto::sealedbox::seal(refresh_token.as_bytes(), &public_key);
 
-        oidc_bff::entity::oidc_tokens::Entity::insert(oidc_bff::entity::oidc_tokens::ActiveModel {
+        auth_common::oidc_tokens::Entity::insert(auth_common::oidc_tokens::ActiveModel {
             issuer: Set(issuer_url.into()),
             subject: Set("test-subject".into()),
             encrypted_refresh_token: Set(encrypted_refresh_token.into()),

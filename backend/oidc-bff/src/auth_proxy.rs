@@ -56,10 +56,12 @@ async fn logout() {}
 
 async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
     let auth_session_data: Option<LoginSessionData> =
-        session.get(LoginSessionData::SESSION_KEY).await?;
+        session.get(LoginSessionData::SESSION_KEY).await
+            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
 
     let token_session_data: Option<TokenSessionData> =
-        session.get(TokenSessionData::SESSION_KEY).await?;
+        session.get(TokenSessionData::SESSION_KEY).await
+            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
 
     Ok(Json((
         state.config.clone(),

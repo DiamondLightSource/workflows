@@ -30,14 +30,16 @@ impl AppState {
         let http_client = reqwest::ClientBuilder::new()
             // Following redirects opens the client up to SSRF vulnerabilities.
             .redirect(reqwest::redirect::Policy::none())
-            .build()?;
+            .build()
+            .map_err(|e| anyhow!("Failed to build HTTP client: {}", e))?;
 
         // Use OpenID Connect Discovery to fetch the provider metadata.
         let provider_metadata = CoreProviderMetadata::discover_async(
             IssuerUrl::new(config.oidc_provider_url.to_string())?,
             &http_client,
         )
-        .await?;
+        .await
+        .map_err(|e| anyhow!("OIDC discovery failed: {}", e))?;
 
         let oidc_client = CoreClient::from_provider_metadata(
             provider_metadata,

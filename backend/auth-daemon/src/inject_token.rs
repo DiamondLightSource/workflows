@@ -1,10 +1,7 @@
 use crate::{database::write_token_to_database, state::{RouterState, TokenData}};
+use auth_common::http_utils::{clone_request, prepare_headers};
 use http_body_util::BodyExt;
-use openidconnect::{
-    ClientId, ClientSecret, IssuerUrl, TokenResponse,
-    core::{CoreClient, CoreProviderMetadata},
-    reqwest,
-};
+use openidconnect::TokenResponse;
 use serde_json::Value;
 use std::sync::Arc;
 use axum::response::IntoResponse;
@@ -12,7 +9,6 @@ use axum::response::IntoResponse;
 use axum::{
     body::Body,
     extract::{Request, State},
-    http::{self, HeaderValue, StatusCode},
     middleware, response::Response,
 };
 
@@ -82,26 +78,7 @@ async fn set_token(state: &RouterState, new_token: TokenData) {
     *guard = Some(new_token);
 }
 
-async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Body>)> {
-    // TODO: an inefficient method of cloning a request, improve this
-    let (parts, body) = req.into_parts();
-    let bytes = http_body_util::BodyExt::collect(body).await?.to_bytes();
-    let req1 = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
-    let req2 = Request::from_parts(parts, Body::from(bytes));
-    Ok((req1, req2))
-}
-
-fn prepare_headers(req: &mut Request, token: &TokenData) {
-    if let Some(access_token) = &token.access_token {
-    let value = format!("Bearer {}", access_token.secret());
-    println!("DEBUG injecting token:{:?}", value);
-    req.headers_mut().insert(
-        http::header::AUTHORIZATION,
-        HeaderValue::from_str(&value).unwrap(),
-    );
-    req.headers_mut().remove(http::header::COOKIE);
-}
-}
+// clone_request and prepare_headers are now provided by auth_common::http_utils
 
 async fn refresh_token_and_write_to_database(
     state: &RouterState,
@@ -115,9 +92,11 @@ async fn refresh_token_and_write_to_database(
 async fn refresh_token(state: &RouterState, token: &TokenData) -> Result<TokenData> {
     let token_response = state
         .oidc_client
-        .exchange_refresh_token(&token.refresh_token)?
+        .exchange_refresh_token(&token.refresh_token)
+        .map_err(|e| anyhow::anyhow!("Failed to build refresh token request: {}", e))?
         .request_async(&state.http_client)
-        .await?;
+        .await
+        .map_err(|e| anyhow::anyhow!("Token refresh request failed: {}", e))?;
     let token = token.update_tokens(&token_response);
     Ok(token)
 }

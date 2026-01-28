@@ -3,10 +3,9 @@ use std::sync::Arc;
 
 use axum::debug_handler;
 use axum::extract::{Query, State};
-use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl,
-    OAuth2TokenResponse, RedirectUrl, TokenResponse, reqwest,
+    AccessTokenHash, AuthorizationCode, CsrfToken,
+    OAuth2TokenResponse, RedirectUrl, TokenResponse,
 };
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
@@ -32,7 +31,8 @@ pub async fn callback(
     // Retrieve data from the users session
     let auth_session_data: LoginSessionData = session
         .remove(LoginSessionData::SESSION_KEY)
-        .await?
+        .await
+        .map_err(|e| anyhow!("Session error: {}", e))?
         .ok_or(anyhow!("session expired"))?;
 
     // Once the user has been redirected to the redirect URL, you'll have access to the
@@ -42,35 +42,38 @@ pub async fn callback(
     if auth_session_data.csrf_token != CsrfToken::new(params.state) {
         return Err(anyhow!("invalid state").into());
     }
-    let redirect_url = Cow::Owned(RedirectUrl::new(
+    let redirect_url = std::borrow::Cow::Owned(RedirectUrl::new(
         // "http://localhost:5173/auth/callback".to_string(),
         "https://staging.workflows.diamond.ac.uk/auth/callback".to_string(),
     )?);
     // Now you can exchange it for an access token and ID token.
     let token_response = state
         .oidc_client
-        .exchange_code(AuthorizationCode::new(params.code.to_string()))?
+        .exchange_code(AuthorizationCode::new(params.code.to_string()))
+        .map_err(|e| anyhow!("Failed to build code exchange request: {}", e))?
         // Set the PKCE code verifier.
         .set_pkce_verifier(auth_session_data.pcke_verifier)
         .set_redirect_uri(redirect_url)
         .request_async(&state.http_client)
-        .await?;
+        .await
+        .map_err(|e| anyhow!("Token exchange request failed: {}", e))?;
 
     // Extract the ID token claims after verifying its authenticity and nonce.
     let id_token = token_response
         .id_token()
         .ok_or_else(|| anyhow!("Server did not return an ID token"))?;
     let id_token_verifier = state.oidc_client.id_token_verifier();
-    let claims = id_token.claims(&id_token_verifier, &auth_session_data.nonce)?;
+    let claims = id_token.claims(&id_token_verifier, &auth_session_data.nonce)
+        .map_err(|e| anyhow!("Failed to verify ID token: {}", e))?;
 
     // Verify the access token hash to ensure that the access token hasn't been substituted for
     // another user's.
     if let Some(expected_access_token_hash) = claims.access_token_hash() {
         let actual_access_token_hash = AccessTokenHash::from_token(
             token_response.access_token(),
-            id_token.signing_alg()?,
-            id_token.signing_key(&id_token_verifier)?,
-        )?;
+            id_token.signing_alg().map_err(|e| anyhow!("Signing alg error: {}", e))?,
+            id_token.signing_key(&id_token_verifier).map_err(|e| anyhow!("Signing key error: {}", e))?,
+        ).map_err(|e| anyhow!("Access token hash error: {}", e))?;
         if actual_access_token_hash != *expected_access_token_hash {
             return Err(anyhow!("Invalid access token").into());
         }
@@ -108,6 +111,7 @@ pub async fn callback(
     write_token_to_database(&state.database_connection, &token_data, &state.public_key).await?;
     session
         .insert(TokenSessionData::SESSION_KEY, token_data)
-        .await?;
+        .await
+        .map_err(|e| anyhow!("Failed to save token to session: {}", e))?;
     Ok(response)
 }

@@ -1,16 +1,12 @@
 use crate::{database::write_token_to_database, state::AppState};
-use openidconnect::{
-    ClientId, ClientSecret, IssuerUrl, TokenResponse,
-    core::{CoreClient, CoreProviderMetadata},
-    reqwest,
-};
+use auth_common::http_utils::{clone_request, prepare_headers};
+use openidconnect::TokenResponse;
 use std::sync::Arc;
 use tower_sessions::Session;
 
 use axum::{
-    body::Body,
     extract::{Request, State},
-    http::{self, HeaderValue, StatusCode},
+    http::StatusCode,
     middleware,
 };
 
@@ -25,7 +21,8 @@ pub async fn inject_token_from_session(
     next: middleware::Next,
 ) -> Result<impl axum::response::IntoResponse> {
     // Read token from session
-    let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await?;
+    let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await
+        .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
     if let Some(mut token) = token {
         if (token.access_token_is_expired()) {
             token = refresh_token_and_update_session(&state, &token, &session).await?;
@@ -45,23 +42,7 @@ pub async fn inject_token_from_session(
     }
 }
 
-async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Body>)> {
-    // TODO: an inefficient method of cloning a request, improve this
-    let (parts, body) = req.into_parts();
-    let bytes = http_body_util::BodyExt::collect(body).await?.to_bytes();
-    let req1 = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
-    let req2 = Request::from_parts(parts, Body::from(bytes));
-    Ok((req1, req2))
-}
-
-fn prepare_headers(req: &mut Request, token: &TokenSessionData) {
-    let value = format!("Bearer {}", token.access_token.secret());
-    req.headers_mut().insert(
-        http::header::AUTHORIZATION,
-        HeaderValue::from_str(&value).unwrap(),
-    );
-    req.headers_mut().remove(http::header::COOKIE);
-}
+// clone_request and prepare_headers are now provided by auth_common::http_utils
 
 async fn refresh_token_and_update_session(
     state: &AppState,
@@ -72,16 +53,19 @@ async fn refresh_token_and_update_session(
     write_token_to_database(&state.database_connection, &token, &state.public_key).await?;
     session
         .insert(TokenSessionData::SESSION_KEY, token.clone())
-        .await?;
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to update session: {}", e))?;
     Ok(token)
 }
 
 async fn refresh_token(state: &AppState, token: &TokenSessionData) -> Result<TokenSessionData> {
     let token_response = state
         .oidc_client
-        .exchange_refresh_token(&token.refresh_token)?
+        .exchange_refresh_token(&token.refresh_token)
+        .map_err(|e| anyhow::anyhow!("Failed to build refresh token request: {}", e))?
         .request_async(&state.http_client)
-        .await?;
+        .await
+        .map_err(|e| anyhow::anyhow!("Token refresh request failed: {}", e))?;
     let token = token.update_tokens(&token_response);
     Ok(token)
 }

@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "argo-workflows-openapi",
+    "auth-common",
     "auth-daemon",
     "graph-proxy", "oidc-bff", "oidc-bff/migration",
     "sessionspaces",
