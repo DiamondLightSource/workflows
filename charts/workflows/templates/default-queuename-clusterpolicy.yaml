@@ -1,0 +1,45 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-queuename
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: set-default-queuename
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            operations:
+              - CREATE
+      preconditions:
+        all:
+        - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/queue-name\" || '' }}` }}"
+          operator: Equals
+          value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            podMetadata:
+              labels:
+                kueue.x-k8s.io/queue-name: default-queue
+
+    - name: validate-queuename
+      match:
+        any:
+        - resources:
+            kinds:
+            - argoproj.io/*/Workflow
+            operations:
+              - CREATE
+              - UPDATE
+      validate:
+        message: "The label kueue.x-k8s.io/queue-name must be default-queue"
+        deny:
+          conditions:
+            all:
+            - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/queue-name\" || 'default-queue' }}` }}"
+              operator: AnyNotIn
+              value:
+                - default-queue
