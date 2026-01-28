@@ -23,7 +23,6 @@ spec:
               spec:
                 podMetadata:
                   labels:
-                    kueue.x-k8s.io/queue-name: default-queue
                     kueue.x-k8s.io/priority-class: medium
         - apply:
             resource:
@@ -41,7 +40,6 @@ spec:
               spec:
                 podMetadata:
                   labels:
-                    kueue.x-k8s.io/queue-name: default-queue
                     kueue.x-k8s.io/priority-class: medium
         - apply:
             resource:
@@ -61,7 +59,6 @@ spec:
               spec:
                 podMetadata:
                   labels:
-                    kueue.x-k8s.io/queue-name: default-queue
                     kueue.x-k8s.io/priority-class: high
         - apply:
             resource:
@@ -81,7 +78,6 @@ spec:
               spec:
                 podMetadata:
                   labels:
-                    kueue.x-k8s.io/queue-name: default-queue
                     kueue.x-k8s.io/priority-class: low
         - error:
             resource:
@@ -101,5 +97,4 @@ spec:
               spec:
                 podMetadata:
                   labels:
-                    kueue.x-k8s.io/queue-name: default-queue
                     kueue.x-k8s.io/priority-class: medium
