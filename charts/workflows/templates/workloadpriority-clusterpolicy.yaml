@@ -26,7 +26,6 @@ spec:
           spec:
             podMetadata:
               labels:
-                kueue.x-k8s.io/queue-name: default-queue
                 kueue.x-k8s.io/priority-class: medium
 
     - name: live-workload-priority
@@ -49,7 +48,6 @@ spec:
           spec:
             podMetadata:
               labels:
-                kueue.x-k8s.io/queue-name: default-queue
                 kueue.x-k8s.io/priority-class: high
 
     - name: low-workload-priority
@@ -72,7 +70,6 @@ spec:
           spec:
             podMetadata:
               labels:
-                kueue.x-k8s.io/queue-name: default-queue
                 kueue.x-k8s.io/priority-class: low
 
     - name: validate-workflow-type
