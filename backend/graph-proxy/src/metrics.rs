@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use opentelemetry::metrics::{Counter, MeterProvider};
+use opentelemetry::metrics::{Counter, Histogram, MeterProvider};
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 
 /// Thread-safe wrapper for OTEL metrics
@@ -11,6 +11,8 @@ pub type MetricsState = Arc<Metrics>;
 pub struct Metrics {
     /// Total requests on all routes
     pub total_requests: Counter<u64>,
+    /// Request duration in miliseconds on every request
+    pub request_duration_ms: Histogram<f64>,
 }
 
 impl Metrics {
@@ -23,6 +25,15 @@ impl Metrics {
             .with_description("The total requests on all routes made since the last restart.")
             .build();
 
-        Metrics { total_requests }
+        let request_duration_ms = meter
+            .f64_histogram("graph_proxy_request_duration_ms")
+            .with_description("GraphQL request duration")
+            .with_unit("ms")
+            .build();
+
+        Metrics {
+            total_requests,
+            request_duration_ms,
+        }
     }
 }
