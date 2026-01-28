@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.15...graph-proxy@v0.1.16) (2026-01-28)
+
+
+### Features
+
+* **graph-proxy:** return error for unauthorized queries ([f05b2c5](https://github.com/DiamondLightSource/workflows/commit/f05b2c5121c5e1c10938b78b8667953a2bc22838))
+
+
+### Bug Fixes
+
+* **graph-proxy:** failing CI due to missing docstring ([5788a70](https://github.com/DiamondLightSource/workflows/commit/5788a70b77f56ab892e926993274e5c34ef15f47))
+
 ## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.14...graph-proxy@v0.1.15) (2026-01-16)
 
 
