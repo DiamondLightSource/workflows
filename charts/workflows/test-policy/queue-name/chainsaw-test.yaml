@@ -62,3 +62,26 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/queue-name: default-queue
+
+    - name: gpu-queue-is-allowed
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit-default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: gpu-queue
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit-default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: gpu-queue
