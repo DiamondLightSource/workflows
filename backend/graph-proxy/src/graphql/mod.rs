@@ -132,12 +132,10 @@ pub async fn graphql_handler(
                 .map(|operation| operation.1.node.ty)
                 .collect(),
         };
-        let mut has_query = false;
         let mut has_mutation = false;
         for operation in operations {
             match operation {
                 async_graphql::parser::types::OperationType::Query => {
-                    has_query = true;
                     state
                         .metrics_state
                         .total_requests
