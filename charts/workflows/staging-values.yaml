@@ -8,7 +8,7 @@ oauth2-proxy:
     configData:
       providers:
         - provider: oidc
-          scope: "openid profile email fedid"
+          scope: "openid posix-uid profile email fedid"
           clientId: workflows-argo-server-staging
           clientSecretFile: /etc/alpha/secret
           id: authn
