@@ -155,8 +155,6 @@ pub async fn graphql_handler(
         }
         request_type = if has_mutation {
             "mutation"
-        } else if has_query {
-            "query"
         } else {
             "query"
         };
