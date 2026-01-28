@@ -53,6 +53,8 @@ struct WatchEvent {
     /// Error returned by API
     error: Option<StreamError>,
 }
+
+/// Get authentication token
 fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
     ctx.data_unchecked::<Option<Authorization<Bearer>>>()
         .as_ref()
@@ -203,6 +205,7 @@ impl WorkflowsSubscription {
     }
 }
 
+/// Struct for storing message of StreamError
 #[derive(Debug, Deserialize)]
 struct StreamError {
     /// The message associated with the error
