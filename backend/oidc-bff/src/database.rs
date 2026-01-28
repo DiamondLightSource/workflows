@@ -3,11 +3,25 @@ use chrono::{DateTime, Duration, FixedOffset, Utc};
 use crate::{Result, auth_session_data::TokenSessionData};
 use sea_orm::*;
 use oidc_bff::entity;
+use openidconnect::SubjectIdentifier;
 
 pub async fn migrate_database(connection: &DatabaseConnection) -> Result<()> {
     use migration::{Migrator, MigratorTrait};
 
     Migrator::up(connection, None).await?;
+    Ok(())
+}
+
+/// Delete a user's token from the database by subject identifier.
+/// This is called during logout to revoke workflow access.
+pub async fn delete_token_from_database(
+    connection: &DatabaseConnection,
+    subject: &SubjectIdentifier,
+) -> Result<()> {
+    entity::oidc_tokens::Entity::delete_many()
+        .filter(entity::oidc_tokens::Column::Subject.eq(subject.as_str()))
+        .exec(connection)
+        .await?;
     Ok(())
 }
 
