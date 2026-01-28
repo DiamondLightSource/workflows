@@ -135,12 +135,10 @@ pub async fn graphql_handler(
         let mut has_mutation = false;
         for operation in operations {
             match operation {
-                async_graphql::parser::types::OperationType::Query => {
-                    state
-                        .metrics_state
-                        .total_requests
-                        .add(1, &[KeyValue::new("request_type", "query")])
-                }
+                async_graphql::parser::types::OperationType::Query => state
+                    .metrics_state
+                    .total_requests
+                    .add(1, &[KeyValue::new("request_type", "query")]),
                 async_graphql::parser::types::OperationType::Mutation => {
                     has_mutation = true;
                     state
@@ -151,11 +149,7 @@ pub async fn graphql_handler(
                 async_graphql::parser::types::OperationType::Subscription => {}
             };
         }
-        request_type = if has_mutation {
-            "mutation"
-        } else {
-            "query"
-        };
+        request_type = if has_mutation { "mutation" } else { "query" };
     } else {
         state
             .metrics_state
