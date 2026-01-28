@@ -142,10 +142,10 @@ pub async fn graphql_handler(
                 async_graphql::parser::types::OperationType::Mutation => {
                     has_mutation = true;
                     state
-                    .metrics_state
-                    .total_requests
-                    .add(1, &[KeyValue::new("request_type", "mutation")])
-                },
+                        .metrics_state
+                        .total_requests
+                        .add(1, &[KeyValue::new("request_type", "mutation")])
+                }
                 async_graphql::parser::types::OperationType::Subscription => {}
             };
         }
@@ -158,7 +158,7 @@ pub async fn graphql_handler(
     };
 
     let auth_token = auth_token_header.map(|header| header.0);
-    state.schema.execute(query.data(auth_token)).await.into()
+    state.schema.execute(query.data(auth_token)).await.into();
     let response = state.schema.execute(query.data(auth_token)).await;
     let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
     let status = if response.errors.is_empty() {
