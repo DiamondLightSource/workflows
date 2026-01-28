@@ -22,6 +22,7 @@ type Result<T> = std::result::Result<T, error::Error>;
 use axum::{
     Json, Router,
     extract::State,
+    http::StatusCode,
     middleware,
     response::IntoResponse,
     routing::{get, post},
@@ -35,6 +36,7 @@ mod inject_token_from_session;
 #[command(author, version, about)]
 struct Args {
     /// Path to config file (JSON or YAML)
+    //TODO: Change this from env variable to hardcoded
     #[arg(
         short,
         long,
@@ -98,7 +100,32 @@ async fn serve(router: Router, port: u16) -> Result<()> {
     Ok(())
 }
 
-async fn logout() {}
+/// Logout handler that:
+/// 1. Retrieves the user's token from the session (to get subject ID)
+/// 2. Deletes the token from the database (so workflows can't use it)
+/// 3. Clears the session (so browser requests are no longer authenticated)
+async fn logout(
+    State(state): State<Arc<AppState>>,
+    session: Session,
+) -> Result<impl IntoResponse> {
+    // Get the token data to find the subject for database deletion
+    let token_session_data: Option<TokenSessionData> =
+        session.get(TokenSessionData::SESSION_KEY).await?;
+
+    // If we have token data, delete it from the database
+    if let Some(token_data) = token_session_data {
+        database::delete_token_from_database(
+            &state.database_connection,
+            &token_data.subject,
+        )
+        .await?;
+    }
+
+    // Clear the entire session (removes both login and token data)
+    session.flush().await?;
+
+    Ok(axum::http::StatusCode::OK)
+}
 
 async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
     let auth_session_data: Option<LoginSessionData> =
