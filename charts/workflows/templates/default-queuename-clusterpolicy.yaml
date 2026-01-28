@@ -43,3 +43,4 @@ spec:
               operator: AnyNotIn
               value:
                 - default-queue
+                - gpu-queue
