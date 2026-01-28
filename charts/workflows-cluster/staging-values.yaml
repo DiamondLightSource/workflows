@@ -83,6 +83,7 @@ authenticationConfiguration:
         url: https://identity-dev.diamond.ac.uk/realms/dls
         audiences:
           - workflows-cluster-staging
+          - workflows-argo-server-staging
           - graph
         audienceMatchPolicy: MatchAny
       claimMappings:
