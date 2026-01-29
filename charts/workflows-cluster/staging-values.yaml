@@ -85,6 +85,7 @@ authenticationConfiguration:
           - workflows-cluster-staging
           - workflows-argo-server-staging
           - graph
+          - account
         audienceMatchPolicy: MatchAny
       claimMappings:
         username:
