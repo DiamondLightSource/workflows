@@ -8,6 +8,7 @@ mod counter;
 mod database;
 mod error;
 mod auth_proxy;
+mod admin_auth;
 
 use clap::Parser;
 use config::Config;
@@ -91,7 +92,10 @@ fn create_router(state: Arc<AppState>) -> Router {
 
     #[cfg(debug_assertions)]
     {
-        router = router.route("/debug", get(debug));
+        router = router.route(
+            "/debug",
+            get(debug).layer(middleware::from_fn(admin_auth::require_admin_auth)),
+        );
     }
 
     router.with_state(state)
