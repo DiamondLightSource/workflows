@@ -1,7 +1,6 @@
 use crate::{database::write_token_to_database, state::{RouterState, TokenData}};
 use auth_common::http_utils::{clone_request, prepare_headers};
 use http_body_util::BodyExt;
-use openidconnect::TokenResponse;
 use serde_json::Value;
 use std::sync::Arc;
 use axum::response::IntoResponse;
@@ -22,7 +21,7 @@ pub async fn inject_token(
     let token: Option<TokenData> = state.token.read().await.clone();
     if let Some(mut token) = token {
         println!("Injecting token");
-        if (token.access_token_is_expired()) {
+        if token.access_token_is_expired() {
             println!("Access token is expired, refreshing");
             token = refresh_token_and_write_to_database(&state, &token).await?;
         }
@@ -73,10 +72,10 @@ async fn response_as_json(response: Response<Body>) -> Result<Value> {
     Ok(json)
 }
 
-async fn set_token(state: &RouterState, new_token: TokenData) {
-    let mut guard = state.token.write().await;
-    *guard = Some(new_token);
-}
+// async fn set_token(state: &RouterState, new_token: TokenData) {
+//     let mut guard = state.token.write().await;
+//     *guard = Some(new_token);
+// }
 
 // clone_request and prepare_headers are now provided by auth_common::http_utils
 

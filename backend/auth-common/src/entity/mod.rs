@@ -4,4 +4,4 @@
 //! for storing OIDC tokens.
 
 pub mod oidc_tokens;
-pub mod prelude;
+pub use super::oidc_tokens::Entity as OidcTokens;

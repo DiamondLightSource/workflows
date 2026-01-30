@@ -1,6 +1,5 @@
 use crate::{database::write_token_to_database, state::AppState};
 use auth_common::http_utils::{clone_request, prepare_headers};
-use openidconnect::TokenResponse;
 use std::sync::Arc;
 use tower_sessions::Session;
 
@@ -24,7 +23,7 @@ pub async fn inject_token_from_session(
     let token: Option<TokenSessionData> = session.get(TokenSessionData::SESSION_KEY).await
         .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
     if let Some(mut token) = token {
-        if (token.access_token_is_expired()) {
+        if token.access_token_is_expired() {
             token = refresh_token_and_update_session(&state, &token, &session).await?;
         }
         let mut req = clone_request(req).await?;

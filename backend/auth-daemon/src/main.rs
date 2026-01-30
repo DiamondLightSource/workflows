@@ -4,7 +4,6 @@
 mod healthcheck;
 use healthcheck::healthcheck;
 use openidconnect::SubjectIdentifier;
-use serde::{Deserialize, Serialize};
 
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
@@ -13,7 +12,7 @@ use std::{
 };
 
 use axum::{
-    Router, http::Method, middleware, routing::{get, post}
+    Router, http::Method, middleware, routing::get
 };
 use clap::Parser;
 use regex::Regex;
@@ -22,7 +21,6 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{debug, info};
 use tracing_subscriber::EnvFilter;
-use url::Url;
 
 use crate::{config::Config, state::RouterState};
 mod config;
@@ -106,8 +104,6 @@ fn setup_router(state: Arc<RouterState>, cors_allow: Option<Vec<Regex>>) -> anyh
 
     let proxy: Router<Arc<RouterState>> =
     ReverseProxy::new("/", state.config.graph_url.as_str()).into();
-    let proxy = proxy;
-
 
     Ok(proxy
         .layer(middleware::from_fn_with_state(
@@ -154,11 +150,10 @@ mod tests {
     use testcontainers::core::wait::HttpWaitStrategy;
     use testcontainers::{GenericImage, ImageExt};
     use testcontainers::{
-    core::{IntoContainerPort, WaitFor},
+    core::WaitFor,
     runners::AsyncRunner,
 };
 
-    use tokio::time::sleep;
     use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 
     use crate::{config::Config, state::RouterState};
@@ -209,7 +204,8 @@ mod tests {
     let oidc_container = GenericImage::new("ghcr.io/navikt/mock-oauth2-server", "3.0.1")
         .with_wait_for(WaitFor::http(wait_strategy))
         .with_env_var("SERVER_PORT", "8080").with_startup_timeout(Duration::from_secs(60)).start().await.expect("failed to start mock OIDC server");
-    let port = oidc_container.get_host_port_ipv4(8080).await?;
+    let port = oidc_container.get_host_port_ipv4(8080).await
+        .map_err(|e| anyhow::anyhow!("Container error: {}", e))?;
 
     let mock_admin_url = format!("http://localhost:{}/default/token", port);
     let params = [
@@ -225,11 +221,11 @@ mod tests {
         .timeout(Duration::from_secs(10))
         .form(&params)
         .send()
-        .await?
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to send token request: {}", e))?
         .json()
-        .await?;
-
-    // println!("RESPONSE: {:?}", res.to_string());
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to parse token response: {}", e))?;
 
     let refresh_token = res["refresh_token"].as_str().expect("no refresh token");
 
@@ -263,7 +259,8 @@ mod tests {
         response.assert_status_ok();
         graphql_mock.assert_async().await;
 
-        oidc_container.stop_with_timeout(Some(60)).await?;
+        oidc_container.stop_with_timeout(Some(60)).await
+            .map_err(|e| anyhow::anyhow!("Container error: {}", e))?;
 
         Ok(())
     }

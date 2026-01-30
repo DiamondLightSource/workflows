@@ -7,7 +7,6 @@ use openidconnect::IssuerUrl;
 use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
-use serde::{Deserialize, Serialize};
 use sodiumoxide::crypto::box_::PublicKey;
 #[derive(Debug, Clone)]
 pub struct AppState {

@@ -7,6 +7,7 @@ mod callback;
 mod counter;
 mod database;
 mod error;
+mod auth_proxy;
 
 use clap::Parser;
 use config::Config;
@@ -22,7 +23,6 @@ type Result<T> = std::result::Result<T, error::Error>;
 use axum::{
     Json, Router,
     extract::State,
-    http::StatusCode,
     middleware,
     response::IntoResponse,
     routing::{get, post},
