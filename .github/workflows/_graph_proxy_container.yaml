@@ -48,7 +48,7 @@ jobs:
           context: backend
           file: backend/Dockerfile.graph-proxy
           target: deploy
-          push: ${{ github.event_name == 'push' && (github.ref_type == 'branch' || startsWith(github.ref, 'ref/tags/graph-proxy@')) }}
+          push: ${{ github.event_name == 'push' && (github.ref_type == 'branch' || startsWith(github.ref, 'refs/tags/graph-proxy@')) }}
           load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/graph-proxy@')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
