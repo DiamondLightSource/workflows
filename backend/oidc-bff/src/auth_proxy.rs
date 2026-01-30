@@ -1,3 +1,26 @@
+//! Auth proxy module - alternative router configuration for proxy-only mode.
+//!
+//! This module provides a simplified router that only proxies requests to the
+//! GraphQL backend with token injection, without the full OIDC login flow.
+
+use std::{
+    net::{Ipv4Addr, SocketAddr},
+    sync::Arc,
+};
+
+use axum::{Router, middleware, routing::get};
+use axum_reverse_proxy::ReverseProxy;
+use clap::Parser;
+use tower_sessions::{MemoryStore, SessionManagerLayer};
+
+use crate::config::Config;
+use crate::error;
+use crate::healthcheck;
+use crate::inject_token_from_session;
+use crate::state::AppState;
+
+type Result<T> = std::result::Result<T, error::Error>;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Args {
@@ -11,11 +34,15 @@ struct Args {
     config: String,
 }
 
-
-#[tokio::main]
-async fn main() -> Result<()> {
+/// Entry point for the auth proxy server.
+///
+/// This is a simplified version that only handles proxying with token injection,
+/// without the full OIDC login/callback flow.
+#[allow(dead_code)]
+pub async fn auth_proxy_main() -> Result<()> {
     dotenvy::dotenv().ok();
-    let args: Args = Args::try_parse()?;
+    let args: Args = Args::try_parse()
+        .map_err(|e| anyhow::anyhow!("CLI argument error: {}", e))?;
     let config = Config::from_file(args.config)?;
     let port = config.port;
     let appstate = Arc::new(AppState::new(config).await?);
@@ -24,14 +51,20 @@ async fn main() -> Result<()> {
         .install_default()
         .expect("Failed to install rust TLS cryptography");
 
-    let router = create_router(appstate);
-    serve(router, port).await
+    let router = create_proxy_router(appstate);
+    serve_proxy(router, port).await
 }
 
-fn create_router(state: Arc<AppState>) -> Router {
+/// Creates a minimal router that only proxies requests with token injection.
+///
+/// Unlike the full router in main.rs, this doesn't include login/callback routes.
+fn create_proxy_router(state: Arc<AppState>) -> Router {
+    // TODO: This URL should come from config, not be hardcoded
     let proxy: Router<()> =
         ReverseProxy::new("/", "https://staging.workflows.diamond.ac.uk/graphql").into();
-    let proxy = proxy;
+
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store);
 
     Router::new()
         .nest_service("/api", proxy)
@@ -44,28 +77,10 @@ fn create_router(state: Arc<AppState>) -> Router {
         .with_state(state)
 }
 
-async fn serve(router: Router, port: u16) -> Result<()> {
+async fn serve_proxy(router: Router, port: u16) -> Result<()> {
     let listener =
         tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port)).await?;
     let service = router.into_make_service();
     axum::serve(listener, service).await?;
     Ok(())
-}
-
-async fn logout() {}
-
-async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
-    let auth_session_data: Option<LoginSessionData> =
-        session.get(LoginSessionData::SESSION_KEY).await
-            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
-
-    let token_session_data: Option<TokenSessionData> =
-        session.get(TokenSessionData::SESSION_KEY).await
-            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
-
-    Ok(Json((
-        state.config.clone(),
-        auth_session_data,
-        token_session_data,
-    )))
 }
