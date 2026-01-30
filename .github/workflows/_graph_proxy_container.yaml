@@ -34,9 +34,9 @@ jobs:
         with:
           images: ${{ env.IMAGE_REPOSITORY }}
           tags: |
-            type=raw,value=${{ steps.tags.outputs.version }}
+            type=raw,value=${{ steps.tags.outputs.version }},enable=${{ startsWith(github.ref, 'refs/tags/graph-proxy@') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/graph-proxy@') }}
             type=raw,value=${{ github.ref_name }}
-            type=raw,value=latest
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.11.1
@@ -48,7 +48,7 @@ jobs:
           context: backend
           file: backend/Dockerfile.graph-proxy
           target: deploy
-          push: ${{ github.event_name == 'push' && (github.ref_type == 'branch' || startsWith(github.ref, 'refs/tags/graph-proxy@')) }}
+          push: ${{ github.event_name == 'push' }}
           load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/graph-proxy@')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
