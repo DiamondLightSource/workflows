@@ -58,6 +58,8 @@ spec:
               value: {{ .Values.configuration.keycloakRealm }}
             - name: KEYCLOAK_CLIENT
               value: {{ .Values.configuration.keycloakClient }}
+            - name: KEYCLOAK_SCOPE
+              value: {{ .Values.configuration.keycloakScope }}
             - name: GRAPH_URL
               value: {{ .Values.configuration.graphUrl }}
             - name: GRAPH_WS_URL

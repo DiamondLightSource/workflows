@@ -1,7 +1,8 @@
 configuration:
-  keycloakUrl: https://authn.diamond.ac.uk
-  keycloakRealm: master
-  keycloakClient: workflows-dashboard-staging
+  keycloakUrl: https://identity-dev.diamond.ac.uk
+  keycloakRealm: dls
+  keycloakClient: workflows-ui-dev
+  keycloakScope: "openid profile posix-uid email"
   graphUrl: https://staging.workflows.diamond.ac.uk/graphql
   graphWsUrl: wss://staging.workflows.diamond.ac.uk/graphql/ws
   sourceDir: "/usr/share/nginx/html"
