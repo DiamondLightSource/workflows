@@ -9,6 +9,7 @@
    - VITE_KEYCLOAK_URL
    - VITE_KEYCLOAK_REALM
    - VITE_KEYCLOAK_CLIENT
+   - VITE_KEYCLOAK_SCOPE
    - VITE_GRAPH_URL
    - VITE_GRAPH_WS_URL
 5. yarn dev in frontend/dashboard

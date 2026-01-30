@@ -13,6 +13,7 @@ import { createClient } from "graphql-ws";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
+const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
 
 const keycloak = await getKeycloak();
 
@@ -24,6 +25,7 @@ function ensureKeycloakInit(): Promise<boolean> {
     kcinitPromise = keycloak
       .init({
         onLoad: "login-required",
+        scope: KEYCLOAK_SCOPE,
       })
       .catch((err: unknown) => {
         console.error("Keycloak init failed", err);
