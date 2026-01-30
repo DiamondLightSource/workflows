@@ -74,9 +74,8 @@ fn create_router(state: Arc<AppState>) -> Router {
 
     let proxy: Router<()> =
         ReverseProxy::new("/", "https://staging.workflows.diamond.ac.uk/graphql").into();
-    let proxy = proxy;
 
-    Router::new()
+    let mut router = Router::new()
         .fallback_service(proxy)
         .layer(middleware::from_fn_with_state(
             state.clone(),
@@ -87,10 +86,15 @@ fn create_router(state: Arc<AppState>) -> Router {
         .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
-        // .route("/debug", get(debug))
         .route("/healthcheck", get(healthcheck::healthcheck))
-        .layer(session_layer)
-        .with_state(state)
+        .layer(session_layer);
+
+    #[cfg(debug_assertions)]
+    {
+        router = router.route("/debug", get(debug));
+    }
+
+    router.with_state(state)
 }
 
 async fn serve(router: Router, port: u16) -> Result<()> {
@@ -130,6 +134,7 @@ async fn logout(
     Ok(axum::http::StatusCode::OK)
 }
 
+#[cfg(debug_assertions)]
 async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
     let auth_session_data: Option<LoginSessionData> =
         session.get(LoginSessionData::SESSION_KEY).await
