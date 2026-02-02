@@ -51,7 +51,7 @@ vcluster:
                       - staging-values.yaml
                   path: charts/apps
                   repoURL: https://github.com/DiamondLightSource/workflows.git
-                  targetRevision: HEAD
+                  targetRevision: drh/bff-pkce-dev
                 syncPolicy:
                   automated:
                     prune: true
@@ -63,13 +63,15 @@ vcluster:
           byName:
             "/letsencrypt-argo-cd-staging-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-argo-workflows-staging-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
-            "/letsencrypt-staging-workflows-diamond-ac-uk": "dashboard/dashboard-tls-cert"
+            "/letsencrypt-staging-workflows-diamond-ac-uk": "workflows/dashboard-tls-cert"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
             "/s3-artifact": "workflows/artifact-s3"
+            "/oidc-bff-config": "workflows/oidc-bff-config"
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
+            "/postgres-auth-service-password": "workflows/postgres-auth-service-password"
             "/postgres-application-passwords": "workflows/postgres-application-passwords"
             "/postgres-initdb-script": "workflows/postgres-initdb-script"
 
@@ -82,6 +84,7 @@ authenticationConfiguration:
     - issuer:
         url: https://authn.diamond.ac.uk/realms/master
         audiences:
+          - workflows-dashboard-staging
           - workflows-cluster-staging
           - graph
         audienceMatchPolicy: MatchAny

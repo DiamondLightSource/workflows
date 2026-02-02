@@ -1,8 +1,9 @@
 [workspace]
 members = [
     "argo-workflows-openapi",
+    "auth-common",
     "auth-daemon",
-    "graph-proxy",
+    "graph-proxy", "oidc-bff", "oidc-bff/migration",
     "sessionspaces",
     "telemetry",
 ]
@@ -10,7 +11,6 @@ resolver = "2"
 
 [workspace.dependencies]
 anyhow = { version = "1.0.100" }
-built = { version = "0.8.0" }
 clap = { version = "4.5.49", features = ["derive", "env"] }
 chrono = { version = "0.4.42" }
 derive_more = { version = "2.0.1" , features = [
@@ -50,3 +50,4 @@ tracing-opentelemetry = { version = "0.32.0" }
 axum = { version = "0.8.6" }
 regex = "1.12.2"
 tower-http = { version = "0.6.6", features = ["cors"] }
+sea-orm = { version = "2.0.0-rc", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono" ] }

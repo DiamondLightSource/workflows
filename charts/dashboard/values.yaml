@@ -43,6 +43,19 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+          service:
+            name: dashboard
+            port: 80
+        - path: /api
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
+        - path: /auth
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
   tls: false
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -54,3 +67,14 @@ serviceAccount:
   create: true
   name: ""
   annotations: []
+
+oidcBff:
+  image:
+    registry: ghcr.io
+    repository: diamondlightsource/workflows-oidc-bff
+    tag: "davehadley"
+    digest: "sha256:e259494171d5115d060dd9f3d9da971312d39e9afabd91478c0b7a49c7c5f6d3"
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  configuration:
+    secretName: oidc-bff-config
