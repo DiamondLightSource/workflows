@@ -165,6 +165,12 @@ pub async fn graphql_handler(
     } else {
         "error"
     };
+    if status == "error" {
+        state
+            .metrics_state
+            .total_errors
+            .add(1, &[KeyValue::new("status", "error")]);
+    };
     state.metrics_state.request_duration_ms.record(
         elapsed_ms,
         &[
