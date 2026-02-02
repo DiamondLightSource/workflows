@@ -1,4 +1,4 @@
-FROM docker.io/library/rust:1.91.1-bookworm AS build
+FROM docker.io/library/rust:1.93.0-bookworm AS build
 
 WORKDIR /app
 
