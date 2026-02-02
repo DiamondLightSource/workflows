@@ -13,6 +13,8 @@ pub struct Metrics {
     pub total_requests: Counter<u64>,
     /// Request duration in miliseconds on every request
     pub request_duration_ms: Histogram<f64>,
+    /// Total errors on querys and mutations
+    pub total_errors: Counter<u64>,
 }
 
 impl Metrics {
@@ -31,9 +33,15 @@ impl Metrics {
             .with_unit("ms")
             .build();
 
+        let total_errors = meter
+            .u64_counter("graph_proxy_total_errors")
+            .with_description("The total errors on all querys and mutations.")
+            .build();
+
         Metrics {
             total_requests,
             request_duration_ms,
+            total_errors,
         }
     }
 }
