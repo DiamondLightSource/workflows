@@ -40,6 +40,7 @@ impl Metrics {
         Metrics {
             total_requests,
             request_duration_ms,
+            total_errors,
         }
     }
 }
