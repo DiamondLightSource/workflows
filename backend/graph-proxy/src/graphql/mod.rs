@@ -137,12 +137,10 @@ pub async fn graphql_handler(
                     .metrics_state
                     .total_requests
                     .add(1, &[KeyValue::new("request_type", "query")]),
-                async_graphql::parser::types::OperationType::Mutation => {
-                    state
-                        .metrics_state
-                        .total_requests
-                        .add(1, &[KeyValue::new("request_type", "mutation")])
-                }
+                async_graphql::parser::types::OperationType::Mutation => state
+                    .metrics_state
+                    .total_requests
+                    .add(1, &[KeyValue::new("request_type", "mutation")]),
                 async_graphql::parser::types::OperationType::Subscription => {}
             };
         }
@@ -162,12 +160,10 @@ pub async fn graphql_handler(
     } else {
         "error"
     };
-    state.metrics_state.request_duration_ms.record(
-        elapsed_ms,
-        &[
-            KeyValue::new("status", status),
-        ],
-    );
+    state
+        .metrics_state
+        .request_duration_ms
+        .record(elapsed_ms, &[KeyValue::new("status", status)]);
     response.into()
 }
 
