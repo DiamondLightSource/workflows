@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: dawn-example-
+spec:
+  entrypoint: run-calibration
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+          requests:
+            storage: 1Gi
+      storageClassName: netapp
+  arguments:
+    parameters:
+      - name: configpath
+        value: ""
+
+  templates:
+  # - volumes:
+  #   - name: dls-user
+  #     hostPath:
+  #       path: /dls/science/users/gmg29649/
+  #       type: Directory
+
+  - name: run-calibration
+    inputs:
+      parameters: 
+      - name: configpath
+    script:
+      image: ghcr.io/jamesdoingstuff/dawn:latest
+      volumeMounts:
+      # - name: dls-user
+      #   mountPath: /gmg29649/
+      - name: tmpdir
+        mountPath: /tmp/
+      workingDir: /tmp
+      command: [bash]
+      source: |
+        pwd
+        ls -la /
+        
+        /dawn/dawn -consoleLog -noSplash -configuration /tmp/ -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path {{inputs.parameters.configpath}}
+        echo "Temp:"
+        ls /tmp/
+        echo "Root:"
+        ls /
+    outputs:
+      artifacts:
+      - name: result
+        path: /tmp/result.nxs
+        archive:
+          none: { }
+
+
+    
