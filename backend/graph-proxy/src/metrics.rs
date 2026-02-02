@@ -13,6 +13,7 @@ pub struct Metrics {
     pub total_requests: Counter<u64>,
     /// Request duration in miliseconds on every request
     pub request_duration_ms: Histogram<f64>,
+    /// Total errors on query and mutation
     pub total_errors: Counter<u64>,
 }
 
