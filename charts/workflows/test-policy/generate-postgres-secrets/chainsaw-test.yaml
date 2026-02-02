@@ -8,19 +8,14 @@ spec:
   steps:
   - name: create-input-postgres-secrets
   - try:
-    # - apply:
-    #     resource:
-    #         apiVersion: v1
-    #         kind: Namespace
-    #         # metadata:
-    #         #   name: workflows
+    # The Github action installed the policy in the "default" namespace, not "workflows"
     - apply:
         resource:
             apiVersion: v1
             kind: Secret
             metadata:
               name: postgres-argo-workflows-password
-              # namespace: workflows
+              namespace: default
             type: Opaque
             data:
               username: YXJnb191c2Vy   # argo_user
@@ -31,7 +26,7 @@ spec:
             kind: Secret
             metadata:
               name: postgres-auth-service-password
-              # namespace: workflows
+              namespace: default
             type: Opaque
             data:
               username: YXV0aF91c2Vy   # auth_user
@@ -43,19 +38,19 @@ spec:
             kind: Secret
             metadata:
               name: postgres-application-passwords
-              # namespace: workflows
+              namespace: default
             data:
               # base64("argo_user,auth_user")
               usernames: YXJnb191c2VyLGF1dGhfdXNlcg==
               # base64("secret1,secret2")
               passwords: c2VjcmV0MSxzZWNyZXQy
-    # - assert:
-    #     resource:
-    #         apiVersion: v1
-    #         kind: Secret
-    #         metadata:
-    #           name: postgres-initdb-script
-    #           # namespace: workflows
-    #         data:
-    #           init.sql: >-
-    #             {{ b64enc "CREATE USER argo_workflows WITH PASSWORD 'secret1'; CREATE DATABASE argo_workflows OWNER argo_workflows; CREATE USER auth_user WITH PASSWORD 'secret2'; CREATE DATABASE auth_service OWNER auth_user;" }}
+    - assert:
+        resource:
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: postgres-initdb-script
+              namespace: default
+            data:
+              init.sql: Q1JFQVRFIFVTRVIgYXJnb193b3JrZmxvd3MgV0lUSCBQQVNTV09SRCAnc2VjcmV0MSc7IENSRUFURSBEQVRBQkFTRSBhcmdvX3dvcmtmbG93cyBPV05FUiBhcmdvX3dvcmtmbG93czsgQ1JFQVRFIFVTRVIgYXV0aF91c2VyIFdJVEggUEFTU1dPUkQgJ3NlY3JldDInOyBDUkVBVEUgREFUQUJBU0UgYXV0aF9zZXJ2aWNlIE9XTkVSIGF1dGhfdXNlcjs=
+              # "CREATE USER argo_workflows WITH PASSWORD 'secret1'; CREATE DATABASE argo_workflows OWNER argo_workflows; CREATE USER auth_user WITH PASSWORD 'secret2'; CREATE DATABASE auth_service OWNER auth_user;"
