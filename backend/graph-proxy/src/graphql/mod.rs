@@ -118,7 +118,6 @@ pub async fn graphql_handler(
 ) -> GraphQLResponse {
     let start = std::time::Instant::now();
     let query = request.into_inner();
-    let mut request_type = "unparseable";
 
     if let Ok(query) = parse_query(&query.query) {
         let operation = query.operations;
@@ -132,7 +131,6 @@ pub async fn graphql_handler(
                 .map(|operation| operation.1.node.ty)
                 .collect(),
         };
-        let mut has_mutation = false;
         for operation in operations {
             match operation {
                 async_graphql::parser::types::OperationType::Query => state
@@ -140,7 +138,6 @@ pub async fn graphql_handler(
                     .total_requests
                     .add(1, &[KeyValue::new("request_type", "query")]),
                 async_graphql::parser::types::OperationType::Mutation => {
-                    has_mutation = true;
                     state
                         .metrics_state
                         .total_requests
@@ -149,7 +146,6 @@ pub async fn graphql_handler(
                 async_graphql::parser::types::OperationType::Subscription => {}
             };
         }
-        request_type = if has_mutation { "mutation" } else { "query" };
     } else {
         state
             .metrics_state
@@ -169,7 +165,6 @@ pub async fn graphql_handler(
     state.metrics_state.request_duration_ms.record(
         elapsed_ms,
         &[
-            KeyValue::new("request_type", request_type),
             KeyValue::new("status", status),
         ],
     );
