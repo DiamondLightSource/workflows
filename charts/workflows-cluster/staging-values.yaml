@@ -72,8 +72,6 @@ vcluster:
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/postgres-auth-service-password": "workflows/postgres-auth-service-password"
-            "/postgres-application-passwords": "workflows/postgres-application-passwords"
-            "/postgres-initdb-script": "workflows/postgres-initdb-script"
 
 ingress:
   secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk
