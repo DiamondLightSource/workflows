@@ -163,10 +163,7 @@ pub async fn graphql_handler(
     let status = if response.errors.is_empty() {
         "ok"
     } else {
-        state
-            .metrics_state
-            .total-errors
-            .add(1, &[KeyValue::new("status", "error")]);
+        state.metrics_state.total - errors.add(1, &[KeyValue::new("status", "error")]);
     };
     state.metrics_state.request_duration_ms.record(
         elapsed_ms,
