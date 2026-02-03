@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.11...dashboard@v0.1.12) (2026-02-03)
+
+
+### Features
+
+* **frontend:** add repository link components ([c317cd0](https://github.com/DiamondLightSource/workflows/commit/c317cd0acf820020963b1393dc98069d8c2e2399))
+* **frontend:** set keycloak scope from environment variable ([3b061c8](https://github.com/DiamondLightSource/workflows/commit/3b061c8815d2c3aa09f06210a15d6230d124e640))
+
+
+### Bug Fixes
+
+* **frontend:** intercept ws connection in tests ([61a99f9](https://github.com/DiamondLightSource/workflows/commit/61a99f9fec97dde20dd1969ed3943e7b3860ab9c))
+
 ## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.10...dashboard@v0.1.11) (2026-01-09)
 
 
