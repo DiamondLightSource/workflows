@@ -3,7 +3,7 @@ kind: Workflow
 metadata:
   generateName: dawn-example-
 spec:
-  entrypoint: run-calibration
+  entrypoint: dawn-entry
   volumeClaimTemplates:
   - metadata:
       name: tmpdir
@@ -19,40 +19,64 @@ spec:
         value: ""
 
   templates:
-  # - volumes:
-  #   - name: dls-user
-  #     hostPath:
-  #       path: /dls/science/users/gmg29649/
-  #       type: Directory
+  - name: dawn-entry
+    dag:
+      tasks:
+      - name: install-dawn
+        template: install-dawn
+
+      - name: run-calibration
+        dependencies: [install-dawn]
+        template: run-calibration
+        arguments: 
+          parameters:
+          - name: configpath
+            value: "{{workflow.parameters.configpath}}"
+
+  - name: install-dawn
+    script:
+      image: busybox
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp/
+      command: [/bin/sh]
+      workingDir: /tmp/
+      source: |
+        wget https://github.com/DawnScience/dawn-website/releases/download/v2.40.0/DawnDiamond-2.40.0.v20251006-1027-linux.x86_64.zip
+        unzip -q DawnDiamond-2.40.0.v20251006-1027-linux.x86_64.zip -d .
 
   - name: run-calibration
     inputs:
       parameters: 
       - name: configpath
     script:
-      image: ghcr.io/jamesdoingstuff/dawn:latest
+      image: ghcr.io/jamesdoingstuff/dawn
       volumeMounts:
-      # - name: dls-user
-      #   mountPath: /gmg29649/
+      - name: dls-user
+        mountPath: /dls/science/users/gmg29649
       - name: tmpdir
-        mountPath: /tmp/
+        mountPath: /tmp
       workingDir: /tmp
       command: [bash]
       source: |
-        pwd
-        ls -la /
+        id
+        whoami
+        cat {{inputs.parameters.configpath}}
+        export _JAVA_OPTIONS=-Duser.home=/tmp/
+        ./dawn -configuration /tmp/ -consoleLog -noSplash -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path {{inputs.parameters.configpath}}
+        find *-dawn.log -exec cat {} +
+        ls -la /tmp/
+        ls -la /dls/science/users/gmg29649
         
-        /dawn/dawn -consoleLog -noSplash -configuration /tmp/ -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path {{inputs.parameters.configpath}}
-        echo "Temp:"
-        ls /tmp/
-        echo "Root:"
-        ls /
+    volumes:
+    - name: dls-user
+      hostPath:
+        path: /dls/science/users/gmg29649
+        type: Directory
+
     outputs:
       artifacts:
       - name: result
         path: /tmp/result.nxs
         archive:
-          none: { }
-
-
-    
+          none: {}
