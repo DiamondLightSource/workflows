@@ -2,6 +2,7 @@ configuration:
   keycloakUrl: https://authn.diamond.ac.uk
   keycloakRealm: master
   keycloakClient: workflows-dashboard
+  keycloakScope: "openid profile posix-uid email"
   graphUrl: https://workflows.diamond.ac.uk/graphql
   graphWsUrl: wss://workflows.diamond.ac.uk/graphql/ws
   sourceDir: "/usr/share/nginx/html"
