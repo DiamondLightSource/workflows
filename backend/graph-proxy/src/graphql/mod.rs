@@ -22,7 +22,7 @@ use self::{
     workflows::{Workflow, WorkflowsQuery},
 };
 use async_graphql::{
-    extension::Analyzer, parser::parse_query, Context, InputObject, MergedObject,
+    extensions::Analyzer, parser::parse_query, Context, InputObject, MergedObject,
     MergedSubscription, Object, Schema, SchemaBuilder, SimpleObject, Union, Value, ID,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
@@ -162,14 +162,14 @@ pub async fn graphql_handler(
     let response = state.schema.execute(query.data(auth_token)).await;
     if let Some(Value::Object(analyzer)) = response.extensions.remove("analyzer") {
         let depth = analyzer.get("depth").and_then(|value| match value {
-            Value::number(number) => number.as_u64(),
+            Value::Number(number) => number.as_u64(),
             _ => None,
         });
         if let Some(depth) = depth {
             state.metrics_state.query_depth.record(depth, &[]);
         }
         let complexity = analyzer.get("complexity").and_then(|value| match value {
-            Value::number(number) => number.as_u64(),
+            Value::Number(number) => number.as_u64(),
             _ => None,
         });
         if let Some(complexity) = complexity {

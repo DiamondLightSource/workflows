@@ -47,7 +47,7 @@ impl Metrics {
             .with_description("GraphQL query depth")
             .build();
 
-        let query_omplexity = meter
+        let query_complexity = meter
             .u64_histogram("graph_proxy_query_complexity")
             .with_description("GraphQL query complexity")
             .build();
