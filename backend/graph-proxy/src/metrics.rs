@@ -18,7 +18,7 @@ pub struct Metrics {
     /// Query depth
     pub query_depth: Histogram<u64>,
     /// Query complexity
-    pub query_complexity:Histogram<u64>,
+    pub query_complexity: Histogram<u64>,
 }
 
 impl Metrics {
