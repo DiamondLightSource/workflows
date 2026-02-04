@@ -22,8 +22,8 @@ use self::{
     workflows::{Workflow, WorkflowsQuery},
 };
 use async_graphql::{
-    parser::parse_query, Context, InputObject, MergedObject, MergedSubscription, Object, Schema,
-    SchemaBuilder, SimpleObject, Union, ID,
+    extensions::Analyzer, parser::parse_query, Context, InputObject, MergedObject,
+    MergedSubscription, Object, Schema, SchemaBuilder, SimpleObject, Union, Value, ID,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::extract::State;
@@ -47,6 +47,7 @@ pub fn root_schema_builder() -> SchemaBuilder<Query, Mutation, Subscription> {
         Subscription::default(),
     )
     .enable_federation()
+    .extension(Analyzer)
 }
 
 /// The root query of the service
@@ -158,7 +159,23 @@ pub async fn graphql_handler(
     };
 
     let auth_token = auth_token_header.map(|header| header.0);
-    let response = state.schema.execute(query.data(auth_token)).await;
+    let mut response = state.schema.execute(query.data(auth_token)).await;
+    if let Some(Value::Object(analyzer)) = response.extensions.remove("analyzer") {
+        let depth = analyzer.get("depth").and_then(|value| match value {
+            Value::Number(number) => number.as_u64(),
+            _ => None,
+        });
+        if let Some(depth) = depth {
+            state.metrics_state.query_depth.record(depth, &[]);
+        }
+        let complexity = analyzer.get("complexity").and_then(|value| match value {
+            Value::Number(number) => number.as_u64(),
+            _ => None,
+        });
+        if let Some(complexity) = complexity {
+            state.metrics_state.query_complexity.record(depth, &[]);
+        }
+    }
     let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
     let status = if response.errors.is_empty() {
         "ok"
