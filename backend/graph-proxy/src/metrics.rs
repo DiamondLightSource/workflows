@@ -15,6 +15,10 @@ pub struct Metrics {
     pub request_duration_ms: Histogram<f64>,
     /// Total errors on querys and mutations
     pub total_errors: Counter<u64>,
+    /// Query depth
+    pub query_depth: Histogram<u64>,
+    /// Query complexity
+    pub query_complexity: Histogram<u64>,
 }
 
 impl Metrics {
@@ -38,10 +42,22 @@ impl Metrics {
             .with_description("The total errors on all querys and mutations.")
             .build();
 
+        let query_depth = meter
+            .u64_histogram("graph_proxy_query_depth")
+            .with_description("GraphQL query depth")
+            .build();
+
+        let query_omplexity = meter
+            .u64_histogram("graph_proxy_query_complexity")
+            .with_description("GraphQL query complexity")
+            .build();
+
         Metrics {
             total_requests,
             request_duration_ms,
             total_errors,
+            query_depth,
+            query_complexity,
         }
     }
 }
