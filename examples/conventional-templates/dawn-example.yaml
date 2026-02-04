@@ -11,7 +11,7 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
           requests:
-            storage: 1Gi
+            storage: 4Gi
       storageClassName: netapp
   arguments:
     parameters:
@@ -57,7 +57,7 @@ spec:
       - name: tmpdir
         mountPath: /tmp
       workingDir: /tmp
-      command: [bash]
+      command: [/bin/bash]
       source: |
         id
         whoami
