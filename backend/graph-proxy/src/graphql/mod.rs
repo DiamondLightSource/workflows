@@ -159,7 +159,7 @@ pub async fn graphql_handler(
     };
 
     let auth_token = auth_token_header.map(|header| header.0);
-    let response = state.schema.execute(query.data(auth_token)).await;
+    let mut response = state.schema.execute(query.data(auth_token)).await;
     if let Some(Value::Object(analyzer)) = response.extensions.remove("analyzer") {
         let depth = analyzer.get("depth").and_then(|value| match value {
             Value::Number(number) => number.as_u64(),
