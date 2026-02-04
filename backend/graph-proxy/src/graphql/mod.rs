@@ -173,7 +173,7 @@ pub async fn graphql_handler(
             _ => None,
         });
         if let Some(complexity) = complexity {
-            state.metrics_state.query_complexity.record(depth, &[]);
+            state.metrics_state.query_complexity.record(complexity, &[]);
         }
     }
     let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
