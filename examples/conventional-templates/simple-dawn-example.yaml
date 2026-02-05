@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: simple-dawn-example
+spec:
+  entrypoint: run-calibration
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+          requests:
+            storage: 4Gi
+      storageClassName: netapp
+
+
+  templates:
+  - name: run-calibration
+    script:
+      image: ghcr.io/jamesdoingstuff/dawn:latest
+      volumeMounts:
+      - name: tmpdir
+        mountPath: /tmp
+      - name: vardir
+        mountPath: /var
+      workingDir: /tmp
+      command: [/bin/bash]
+      source: |
+        unzip -q /DawnDiamond-2.40.0.v20251006-1027-linux.x86_64.zip -d .
+        cat /test_data/local_config.json
+        export _JAVA_OPTIONS=-Duser.home=/tmp/
+        ./dawn -configuration /tmp/ -consoleLog -noSplash -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path /test_data/local_config.json
+        find *-dawn.log -exec cat {} +
+        ls -la /tmp/
+
+    volumes:
+      - name: vardir
+        emptyDir: {}
+
+    outputs:
+      artifacts:
+      - name: result
+        path: /tmp/result.nxs
+        archive:
+          none: {}
