@@ -1320,268 +1320,6 @@
         "x": 0,
         "y": 84
       },
-      "id": 38,
-      "panels": [],
-      "title": "ClusterWorkflowTemplates",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 85
-      },
-      "id": 39,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "vertical",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "value_and_name",
-        "wideLayout": false
-      },
-      "pluginVersion": "11.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "sort_desc(sum by (name) (increase(argo_workflows_clusterworkflowtemplate_triggered_total{prometheus=~\"^$dc$\",namespace=~\"$ns\",phase=\"Succeeded\"}[$ts])))",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{phase}}",
-          "queryType": "randomWalk",
-          "refId": "A"
-        }
-      ],
-      "title": "ClusterWorkflowTemplates Succeeded over the last $ts",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 91
-      },
-      "id": 41,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "vertical",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "value_and_name",
-        "wideLayout": false
-      },
-      "pluginVersion": "11.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "sort_desc(sum by (name) (increase(argo_workflows_clusterworkflowtemplate_triggered_total{prometheus=~\"^$dc$\",namespace=~\"$ns\",phase=~\"Failed|Error\"}[$ts])))",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{phase}}",
-          "queryType": "randomWalk",
-          "refId": "A"
-        }
-      ],
-      "title": "ClusterWorkflowTemplates Failed/Errored over the last $ts",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 97
-      },
-      "id": 42,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "increase(sum by (prometheus, namespace, phase, name) (argo_workflows_clusterworkflowtemplate_triggered_total{prometheus=~\"^$dc$\",namespace=~\"$ns\"})[1m:1m]) > 0 unless\nincrease(sum by (prometheus, namespace, phase, name) (argo_workflows_clusterworkflowtemplate_triggered_total{prometheus=~\"^$dc$\",namespace=~\"$ns\"})[1m:1m] offset 1d)\nor\nincrease(sum by (prometheus, namespace, phase, name) (argo_workflows_clusterworkflowtemplate_triggered_total{prometheus=~\"^$dc$\",namespace=~\"$ns\"})[1m:1m]) > 0 -\nincrease(sum by (prometheus, namespace, phase, name) (argo_workflows_clusterworkflowtemplate_triggered_total{prometheus=~\"^$dc$\",namespace=~\"$ns\"})[1m:1m] offset 1d)",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "legendFormat": "{{prometheus}} : {{namespace}} : {{name}} : {{phase}}",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "ClusterWorkflowTemplates Status  ",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 105
-      },
       "id": 43,
       "panels": [],
       "title": "CronWorkflows",
@@ -1616,7 +1354,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 106
+        "y": 85
       },
       "id": 44,
       "options": {
@@ -1664,7 +1402,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 112
+        "y": 91
       },
       "id": 30,
       "panels": [],
@@ -1762,7 +1500,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 113
+        "y": 92
       },
       "id": 31,
       "options": {
@@ -1832,7 +1570,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 122
+        "y": 101
       },
       "id": 46,
       "options": {
@@ -1887,7 +1625,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 127
+        "y": 106
       },
       "id": 45,
       "options": {
@@ -2022,6 +1760,6 @@
   "timezone": "",
   "title": "Argo Workflows Metrics - (v3.6 and above)",
   "uid": "cGlwZWtpdB",
-  "version": 18,
+  "version": 19,
   "weekStart": ""
 }
