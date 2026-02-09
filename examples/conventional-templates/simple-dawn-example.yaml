@@ -61,7 +61,7 @@ metadata:
               "effect": "SHOW",
               "condition": {
                 "scope": "#/properties/fixparam",
-                "schema": { const: "-fixedWavelength"}
+                "schema": { "const": "-fixedWavelength"}
               }
             }
           },
@@ -73,7 +73,7 @@ metadata:
               "effect": "SHOW",
               "condition": {
                 "scope": "#/properties/fixparam",
-                "schema": { const: "-fixedDistance"}
+                "schema": { "const": "-fixedDistance"}
               }
             }
           }
