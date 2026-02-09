@@ -32,7 +32,7 @@ metadata:
           }
         ]
       }
-    workflows.diamond.ac.uk/parameter-schema.fixedValue: |
+    workflows.diamond.ac.uk/parameter-schema.fixvalue: |
       {
         "type": "float",
         "minimum": 0
