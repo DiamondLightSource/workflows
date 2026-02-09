@@ -1,7 +1,7 @@
 numpy==2.2.5
 Pillow==11.3.0
 torch==2.8.0
-nbconvert==7.16.6
+nbconvert==7.17.0
 ipykernel==6.29.5
 ipython==8.37.0
 papermill==2.6.0
