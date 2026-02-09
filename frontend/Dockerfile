@@ -15,7 +15,7 @@ RUN yarn run --cwd=relay-workflows-lib relay
 COPY ./supergraph.graphql ./dashboard/supergraph.graphql
 RUN yarn run --cwd=dashboard build
 
-FROM docker.io/library/nginx:1.29.3-alpine-slim as nginx
+FROM docker.io/library/nginx:1.29.5-alpine-slim as nginx
 
 WORKDIR /app
 
