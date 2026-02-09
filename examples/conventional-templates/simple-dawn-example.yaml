@@ -51,7 +51,7 @@ metadata:
           {
             "type": "Control",
             "label": "Fix wavelength or distance?",
-            "scope": "#/properties/fixparam",
+            "scope": "#/properties/fixparam"
           },
           {
             "type": "Control",
