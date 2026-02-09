@@ -34,8 +34,8 @@ metadata:
       }
     workflows.diamond.ac.uk/parameter-schema.fixvalue: |
       {
-        "type": "float",
-        "minimum": 0
+        "type": "number",
+        "minimum": 0,
         "default": 0
       }
     
@@ -85,6 +85,10 @@ spec:
     parameters:
       - name: confdir
         value: ""
+      - name: fixparam
+        value: ""
+      - name: fixvalue
+        value: 0
 
   templates:
   - name: run-calibration
