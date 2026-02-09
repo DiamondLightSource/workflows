@@ -30,13 +30,13 @@ metadata:
             "const": "-fixedDistance",
             "title": "Fixed distance"
           }
-        ]
+        ],
+        "default": ""
       }
     workflows.diamond.ac.uk/parameter-schema.fixvalue: |
       {
         "type": "number",
         "minimum": 0,
-        "default": 0
       }
     
     workflows.diamond.ac.uk/ui-schema: |
@@ -105,7 +105,13 @@ spec:
       workingDir: /tmp-dir
       command: [/bin/bash]
       source: |
-        /dawn_workspace/dawn -configuration /tmp -consoleLog -noSplash -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path {{ workflow.parameters.confdir }}/config.json
+        fixflag=""
+        if [ {{ workflow.parameters.fixparam }} = "" ]; then
+          fixflag="{{ workflow.parameters.fixparam }} {{ workflow.parameters.fixvalue}}"
+        fi
+        /dawn_workspace/dawn $fixflag -configuration /tmp -consoleLog -noSplash -data @none \
+        -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate  \
+        -path {{ workflow.parameters.confdir }}/config.json
 
     podSpecPatch: |
       containers:
