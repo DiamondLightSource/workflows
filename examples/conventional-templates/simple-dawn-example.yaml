@@ -1,46 +1,131 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Workflow
+kind: ClusterWorkflowTemplate
 metadata:
-  name: simple-dawn-example
+  name: dawn-powder-calibration
+  annotations:
+    workflows.argoproj.io/title: DAWN Powder calibration
+    workflows.argoproj.io/description: |
+      Runs the DAWN command-line powder calibration from a given config.json file. This file, along with input image path,
+      output path and initial calibration should all be at the root level within the supplied config path.
+    
+    workflows.diamond.ac.uk/parameter-schema.confdir : |
+      {
+        "type": "string",
+        "minLength": 1,
+        "default": "/dls/science/groups/das/ExampleData/powder/app_test"
+      }
+    workflows.diamond.ac.uk/parameter-schema.fixparam : |
+      {
+        "type": "string",
+        "oneOf": [
+          {
+            "const": "",
+            "title": "Nothing fixed"
+          },
+          {
+            "const": "-fixedWavelength",
+            "title": "Fixed wavelength"
+          },
+          {
+            "const": "-fixedDistance",
+            "title": "Fixed distance"
+          }
+        ]
+      }
+    workflows.diamond.ac.uk/parameter-schema.fixedValue: |
+      {
+        "type": "float",
+        "minimum": 0
+        "default": 0
+      }
+    
+    workflows.diamond.ac.uk/ui-schema: |
+      {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "label": "Path to config directory",
+            "scope": "#/properties/confdir"
+          },
+          {
+            "type": "Control",
+            "label": "Fix wavelength or distance?",
+            "scope": "#/properties/fixparam",
+          },
+          {
+            "type": "Control",
+            "label": "Wavelength (Angstrom)",
+            "scope": "#/properties/fixvalue",
+            "rule": {
+              "effect": "SHOW",
+              "condition": {
+                "scope": "#/properties/fixparam",
+                "schema": { const: "-fixedWavelength"}
+              }
+            }
+          },
+          {
+            "type": "Control",
+            "label": "Distance (mm)",
+            "scope": "#/properties/fixvalue",
+            "rule": {
+              "effect": "SHOW",
+              "condition": {
+                "scope": "#/properties/fixparam",
+                "schema": { const: "-fixedDistance"}
+              }
+            }
+          }
+        ]
+      }
 spec:
   entrypoint: run-calibration
-  volumeClaimTemplates:
-  - metadata:
-      name: tmpdir
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-          requests:
-            storage: 4Gi
-      storageClassName: netapp
-
+  arguments:
+    parameters:
+      - name: confdir
+        value: ""
 
   templates:
   - name: run-calibration
     script:
+      env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-Duser.name=dawn -Duser.home=/tmp/"
       image: ghcr.io/jamesdoingstuff/dawn:latest
       volumeMounts:
-      - name: tmpdir
+      - name: config-dir
+        mountPath: "{{ workflow.parameters.confdir }}"
+      - name: tmp-dir
         mountPath: /tmp
-      - name: vardir
-        mountPath: /var
-      workingDir: /tmp
+      workingDir: /tmp-dir
       command: [/bin/bash]
       source: |
-        unzip -q /DawnDiamond-2.40.0.v20251006-1027-linux.x86_64.zip -d .
-        cat /test_data/local_config.json
-        export _JAVA_OPTIONS=-Duser.home=/tmp/
-        ./dawn -configuration /tmp/ -consoleLog -noSplash -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path /test_data/local_config.json
-        find *-dawn.log -exec cat {} +
-        ls -la /tmp/
+        /dawn_workspace/dawn -configuration /tmp -consoleLog -noSplash -data @none -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate -path {{ workflow.parameters.confdir }}/config.json
 
+    podSpecPatch: |
+      containers:
+        - name: main
+          resources:
+            requests:
+              memory: 4Gi
+            limits:
+              memory: 4Gi
     volumes:
-      - name: vardir
-        emptyDir: {}
+    - name: config-dir
+      hostPath:
+        path: "{{ workflow.parameters.confdir }}"
+        type: Directory
+    - name: tmp-dir
+      emptyDir: {}
 
     outputs:
       artifacts:
       - name: result
-        path: /tmp/result.nxs
+        path: "{{ workflow.parameters.confdir }}/result.nxs"
+        archive:
+          none: {}
+      - name: dawn-logs
+        path: /tmp/dawn-dawn.log
         archive:
           none: {}
