@@ -5,14 +5,15 @@ metadata:
   annotations:
     workflows.argoproj.io/title: DAWN Powder calibration
     workflows.argoproj.io/description: |
-      Runs the DAWN command-line powder calibration from a given config.json file. This file, along with input image path,
-      output path and initial calibration should all be at the root level within the supplied config path.
+      Runs the DAWN command-line powder calibration tool from a given config JSON file. All file paths used
+      in the config must be in the same directory as the config file (or within a sub-directory).
+      (https://diamondlightsource.atlassian.net/wiki/spaces/DT/pages/1378465/Command-Line+Powder+Calibration)
     
-    workflows.diamond.ac.uk/parameter-schema.confdir : |
+    workflows.diamond.ac.uk/parameter-schema.confpath : |
       {
         "type": "string",
         "minLength": 1,
-        "default": "/dls/science/groups/das/ExampleData/powder/app_test"
+        "default": "/path/to/config.json"
       }
     workflows.diamond.ac.uk/parameter-schema.fixparam : |
       {
@@ -45,8 +46,8 @@ metadata:
         "elements": [
           {
             "type": "Control",
-            "label": "Path to config directory",
-            "scope": "#/properties/confdir"
+            "label": "Path to the config JSON file",
+            "scope": "#/properties/confpath"
           },
           {
             "type": "Control",
@@ -80,10 +81,10 @@ metadata:
         ]
       }
 spec:
-  entrypoint: run-calibration
+  entrypoint: calibration-entry
   arguments:
     parameters:
-      - name: confdir
+      - name: confpath
         value: ""
       - name: fixparam
         value: ""
@@ -91,7 +92,24 @@ spec:
         value: 0
 
   templates:
+  - name: calibration-entry
+    dag:
+      tasks:
+      - name: parse-config-path
+        template: parse-config-path
+
+      - name: run-calibration
+        dependencies: [parse-config-path]
+        template: run-calibration
+        arguments:
+          parameters:
+          - name: mount-dir-path
+            value: "{{tasks.parse-config-path.outputs.result}}"
+
   - name: run-calibration
+    inputs:
+      parameters:
+      - name: mount-dir-path
     script:
       env:
         - name: JAVA_TOOL_OPTIONS
@@ -99,19 +117,19 @@ spec:
       image: ghcr.io/jamesdoingstuff/dawn:latest
       volumeMounts:
       - name: config-dir
-        mountPath: "{{ workflow.parameters.confdir }}"
+        mountPath: "{{ inputs.parameters.mount-dir-path }}"
       - name: tmp-dir
         mountPath: /tmp
       workingDir: /tmp-dir
       command: [/bin/bash]
       source: |
         fixflag=""
-        if [ {{ workflow.parameters.fixparam }} = "" ]; then
+        if [ {{ workflow.parameters.fixparam }} != "" ]; then
           fixflag="{{ workflow.parameters.fixparam }} {{ workflow.parameters.fixvalue}}"
         fi
         /dawn_workspace/dawn $fixflag -configuration /tmp -consoleLog -noSplash -data @none \
         -application uk.ac.diamond.scisoft.diffraction.powder.application.powdercalibrate  \
-        -path {{ workflow.parameters.confdir }}/config.json
+        -path {{ workflow.parameters.confpath }}
 
     podSpecPatch: |
       containers:
@@ -124,18 +142,21 @@ spec:
     volumes:
     - name: config-dir
       hostPath:
-        path: "{{ workflow.parameters.confdir }}"
+        path: "{{ inputs.parameters.mount-dir-path }}"
         type: Directory
     - name: tmp-dir
       emptyDir: {}
 
     outputs:
       artifacts:
-      - name: result
-        path: "{{ workflow.parameters.confdir }}/result.nxs"
-        archive:
-          none: {}
       - name: dawn-logs
         path: /tmp/dawn-dawn.log
         archive:
           none: {}
+
+  - name: parse-config-path
+    script:
+      image: busybox
+      command: [/bin/sh, "-c"]
+      args: 
+      - echo {{ workflow.parameters.confpath }} | sed 's![^/]*$!!'
