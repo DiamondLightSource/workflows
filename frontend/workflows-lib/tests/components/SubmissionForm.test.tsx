@@ -73,6 +73,14 @@ const mockParameterUISchema = {
 };
 
 describe("SubmissionForm Component", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterAll(() => {
+    vi.clearAllTimers();
+  });
+
   it("should render the title", () => {
     const { getByText } = render(
       <TemplateSubmissionForm
@@ -192,9 +200,13 @@ describe("SubmissionForm Component", () => {
 describe("SubmissionForm Layout", () => {
   beforeEach(() => {
     vi.spyOn(jsonforms, "JsonForms");
+    vi.useFakeTimers();
   });
 
-  afterEach(() => vi.clearAllMocks());
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.clearAllTimers();
+  });
 
   it("should render parameter with default ui schema", () => {
     render(

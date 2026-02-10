@@ -141,6 +141,29 @@ ingress:
 authenticationConfiguration:
   jwt:
     - issuer:
+        url: https://identity.diamond.ac.uk/realms/dls
+        audiences:
+          - workflows-cluster
+          - graph
+        audienceMatchPolicy: MatchAny
+      claimMappings:
+        username:
+          claim: fedid
+          prefix: "oidc:"
+        groups:
+          claim: groups
+          prefix: "oidc:"
+        uid:
+          claim: fedid
+        extra:
+        - key: 'workflows.diamond.ac.uk/posixuid'
+          valueExpression: 'string(claims.posix_uid)'
+      userValidationRules:
+      - expression: "!user.username.startsWith('system:')"
+        message: 'username cannot use reserved system: prefix'
+      - expression: "user.groups.all(group, !group.startsWith('system:'))"
+        message: 'groups cannot use reserved system: prefix'
+    - issuer:
         url: https://authn.diamond.ac.uk/realms/master
         audiences:
           - workflows-cluster
