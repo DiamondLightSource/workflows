@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.15...graph-proxy@v0.1.16) (2026-02-11)
+
+
+### Features
+
+* **graph-proxy:** add counter for errors in query and mutation ([694f8ec](https://github.com/DiamondLightSource/workflows/commit/694f8ec02f7aa1bd4e97dbde9346b981cd8a6ea6))
+* **graph-proxy:** return error for unauthorized queries ([f05b2c5](https://github.com/DiamondLightSource/workflows/commit/f05b2c5121c5e1c10938b78b8667953a2bc22838))
+* **grapy-proxy:** query metrics ([b4c0d7b](https://github.com/DiamondLightSource/workflows/commit/b4c0d7bb7343aa449939d4499536065f89271ccb))
+* **grapy-proxy:** request duration as metrics ([38c0cb9](https://github.com/DiamondLightSource/workflows/commit/38c0cb94b7f929f905ca043b6ca43ce118c31058))
+
+
+### Bug Fixes
+
+* **graph-proxy:** failing CI due to missing docstring ([5788a70](https://github.com/DiamondLightSource/workflows/commit/5788a70b77f56ab892e926993274e5c34ef15f47))
+
 ## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.14...graph-proxy@v0.1.15) (2026-01-16)
 
 
