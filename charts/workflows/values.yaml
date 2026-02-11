@@ -21,6 +21,7 @@ argo-workflows:
     podAnnotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9090"
+      prometheus.io/scheme: "http"
     pdb:
       minAvailable: 1
     persistence:
