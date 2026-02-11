@@ -41,6 +41,7 @@ async-stream = "0.3.6"
 eventsource-stream = "0.2.3"
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
 mockito = { workspace = true }

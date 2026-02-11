@@ -2,7 +2,7 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 #![warn(clippy::missing_docs_in_private_items)]
-
+mod noop;
 /// GraphQL resolvers
 mod graphql;
 /// S3 client
@@ -13,7 +13,7 @@ mod metrics;
 
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
-    metrics::{Metrics, MetricsState},
+    metrics::{Metrics, MetricsState}, noop::NoopMeter,
 };
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{
@@ -101,6 +101,12 @@ pub struct KubernetesApiUrl(Uri);
 
 #[tokio::main]
 async fn main() {
+
+        tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::TRACE)
+        .with_writer(std::io::stdout)
+        .init();
+
     dotenvy::dotenv().ok();
     let args = Cli::parse();
     rustls::crypto::ring::default_provider()
@@ -109,12 +115,13 @@ async fn main() {
 
     match args {
         Cli::Serve(args) => {
-            let otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
+            //let otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
 
             // TODO: This unwrap isn't ideal, but the telemetry lib is configured in such a way that
             // it's necessary. probably needs a tweak on the telemetry lib.
-            let metrics = otlp_guard.meter_provider.as_ref().unwrap();
-            let metrics_state = Arc::new(Metrics::new(metrics));
+            // let metrics = otlp_guard.meter_provider.as_ref().unwrap();
+            let metrics = noop::NoopMeterProvider::new();
+            let metrics_state = Arc::new(Metrics::new(&metrics));
 
             info!(?args, "Starting GraphQL Server");
             let s3_client = Client::from(args.s3_client);

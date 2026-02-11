@@ -1745,6 +1745,7 @@ dependencies = [
  "tower-http",
  "tower-service",
  "tracing",
+ "tracing-subscriber",
  "url",
 ]
 

@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use opentelemetry::metrics::{Counter, Histogram, MeterProvider};
-use opentelemetry_sdk::metrics::SdkMeterProvider;
 
 /// Thread-safe wrapper for OTEL metrics
 pub type MetricsState = Arc<Metrics>;
@@ -23,7 +22,7 @@ pub struct Metrics {
 
 impl Metrics {
     /// Builds a new metrics carrier instance
-    pub fn new(meter_provider: &SdkMeterProvider) -> Self {
+    pub fn new(meter_provider: &impl MeterProvider) -> Self {
         let meter = meter_provider.meter("otel-proxy");
 
         let total_requests = meter
