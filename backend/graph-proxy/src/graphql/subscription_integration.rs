@@ -34,7 +34,10 @@ use axum::{
     response::IntoResponse,
     Error,
 };
-use axum_extra::headers::Authorization;
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 use futures_util::{
     future,
     future::BoxFuture,
@@ -140,6 +143,12 @@ where
                 .total_requests
                 .add(1, &[KeyValue::new("request_type", "subscription")]);
 
+            let header_token =
+                TypedHeader::<Authorization<Bearer>>::from_request_parts(&mut parts, &())
+                    .await
+                    .ok()
+                    .map(|it| it.0);
+
             let resp = upgrade
                 .protocols(ALL_WEBSOCKET_PROTOCOLS)
                 .on_upgrade(move |stream| {
@@ -149,10 +158,15 @@ where
                                 .get("Authorization")
                                 .and_then(|value| value.as_str())
                                 .and_then(|token| token.strip_prefix("Bearer "))
-                                .map(str::to_string)
-                                .ok_or(async_graphql::Error::new("No auth token was provided"))?;
+                                .map(|it| Authorization::bearer(it).ok())
+                                .flatten()
+                                .ok_or(async_graphql::Error::new("No auth token was provided"));
 
-                            let auth_header = Authorization::bearer(&token);
+                            let auth_header = token.or_else(|it| {
+                                header_token
+                                    .ok_or(async_graphql::Error::new("No auth token was provided"))
+                            });
+
                             match auth_header {
                                 Ok(header) => {
                                     let mut data = Data::default();

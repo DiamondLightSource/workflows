@@ -2,9 +2,9 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 #![warn(clippy::missing_docs_in_private_items)]
-mod noop;
 /// GraphQL resolvers
 mod graphql;
+mod noop;
 /// S3 client
 mod s3client;
 
@@ -13,7 +13,8 @@ mod metrics;
 
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
-    metrics::{Metrics, MetricsState}, noop::NoopMeter,
+    metrics::{Metrics, MetricsState},
+    noop::NoopMeter,
 };
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{
@@ -101,8 +102,7 @@ pub struct KubernetesApiUrl(Uri);
 
 #[tokio::main]
 async fn main() {
-
-        tracing_subscriber::fmt()
+    tracing_subscriber::fmt()
         .with_max_level(tracing::Level::TRACE)
         .with_writer(std::io::stdout)
         .init();
