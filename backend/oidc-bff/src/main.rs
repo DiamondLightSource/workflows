@@ -4,25 +4,23 @@ mod login;
 mod auth_session_data;
 mod state;
 mod callback;
-mod counter;
 mod database;
 mod error;
-mod auth_proxy;
 mod admin_auth;
 
 use clap::Parser;
 use config::Config;
+use tokio::signal::unix::{Signal, SignalKind, signal};
 use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 use std::{
-    net::{Ipv4Addr, SocketAddr},
-    sync::Arc,
+    net::{Ipv4Addr, SocketAddr}, sync::Arc, process
 };
 use state::AppState;
 
 type Result<T> = std::result::Result<T, error::Error>;
 
 use axum::{
-    Json, Router,
+    Router,
     extract::State,
     middleware,
     response::IntoResponse,
@@ -30,7 +28,7 @@ use axum::{
 };
 use axum_reverse_proxy::ReverseProxy;
 
-use crate::auth_session_data::{LoginSessionData, TokenSessionData};
+use crate::auth_session_data::{TokenSessionData};
 mod inject_token_from_session;
 
 #[derive(Parser, Debug)]
@@ -56,7 +54,7 @@ async fn main() -> Result<()> {
     let port = config.port;
     let appstate = Arc::new(AppState::new(config).await?);
 
-    database::migrate_database(&appstate.database_connection).await?;
+    // Migration has been removed and its use can be added later if needed
 
     rustls::crypto::ring::default_provider()
         .install_default()
@@ -76,27 +74,18 @@ fn create_router(state: Arc<AppState>) -> Router {
     let proxy: Router<()> =
         ReverseProxy::new("/", "https://staging.workflows.diamond.ac.uk/graphql").into();
 
-    let mut router = Router::new()
+    let router = Router::new()
         .fallback_service(proxy)
         .layer(middleware::from_fn_with_state(
             state.clone(),
             inject_token_from_session::inject_token_from_session,
         ))
         .route("/auth/login", get(login::login))
-        .route("/read", get(counter::counter_read))
-        .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
         .route("/healthcheck", get(healthcheck::healthcheck))
         .layer(session_layer);
 
-    #[cfg(debug_assertions)]
-    {
-        router = router.route(
-            "/debug",
-            get(debug).layer(middleware::from_fn(admin_auth::require_admin_auth)),
-        );
-    }
 
     router.with_state(state)
 }
@@ -105,8 +94,17 @@ async fn serve(router: Router, port: u16) -> Result<()> {
     let listener =
         tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port)).await?;
     let service = router.into_make_service();
-    axum::serve(listener, service).await?;
+    axum::serve(listener, service)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let mut sigterm: Signal = signal(SignalKind::terminate()).expect("Failed to listen for SIGTERM");
+    sigterm.recv().await;
+    println!("Shutting Down");
+    process::exit(0);
 }
 
 /// Logout handler that:
@@ -138,19 +136,3 @@ async fn logout(
     Ok(axum::http::StatusCode::OK)
 }
 
-#[cfg(debug_assertions)]
-async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
-    let auth_session_data: Option<LoginSessionData> =
-        session.get(LoginSessionData::SESSION_KEY).await
-            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
-
-    let token_session_data: Option<TokenSessionData> =
-        session.get(TokenSessionData::SESSION_KEY).await
-            .map_err(|e| anyhow::anyhow!("Failed to read session: {}", e))?;
-
-    Ok(Json((
-        state.config.clone(),
-        auth_session_data,
-        token_session_data,
-    )))
-}
