@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use opentelemetry::metrics::{Counter, Histogram, MeterProvider};
-use opentelemetry_sdk::metrics::SdkMeterProvider;
 
 /// Thread-safe wrapper for OTEL metrics
 pub type MetricsState = Arc<Metrics>;
@@ -23,7 +22,7 @@ pub struct Metrics {
 
 impl Metrics {
     /// Builds a new metrics carrier instance
-    pub fn new(meter_provider: &SdkMeterProvider) -> Self {
+    pub fn new(meter_provider: &impl MeterProvider) -> Self {
         let meter = meter_provider.meter("otel-proxy");
 
         let total_requests = meter
@@ -60,4 +59,44 @@ impl Metrics {
             query_complexity,
         }
     }
+}
+
+#[cfg(test)]
+pub mod noop {
+
+    // Dummy metric provider for testing
+    // This can be removed when https://github.com/open-telemetry/opentelemetry-rust/issues/2444
+    // is included in next release of opentelemetry crate (after 0.31)
+    use opentelemetry::metrics::{InstrumentProvider, Meter, MeterProvider};
+    use std::sync::Arc;
+
+    /// A no-op instance of a `MetricProvider`
+    #[derive(Debug, Default)]
+    pub struct NoopMeterProvider;
+
+    impl NoopMeterProvider {
+        /// Create a new no-op meter provider.
+        pub fn new() -> Self {
+            NoopMeterProvider
+        }
+    }
+
+    impl MeterProvider for NoopMeterProvider {
+        fn meter_with_scope(&self, _scope: opentelemetry::InstrumentationScope) -> Meter {
+            Meter::new(Arc::new(NoopMeter::new()))
+        }
+    }
+
+    /// A no-op instance of a `Meter`
+    #[derive(Debug, Default)]
+    struct NoopMeter;
+
+    impl NoopMeter {
+        /// Create a new no-op meter core.
+        pub fn new() -> Self {
+            NoopMeter
+        }
+    }
+
+    impl InstrumentProvider for NoopMeter {}
 }
