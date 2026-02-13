@@ -34,7 +34,10 @@ use axum::{
     response::IntoResponse,
     Error,
 };
-use axum_extra::headers::Authorization;
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 use futures_util::{
     future,
     future::BoxFuture,
@@ -140,19 +143,33 @@ where
                 .total_requests
                 .add(1, &[KeyValue::new("request_type", "subscription")]);
 
+            let http_auth_header =
+                TypedHeader::<Authorization<Bearer>>::from_request_parts(&mut parts, &())
+                    .await
+                    .ok()
+                    .map(|it| it.0);
+
             let resp = upgrade
                 .protocols(ALL_WEBSOCKET_PROTOCOLS)
                 .on_upgrade(move |stream| {
                     let websocket = GraphQLWebSocket::new(stream, executor, protocol)
                         .on_connection_init(|value: serde_json::Value| async move {
-                            let token = value
+                            let conn_init_auth_header = value
                                 .get("Authorization")
                                 .and_then(|value| value.as_str())
                                 .and_then(|token| token.strip_prefix("Bearer "))
-                                .map(str::to_string)
-                                .ok_or(async_graphql::Error::new("No auth token was provided"))?;
+                                .and_then(|it| Authorization::bearer(it).ok())
+                                .ok_or(async_graphql::Error::new("No auth token was provided"));
 
-                            let auth_header = Authorization::bearer(&token);
+                            // Different clients provide auth tokens via the initial HTTP Upgrade
+                            // request headers or the subsequent connection_init WebSocket frame.
+                            // We intentionally support both to ensure compatibility with various
+                            // client implementations (e.g., keycloak-js, oauth2-proxy).
+                            let auth_header = conn_init_auth_header.or_else(|_| {
+                                http_auth_header
+                                    .ok_or(async_graphql::Error::new("No auth token was provided"))
+                            });
+
                             match auth_header {
                                 Ok(header) => {
                                     let mut data = Data::default();
@@ -352,5 +369,189 @@ where
                 break;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{metrics::noop::NoopMeterProvider, metrics::Metrics};
+    use async_graphql::{Context, EmptyMutation, Object, Schema, Subscription};
+    use axum::{routing::get_service, Router};
+    use axum_extra::headers::{authorization::Bearer, Authorization};
+    use futures_util::Stream;
+    use graphql_ws_client::graphql::StreamingOperation;
+    use serde::{Deserialize, Serialize};
+    use serde_json::json;
+    use std::net::SocketAddr;
+    use tokio::net::TcpListener;
+    use tokio_stream::{once, StreamExt};
+    use tungstenite::client::IntoClientRequest;
+
+    struct QueryRoot;
+
+    #[Object]
+    impl QueryRoot {
+        // unused but async_graphql requires at least one query field
+        async fn ping(&self) -> &'static str {
+            "pong"
+        }
+    }
+
+    struct EchoTokenSubscriptionRoot;
+
+    #[Subscription]
+    impl EchoTokenSubscriptionRoot {
+        /// Token Data provided by async_graphql::Context
+        async fn token(&self, ctx: &Context<'_>) -> impl Stream<Item = String> + '_ {
+            let token_str = ctx
+                .data_opt::<Option<Authorization<Bearer>>>()
+                .and_then(|opt| opt.as_ref())
+                .map(|auth| auth.token().to_string())
+                .unwrap_or_else(|| "No token".to_string());
+
+            once(token_str)
+        }
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct TestGraphQlTokenQuery;
+
+    use graphql_client::GraphQLQuery;
+
+    impl GraphQLQuery for TestGraphQlTokenQuery {
+        type Variables = ();
+
+        type ResponseData = serde_json::Value;
+
+        fn build_query(_variables: Self::Variables) -> graphql_client::QueryBody<Self::Variables> {
+            graphql_client::QueryBody {
+                variables: (),
+                query: "subscription GetToken { token }",
+                operation_name: "GetToken",
+            }
+        }
+    }
+
+    async fn start_echo_token_server() -> (String, tokio::task::JoinSet<()>) {
+        let schema = Schema::build(QueryRoot, EmptyMutation, EchoTokenSubscriptionRoot).finish();
+
+        let router = Router::new()
+            .route_service(
+                "/ws",
+                get_service(GraphQLSubscription::new(
+                    schema.clone(),
+                    MetricsState::new(Metrics::new(&NoopMeterProvider::new())),
+                )),
+            )
+            .with_state(schema.clone());
+
+        let socket_addr = SocketAddr::new(core::net::Ipv4Addr::LOCALHOST.into(), 0);
+        let listener = TcpListener::bind(socket_addr)
+            .await
+            .expect("tcp bind failed");
+        let address = listener.local_addr().expect("no local address");
+        let address = format!("ws://{address}/ws");
+        let server = axum::serve(listener, router.into_make_service());
+        let mut job = tokio::task::JoinSet::new();
+        job.spawn(async move {
+            server.await.expect("server error");
+        });
+        (address, job)
+    }
+
+    #[tokio::test]
+    async fn subscription_token_is_read_from_http_header() -> anyhow::Result<()> {
+        let (server_address, _server_guard) = start_echo_token_server().await;
+
+        let token = "http_header_token_value";
+
+        let mut req = server_address.into_client_request()?;
+        req.headers_mut().insert(
+            http::header::AUTHORIZATION,
+            http::HeaderValue::from_str(&format!("Bearer {token}"))?,
+        );
+        req.headers_mut().insert(
+            http::header::SEC_WEBSOCKET_PROTOCOL,
+            http::HeaderValue::from_static("graphql-transport-ws"),
+        );
+
+        let (ws, _resp) = tokio_tungstenite::connect_async(req).await?;
+
+        let client = graphql_ws_client::Client::build(ws);
+
+        let mut subscription = client
+            .subscribe(StreamingOperation::<TestGraphQlTokenQuery>::new(()))
+            .await?;
+
+        let response = subscription.next().await.expect("no responses")?;
+        assert!(response.errors.unwrap_or_default().is_empty());
+        assert_eq!(
+            response.data.expect("no data"),
+            serde_json::json!({"token": token}),
+            "http header token is used for auth"
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn subscription_token_is_read_from_connection_init_payload() -> anyhow::Result<()> {
+        let (server_address, _server_guard) = start_echo_token_server().await;
+
+        let token = "connection_init_token_value";
+
+        let mut req = server_address.into_client_request()?;
+        req.headers_mut().insert(
+            http::header::SEC_WEBSOCKET_PROTOCOL,
+            http::HeaderValue::from_static("graphql-transport-ws"),
+        );
+
+        let (ws, _resp) = tokio_tungstenite::connect_async(req).await?;
+
+        let client = graphql_ws_client::Client::build(ws).payload(json!({
+            "Authorization": format!("Bearer {token}"),
+        }))?;
+        let mut subscription = client
+            .subscribe(StreamingOperation::<TestGraphQlTokenQuery>::new(()))
+            .await?;
+
+        let response = subscription.next().await.expect("no responses")?;
+        assert!(response.errors.unwrap_or_default().is_empty());
+        assert_eq!(
+            response.data.expect("no data"),
+            serde_json::json!({"token": token}),
+            "connection_init token is used for auth"
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn subscription_returns_error_if_no_token() -> anyhow::Result<()> {
+        let (server_address, _server_guard) = start_echo_token_server().await;
+
+        let mut req = server_address.into_client_request()?;
+        req.headers_mut().insert(
+            http::header::SEC_WEBSOCKET_PROTOCOL,
+            http::HeaderValue::from_static("graphql-transport-ws"),
+        );
+
+        let (ws, _resp) = tokio_tungstenite::connect_async(req).await?;
+
+        let client = graphql_ws_client::Client::build(ws);
+        let result = client
+            .subscribe(StreamingOperation::<TestGraphQlTokenQuery>::new(()))
+            .await;
+
+        assert!(
+            matches!(
+                result,
+                Err(graphql_ws_client::Error::Close(_, msg)) if msg == "No auth token was provided"
+            ),
+            "subscriptions require an auth token in either http header or connection_init frame"
+        );
+
+        Ok(())
     }
 }
