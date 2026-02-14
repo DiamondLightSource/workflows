@@ -67,3 +67,11 @@ groups:
         repoURL: https://github.com/DiamondLightSource/test-rig-workflows
         path: visr
         sourceType: helm
+  - name: structures-and-surfaces
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: i07
+        repoURL: https://github.com/DiamondLightSource/structures-and-surfaces-workflows
+        path: i07
+        sourceType: helm
