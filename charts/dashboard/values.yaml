@@ -1,6 +1,6 @@
 configuration:
-  keycloakUrl: https://authn.diamond.ac.uk
-  keycloakRealm: master
+  keycloakUrl: https://identity.diamond.ac.uk
+  keycloakRealm: dls
   keycloakClient: workflows-dashboard
   keycloakScope: "openid profile posix-uid email"
   graphUrl: https://workflows.diamond.ac.uk/graphql
