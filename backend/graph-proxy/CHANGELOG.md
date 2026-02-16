@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.16...graph-proxy@v0.1.17) (2026-02-16)
+
+
+### Features
+
+* **graph-proxy:** implement no-op metrics provider for easier unit tests ([2d9c4c0](https://github.com/DiamondLightSource/workflows/commit/2d9c4c0bdf548ade795d8f16fedf465498f39fb5))
+
+
+### Bug Fixes
+
+* **graph-proxy:** subscriptions take auth token from http header for oauth2-proxy compatibility ([190a6de](https://github.com/DiamondLightSource/workflows/commit/190a6de02da55126d544212e726c90e6de23c703))
+
 ## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.15...graph-proxy@v0.1.16) (2026-02-11)
 
 
