@@ -1232,8 +1232,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "GraphProxy - test",
-  "uid": "graph-proxy-test",
+  "title": "GraphProxy",
+  "uid": "graph-proxy",
   "version": 36,
   "weekStart": ""
 }

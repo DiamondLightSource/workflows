@@ -3733,8 +3733,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "ArgoCD Test",
-  "uid": "argocdtest",
+  "title": "ArgoCD",
+  "uid": "argocd",
   "version": 6,
   "weekStart": ""
 }
