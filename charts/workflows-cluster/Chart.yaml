@@ -3,7 +3,7 @@ name: workflows-cluster
 description: A virtual cluster for Data Analysis workflows
 type: application
 
-version: 0.9.27
+version: 0.9.28
 dependencies:
   - name: common
     version: 2.23.0
@@ -13,5 +13,5 @@ dependencies:
     version: 0.27.0
   - name: secrets
     repository: file://./charts/secrets
-    version: 0.0.5
+    version: 0.0.6
     condition: secrets.enabled

@@ -6,7 +6,7 @@ argo-cd:
       url: https://argo-cd.workflows.diamond.ac.uk
       oidc.config: |
         name: Keycloak
-        issuer: https://authn.diamond.ac.uk/realms/master
+        issuer: https://identity.diamond.ac.uk/realms/dls
         clientID: workflows-argocd
         clientSecret: $argocd-oauth:oidc.keycloak.clientSecret
         requestedScopes:
