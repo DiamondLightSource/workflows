@@ -25,7 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 8,
+  "id": 7,
   "links": [],
   "panels": [
     {
@@ -185,12 +185,478 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 7
+      },
+      "id": 49,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile( \n    0.95, \n    sum(rate(argo_workflows_queue_latency_bucket{queue_name=\"workflow_queue\"}[$__rate_interval])) by (le) \n)\n#sum(argo_workflows_queue_latency_bucket{le=\"+Inf\"}) by (queue_name)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Workflows Queue Latency (p95)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 7
+      },
+      "id": 51,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile( \n    0.95, \n    sum(rate(argo_workflows_queue_latency_bucket{queue_name=\"workflow_ttl_queue\"}[$__rate_interval])) by (le) \n)\n#sum(argo_workflows_queue_latency_bucket{le=\"+Inf\"}) by (queue_name)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Workflows ttl Queue Latency (p95)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 7
+      },
+      "id": 52,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile( \n    0.95, \n    sum(rate(argo_workflows_queue_latency_bucket{queue_name=\"workflow_archive_queue\"}[$__rate_interval])) by (le) \n)\n#sum(argo_workflows_queue_latency_bucket{le=\"+Inf\"}) by (queue_name)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Workflows Archive Queue Latency (p95)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 7
+      },
+      "id": 53,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile( \n    0.95, \n    sum(rate(argo_workflows_queue_latency_bucket{queue_name=\"pod_cleanup_queue\"}[$__rate_interval])) by (le) \n)\n#sum(argo_workflows_queue_latency_bucket{le=\"+Inf\"}) by (queue_name)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pod Cleanup Queue Latency (p95)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 7
+      },
+      "id": 54,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(argo_workflows_error_count_total) by (cause)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Workflows Error Count by Cause",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 13
+      },
+      "id": 50,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(argo_workflows_workers_busy_count[$__rate_interval]))",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Workflows Worker Busy Count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 20,
+        "x": 4,
+        "y": 13
+      },
+      "id": 48,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(argo_workflows_queue_depth_gauge) by (queue_name)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Workflows Queue Depth",
+      "type": "gauge"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 19
       },
       "id": 18,
       "panels": [],
@@ -199,6 +665,7 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
@@ -260,7 +727,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 20
       },
       "id": 32,
       "options": {
@@ -282,6 +749,10 @@
       "pluginVersion": "11.3.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
           "editorMode": "code",
           "expr": "sum by (status) (argo_workflows_gauge)",
           "legendFormat": "__auto",
@@ -359,7 +830,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 20
       },
       "id": 29,
       "options": {
@@ -405,7 +876,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 29
       },
       "id": 20,
       "panels": [],
@@ -476,7 +947,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 30
       },
       "id": 14,
       "options": {
@@ -583,7 +1054,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 39
       },
       "id": 15,
       "options": {
@@ -690,7 +1161,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 36
+        "y": 48
       },
       "id": 16,
       "options": {
@@ -796,7 +1267,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 36
+        "y": 48
       },
       "id": 23,
       "options": {
@@ -903,7 +1374,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 57
       },
       "id": 26,
       "options": {
@@ -949,7 +1420,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 66
       },
       "id": 35,
       "panels": [],
@@ -986,7 +1457,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 67
       },
       "id": 36,
       "options": {
@@ -1057,7 +1528,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 61
+        "y": 73
       },
       "id": 40,
       "options": {
@@ -1166,7 +1637,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 67
+        "y": 79
       },
       "id": 37,
       "options": {
@@ -1271,7 +1742,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 75
+        "y": 87
       },
       "id": 47,
       "options": {
@@ -1318,7 +1789,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 84
+        "y": 96
       },
       "id": 43,
       "panels": [],
@@ -1354,7 +1825,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 85
+        "y": 97
       },
       "id": 44,
       "options": {
@@ -1402,7 +1873,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 91
+        "y": 103
       },
       "id": 30,
       "panels": [],
@@ -1458,8 +1929,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1500,7 +1970,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 92
+        "y": 104
       },
       "id": 31,
       "options": {
@@ -1558,8 +2028,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
-                "value": null
+                "color": "blue"
               }
             ]
           }
@@ -1570,7 +2039,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 101
+        "y": 113
       },
       "id": 46,
       "options": {
@@ -1625,7 +2094,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 106
+        "y": 118
       },
       "id": 45,
       "options": {
@@ -1708,15 +2177,15 @@
         "auto_count": 1,
         "auto_min": "10s",
         "current": {
-          "text": "$__auto",
-          "value": "$__auto"
+          "text": "12h",
+          "value": "12h"
         },
         "hide": 2,
         "label": "Time Range",
         "name": "ts",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "12h",
             "value": "12h"
           },
@@ -1760,6 +2229,6 @@
   "timezone": "",
   "title": "Argo Workflows Metrics - (v3.6 and above)",
   "uid": "cGlwZWtpdB",
-  "version": 19,
+  "version": 3,
   "weekStart": ""
 }
