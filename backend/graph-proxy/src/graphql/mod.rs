@@ -34,6 +34,7 @@ use axum_extra::{
 use lazy_static::lazy_static;
 use opentelemetry::KeyValue;
 use std::fmt::Display;
+use tracing::instrument;
 use workflow_templates::WorkflowTemplatesMutation;
 
 /// The root schema of the service
