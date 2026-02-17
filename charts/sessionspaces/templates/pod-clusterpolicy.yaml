@@ -42,6 +42,7 @@ spec:
         patchStrategicMerge:
           spec:
             securityContext:
+              fsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
               runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
               runAsUser: "{{ `{{ uid | parse_json(@).to_number(@) }}` }}"
             containers:
@@ -105,6 +106,7 @@ spec:
         patchStrategicMerge:
           spec:
             securityContext:
+              fsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
               runAsGroup: "{{ `{{values.data.gid | parse_json(@).to_number(@)}}` }}"
               runAsUser: "{{ `{{ uid | parse_json(@).to_number(@) }}` }}"
             containers:

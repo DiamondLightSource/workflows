@@ -1,0 +1,127 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: mpi-multinode-test-
+spec:
+  entrypoint: mpi-job
+  podSpecPatch: |
+    {"initContainers":[{"name":"init","volumeMounts":[{"name":"init-temp-dir","mountPath":"/tmp"}]}],"volumes":[{"name":"init-temp-dir","emptyDir":{}}]}
+  templates:
+  - name: mpi-job
+    resource:
+      action: create
+      setOwnerReference: true
+      successCondition: status.replicaStatuses.Launcher.succeeded == 1
+      failureCondition: status.replicaStatuses.Launcher.failed > 0
+      manifest: |
+        apiVersion: kubeflow.org/v2beta1
+        kind: MPIJob
+        metadata:
+          generateName: mpi-hostname-test-
+          labels:
+            kueue.x-k8s.io/queue-name: default-queue
+        spec:
+          slotsPerWorker: 1
+          runPolicy:
+            cleanPodPolicy: Running
+            ttlSecondsAfterFinished: 120
+          sshAuthMountPath: /home/mpiuser/.ssh
+          mpiReplicaSpecs:
+            Launcher:
+              replicas: 1
+              template:
+                spec:
+                  containers:
+                  - name: launcher
+                    image: mpioperator/mpi-pi:openmpi
+                    command: ["/bin/bash", "-c"]
+                    args:
+                    - |
+                      set -e
+                      echo "=========================================="
+                      echo "MPI Job Starting"
+                      echo "=========================================="
+                      echo "Launcher hostname: $(hostname)"
+                      echo "Launcher IP: $(hostname -i)"
+                      echo "Date: $(date)"
+                      echo ""
+                      echo "=========================================="
+                      echo "Hostfile contents:"
+                      echo "=========================================="
+                      cat /etc/mpi/hostfile
+                      echo ""
+                      echo "Waiting for workers to be ready..."
+                      sleep 15
+                      echo ""
+                      echo "=========================================="
+                      echo "Running MPI hostname test across workers"
+                      echo "=========================================="
+                      mpirun -hostfile /etc/mpi/hostfile -n 4 hostname
+                      echo ""
+                      echo "=========================================="
+                      echo "Running MPI ring test (rank communication)"
+                      echo "=========================================="
+                      mpirun -hostfile /etc/mpi/hostfile -n 4 bash -c 'echo "Rank $OMPI_COMM_WORLD_RANK of $OMPI_COMM_WORLD_SIZE on $(hostname)"'
+                      echo ""
+                      echo "=========================================="
+                      echo "Running pi calculation benchmark"
+                      echo "=========================================="
+                      time mpirun -hostfile /etc/mpi/hostfile -n 4 /home/mpiuser/pi
+                      echo ""
+                      echo "=========================================="
+                      echo "MPI Job Complete"
+                      echo "=========================================="
+                    volumeMounts:
+                    - name: tmp
+                      mountPath: /tmp
+                    resources:
+                      requests:
+                        cpu: 500m
+                        memory: 512Mi
+                      limits:
+                        cpu: 1
+                        memory: 1Gi
+                  volumes:
+                  - name: tmp
+                    emptyDir: {}
+            Worker:
+              replicas: 4
+              template:
+                spec:
+                  affinity:
+                    podAntiAffinity:
+                      preferredDuringSchedulingIgnoredDuringExecution:
+                      - weight: 100
+                        podAffinityTerm:
+                          labelSelector:
+                            matchExpressions:
+                            - key: training.kubeflow.org/job-name
+                              operator: Exists
+                          topologyKey: kubernetes.io/hostname
+                  containers:
+                  - name: worker
+                    image: mpioperator/mpi-pi:openmpi
+
+                    command:
+                    - /usr/sbin/sshd
+                    args:
+                    - -De
+                    - -f
+                    - /home/mpiuser/.sshd_config
+                    volumeMounts:
+                    - name: tmp
+                      mountPath: /tmp
+                    - name: run
+                      mountPath: /run
+                    resources:
+                      requests:
+                        cpu: 500m
+                        memory: 512Mi
+                      limits:
+                        cpu: 1
+                        memory: 1Gi
+                  volumes:
+                  - name: tmp
+                    emptyDir: {}
+                  - name: run
+                    emptyDir: {}
