@@ -60,6 +60,7 @@ pub struct NodeQuery;
 
 #[Object]
 impl NodeQuery {
+    #[instrument(skip(self, ctx), fields(id = %id, graphql_operation = "node_query"))]
     async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<NodeValue> {
         let id_str = id.to_string();
         let parts: Vec<&str> = id_str.split(':').collect();
