@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useMemo, useEffect } from "react";
+import { ChangeEvent, useMemo, useEffect } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import { Box, Pagination, Stack } from "@mui/material";
 import { useClientSidePagination } from "../utils/coreUtils";
@@ -7,6 +7,7 @@ import type { TemplatesListViewQuery as TemplatesListViewQueryType } from "relay
 import { TemplateCard } from "relay-workflows-lib/lib/components/TemplateCard";
 import { templateMatchesSearch } from "../utils/useTemplateMatchesSearch";
 import { ScienceGroupSelector, WorkflowTemplatesFilter } from "workflows-lib";
+import { useSearchParams } from "react-router-dom";
 
 export const TemplatesListViewQuery = graphql`
   query TemplatesListViewQuery($filter: WorkflowTemplatesFilter) {
@@ -32,12 +33,13 @@ export default function TemplatesListView({
     TemplatesListViewQuery,
     { filter },
   );
-  const [search, setSearch] = useState("");
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const filteredNodes = useMemo(() => {
     const result = data.workflowTemplates.nodes.filter((node) => {
       const match = templateMatchesSearch(
-        search,
+        searchParams.get("search") ?? "",
         node.name,
         node.title ?? "",
         node.description,
@@ -45,17 +47,19 @@ export default function TemplatesListView({
       return match;
     });
     return result;
-  }, [search, data.workflowTemplates.nodes]);
+  }, [searchParams, data.workflowTemplates.nodes]);
 
   const { pageNumber, setPageNumber, totalPages, paginatedItems } =
     useClientSidePagination(filteredNodes, 10);
 
   useEffect(() => {
     setPageNumber(1);
-  }, [search, setPageNumber]);
+  }, [searchParams, setPageNumber]);
 
   const handleSearch = (search: string) => {
-    setSearch(search);
+    if (search) searchParams.set("search", search);
+    else searchParams.delete("search");
+    setSearchParams(searchParams);
   };
 
   const handlePageChange = (_event: ChangeEvent<unknown>, page: number) => {

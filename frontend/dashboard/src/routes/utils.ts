@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
-import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
+import {
+  visitTextToVisit,
+  convertStringToScienceGroup,
+} from "workflows-lib/lib/utils/commonUtils";
+import { WorkflowTemplatesFilter } from "workflows-lib";
 
 export const useVisitInput = (initialVisitId?: string | null) => {
   const navigate = useNavigate();
@@ -42,4 +46,13 @@ export function ScrollRestorer() {
   }, []);
 
   return null;
+}
+
+export function getFilterFromParams(searchParams: URLSearchParams) {
+  const filter: WorkflowTemplatesFilter = {};
+  const searchGroups = searchParams.get("group")?.split(",");
+  filter.scienceGroup = searchGroups
+    ?.map((entry) => convertStringToScienceGroup(entry))
+    .filter((entry) => entry !== undefined);
+  return filter;
 }
