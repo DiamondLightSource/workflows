@@ -1,15 +1,24 @@
-import { Suspense, useState } from "react";
-import { Link } from "react-router-dom";
+import { Suspense } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import { WorkflowsNavbar, WorkflowTemplatesFilter } from "workflows-lib";
 import TemplatesListView from "relay-workflows-lib/lib/views/TemplatesListView";
 import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
+import { getFilterFromParams } from "./utils";
 
 const TemplatesListPage: React.FC = () => {
-  const [workflowTemplatesFilter, setWorkflowTemplatesFilter] = useState<
-    WorkflowTemplatesFilter | undefined
-  >(undefined);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const handleSetFilter = (newFilter: WorkflowTemplatesFilter) => {
+    if (newFilter.scienceGroup?.length) {
+      searchParams.set("group", newFilter.scienceGroup.join());
+    } else {
+      searchParams.delete("group");
+    }
+    setSearchParams(searchParams);
+  };
+
   return (
     <>
       <WorkflowsNavbar />
@@ -29,10 +38,8 @@ const TemplatesListPage: React.FC = () => {
             >
               <Box mt={2} mb={2}>
                 <TemplatesListView
-                  filter={workflowTemplatesFilter}
-                  setFilter={(newFilter: WorkflowTemplatesFilter) => {
-                    setWorkflowTemplatesFilter(newFilter);
-                  }}
+                  filter={getFilterFromParams(searchParams)}
+                  setFilter={handleSetFilter}
                 />
               </Box>
             </Suspense>

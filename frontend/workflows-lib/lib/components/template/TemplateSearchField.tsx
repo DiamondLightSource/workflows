@@ -1,6 +1,7 @@
 import { Search, Clear } from "@mui/icons-material";
 import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 interface SearchFieldProps {
   handleSearch: (search: string) => void;
@@ -9,7 +10,10 @@ interface SearchFieldProps {
 export default function TemplateSearchField({
   handleSearch,
 }: SearchFieldProps) {
-  const [searchBoxContents, setSearchBoxContents] = useState("");
+  const [searchParams] = useSearchParams();
+  const [searchBoxContents, setSearchBoxContents] = useState(
+    searchParams.get("search") ?? "",
+  );
 
   const handleKeyPress = () => {
     handleSearch(searchBoxContents);

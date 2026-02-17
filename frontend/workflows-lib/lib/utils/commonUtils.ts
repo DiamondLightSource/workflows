@@ -1,5 +1,5 @@
 import { Visit, regexToVisit } from "@diamondlightsource/sci-react-ui";
-import { TemplateSource } from "../types";
+import { TemplateSource, ScienceGroup } from "../types";
 
 const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
 export const visitWithTemplateRegex = new RegExp(
@@ -63,4 +63,12 @@ export function formatErrorMessage(errorMessage: string | undefined) {
   if (errorMessage?.includes("Template")) return authTemplateMessage;
   if (errorMessage?.includes("Workflow")) return authWorkflowsMessage;
   return defaultMessage;
+}
+
+export function convertStringToScienceGroup(
+  input: string,
+): ScienceGroup | undefined {
+  return Object.values(ScienceGroup).includes(input as ScienceGroup)
+    ? (input as ScienceGroup)
+    : undefined;
 }
