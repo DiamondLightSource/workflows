@@ -8,6 +8,8 @@ import { RelayEnvironmentProvider } from "react-relay";
 import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
 import { Box } from "@mui/material";
 import { TemplateCardFragment$data } from "relay-workflows-lib/lib/components/__generated__/TemplateCardFragment.graphql.ts";
+import { URLSearchParams } from "url";
+import { MemoryRouter } from "react-router-dom";
 
 interface MockCardProps {
   template: TemplateCardFragment$data;
@@ -21,11 +23,6 @@ const firstPageTemplates = {
 
 vi.mock("relay-workflows-lib/lib/components/TemplateCard", () => ({
   TemplateCard: ({ template }: MockCardProps) => <Box>{template.name}</Box>,
-}));
-
-vi.mock("react-router-dom", () => ({
-  useNavigate: vi.fn(),
-  useLocation: vi.fn(),
 }));
 
 describe("TemplateList", () => {
@@ -55,7 +52,9 @@ describe("TemplateList", () => {
     const environment = await getRelayEnvironment();
     render(
       <RelayEnvironmentProvider environment={environment}>
-        <TemplatesListView setFilter={() => {}} />
+        <MemoryRouter>
+          <TemplatesListView setFilter={() => {}} />
+        </MemoryRouter>
       </RelayEnvironmentProvider>,
     );
   });
@@ -105,5 +104,13 @@ describe("TemplateList", () => {
 
     expect(screen.getByText("e02-mib2x")).toBeInTheDocument();
     expect(screen.getByText("conditional-steps")).toBeInTheDocument();
+  });
+
+  it("updates query params when a search is made", async () => {
+    const spy = vi.spyOn(URLSearchParams.prototype, "set");
+    const searchInput = await screen.findByTestId("searchInput");
+
+    await user.type(searchInput, "e02");
+    expect(spy).toHaveBeenLastCalledWith("search", "e02");
   });
 });
