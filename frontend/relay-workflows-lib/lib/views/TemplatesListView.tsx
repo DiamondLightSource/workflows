@@ -22,13 +22,15 @@ export const TemplatesListViewQuery = graphql`
   }
 `;
 
+export interface TemplatesListViewProps {
+  filter?: WorkflowTemplatesFilter;
+  setFilter: (filter: WorkflowTemplatesFilter) => void;
+}
+
 export default function TemplatesListView({
   filter,
   setFilter,
-}: {
-  filter?: WorkflowTemplatesFilter;
-  setFilter: (filter: WorkflowTemplatesFilter) => void;
-}) {
+}: TemplatesListViewProps) {
   const data = useLazyLoadQuery<TemplatesListViewQueryType>(
     TemplatesListViewQuery,
     { filter },

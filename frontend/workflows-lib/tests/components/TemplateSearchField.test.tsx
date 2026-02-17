@@ -1,7 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import TemplateSearchField from "workflows-lib/lib/components/template/TemplateSearchField";
+import { MemoryRouter } from "react-router-dom";
 
 describe("TemplateSearchField", () => {
   const mockSearch = vi.fn();
@@ -9,7 +10,11 @@ describe("TemplateSearchField", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    render(<TemplateSearchField handleSearch={mockSearch} />);
+    render(
+      <MemoryRouter>
+        <TemplateSearchField handleSearch={mockSearch} />
+      </MemoryRouter>,
+    );
   });
 
   it("searches every time a key is pressed", async () => {
@@ -25,5 +30,16 @@ describe("TemplateSearchField", () => {
     await user.click(screen.getByRole("button"));
     expect(textBox).toHaveValue("");
     expect(mockSearch).toHaveBeenCalledWith("");
+  });
+
+  it("obtains initial search from the query parameters", () => {
+    cleanup();
+    render(
+      <MemoryRouter initialEntries={["?search=template123"]}>
+        <TemplateSearchField handleSearch={mockSearch} />
+      </MemoryRouter>,
+    );
+    const textBox = screen.getByTestId("searchInput");
+    expect(textBox).toHaveValue("template123");
   });
 });

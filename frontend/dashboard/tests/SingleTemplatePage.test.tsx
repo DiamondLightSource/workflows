@@ -36,16 +36,6 @@ vi.mock("relay-workflows-lib/lib/views/TemplateViewRetrigger", () => ({
   ),
 }));
 
-vi.mock("workflows-lib", async () => ({
-  ...(await vi.importActual("workflows-lib")),
-  WorkflowsNavbar: () => <></>,
-}));
-
-vi.mock("@diamondlightsource/sci-react-ui", async () => ({
-  ...(await vi.importActual("@diamondlightsource/sci-react-ui")),
-  Breadcrumbs: () => <></>,
-}));
-
 describe("SingleTemplatePage", () => {
   function renderWithPath(path: string) {
     render(
