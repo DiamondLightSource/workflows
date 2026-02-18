@@ -4,13 +4,17 @@
 	"name": "Rust and PostgreSQL",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"workspaceFolder": "/workspace",
+
+	// Run as vscode user and sync UID with host user for proper file permissions
+	"remoteUser": "vscode",
+	"updateRemoteUserUID": true,
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [5432],
+	"forwardPorts": [5432],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "cargo install sea-orm-cli"
