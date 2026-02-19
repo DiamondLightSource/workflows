@@ -1,0 +1,13 @@
+Port 2222
+PidFile /tmp/sshd.pid
+HostKey /tmp/mpi-ssh/id_rsa
+AuthorizedKeysFile /tmp/mpi-ssh/authorized_keys
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM no
+UsePrivilegeSeparation no
+StrictModes no
+SetEnv LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libnss_wrapper.so
+SetEnv NSS_WRAPPER_PASSWD=/tmp/passwd
+SetEnv NSS_WRAPPER_GROUP=/tmp/group
+SetEnv HOME=/tmp

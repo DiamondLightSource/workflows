@@ -1,0 +1,137 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: mpi-multinode-
+spec:
+  entrypoint: mpi-job
+  ttlStrategy:
+    secondsAfterSuccess: 300
+    secondsAfterFailure: 30
+  arguments:
+    parameters:
+      - name: mpiImage
+        value: iamvigneshwars/matrix-mpi:0.1
+      - name: mpiSize
+        value: "4"
+      - name: minAvailable
+        value: "5"
+      - name: matrixSize
+        value: "3024"
+      - name: matrixRepeats
+        value: "3"
+  podSpecPatch: |
+    volumes:
+      - name: argo-tmp
+        emptyDir: {}
+    initContainers:
+      - name: init
+        volumeMounts:
+          - name: argo-tmp
+            mountPath: /tmp
+    containers:
+      - name: main
+        volumeMounts:
+          - name: argo-tmp
+            mountPath: /tmp
+      - name: wait
+        volumeMounts:
+          - name: argo-tmp
+            mountPath: /tmp
+  templates:
+    - name: mpi-job
+      resource:
+        action: create
+        setOwnerReference: true
+        successCondition: status.replicaStatuses.Launcher.succeeded == 1
+        failureCondition: status.replicaStatuses.Launcher.failed > 0
+        manifest: |
+          apiVersion: kubeflow.org/v2beta1
+          kind: MPIJob
+          metadata:
+            name: mpi-{{workflow.name}}
+            labels:
+              kueue.x-k8s.io/queue-name: default-queue
+          spec:
+            slotsPerWorker: 1
+            runPolicy:
+              schedulingPolicy:
+                minAvailable: {{workflow.parameters.minAvailable}}
+              backoffLimit: 0
+              cleanPodPolicy: All
+              ttlSecondsAfterFinished: 200
+            sshAuthMountPath: /opt/mpi/ssh-src
+            mpiReplicaSpecs:
+              Launcher:
+                replicas: 1
+                template:
+                  spec:
+                    restartPolicy: Never
+                    terminationGracePeriodSeconds: 30
+                    containers:
+                    - name: launcher
+                      image: "{{workflow.parameters.mpiImage}}"
+                      imagePullPolicy: Always
+                      command: ["/usr/local/bin/entrypoint.sh", "/bin/bash", "-c"]
+                      args:
+                      - |
+                        set -e
+                        echo "=========================================="
+                        echo "MPI Job Starting"
+                        echo "=========================================="
+                        echo "Launcher hostname: $(hostname)"
+                        echo "Launcher IP: $(hostname -i)"
+                        echo ""
+                        echo "Waiting for workers to be ready..."
+                        sleep 15
+                        echo ""
+                        echo "=========================================="
+                        echo "Running MPI ring test (rank communication)"
+                        echo "=========================================="
+                        mpirun -hostfile /etc/mpi/hostfile -n {{workflow.parameters.mpiSize}} bash -c 'echo "Rank $OMPI_COMM_WORLD_RANK of $OMPI_COMM_WORLD_SIZE on $(hostname)"'
+                        echo ""
+                        echo "=========================================="
+                        echo "Running matrix multiplication benchmark"
+                        echo "=========================================="
+                        time mpirun -hostfile /etc/mpi/hostfile -n {{workflow.parameters.mpiSize}} python3 /opt/mpi/bin/matrix.py {{workflow.parameters.matrixSize}} {{workflow.parameters.matrixRepeats}}
+                        echo ""
+                        echo "=========================================="
+                        echo "MPI Job Completed"
+                        echo "=========================================="
+                      volumeMounts:
+                      - name: tmp
+                        mountPath: /tmp
+                    volumes:
+                    - name: tmp
+                      emptyDir: {}
+              Worker:
+                replicas: {{workflow.parameters.mpiSize}}
+                template:
+                  spec:
+                    restartPolicy: Never
+                    terminationGracePeriodSeconds: 30
+                    containers:
+                    - name: worker
+                      image: "{{workflow.parameters.mpiImage}}"
+                      imagePullPolicy: Always
+                      command: ["/usr/local/bin/entrypoint.sh", "/usr/sbin/sshd"]
+                      args:
+                      - -De
+                      - -f
+                      - /opt/mpi/etc/sshd_config
+                      volumeMounts:
+                      - name: tmp
+                        mountPath: /tmp
+                      - name: run
+                        mountPath: /run
+                      resources:
+                        requests:
+                          cpu: 500m
+                          memory: 512Mi
+                        limits:
+                          cpu: 1
+                          memory: 1Gi
+                    volumes:
+                    - name: tmp
+                      emptyDir: {}
+                    - name: run
+                      emptyDir: {}
