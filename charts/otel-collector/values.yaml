@@ -6,6 +6,20 @@ opentelemetry-collector:
   presets:
     kubernetesAttributes:
       enabled: true
+  clusterRole:
+    rules:
+      - apiGroups: [""]
+        resources: ["replicationcontrollers", "resourcequotas", "services", "endpoints"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["apps"]
+        resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["batch"]
+        resources: ["jobs", "cronjobs"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["autoscaling"]
+        resources: ["horizontalpodautoscalers"]
+        verbs: ["get", "list", "watch"]
   ports:
     prometheus:
       enabled: true
