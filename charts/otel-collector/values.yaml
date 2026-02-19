@@ -144,7 +144,7 @@ opentelemetry-collector:
         collection_interval: 30s
         auth_type: serviceAccount
         resource_attributes:
-          k8s.namespacee.name:
+          k8s.namespace.name:
             enabled: true
         allocatable_types_to_report:
           - cpu
