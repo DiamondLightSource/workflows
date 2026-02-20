@@ -43,3 +43,22 @@ spec:
               operator: AnyNotIn
               value:
                 - default-queue
+
+    - name: validate-mpijob-queuename
+      match:
+        any:
+        - resources:
+            kinds:
+            - kubeflow.org/*/MPIJob
+            operations:
+              - CREATE
+              - UPDATE
+      validate:
+        message: "The label kueue.x-k8s.io/queue-name must be default-queue"
+        deny:
+          conditions:
+            all:
+            - key: "{{ `{{ request.object.metadata.labels.\"kueue.x-k8s.io/queue-name\" || '' }}` }}"
+              operator: AnyNotIn
+              value:
+                - default-queue
