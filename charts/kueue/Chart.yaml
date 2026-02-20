@@ -3,7 +3,7 @@ name: kueue
 description: A Kubernetes scheduler for managing workloads in a fair and efficient way.
 type: application
 
-version: 0.1.0
+version: 0.1.1
 dependencies:
   - name: kueue
     version: 0.15.0
