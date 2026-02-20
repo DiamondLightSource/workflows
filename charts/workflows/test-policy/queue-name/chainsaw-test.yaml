@@ -62,3 +62,96 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/queue-name: default-queue
+
+    - name: mpijob-missing-queue-is-rejected
+      try:
+        - apply:
+            expect:
+              - check:
+                  ($error != null): true
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-missing-queue
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
+                  Worker:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: worker
+                            image: docker.io/library/busybox:latest
+
+    - name: mpijob-default-queue-is-allowed
+      try:
+        - apply:
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-default-queue
+                labels:
+                  kueue.x-k8s.io/queue-name: default-queue
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
+                  Worker:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: worker
+                            image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-default-queue
+                labels:
+                  kueue.x-k8s.io/queue-name: default-queue
+
+    - name: mpijob-custom-queue-is-rejected
+      try:
+        - apply:
+            expect:
+              - check:
+                  ($error != null): true
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-custom-queue
+                labels:
+                  kueue.x-k8s.io/queue-name: custom-queue
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
+                  Worker:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: worker
+                            image: docker.io/library/busybox:latest
