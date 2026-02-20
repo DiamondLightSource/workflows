@@ -42,6 +42,7 @@ argo-workflows:
         serviceAccountName: argo-workflow
         ttlStrategy:
           secondsAfterCompletion: 300
+          secondsAfterFailure: 60
         # tolerations:
         # - key: nodegroup
         #   operator: Equal
