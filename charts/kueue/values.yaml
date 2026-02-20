@@ -48,6 +48,15 @@ kueue:
         - "kubeflow.org/jaxjob"
         - "workload.codeflare.dev/appwrapper"
         - "pod"
+      waitForPodsReady:
+        enable: true
+        blockAdmission: false
+        timeout: 5m
+        requeuingStrategy:
+          timestamp: Eviction
+          backoffLimitCount: 5
+          backoffBaseSeconds: 60
+          backoffMaxSeconds: 900
       objectRetentionPolicies:
         workloads:
           afterFinished: "30s"
