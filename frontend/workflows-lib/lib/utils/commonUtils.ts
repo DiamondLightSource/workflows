@@ -60,8 +60,10 @@ export function formatErrorMessage(errorMessage: string | undefined) {
   const authWorkflowsMessage = "You are not authorised to access this visit.";
   const authTemplateMessage = "You are not authorised to access the templates.";
 
-  if (errorMessage?.includes("Template")) return authTemplateMessage;
-  if (errorMessage?.includes("Workflow")) return authWorkflowsMessage;
+  if (errorMessage?.includes("Unauthorized")) {
+    if (errorMessage.includes("Template")) return authTemplateMessage;
+    if (errorMessage.includes("Workflow")) return authWorkflowsMessage;
+  }
   return defaultMessage;
 }
 
