@@ -39,7 +39,7 @@ metadata:
     workflows.diamond.ac.uk/parameter-schema.fixvalue: |
       {
         "type": "number",
-        "minimum": 0,
+        "minimum": 0
       }
     workflows.diamond.ac.uk/ui-schema: |
       {
@@ -125,7 +125,7 @@ spec:
       command: [/bin/bash]
       source: |
         fixflag=""
-        if [ {{ workflow.parameters.fixparam }} != "" ]; then
+        if [ "{{ workflow.parameters.fixparam }}" != "" ]; then
           fixflag="{{ workflow.parameters.fixparam }} {{ workflow.parameters.fixvalue}}"
         fi
         /dawn_workspace/dawn $fixflag -configuration /tmp -consoleLog -noSplash -data @none \
