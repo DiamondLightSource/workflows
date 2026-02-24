@@ -30,7 +30,7 @@ vcluster:
               namespace: kube-system
             chart:
               name: kube-state-metrics
-              version: 5.28.0
+              version: 7.1.0
               repo: https:/prometheus-community.github.io/helm-charts
           - release:
               name: verflixt
@@ -85,10 +85,8 @@ vcluster:
   integrations:
     metricsServer:
       enabled: true
-      nodes:
-        enabled: true
-      pods:
-        enabled: true
+      nodes: true
+      pods: true
 
 ingress:
   secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk
