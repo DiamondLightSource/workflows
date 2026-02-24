@@ -82,6 +82,14 @@ vcluster:
             "/postgres-application-passwords": "workflows/postgres-application-passwords"
             "/postgres-initdb-script": "workflows/postgres-initdb-script"
 
+  integrations:
+    metricsServer:
+      enabled: true
+      nodes:
+        enabled: true
+      pods:
+        enabled: true
+
 ingress:
   secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk
   host: kubernetes.staging.workflows.diamond.ac.uk
