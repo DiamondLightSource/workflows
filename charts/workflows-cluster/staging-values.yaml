@@ -58,6 +58,8 @@ vcluster:
                     selfHeal: true
   sync:
     fromHost:
+      nodes:
+        enabled: true
       secrets:
         mappings:
           byName:
