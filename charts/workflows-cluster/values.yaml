@@ -17,6 +17,9 @@ vcluster:
         deploy:
           enabled: true
           statefulSet:
+            image:
+              repository: registry.k8s.io/etcd
+              tag: "3.6.8"
             extraArgs:
               - --quota-backend-bytes=8589934592  # 8Gi
             resources:
