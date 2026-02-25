@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.3...sessionspaces@v0.1.4) (2026-02-25)
+
+
+### Features
+
+* added required documentation for sessionspaces linting ([12c7ce5](https://github.com/DiamondLightSource/workflows/commit/12c7ce53183d3824368b53e9faba841fa56011ec))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.2...sessionspaces@v0.1.3) (2025-10-07)
 
 
