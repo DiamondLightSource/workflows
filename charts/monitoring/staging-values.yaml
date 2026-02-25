@@ -50,8 +50,8 @@ prometheus:
   extraScrapeConfigs: |
     - job_name: 'otel-collector'
       scheme: http
-      scrape_interval: 15s
-      scrape_timeout: 15s
+      scrape_interval: 30s
+      scrape_timeout: 30s
       static_configs:
         - targets:
           - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b:9090"
