@@ -70,6 +70,15 @@ opentelemetry-collector:
           - sources:
               - from: connection
     receivers:
+      k8s_cluster:
+        node_conditions_to_report: [Ready, MemoryPressure, DiskPressure]
+        allocatable_types_to_report: [cpu, memory, ephemeral-stroage, pods]
+        collection_interval: 30s
+        metrics:
+          k8s.node.condition:
+            enabled: true
+          k8s.pod.status_reason:
+            enabled: true
       prometheus:
         config:
           scrape_configs:
@@ -145,6 +154,7 @@ opentelemetry-collector:
       pipelines:
         metrics:
           receivers:
+            - k8s_cluster
             - prometheus
             - otlp
           processors:
