@@ -83,8 +83,8 @@ thanos:
       enabled: false
     resources:
       limits:
-        cpu: '1'
-        memory: 4Gi
+        cpu: 250m
+        memory: 2Gi
     networkPolicy:
       enabled: false
   queryFrontend:
@@ -92,8 +92,8 @@ thanos:
       enabled: false
     resources:
       limits:
-        cpu: '1'
-        memory: 4Gi
+        cpu: 250m
+        memory: 2Gi
     networkPolicy:
       enabled: false
   storegateway:
@@ -102,8 +102,8 @@ thanos:
       enabled: false
     resources:
       limits:
-        cpu: '1'
-        memory: 4Gi
+        cpu: 250m
+        memory: 2Gi
     networkPolicy:
       enabled: false
   receive:
@@ -284,8 +284,8 @@ prometheus:
   extraScrapeConfigs: |
     - job_name: 'otel-collector'
       scheme: https
-      scrape_interval: 30s
-      scrape_timeout: 25s
+      scrape_interval: 15s
+      scrape_timeout: 15s
       static_configs:
         - targets:
           - "otelcollector.workflows.diamond.ac.uk"
