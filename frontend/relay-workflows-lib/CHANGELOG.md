@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.6...relay-workflows-lib@v0.1.7) (2026-02-25)
+
+
+### Features
+
+* **frontend:** add repository link components ([c317cd0](https://github.com/DiamondLightSource/workflows/commit/c317cd0acf820020963b1393dc98069d8c2e2399))
+* **frontend:** preserve template filter settings ([daef9f9](https://github.com/DiamondLightSource/workflows/commit/daef9f944e85c31fd80f9bb905113d7d6205ba01))
+
 ## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.5...relay-workflows-lib@v0.1.6) (2026-01-09)
 
 
