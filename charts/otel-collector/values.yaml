@@ -6,6 +6,8 @@ opentelemetry-collector:
   presets:
     kubernetesAttributes:
       enabled: true
+    clusterMetrics:
+      enabled: true
   ports:
     prometheus:
       enabled: true
@@ -72,7 +74,7 @@ opentelemetry-collector:
     receivers:
       k8s_cluster:
         node_conditions_to_report: [Ready, MemoryPressure, DiskPressure]
-        allocatable_types_to_report: [cpu, memory, ephemeral-stroage, pods]
+        allocatable_types_to_report: [cpu, memory, ephemeral-storage, pods]
         collection_interval: 30s
         metrics:
           k8s.node.condition:
