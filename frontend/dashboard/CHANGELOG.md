@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.12...dashboard@v0.1.13) (2026-02-25)
+
+
+### Features
+
+* **frontend:** preserve template filter settings ([daef9f9](https://github.com/DiamondLightSource/workflows/commit/daef9f944e85c31fd80f9bb905113d7d6205ba01))
+
 ## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.11...dashboard@v0.1.12) (2026-02-03)
 
 
