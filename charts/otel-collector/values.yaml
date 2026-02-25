@@ -146,7 +146,7 @@ opentelemetry-collector:
       prometheus:
         endpoint: 0.0.0.0:9090
         resource_to_telemetry_conversion:
-          enabled: true
+          enabled: false
       otlphttp:
         endpoint: "https://otel.tracing.diamond.ac.uk:4318"
         timeout: 30s
