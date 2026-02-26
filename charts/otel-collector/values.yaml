@@ -186,7 +186,7 @@ opentelemetry-collector-agent:
   presets:
     kubeletMetrics:
       enabled: true
-    kubernetesAtributes:
+    kubernetesAttributes:
       enabled: true
   resources:
     requests:
@@ -201,7 +201,7 @@ opentelemetry-collector-agent:
       containerPort: 9090
       servicePort: 9090
       protocol: TCP
-    jaegar-compact:
+    jaeger-compact:
       enabled: false
     jaeger-thrift:
       enabled: false
@@ -214,7 +214,7 @@ opentelemetry-collector-agent:
       batch:
         send_batch_size: 256
       k8sattributes:
-        auh_type: 'serviceAccount'
+        auth_type: 'serviceAccount'
         extract:
           metadata:
             - k8s.namespace.name
@@ -226,7 +226,7 @@ opentelemetry-collector-agent:
               - from: resource_attribute
                 name: k8s.pod.ip
           - sources:
-              - from: resource_atribute
+              - from: resource_attribute
                 name: k8s.pod.uid
           - sources:
               - from: connection
