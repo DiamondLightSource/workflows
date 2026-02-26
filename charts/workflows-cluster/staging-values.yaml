@@ -1,6 +1,11 @@
 secrets:
   cluster: pollux
 
+backup:
+  enabled: true
+  bucket:
+    prefix: staging
+
 vcluster:
   controlPlane:
     backingStore:

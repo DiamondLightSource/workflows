@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: etcd-rclone-scripts
+data:
+  rclone-upload.sh: |
+    SNAP=/backup/etcd-snapshot.db
+    # Check for today's backup
+    if [ ! -s "$SNAP" ]; then
+      echo "Backup does not exist"
+      exit 1
+    fi
+
+    # Want to track if any rclone command fails.
+    failed="false"
+
+    # Timestamp
+    mv "$SNAP" /backup/etcd-snapshot-$(date +%Y-%m-%d_%H-%M-%S_%Z).db || failed="true"
+
+    echo "backing up to echo S3"
+    rclone copy /backup/ echo:dls-workflows-prod/${PREFIX}
+    rclone_echo_s3_exit_code=$?
+
+    if [ $rclone_echo_s3_exit_code -eq 0 ]; then
+      echo "rclone copy to echo s3 succeeded"
+    else
+      echo "rclone copy to echo s3 failed"
+      failed="true"
+    fi
+
+    # Delete old backed up objects, with age >= 2 days.
+    echo "deleting old backups from echo s3"
+    rclone delete --min-age=2d echo:dls-workflows-prod/${PREFIX}
+    rclone_delete_echo_s3_exit_code=$?
+
+    if [ $rclone_delete_echo_s3_exit_code -eq 0 ]; then
+      echo "rclone delete old objects in echo s3 succeeded"
+    else
+      echo "rclone delete old objects in echo s3 failed"
+      failed="true"
+    fi
+
+    # If any rclone command failed, then return non-zero.
+    if [ "$failed" = "true" ]; then
+      exit 1
+    fi
+
+  rclone-download.sh: |
+    echo "Starting script"
+    LAST=$(rclone lsf --files-only --include "etcd-snapshot*.db" echo:dls-workflows-prod/${PREFIX} | sort | tail -1)
+    rclone copyto -P echo:dls-workflows-prod/${PREFIX}/${LAST} /snapshot/snapshot.db
+    rm -rf /var/lib/etcd
+    mkdir -p /var/lib/etcd

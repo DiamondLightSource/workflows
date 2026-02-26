@@ -2,6 +2,11 @@ secrets:
   enabled: true
   cluster: argus
 
+backup:
+  enabled: false
+  bucket:
+    prefix: prod
+
 vcluster:
   telemetry:
     enabled: false
