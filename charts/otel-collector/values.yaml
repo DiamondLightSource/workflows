@@ -198,8 +198,8 @@ opentelemetry-collector-agent:
   ports:
     otlp:
       enabled: false
-      otlp-http:
-        enabled: false
+    otlp-http:
+      enabled: false
     prometheus:
       enabled: true
       containerPort: 9090
