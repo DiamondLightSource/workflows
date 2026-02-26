@@ -2,6 +2,11 @@ secrets:
   enabled: false
   cluster: dev
 
+backup:
+  enabled: false
+  bucket:
+    prefix: dev
+
 vcluster:
   controlPlane:
     distro:
