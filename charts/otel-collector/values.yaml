@@ -196,6 +196,10 @@ opentelemetry-collector-agent:
       cpu: '500m'
       memory: 512Mi
   ports:
+    otlp:
+      enabled: false
+      otlp-http:
+        enabled: false
     prometheus:
       enabled: true
       containerPort: 9090
