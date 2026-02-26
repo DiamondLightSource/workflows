@@ -14,10 +14,10 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Setup Chainsaw
-        uses: kyverno/action-install-chainsaw@v0.2.13
+        uses: kyverno/action-install-chainsaw@v0.2.14
 
       - name: Create kind cluster
-        uses: helm/kind-action@v1.13.0
+        uses: helm/kind-action@v1.14.0
 
       - name: Install chart dependencies
         run: |
