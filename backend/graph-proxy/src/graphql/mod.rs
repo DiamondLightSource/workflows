@@ -34,6 +34,7 @@ use axum_extra::{
 use lazy_static::lazy_static;
 use opentelemetry::KeyValue;
 use std::fmt::Display;
+use tracing::instrument;
 use workflow_templates::WorkflowTemplatesMutation;
 
 /// The root schema of the service
@@ -60,6 +61,7 @@ pub struct NodeQuery;
 
 #[Object]
 impl NodeQuery {
+    #[instrument(name = "graph_proxy_node_query", skip(self, ctx))]
     async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<NodeValue> {
         let id_str = id.to_string();
         let parts: Vec<&str> = id_str.split(':').collect();

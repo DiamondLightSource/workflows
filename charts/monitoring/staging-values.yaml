@@ -1,6 +1,14 @@
 cluster: pollux
 
 grafana:
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: "http://{{ .Release.Name }}-prometheus-server:80"
+          isDefault: true
   ingress:
     enabled: true
     path: "/"

@@ -5,5 +5,5 @@ metadata:
   name: opentelemetry-collector
 rules:
   - apiGroups: [""]
-    resources: ["pods", "services", "endpoints"]
+    resources: ["pods", "services", "endpoints", "namespaces", "nodes", "resourcequotas"]
     verbs: ["get", "list", "watch"]

@@ -6,6 +6,20 @@ opentelemetry-collector:
   presets:
     kubernetesAttributes:
       enabled: true
+  clusterRole:
+    rules:
+      - apiGroups: [""]
+        resources: ["replicationcontrollers", "resourcequotas", "services", "endpoints"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["apps"]
+        resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["batch"]
+        resources: ["jobs", "cronjobs"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["autoscaling"]
+        resources: ["horizontalpodautoscalers"]
+        verbs: ["get", "list", "watch"]
   ports:
     prometheus:
       enabled: true
@@ -44,6 +58,9 @@ opentelemetry-collector:
       memory: 24Gi
   config:
     processors:
+      groupbyattrs:
+        keys:
+          - k8s.namespace.name
       batch:
         send_batch_size: 512
       k8sattributes:
@@ -119,6 +136,33 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_pod_phase]
                   regex: Pending|Succeeded|Failed|Completed
                   action: drop
+            - job_name: 'kubelet-resource-metrics'
+              scheme: https
+              tls_config:
+                insecure_skip_verify: true
+              bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+              kubernetes_sd_configs:
+                - role: node
+              relabel_configs:
+                - action: labelmap
+                  regex: __meta_kubernetes_node_label_(.+)
+                - target_label: __address__
+                  replacement: kubernetes.default.svc:443
+                - source_labels: [__meta_kubernetes_node_name]
+                  regex: (.+)
+                  target_label: __metrics_path__
+                  replacement: /api/v1/nodes/$1/proxy/metrics/resource
+                - source_labels: [__meta_kubernetes_node_name]
+                  target_label: node
+      k8s_cluster:
+        collection_interval: 30s
+        auth_type: serviceAccount
+        resource_attributes:
+          k8s.namespace.name:
+            enabled: true
+        allocatable_types_to_report:
+          - cpu
+          - memory
       otlp:
         protocols:
           grpc:
@@ -147,8 +191,10 @@ opentelemetry-collector:
           receivers:
             - prometheus
             - otlp
+            - k8s_cluster
           processors:
             - k8sattributes
+            - groupbyattrs
             - memory_limiter
             - batch
           exporters:
