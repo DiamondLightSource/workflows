@@ -188,6 +188,8 @@ opentelemetry-collector-agent:
       enabled: true
     kubernetesAttributes:
       enabled: true
+  service:
+    enabled: true
   resources:
     requests:
       cpu: '200m'
