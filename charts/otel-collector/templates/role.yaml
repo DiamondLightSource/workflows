@@ -17,5 +17,5 @@ rules:
     resources: ["horizontalpodautoscalers"]
     verbs: ["list", "watch"]
   - apiGroups: [""]
-    resources: ["nodes/stats", "nodes/proxy", "nodes/metrics"]
+    resources: ["nodes", "nodes/stats", "nodes/proxy", "nodes/metrics"]
     verbs: ["get", "list", "watch"]
