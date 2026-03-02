@@ -18,4 +18,4 @@ rules:
     verbs: ["list", "watch"]
   - apiGroups: [""]
     resources: ["nodes/stats", "nodes/proxy", "nodes/metrics"]
-    verbs: ["get"]
+    verbs: ["get", "list", "watch"]
