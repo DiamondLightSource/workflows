@@ -190,7 +190,7 @@ opentelemetry-collector-agent:
           fieldPath: status.hostIP
     - name: K8S_NODE_NAME
       valueFrom:
-        fieldFrom:
+        fieldRef:
           fieldPath: spec.nodeName
   presets:
     kubeletMetrics:
