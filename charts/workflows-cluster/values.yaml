@@ -111,6 +111,8 @@ vcluster:
       ingresses:
         enabled: true
     fromHost:
+      nodes:
+        enabled: true
       secrets:
         enabled: true
         mappings:
@@ -130,6 +132,12 @@ vcluster:
   rbac:
     clusterRole:
       enabled: false
+
+  integrations:
+    metricsServer:
+      enabled: true
+      nodes: true
+      pods: true
 
 
 ingress:
