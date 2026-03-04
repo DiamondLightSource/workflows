@@ -10,6 +10,13 @@ grafana:
       - hosts:
           - grafana.staging.workflows.diamond.ac.uk
         secretName: letsencrypt-grafana-staging-workflows-diamond-ac-uk
+  datasources:
+    datasources.yaml:
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: "http://{{ .Release.Name }}-prometheus-server:80"
+          isDefault: true
   grafana.ini:
     server:
       domain: grafana.staging.workflows.diamond.ac.uk
@@ -54,4 +61,11 @@ prometheus:
       scrape_timeout: 15s
       static_configs:
         - targets:
-          - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b:9090"
+            - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b:9090"
+    - job_name: 'otel-collector-agents'
+      scheme: http
+      scrape_interval: 15s
+      scrape_timeout: 15s
+      static_configs:
+        - targets:
+            - "otel-collector-opentelemetry-collector-agent-x-monit-1c4efa5902:9090"

@@ -58,6 +58,8 @@ vcluster:
                     selfHeal: true
   sync:
     fromHost:
+      nodes:
+        enabled: true
       secrets:
         mappings:
           byName:
@@ -72,6 +74,12 @@ vcluster:
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/postgres-application-passwords": "workflows/postgres-application-passwords"
             "/postgres-initdb-script": "workflows/postgres-initdb-script"
+
+  integrations:
+    metricsServer:
+      enabled: true
+      nodes: true
+      pods: true
 
 ingress:
   secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk

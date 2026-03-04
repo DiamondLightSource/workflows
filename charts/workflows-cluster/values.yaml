@@ -17,6 +17,8 @@ vcluster:
         deploy:
           enabled: true
           statefulSet:
+            image:
+              tag: 3.6.4-0
             extraArgs:
               - --quota-backend-bytes=8589934592  # 8Gi
             resources:

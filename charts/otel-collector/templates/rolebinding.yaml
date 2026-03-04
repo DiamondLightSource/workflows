@@ -7,6 +7,9 @@ subjects:
   - kind: ServiceAccount
     name: "{{ .Release.Name }}-opentelemetry-collector"
     namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: "{{ .Release.Name }}-opentelemetry-collector-agent"
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: opentelemetry-collector
