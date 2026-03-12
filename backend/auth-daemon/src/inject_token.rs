@@ -1,10 +1,5 @@
 use crate::{database::write_token_to_database, state::{RouterState, TokenData}};
 use http_body_util::BodyExt;
-use openidconnect::{
-    ClientId, ClientSecret, IssuerUrl, TokenResponse,
-    core::{CoreClient, CoreProviderMetadata},
-    reqwest,
-};
 use serde_json::Value;
 use std::sync::Arc;
 use axum::response::IntoResponse;
@@ -12,7 +7,7 @@ use axum::response::IntoResponse;
 use axum::{
     body::Body,
     extract::{Request, State},
-    http::{self, HeaderValue, StatusCode},
+    http::{self, HeaderValue},
     middleware, response::Response,
 };
 
@@ -26,7 +21,7 @@ pub async fn inject_token(
     let token: Option<TokenData> = state.token.read().await.clone();
     if let Some(mut token) = token {
         println!("Injecting token");
-        if (token.access_token_is_expired()) {
+        if token.access_token_is_expired() {
             println!("Access token is expired, refreshing");
             token = refresh_token_and_write_to_database(&state, &token).await?;
         }
@@ -77,10 +72,10 @@ async fn response_as_json(response: Response<Body>) -> Result<Value> {
     Ok(json)
 }
 
-async fn set_token(state: &RouterState, new_token: TokenData) {
-    let mut guard = state.token.write().await;
-    *guard = Some(new_token);
-}
+// async fn set_token(state: &RouterState, new_token: TokenData) {
+//     let mut guard = state.token.write().await;
+//     *guard = Some(new_token);
+// }
 
 async fn clone_request(req: Request<Body>) -> Result<(Request<Body>, Request<Body>)> {
     // TODO: an inefficient method of cloning a request, improve this
