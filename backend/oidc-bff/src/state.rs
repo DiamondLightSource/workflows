@@ -7,11 +7,10 @@ use openidconnect::IssuerUrl;
 use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
-use serde::{Deserialize, Serialize};
 use sodiumoxide::crypto::box_::PublicKey;
 #[derive(Debug, Clone)]
 pub struct AppState {
-    pub config: Config,
+    // pub config: Config,
     pub http_client: reqwest::Client,
     pub oidc_client: openidconnect::core::CoreClient<
         EndpointSet,
@@ -63,7 +62,7 @@ impl AppState {
             .ok_or(anyhow!("Invalid public key"))?;
 
         Ok(AppState {
-            config,
+            // config,
             http_client,
             oidc_client,
             database_connection,

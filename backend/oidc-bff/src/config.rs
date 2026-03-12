@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use crate::Result;
-use anyhow::anyhow;
 use serde::Deserialize;
 use serde::Serialize;
 

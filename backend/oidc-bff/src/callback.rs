@@ -3,10 +3,9 @@ use std::sync::Arc;
 
 use axum::debug_handler;
 use axum::extract::{Query, State};
-use openidconnect::core::{CoreClient, CoreProviderMetadata};
 use openidconnect::{
-    AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl,
-    OAuth2TokenResponse, RedirectUrl, TokenResponse, reqwest,
+    AccessTokenHash, AuthorizationCode,CsrfToken,
+    OAuth2TokenResponse, RedirectUrl, TokenResponse,
 };
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
