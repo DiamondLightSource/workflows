@@ -1,11 +1,10 @@
 use chrono::{DateTime, Duration, FixedOffset, Utc};
 use oauth2::RefreshToken;
 use openidconnect::{IssuerUrl, SubjectIdentifier};
-use sea_orm::{ActiveModelTrait, DatabaseConnection};
+use sea_orm::DatabaseConnection;
 use crate::{Result, state::TokenData};
 use sea_orm::*;
 use oidc_bff::entity;
-use oidc_bff::entity::oidc_tokens::ActiveModel;
 
 pub async fn write_token_to_database(
     connection: &DatabaseConnection,

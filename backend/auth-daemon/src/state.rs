@@ -116,28 +116,28 @@ impl TokenData {
         }
     }
 
-    pub fn from_token_response<T: oauth2::TokenResponse>(
-        token_response: &T,
-        issuer: IssuerUrl,
-        subject: SubjectIdentifier,
-    ) -> Result<Self> {
-        let access_token = token_response.access_token().clone();
-        let refresh_token = token_response
-            .refresh_token()
-            .ok_or_else(|| anyhow!("Token Response did not return a refresh token"))?
-            .clone();
-        let access_token_expires_at = Utc::now()
-            + token_response
-                .expires_in()
-                .unwrap_or_else(|| Duration::from_secs(60));
-        Ok(Self::new(
-            issuer,
-            subject,
-            Some(access_token),
-            access_token_expires_at,
-            refresh_token,
-        ))
-    }
+    // pub fn from_token_response<T: oauth2::TokenResponse>(
+    //     token_response: &T,
+    //     issuer: IssuerUrl,
+    //     subject: SubjectIdentifier,
+    // ) -> Result<Self> {
+    //     let access_token = token_response.access_token().clone();
+    //     let refresh_token = token_response
+    //         .refresh_token()
+    //         .ok_or_else(|| anyhow!("Token Response did not return a refresh token"))?
+    //         .clone();
+    //     let access_token_expires_at = Utc::now()
+    //         + token_response
+    //             .expires_in()
+    //             .unwrap_or_else(|| Duration::from_secs(60));
+    //     Ok(Self::new(
+    //         issuer,
+    //         subject,
+    //         Some(access_token),
+    //         access_token_expires_at,
+    //         refresh_token,
+    //     ))
+    // }
 
     pub fn update_tokens_mut<T: oauth2::TokenResponse>(&mut self, token_response: &T) {
         let access_token = token_response.access_token().clone();
