@@ -4,7 +4,6 @@ mod login;
 mod auth_session_data;
 mod state;
 mod callback;
-mod counter;
 mod database;
 mod error;
 
@@ -12,24 +11,23 @@ use clap::Parser;
 use config::Config;
 use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 use std::{
-    net::{Ipv4Addr, SocketAddr},
-    sync::Arc,
+    net::{Ipv4Addr, SocketAddr}, process, sync::Arc,
 };
 use state::AppState;
 
 type Result<T> = std::result::Result<T, error::Error>;
 
 use axum::{
-    Json, Router,
+    Router,
     extract::State,
-    http::StatusCode,
     middleware,
     response::IntoResponse,
     routing::{get, post},
 };
 use axum_reverse_proxy::ReverseProxy;
+use tokio::signal::unix::{signal, Signal, SignalKind};
 
-use crate::auth_session_data::{LoginSessionData, TokenSessionData};
+use crate::auth_session_data::TokenSessionData;
 mod inject_token_from_session;
 
 #[derive(Parser, Debug)]
@@ -82,8 +80,6 @@ fn create_router(state: Arc<AppState>) -> Router {
             inject_token_from_session::inject_token_from_session,
         ))
         .route("/auth/login", get(login::login))
-        .route("/read", get(counter::counter_read))
-        .route("/write", get(counter::counter_write))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
         // .route("/debug", get(debug))
@@ -96,7 +92,9 @@ async fn serve(router: Router, port: u16) -> Result<()> {
     let listener =
         tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port)).await?;
     let service = router.into_make_service();
-    axum::serve(listener, service).await?;
+    axum::serve(listener, service)
+    .with_graceful_shutdown(shutdown_signal())
+    .await?;
     Ok(())
 }
 
@@ -127,16 +125,10 @@ async fn logout(
     Ok(axum::http::StatusCode::OK)
 }
 
-async fn debug(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
-    let auth_session_data: Option<LoginSessionData> =
-        session.get(LoginSessionData::SESSION_KEY).await?;
-
-    let token_session_data: Option<TokenSessionData> =
-        session.get(TokenSessionData::SESSION_KEY).await?;
-
-    Ok(Json((
-        state.config.clone(),
-        auth_session_data,
-        token_session_data,
-    )))
+async fn shutdown_signal() {
+    let mut sigterm: Signal = signal(SignalKind::terminate()).expect("Failed to listen for SIGTERM");
+    sigterm.recv().await;
+    println!("Shutting Down");
+    process::exit(0);
 }
+

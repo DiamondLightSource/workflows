@@ -4,9 +4,8 @@ use crate::Result;
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use openidconnect::{
-    AccessToken, CsrfToken, EmptyAdditionalClaims, IssuerUrl, Nonce, PkceCodeVerifier,
-    RefreshToken, SubjectIdentifier, TokenResponse,
-    core::{CoreGenderClaim, CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm},
+    AccessToken, CsrfToken, IssuerUrl, Nonce, PkceCodeVerifier,
+    RefreshToken, SubjectIdentifier,
 };
 use serde::{Deserialize, Serialize};
 
