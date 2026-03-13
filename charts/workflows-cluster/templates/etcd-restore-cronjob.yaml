@@ -1,0 +1,73 @@
+{{- $etcdReplicas := int (default 1 .Values.vcluster.controlPlane.backingStore.etcd.deploy.statefulSet.highAvailability.replicas) }}
+{{- range $i := until $etcdReplicas }}
+{{- $volume := printf "data-workflows-cluster-etcd-%d" $i }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "restore-etcd-{{ $i }}"
+spec:
+  schedule: "@yearly"
+  suspend: true # Never runs automatically
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: scripts
+              configMap:
+                name: etcd-rclone-scripts
+                defaultMode: 0755
+            - name: snapshot
+              emptyDir: {}
+            - name: {{ $volume }}
+              persistentVolumeClaim:
+                claimName: {{ $volume }}
+            - name: rclone-conf
+              secret:
+                secretName: etcd-rclone-config
+          initContainers:
+            - name: rclone
+              image: docker.io/rclone/rclone
+              command: [/bin/sh, "-c", "/scripts/rclone-download.sh"]
+              env:
+                - name: RCLONE_CONFIG
+                  value: /etc/rclone.conf
+                - name: PREFIX
+                  value: {{ $.Values.backup.bucket.prefix | quote }}
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                - name: snapshot
+                  mountPath: /snapshot
+                - name: rclone-conf
+                  mountPath: /etc/rclone.conf
+                  subPath: rclone.conf
+                - name: {{ $volume }}
+                  mountPath: /var/lib/etcd
+              resources:
+                requests:
+                  ephemeral-storage: "4Gi"
+                limits:
+                  ephemeral-storage: "8Gi"
+          containers:
+            - name: restore-etcd
+              image: registry.k8s.io/etcd:3.5.21-0
+              command: ["etcdctl"]
+              args:
+                - snapshot
+                - restore
+                - /snapshot/snapshot.db
+                - --data-dir=/var/lib/etcd
+                - "--name=workflows-cluster-etcd-{{ $i }}"
+                - "--initial-cluster={{ include "workflows.etcdInitialCluster" $etcdReplicas }}"
+                - "--initial-advertise-peer-urls=https://workflows-cluster-etcd-{{ $i }}.workflows-cluster-etcd-headless.workflows:2380"
+                - --initial-cluster-token=workflows-cluster
+                - --skip-hash-check=false
+              volumeMounts:
+              - name: {{ $volume }}
+                mountPath: /var/lib/etcd
+              - name: snapshot
+                mountPath: /snapshot
+{{- end }}

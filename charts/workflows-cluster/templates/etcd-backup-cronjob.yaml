@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-etcd
+spec:
+  {{- if .Values.backup.enabled }}
+  schedule: "@daily"
+  {{ else }}
+  schedule: "@yearly"
+  suspend: true
+  {{- end }}
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          initContainers:
+          - name: backup
+            image: registry.k8s.io/etcd:3.5.21-0
+            env:
+            - name: ETCDCTL_CACERT
+              value: /certs/etcd-ca.crt
+            - name: ETCDCTL_CERT
+              value: /certs/etcd-server.crt
+            - name: ETCDCTL_KEY
+              value: /certs/etcd-server.key
+            command: ["etcdctl"]
+            args:
+              - --endpoints=https://workflows-cluster-etcd-0.workflows-cluster-etcd-headless.workflows.svc:2379
+              - --debug
+              - snapshot
+              - save
+              - /backup/etcd-snapshot.db
+            volumeMounts:
+            - name: backup
+              mountPath: /backup
+            - name: certs
+              mountPath: /certs
+            resources:
+              requests:
+                ephemeral-storage: "4Gi"
+              limits:
+                ephemeral-storage: "8Gi"
+          containers:
+          - name: rclone
+            image: docker.io/rclone/rclone
+            command: ["/bin/sh"]
+            args: ["/scripts/rclone-upload.sh"]
+            env:
+            - name: RCLONE_CONFIG
+              value: /etc/rclone.conf
+            - name: PREFIX
+              value: {{ $.Values.backup.bucket.prefix | quote }}
+            volumeMounts:
+            - name: backup
+              mountPath: /backup
+            - name: scripts
+              mountPath: /scripts
+            - name: rclone-conf
+              mountPath: /etc/rclone.conf
+              subPath: rclone.conf
+            resources:
+              requests:
+                ephemeral-storage: "4Gi"
+              limits:
+                ephemeral-storage: "8Gi"
+          restartPolicy: Never
+          volumes:
+          - name: backup
+            emptyDir: {}
+          - name: scripts
+            configMap:
+              name: etcd-rclone-scripts
+          - name: rclone-conf
+            secret:
+              secretName: etcd-rclone-config
+          - name: certs
+            secret:
+              secretName: workflows-cluster-certs
