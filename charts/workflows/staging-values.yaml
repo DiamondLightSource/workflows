@@ -33,3 +33,5 @@ postgresql-ha:
   persistence:
     storageClass: netapp
     size: 10Gi
+  postgresql:
+    podAntiAffinityPreset: soft
