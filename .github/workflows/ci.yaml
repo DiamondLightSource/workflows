@@ -74,6 +74,8 @@ jobs:
         with:
           name: workflows
           routing-url: https://workflows.diamond.ac.uk/graphql
+          supergraph-artifact: supergraph
+          supergraph-filename: supergraph.graphql
           subgraph-schema-artifact: graph-proxy
           subgraph-schema-filename: workflows.graphql
           github-app-id: 1010045
