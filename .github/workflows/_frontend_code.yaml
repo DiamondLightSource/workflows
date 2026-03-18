@@ -22,7 +22,7 @@ jobs:
       - name: Download Supergraph Schema Artifact
         uses: actions/download-artifact@v6.0.0
         with:
-          name: supergraph
+          name: supergraph-schema
           path: frontend/relay-workflows-lib
 
       - name: Compile Relay
@@ -55,7 +55,7 @@ jobs:
       - name: Download Supergraph Schema Artifact
         uses: actions/download-artifact@v6.0.0
         with:
-          name: supergraph
+          name: supergraph-schema
           path: frontend/relay-workflows-lib
 
       - name: Compile Relay
