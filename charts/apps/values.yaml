@@ -113,7 +113,7 @@ sessionspaces:
   valuesObject: {}
 
 sealedsecrets:
-  enabled: true
+  enabled: false
   targetRevision: 2.16.0
   extraValuesFiles: []
   valuesObject:
