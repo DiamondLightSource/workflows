@@ -45,7 +45,7 @@ sessionspaces:
     - staging-values.yaml
 
 sealedsecrets:
-  enabled: true
+  enabled: false
   valuesObject:
     resources:
       limits:
