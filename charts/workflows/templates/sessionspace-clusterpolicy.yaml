@@ -123,9 +123,9 @@ metadata:
 spec:
   evaluation:
     generateExisting:
-      enabled: true
+      enabled: false
     synchronize:
-      enabled: true
+      enabled: false
   matchConstraints:
     resourceRules:
     - apiGroups:   [""]
