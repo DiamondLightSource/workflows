@@ -21,6 +21,11 @@ spec:
           namespaceSelector:
             matchLabels:
               app.kubernetes.io/managed-by: sessionspaces
+      preconditions:
+        all:
+        - key: "{{ `{{ request.object.metadata.labels.\"workflows.argoproj.io/configmap-type\" || '' }}` }}"
+          operator: NotEquals
+          value: Parameter
       mutate:
         targets:
           - apiVersion: v1
