@@ -4,7 +4,7 @@ import subprocess
 import textwrap
 import re
 
-ignored_kinds = ["ClusterPolicy", "Job"]
+ignored_kinds = ["ClusterPolicy", "Job", "CronJob"]
 resourced_kinds = ["Deployment", "StatefulSet", "Cronjob"]
 forbidden_kinds = ["Ingress", "SealedSecret"]
 problems = []

@@ -37,3 +37,107 @@ spec:
               metadata:
                 name: artifact-s3
                 namespace: session
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: artifact-s3-clone-via-cronjob
+spec:
+  concurrent: false
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: workflows
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: workflows
+              type: Opaque
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: session
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+        # kyverno generating policy should create the initial secret
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: session
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        # update the secret
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: workflows
+              data:
+                access-key: dXBkYXRlZC1pZA==
+                secret-key: dXBkYXRlZC1zZWNyZXQ=
+        # confirm that the kyverno policy does not sync the updated secret
+        - sleep:
+            duration: 5s
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: session
+              data:
+                access-key: aWQ=
+                secret-key: c2VjcmV0
+        # apply the CronJob and associated RBAC
+        - apply:
+            file: ../../templates/synchronize-artifact-s3-secret.yaml
+        - assert:
+            resource:
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: copy-host-secret-artifact-s3
+                namespace: workflows
+        # run job and wait for it to complete
+        - script:
+            content: |
+              kubectl -n workflows create job --from=cronjob/copy-host-secret-artifact-s3 copy-host-secret-artifact-s3-manual
+        - wait:
+            apiVersion: batch/v1
+            kind: Job
+            namespace: workflows
+            name: copy-host-secret-artifact-s3-manual
+            timeout: 2m
+            for:
+              condition:
+                name: Complete
+                value: "True"
+        # confirm that the Secret has been updated
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: artifact-s3
+                namespace: session
+              data:
+                access-key: dXBkYXRlZC1pZA==
+                secret-key: dXBkYXRlZC1zZWNyZXQ=
