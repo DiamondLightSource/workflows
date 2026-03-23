@@ -1,0 +1,22 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: default-queue
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: cpu
+        nominalQuota: 750
+      - name: memory
+        nominalQuota: 2000Gi
+      - name: nvidia.com/gpu
+        nominalQuota: 16
+  preemption:
+    reclaimWithinCohort: Any
+    withinClusterQueue: LowerPriority

@@ -1,0 +1,42 @@
+FROM docker.io/library/rust:1.93.0-bookworm AS build
+
+ARG ARGO_SERVER_SCHEMA_URL
+
+WORKDIR /app
+
+RUN rustup component add rustfmt \
+    && cargo install cargo-auditable
+
+COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
+COPY argo-workflows-openapi/build.rs argo-workflows-openapi/build.rs
+COPY argo-workflows-openapi/src/lib.rs argo-workflows-openapi/src/lib.rs
+COPY sessionspaces/Cargo.toml sessionspaces/Cargo.toml
+COPY auth-daemon/Cargo.toml auth-daemon/
+COPY graph-proxy/Cargo.toml graph-proxy/
+COPY telemetry/build.rs telemetry/Cargo.toml telemetry/
+COPY Cargo.toml Cargo.lock ./
+
+RUN mkdir graph-proxy/src \
+    && echo "fn main() {}" > graph-proxy/src/main.rs \
+    && mkdir sessionspaces/src \
+    && echo "fn main() {}" > sessionspaces/src/main.rs \
+    && mkdir auth-daemon/src \
+    && echo "fn prebuild() {}" > auth-daemon/src/main.rs \
+    && mkdir telemetry/src \
+    && echo "fn prebuild() {}" > telemetry/src/lib.rs
+
+RUN cargo build --release --package telemetry
+
+RUN touch --date @0 graph-proxy/src/main.rs \
+    && cargo build --release --package graph-proxy
+
+COPY . .
+
+RUN touch graph-proxy/src/main.rs \
+    && cargo auditable build --release --package graph-proxy
+
+FROM gcr.io/distroless/cc-debian12@sha256:0000f9dc0290f8eaf0ecceafbc35e803649087ea7879570fbc78372df7ac649b AS deploy
+
+COPY --from=build /app/target/release/graph-proxy /graph-proxy
+
+ENTRYPOINT ["/graph-proxy"]

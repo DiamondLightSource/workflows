@@ -1,0 +1,22 @@
+{{- if $.Values.service.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  {{- with $.Values.service.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  type: {{ $.Values.service.type }}
+  selector:
+    {{- include "common.labels.matchLabels" $ | nindent 4 }}
+  ports:
+    - name: dashboard
+      port: {{ $.Values.service.port }}
+      targetPort: dashboard
+      protocol: TCP
+{{- end }}

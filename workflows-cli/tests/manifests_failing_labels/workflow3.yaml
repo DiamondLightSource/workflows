@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: WorkflowTemplate
+metadata:
+  name: template3
+  labels:
+    placeholder: value
+  annotations:
+    placeholder: value
+data:
+  key: value

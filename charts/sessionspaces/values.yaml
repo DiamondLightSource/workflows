@@ -1,0 +1,49 @@
+database:
+  create: false
+  host: mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb
+  user: ispyb_ro
+  password:
+    secretName: ""
+    secretKey: ""
+    value: ""
+ldapUrl: ldap://ldapmaster.diamond.ac.uk
+requestRate: 1
+
+image:
+  repository: ghcr.io/diamondlightsource/workflows-sessionspaces
+  pullPolicy: Always
+  imagePullSecrets: []
+  tag: ""
+
+deployment:
+  annotations: []
+  podAnnotations: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+policy:
+  create: true
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+secret:
+  create: true
+
+nameOverride: ""
+fullnameOverride: ""
+
+telemetry:
+  level: Info
+  metricsEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/metrics
+  tracingEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/traces

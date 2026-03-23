@@ -1,0 +1,170 @@
+### LINT
+passing_manifest:
+  - command: argo lint ./tests/manifests/workflow1.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint ./tests/manifests/workflow2.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint ./tests/manifests/workflow3.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+failing_manifests_labels:
+  - command: argo lint ./tests/manifests_failing_labels/workflow1.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint ./tests/manifests_failing_labels/workflow2.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint ./tests/manifests_failing_labels/workflow3.yaml --offline --output simple
+    response: '../examples/conventional-templates/numpy-benchmark.yaml: in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source'
+    code: 0
+  - command: argo lint ./tests/manifests_failing_labels/workflow4.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+failing_manifest:
+  - command: argo lint ./tests/manifests/workflow1.yaml --offline --output simple
+    response: '../examples/conventional-templates/numpy-benchmark.yaml: in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source'
+    code: 1
+  - command: argo lint ./tests/manifests/workflow2.yaml --offline --output simple
+    response: |
+      18:17.313Z level=fatal msg=failed to parse YAML from file ../examples/conventional-templates/using-cluster-templates.yaml: json: cannot unmarshal object into Go struct field DAGTemplate.spec.templates.dag.tasks of type []v1alpha1.DAGTask
+    code: 1
+  - command: argo lint ./tests/manifests/workflow3.yaml --offline --output simple
+    response: |
+      ../examples/conventional-templates/using-cluster-templates.yaml: in using-cluster-templates (ClusterWorkflowTemplate): templates.workflow-entry.tasks.numpy couldn't find cluster workflow template numpy-benchmark
+    code: 1
+passing_helm:
+  - command: argo lint /tmp/argo-lint/workflow_0.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint /tmp/argo-lint/workflow_1.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: helm template ./tests/charts/
+    code: 0
+    response: |
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+      ---
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template2
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+failing_helm:
+  - command: argo lint /tmp/argo-lint/workflow_0.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: argo lint /tmp/argo-lint/workflow_1.yaml --offline --output simple
+    response: '../examples/conventional-templates/numpy-benchmark.yaml: in numpy-benchmark (ClusterWorkflowTemplate): strict decoding error: unknown field spec.templates[0].inputs.command, unknown field spec.templates[0].inputs.env, unknown field spec.templates[0].inputs.image, unknown field spec.templates[0].inputs.source'
+    code: 0
+  - command: helm template ./tests/charts/
+    code: 0
+    response: |
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+      ---
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template2
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+
+### TEST
+lint_one_helm_chart:
+  - command: argo lint /tmp/argo-lint/workflow_0.yaml --offline --output simple
+    response: no linting errors found!
+    code: 0
+  - command: helm template ./tests/charts -s templates/workflow.yaml
+    code: 0
+    response: |
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+submit_workflow:
+  - command: argo submit - -n SESSION
+    response: |
+      Name:                conditional-steps-40
+      Namespace:           SESSION
+      ServiceAccount:      unset (will run with the default ServiceAccount)
+      Status:              Pending
+      Created:             Thu Jul 10 16:05:20 +0100 (now)
+      Progress:
+    code: 0
+  - command: helm template ././tests/charts -s templates/workflow1.yaml
+    response: |
+      ---
+      # Source: base-apps/templates/workflow1.yaml
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+    code: 0
+submit_workflow_failing:
+  - command: helm template ././tests/charts -s templates/workflow1.yaml
+    response: |
+      ---
+      # Source: base-apps/templates/workflow1.yaml
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+      ---
+      # Source: base-apps/templates/workflow1.yaml
+      apiVersion: v1
+      kind: WorkflowTemplate
+      metadata:
+        name: template1
+        labels:
+          workflows.diamond.ac.uk/science-group-examples: "true"
+        annotations:
+          workflows.diamond.ac.uk/repository: "url"
+      data:
+        key: value
+    code: 0

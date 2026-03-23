@@ -1,0 +1,37 @@
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
+import vitest from "@vitest/eslint-plugin";
+import { defineConfig } from "eslint/config";
+
+export default defineConfig(
+  { ignores: ["**/dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked],
+    files: ["**/*.{ts,tsx}"],
+    ignores: ["vitest.config.ts"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        project: ["**/tsconfig.node.json", "**/tsconfig.app.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      vitest: vitest,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      ...vitest.configs.recommended.rules,
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+    },
+  },
+);

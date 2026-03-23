@@ -1,0 +1,290 @@
+{
+  "metadata": {
+    "name": "numpy-benchmark-wdkwj",
+    "generateName": "numpy-benchmark-",
+    "namespace": "mg36964-1",
+    "uid": "bed157b2-ecf2-4423-9945-8ecfa767a151",
+    "resourceVersion": "115644658",
+    "generation": 4,
+    "creationTimestamp": "2024-11-19T09:45:46Z",
+    "labels": {
+      "submit-from-ui": "true",
+      "workflows.argoproj.io/cluster-workflow-template": "numpy-benchmark",
+      "workflows.argoproj.io/completed": "true",
+      "workflows.argoproj.io/creator": "ed66f621-7b56-4157-a255-a03af5bd8f0e",
+      "workflows.argoproj.io/creator-email": "garry.o-donnell.at.diamond.ac.uk",
+      "workflows.argoproj.io/creator-preferred-username": "enu43627",
+      "workflows.argoproj.io/phase": "Succeeded",
+      "workflows.argoproj.io/workflow-archiving-status": "Archived"
+    },
+    "annotations": {
+      "workflows.argoproj.io/pod-name-format": "v2"
+    },
+    "managedFields": [
+      {
+        "manager": "argo",
+        "operation": "Update",
+        "apiVersion": "argoproj.io/v1alpha1",
+        "time": "2024-11-19T09:45:46Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:generateName": {},
+            "f:labels": {
+              ".": {},
+              "f:submit-from-ui": {},
+              "f:workflows.argoproj.io/cluster-workflow-template": {},
+              "f:workflows.argoproj.io/creator": {},
+              "f:workflows.argoproj.io/creator-email": {},
+              "f:workflows.argoproj.io/creator-preferred-username": {}
+            }
+          },
+          "f:spec": {}
+        }
+      },
+      {
+        "manager": "workflow-controller",
+        "operation": "Update",
+        "apiVersion": "argoproj.io/v1alpha1",
+        "time": "2024-11-19T09:46:59Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              ".": {},
+              "f:workflows.argoproj.io/pod-name-format": {}
+            },
+            "f:labels": {
+              "f:workflows.argoproj.io/completed": {},
+              "f:workflows.argoproj.io/phase": {},
+              "f:workflows.argoproj.io/workflow-archiving-status": {}
+            }
+          },
+          "f:status": {}
+        }
+      }
+    ]
+  },
+  "spec": {
+    "entrypoint": "numpy-test",
+    "arguments": {
+      "parameters": [
+        {
+          "name": "size",
+          "value": "1000"
+        },
+        {
+          "name": "memory",
+          "value": "10Gi"
+        }
+      ]
+    },
+    "podGC": {
+      "strategy": "OnPodCompletion",
+      "deleteDelayDuration": "60s"
+    },
+    "workflowTemplateRef": {
+      "name": "numpy-benchmark",
+      "clusterScope": true
+    }
+  },
+  "status": {
+    "phase": "Succeeded",
+    "startedAt": "2024-11-19T09:45:46Z",
+    "finishedAt": "2024-11-19T09:46:59Z",
+    "estimatedDuration": 68,
+    "progress": "1/1",
+    "nodes": {
+      "numpy-benchmark-wdkwj": {
+        "id": "numpy-benchmark-wdkwj",
+        "name": "numpy-benchmark-wdkwj",
+        "displayName": "numpy-benchmark-wdkwj",
+        "type": "Pod",
+        "templateName": "numpy-test",
+        "templateScope": "local/",
+        "phase": "Succeeded",
+        "startedAt": "2024-11-19T09:45:46Z",
+        "finishedAt": "2024-11-19T09:46:50Z",
+        "estimatedDuration": 59,
+        "progress": "1/1",
+        "resourcesDuration": {
+          "cpu": 6,
+          "memory": 158
+        },
+        "inputs": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "1000"
+            },
+            {
+              "name": "memory",
+              "value": "10Gi"
+            }
+          ]
+        },
+        "outputs": {
+          "artifacts": [
+            {
+              "name": "main-logs",
+              "s3": {
+                "key": "numpy-benchmark-wdkwj/numpy-benchmark-wdkwj/main.log"
+              }
+            }
+          ],
+          "exitCode": "0"
+        },
+        "hostNodeName": "cs05r-sc-cloud-14.diamond.ac.uk"
+      }
+    },
+    "storedTemplates": {
+      "cluster/numpy-benchmark/numpy-test": {
+        "name": "numpy-test",
+        "inputs": {
+          "parameters": [
+            {
+              "name": "size",
+              "value": "2000"
+            },
+            {
+              "name": "memory",
+              "value": "20Gi"
+            }
+          ]
+        },
+        "outputs": {},
+        "metadata": {},
+        "script": {
+          "name": "",
+          "image": "gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1",
+          "command": [
+            "python"
+          ],
+          "env": [
+            {
+              "name": "MKL_NUM_THREADS",
+              "value": "1"
+            },
+            {
+              "name": "NUMEXPR_NUM_THREADS",
+              "value": "1"
+            },
+            {
+              "name": "OMP_NUM_THREADS",
+              "value": "1"
+            }
+          ],
+          "resources": {},
+          "source": "import numpy as np\nimport time\n\nn = int(\"{{ inputs.parameters.size }}\")\nA = np.random.randn(n,n).astype('float64')\nB = np.random.randn(n,n).astype('float64')\nstart_time = time.time()\nnrm = np.linalg.norm(A@B)\nprint(\" took {} seconds \".format(time.time() - start_time))\nprint(\" norm = \",nrm)\nprint(np.__config__.show())\n"
+        },
+        "podSpecPatch": "containers:\n- name: main\n  resources:\n    requests:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n    limits:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n"
+      }
+    },
+    "conditions": [
+      {
+        "type": "PodRunning",
+        "status": "False"
+      },
+      {
+        "type": "Completed",
+        "status": "True"
+      }
+    ],
+    "resourcesDuration": {
+      "cpu": 6,
+      "memory": 158
+    },
+    "storedWorkflowTemplateSpec": {
+      "templates": [
+        {
+          "name": "numpy-test",
+          "inputs": {
+            "parameters": [
+              {
+                "name": "size",
+                "value": "2000"
+              },
+              {
+                "name": "memory",
+                "value": "20Gi"
+              }
+            ]
+          },
+          "outputs": {},
+          "metadata": {},
+          "script": {
+            "name": "",
+            "image": "gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1",
+            "command": [
+              "python"
+            ],
+            "env": [
+              {
+                "name": "MKL_NUM_THREADS",
+                "value": "1"
+              },
+              {
+                "name": "NUMEXPR_NUM_THREADS",
+                "value": "1"
+              },
+              {
+                "name": "OMP_NUM_THREADS",
+                "value": "1"
+              }
+            ],
+            "resources": {},
+            "source": "import numpy as np\nimport time\n\nn = int(\"{{ inputs.parameters.size }}\")\nA = np.random.randn(n,n).astype('float64')\nB = np.random.randn(n,n).astype('float64')\nstart_time = time.time()\nnrm = np.linalg.norm(A@B)\nprint(\" took {} seconds \".format(time.time() - start_time))\nprint(\" norm = \",nrm)\nprint(np.__config__.show())\n"
+          },
+          "podSpecPatch": "containers:\n- name: main\n  resources:\n    requests:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n    limits:\n      cpu: \"1\"\n      memory: \"{{ inputs.parameters.memory }}\"\n"
+        }
+      ],
+      "entrypoint": "numpy-test",
+      "arguments": {
+        "parameters": [
+          {
+            "name": "size",
+            "value": "1000"
+          },
+          {
+            "name": "memory",
+            "value": "10Gi"
+          }
+        ]
+      },
+      "serviceAccountName": "argo-workflow",
+      "podGC": {
+        "strategy": "OnPodCompletion",
+        "deleteDelayDuration": "60s"
+      },
+      "workflowTemplateRef": {
+        "name": "numpy-benchmark",
+        "clusterScope": true
+      }
+    },
+    "artifactRepositoryRef": {
+      "default": true,
+      "artifactRepository": {
+        "archiveLogs": true,
+        "s3": {
+          "endpoint": "sci-nas-s3.diamond.ac.uk",
+          "bucket": "k8s-workflows-test",
+          "region": "unsupported",
+          "accessKeySecret": {
+            "name": "artifact-s3",
+            "key": "access-key"
+          },
+          "secretKeySecret": {
+            "name": "artifact-s3",
+            "key": "secret-key"
+          }
+        }
+      }
+    },
+    "artifactGCStatus": {
+      "notSpecified": true
+    },
+    "taskResultsCompletionStatus": {
+      "numpy-benchmark-wdkwj": true
+    }
+  }
+}

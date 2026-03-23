@@ -1,0 +1,203 @@
+argo-workflows:
+  enabled: true
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      accessKeySecret:
+        name: artifact-s3
+        key: access-key
+      secretKeySecret:
+        name: artifact-s3
+        key: secret-key
+      endpoint: sci-nas-s3.diamond.ac.uk
+      bucket: k8s-workflows-test
+      region: unsupported
+  controller:
+    metricsConfig:
+      enabled: true
+      secure: false
+      scheme: http
+    replicas: 2
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9090"
+    pdb:
+      minAvailable: 1
+    persistence:
+      archive: true
+      postgresql:
+        host: workflows-postgresql-ha-pgpool
+        # TODO: Use templated value: {{ .Release.Name }}-postgresql-ha-pgpool
+        port: 5432
+        database: argo_workflows
+        tableName: workflows
+        userNameSecret:
+          name: postgres-argo-workflows-password
+          key: username
+        passwordSecret:
+          name: postgres-argo-workflows-password
+          key: password
+    workflowDefaults:
+      spec:
+        serviceAccountName: argo-workflow
+        ttlStrategy:
+          secondsAfterCompletion: 300
+          secondsAfterFailure: 60
+        tolerations:
+        - key: nodegroup
+          operator: Equal
+          value: workflows
+          effect: NoSchedule
+        - key: nodetype
+          operator: Equal
+          value: cs05r_gpfs
+          effect: PreferNoSchedule
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                - key: nodegroup
+                  operator: In
+                  values:
+                  - workflows
+    extraEnv:
+      - name: POD_NAMES
+        value: "v1"
+  server:
+    replicas: 3
+    authModes: ["client"]
+    extraEnv:
+      - name: FIRST_TIME_USER_MODAL
+        value: "false"
+      - name: FEEDBACK_MODAL
+        value: "false"
+      - name: NEW_VERSION_MODAL
+        value: "false"
+      - name: POD_NAMES
+        value: "v1"
+  createAggregateRoles: false
+
+postgresql-ha:
+  enabled: true
+  postgresql:
+    image:
+      repository: bitnamilegacy/postgresql-repmgr
+    existingSecret: postgres-passwords
+    initdbScriptsSecret: postgres-initdb-script
+    podAntiAffinityPreset: hard
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+  pgpool:
+    image:
+      repository: bitnamilegacy/pgpool
+    existingSecret: pgpool-passwords
+    customUsersSecret: postgres-application-passwords
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+  persistence:
+    storageClass: db-nvme-storage
+    size: 50Gi
+  metrics:
+    enabled: true
+    image:
+      repository: bitnamilegacy/postgres-exporter
+
+oauth2-proxy:
+  enabled: true
+  replicaCount: 3
+  ingress:
+    enabled: true
+    pathType: Prefix
+    hosts:
+      - argo-workflows.workflows.diamond.ac.uk
+    path: /
+    tls:
+      - secretName: workflows-tls-cert
+        hosts:
+          - argo-workflows.workflows.diamond.ac.uk
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+  config:
+    configFile: |-
+      email_domains = [
+        "*"
+      ]
+      skip_auth_routes = [
+        "OPTIONS=^/$",
+        "GET=^/api/",
+        "DELETE=^/api/",
+        "PUT=^/api/",
+        "POST=^/api/",
+        "GET=^/artifact-files/",
+        "GET=^/artifacts-by-uid/",
+        "GET=^/artifacts/",
+        "GET=^/input-artifacts-by-uid/",
+        "GET=^/input-artifacts/",
+        "GET=^/assets/"
+      ]
+      skip_provider_button = true
+  alphaConfig:
+    enabled: true
+    configFile: |-
+      upstreamConfig:
+        upstreams:
+          - id: argo-workflows-server
+            path: /
+            uri: http://{{ .Release.Name }}-argo-workflows-server:2746
+    configData:
+      injectRequestHeaders:
+        - name: Authorization
+          values:
+            - claim: access_token
+              prefix: "Bearer "
+          preserveRequestValue: true
+      injectResponseHeaders:
+        - name: Identity
+          values:
+            - claim: id_token
+      providers:
+        - provider: oidc
+          scope: "openid posix-uid profile email fedid"
+          clientId: workflows-argo-server
+          clientSecretFile: /etc/alpha/secret
+          id: authn
+          oidcConfig:
+            issuerURL: https://identity.diamond.ac.uk/realms/dls
+            insecureAllowUnverifiedEmail: true
+            audienceClaims:
+              - aud
+            emailClaim: email
+            userIDClaim: fedid
+  extraArgs:
+    - --cookie-refresh=55s
+  extraVolumes:
+    - name: secret
+      secret:
+        secretName: argo-server-sso
+        items:
+          - key: secret
+            path: secret
+  extraVolumeMounts:
+    - name: secret
+      mountPath: /etc/alpha
+      readOnly: true
+
+s3sealedsecret:
+  enabled: true
+bitnamisecret:
+  enabled: true
+
+s3mock:
+  enabled: false

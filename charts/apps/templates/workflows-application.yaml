@@ -1,0 +1,57 @@
+{{- if .Values.workflows.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: workflows
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  destination:
+    namespace: workflows
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    path: charts/workflows
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    targetRevision: {{ .Values.workflows.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.workflows.extraValueFiles }}
+        {{- .Values.workflows.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.workflows.valuesObject }}
+      valuesObject:
+        {{ .Values.workflows.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  ignoreDifferences:
+    - kind: Secret
+      name: pgpool-passwords
+      namespace: workflows
+      jqPathExpressions:
+        - .data."admin-password"
+    - kind: Secret
+      name: postgres-application-passwords
+      namespace: workflows
+      jqPathExpressions:
+        - .data.passwords
+    - kind: Secret
+      name: postgres-initdb-script
+      namespace: workflows
+      jqPathExpressions:
+        - .data."init.sql"
+    - kind: Secret
+      name: postgres-passwords
+      namespace: workflows
+      jqPathExpressions:
+        - .data.password
+        - .data."repmgr-password"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+{{- end }}

@@ -1,0 +1,23 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: high
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+value: 10000
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: medium
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+value: 5000
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: low
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+value: 0

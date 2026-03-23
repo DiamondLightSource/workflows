@@ -1,0 +1,196 @@
+secrets:
+  enabled: true
+  cluster: argus
+
+vcluster:
+  telemetry:
+    enabled: false
+  controlPlane:
+    distro:
+      k8s:
+        enabled: true
+        apiServer:
+          extraArgs:
+            - --authentication-config=/etc/authn-config/authn-config.yaml
+    backingStore:
+      etcd:
+        deploy:
+          enabled: true
+          statefulSet:
+            extraArgs:
+              - --quota-backend-bytes=8589934592  # 8Gi
+            resources:
+              requests:
+                cpu: 4000m
+                memory: 10Gi
+              limits:
+                cpu: 6000m
+                memory: 16Gi
+            highAvailability:
+              replicas: 3
+            persistence:
+              volumeClaim:
+                size: 8Gi
+                storageClass: db-nvme-storage
+    coredns:
+      deployment:
+        replicas: 3
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+    statefulSet:
+      image:
+        repository: ghcr.io/loft-sh/vcluster-oss
+      persistence:
+        addVolumes:
+          - name: authn-config
+            configMap:
+              name: "workflows-cluster-authn-config"  # TODO: Replace with templated value "{{ include "common.names.fullname" $ }}-authn-config"
+        addVolumeMounts:
+          - name: authn-config
+            mountPath: /etc/authn-config
+            readOnly: true
+      highAvailability:
+        replicas: 3
+      resources:
+        requests:
+          cpu: 6000m
+          memory: 30Gi
+        limits:
+          cpu: 12000m
+          memory: 40Gi
+  experimental:
+    deploy:
+      vcluster:
+        helm:
+          - release:
+              name: argocd
+              namespace: argocd
+            chart:
+              name: argo-cd
+              version: 7.7.22
+              repo: https://argoproj.github.io/argo-helm
+          - release:
+              name: verflixt
+              namespace: argocd
+            # This is the `charts/verflixt` chart as a packaged base64 string.
+            # You can re-create it with `helm package charts/verflixt && base64 aoa-*.tgz`.
+            # This hack allows us to deploy manifests in a deterministic order, which is not possible using `manifests`.
+            bundle: H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOzVsWrDMBAGYM1+Cj2B8ktRIsjadwh0vEHQgJQYSxYurt+92NCh7uChyKXhvuXAi8/8/Ocy5MPLG3VZvVMMogoAOFu7TADrCZwgtD1bDX10DgLaQENI1Fnnuz5l6gR+/a71x/0T1N6uvku3x/0ii2nuFP1FliE35esplFZo/npPVsfc/0Kh96neAdjsP37031jN/d/DnH/2sQ2UfTqUocZ/YDN/41b5H0/OcP57GEeprkv/5YfMj1eKQU4Tn3vGGHt2nwEAAP//izRyhQAOAAA=
+            values: |-
+              apiVersion: argoproj.io/v1alpha1
+              kind: Application
+              metadata:
+                name: apps
+                namespace: argocd
+                annotations:
+                  argocd.argoproj.io/sync-wave: "0"
+              spec:
+                destination:
+                  namespace: argocd
+                  server: https://kubernetes.default.svc
+                project: default
+                source:
+                  helm:
+                    valuesObject:
+                      dev:
+                        enabled: false
+                  path: charts/apps
+                  repoURL: https://github.com/DiamondLightSource/workflows.git
+                  targetRevision: HEAD
+                syncPolicy:
+                  automated:
+                    prune: true
+                    selfHeal: true
+  sync:
+    toHost:
+      ingresses:
+        enabled: true
+    fromHost:
+      nodes:
+        enabled: true
+      secrets:
+        enabled: true
+        mappings:
+          byName:
+            "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
+            "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
+            "/letsencrypt-otelcollector-workflows-diamond-ac-uk": "monitoring/otelcollector-tls-cert"
+            "/argocd-oauth": "argocd/argocd-oauth"
+            "/argo-server-sso": "workflows/argo-server-sso"
+            "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
+            "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
+            "/s3-artifact": "workflows/artifact-s3"
+            "/postgres-passwords": "workflows/postgres-passwords"
+            "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
+            "/postgres-application-passwords": "workflows/postgres-application-passwords"
+            "/postgres-initdb-script": "workflows/postgres-initdb-script"
+  rbac:
+    clusterRole:
+      enabled: false
+
+  integrations:
+    metricsServer:
+      enabled: true
+      nodes: true
+      pods: true
+
+
+ingress:
+  enabled: true
+  host: kubernetes.workflows.diamond.ac.uk
+  secretName: letsencrypt-kubernetes-workflows-diamond-ac-uk
+  pathType: Prefix
+
+authenticationConfiguration:
+  jwt:
+    - issuer:
+        url: https://identity.diamond.ac.uk/realms/dls
+        audiences:
+          - workflows-cluster
+          - graph
+        audienceMatchPolicy: MatchAny
+      claimMappings:
+        username:
+          claim: fedid
+          prefix: "oidc:"
+        groups:
+          claim: groups
+          prefix: "oidc:"
+        uid:
+          claim: fedid
+        extra:
+        - key: 'workflows.diamond.ac.uk/posixuid'
+          valueExpression: 'string(claims.posix_uid)'
+      userValidationRules:
+      - expression: "!user.username.startsWith('system:')"
+        message: 'username cannot use reserved system: prefix'
+      - expression: "user.groups.all(group, !group.startsWith('system:'))"
+        message: 'groups cannot use reserved system: prefix'
+    - issuer:
+        url: https://authn.diamond.ac.uk/realms/master
+        audiences:
+          - workflows-cluster
+          - graph
+        audienceMatchPolicy: MatchAny
+      claimMappings:
+        username:
+          claim: fedid
+          prefix: "oidc:"
+        groups:
+          claim: groups
+          prefix: "oidc:"
+        uid:
+          claim: fedid
+        extra:
+        - key: 'workflows.diamond.ac.uk/posixuid'
+          valueExpression: 'string(claims.posix_uid)'
+      userValidationRules:
+      - expression: "!user.username.startsWith('system:')"
+        message: 'username cannot use reserved system: prefix'
+      - expression: "user.groups.all(group, !group.startsWith('system:'))"
+        message: 'groups cannot use reserved system: prefix'

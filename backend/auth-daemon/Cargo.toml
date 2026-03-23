@@ -1,0 +1,24 @@
+[package]
+name = "auth-daemon"
+version = "0.1.0"
+edition = "2024"
+license-file = "../../LICENSE"
+
+[dependencies]
+anyhow.workspace = true
+axum = { workspace = true }
+clap = { workspace = true, features = ["env"] }
+dotenvy.workspace = true
+regex = { workspace = true }
+reqwest.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tower-http = { workspace = true, features = ["cors"] }
+tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+url.workspace = true
+
+[dev-dependencies]
+mockito.workspace = true
+serde_json.workspace = true

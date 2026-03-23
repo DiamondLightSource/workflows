@@ -1,0 +1,28 @@
+{
+  "name": "workflow-UI",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.4.2": {
+      "username": "none",
+      "upgradePackages": false
+    },
+    "ghcr.io/devcontainers/features/git-lfs:1.2.3": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "tamasfe.even-better-toml",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "YoavBls.pretty-ts-errors"
+      ]
+    }
+  },
+  "runArgs": ["--security-opt=label=type:container_runtime_t"],
+  "workspaceMount": "source=../,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "echo \"source /usr/share/bash-completion/completions/git\" >> ~/.bashrc"
+}

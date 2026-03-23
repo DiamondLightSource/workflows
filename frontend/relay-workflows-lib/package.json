@@ -1,0 +1,32 @@
+{
+  "name": "relay-workflows-lib",
+  "private": true,
+  "version": "0.1.6",
+  "type": "module",
+  "main": "lib/main.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --build && vite build",
+    "preview": "vite preview",
+    "relay": "relay-compiler",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@types/relay-test-utils": "^19.0.0",
+    "react-relay": "^20.1.1",
+    "relay-test-utils": "^20.1.1",
+    "workflows-lib": "*"
+  },
+  "devDependencies": {
+    "@jsonforms/core": "^3.6.0",
+    "@types/react-relay": "^18.2.1",
+    "@types/relay-runtime": "^19.0.3",
+    "relay-compiler": "^20.1.1",
+    "relay-runtime": "^20.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

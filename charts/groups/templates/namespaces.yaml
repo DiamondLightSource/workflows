@@ -1,0 +1,9 @@
+{{- range .Values.groups }}
+{{- if .enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ .name }}-group"
+---
+{{- end }}
+{{- end }}

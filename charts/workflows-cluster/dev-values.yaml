@@ -1,0 +1,164 @@
+secrets:
+  enabled: false
+  cluster: dev
+
+vcluster:
+  controlPlane:
+    distro:
+      k8s:
+        apiServer:
+          extraArgs: []
+    backingStore:
+      etcd:
+        deploy:
+          statefulSet:
+            resources:
+              limits:
+                cpu: 1200m
+                memory: 5Gi
+              requests:
+                cpu: 1
+                memory: 5Gi
+            highAvailability:
+              replicas: 1
+            persistence:
+              volumeClaim:
+                storageClass: netapp
+    coredns:
+      deployment:
+        replicas: 1
+        resources:
+          limits:
+            cpu: 200m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 250Mi
+    statefulSet:
+      persistence:
+        addVolumes: []
+        addVolumeMounts: []
+      highAvailability:
+        replicas: 1
+      resources:
+        limits:
+          cpu: 2500m
+          ephemeral-storage: 2Gi
+          memory: 1Gi
+        requests:
+          cpu: 2500m
+          memory: 500Mi
+  experimental:
+    deploy:
+      vcluster:
+        helm:
+          - chart:
+              name: argo-cd
+              version: 7.7.5
+              repo: https://argoproj.github.io/argo-helm
+            release:
+              name: argocd
+              namespace: argocd
+            values: |-
+              controller:
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
+                  requests:
+                    cpu: 300m
+                    memory: 256Mi
+              dex:
+                resources:
+                  limits:
+                    cpu: 50m
+                    memory: 512Mi
+                  requests:
+                    cpu: 10m
+                    memory: 256Mi
+              redisSecretInit:
+                resources:
+                  limits:
+                    cpu: 200m
+                    memory: 512Mi
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+              redis:
+                resources:
+                  limits:
+                    cpu: 200m
+                    memory: 512Mi
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+              server:
+                resources:
+                  limits:
+                    cpu: 200m
+                    memory: 512Mi
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+              repoServer:
+                resources:
+                  limits:
+                    cpu: 600m
+                    memory: 1024Mi
+                  requests:
+                    cpu: 200m
+                    memory: 512Mi
+              applicationSet:
+                resources:
+                  limits:
+                    cpu: 200m
+                    memory: 512Mi
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+              notifications:
+                resources:
+                  limits:
+                    cpu: 50m
+                    memory: 512Mi
+                  requests:
+                    cpu: 10m
+                    memory: 256Mi
+          - release:
+              name: verflixt
+              namespace: argocd
+            # This is the `charts/verflixt` chart as a packaged base64 string.
+            # You can re-create it with `helm package charts/verflixt && base64 aoa-*.tgz`.
+            # This hack allows us to deploy manifests in a deterministic order, which is not possible using `manifests`.
+            bundle: H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOzVsWrDMBAGYM1+Cj2B8ktRIsjadwh0vEHQgJQYSxYurt+92NCh7uChyKXhvuXAi8/8/Ocy5MPLG3VZvVMMogoAOFu7TADrCZwgtD1bDX10DgLaQENI1Fnnuz5l6gR+/a71x/0T1N6uvku3x/0ii2nuFP1FliE35esplFZo/npPVsfc/0Kh96neAdjsP37031jN/d/DnH/2sQ2UfTqUocZ/YDN/41b5H0/OcP57GEeprkv/5YfMj1eKQU4Tn3vGGHt2nwEAAP//izRyhQAOAAA=
+            values: |-
+              apiVersion: argoproj.io/v1alpha1
+              kind: Application
+              metadata:
+                name: apps
+                namespace: argocd
+                annotations:
+                  argocd.argoproj.io/sync-wave: "0"
+              spec:
+                destination:
+                  namespace: argocd
+                  server: https://kubernetes.default.svc
+                project: default
+                source:
+                  helm:
+                    valueFiles:
+                      - dev-values.yaml
+                  path: charts/apps
+                  repoURL: https://github.com/DiamondLightSource/workflows.git
+                  targetRevision: HEAD
+                syncPolicy:
+                  automated:
+                    prune: true
+                    selfHeal: true
+  sync:
+    fromHost:
+      secrets:
+        enabled: false
+
+ingress:
+  enabled: false

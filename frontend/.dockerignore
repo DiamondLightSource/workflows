@@ -1,0 +1,11 @@
+.yarn/cache
+.yarn/install-state.gz
+
+**/dist
+**/dist-types
+
+**/node_modules
+
+*.local.yaml
+
+Dockerfile

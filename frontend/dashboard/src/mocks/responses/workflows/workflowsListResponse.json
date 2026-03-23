@@ -1,0 +1,42 @@
+{
+  "workflows": {
+    "nodes": [
+      {
+        "name": "conditional-steps-first"
+      },
+      {
+        "name": "conditional-steps-second"
+      },
+      {
+        "name": "conditional-steps-third"
+      },
+      {
+        "name": "mount-tmpdir-first"
+      },
+      {
+        "name": "notebook-first"
+      },
+      {
+        "name": "notebook-second"
+      },
+      {
+        "name": "ptycho-tomo-job-first"
+      },
+      {
+        "name": "ptycho-tomo-job-second"
+      },
+      {
+        "name": "ptycho-tomo-job-third"
+      },
+      {
+        "name": "sin-simulate-artifact-first"
+      }
+    ],
+    "pageInfo": {
+      "endCursor": "MTA",
+      "hasNextPage": true,
+      "hasPreviousPage": false,
+      "startCursor": "MQ"
+    }
+  }
+}

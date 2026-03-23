@@ -1,0 +1,77 @@
+destination:
+  name: in-cluster
+  server: ""
+
+groups:
+  - name: examples
+    enabled: true
+    apps:
+      - name: example-manifests
+        repoURL: https://github.com/DiamondLightSource/workflows
+        path: examples/conventional-templates
+      - name: example-helm
+        repoURL: https://github.com/DiamondLightSource/workflows
+        path: examples/helm-based-templates
+        sourceType: helm
+  - name: imaging
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: imaging-ptypy
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: ptypy
+        sourceType: helm
+      - name: imaging-httomo
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: httomo
+        sourceType: helm
+      - name: imaging-e02
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: e02
+        sourceType: helm
+      - name: imaging-i14
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: i14
+        sourceType: helm
+      - name: imaging-nxstacker
+        repoURL: https://github.com/DiamondLightSource/imaging-workflows
+        path: nxstacker
+        sourceType: helm
+  - name: mx
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: mx
+        repoURL: https://github.com/DiamondLightSource/mx-workflows
+  - name: magnetic-materials
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: magnetic-materials
+        repoURL: https://github.com/DiamondLightSource/magnetic-materials-workflows
+        path: helm-based-workflows
+        sourceType: helm
+  - name: crystallography
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: i15-1
+        repoURL: https://github.com/DiamondLightSource/crystallography-workflows
+        path: I15-1_workflows
+        sourceType: helm
+  - name: test-rig
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: visr
+        repoURL: https://github.com/DiamondLightSource/test-rig-workflows
+        path: visr
+        sourceType: helm
+  - name: structures-and-surfaces
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: i07
+        repoURL: https://github.com/DiamondLightSource/structures-and-surfaces-workflows
+        path: i07
+        sourceType: helm

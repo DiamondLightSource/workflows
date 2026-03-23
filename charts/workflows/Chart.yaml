@@ -1,0 +1,22 @@
+apiVersion: v2
+name: workflows
+description: Data Analysis workflow orchestration
+type: application
+version: 0.13.39
+dependencies:
+  - name: argo-workflows
+    repository: https://argoproj.github.io/argo-helm
+    version: 0.45.21
+    condition: argo-workflows.enabled
+  - name: postgresql-ha
+    repository: https://charts.bitnami.com/bitnami
+    version: 14.3.9
+    condition: postgresql-ha.enabled
+  - name: oauth2-proxy
+    repository: https://oauth2-proxy.github.io/manifests
+    version: 7.8.0
+    condition: oauth2-proxy.enabled
+  - name: s3mock
+    repository: file://./charts/s3mock/
+    version: 0.1.0
+    condition: s3mock.enabled

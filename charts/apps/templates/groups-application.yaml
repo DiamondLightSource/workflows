@@ -1,0 +1,32 @@
+{{- if .Values.groups.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: groups
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  destination:
+    namespace: argocd
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/groups
+    targetRevision: {{ .Values.groups.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.groups.extraValueFiles }}
+        {{- .Values.groups.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.groups.valuesObject }}
+      valuesObject:
+        {{- .Values.groups.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}

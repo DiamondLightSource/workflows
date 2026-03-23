@@ -1,0 +1,20 @@
+# Mkdocs
+/site
+.env
+# k8s configs
+ca.crt
+config_argus
+# vcluster config
+kubeconfig.yaml
+
+# Relay
+__generated__
+supergraph.graphql
+
+# File Types
+**/*.tgz # Chart files created when deploying helm dep build
+
+# Rust
+target
+
+.DS_Store

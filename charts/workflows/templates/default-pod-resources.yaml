@@ -1,0 +1,46 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pod-default-resources
+spec:
+  rules:
+    - name: set-pod-default-resources
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/managed: "true"
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            preconditions:
+              all:
+              - key: "{{ `{{element.name || ''}}` }}"
+                operator: NotEquals
+                value: "wait"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{ `{{element.name}}` }}"
+                    resources:
+                      requests:
+                        +(cpu): "1"
+                        +(memory): "250Mi"
+                      limits:
+                        +(cpu): "1"
+                        +(memory): "250Mi"
+          - list: "request.object.spec.initContainers || []"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{ `{{element.name}}` }}"
+                    resources:
+                      requests:
+                        +(cpu): "1"
+                        +(memory): "250Mi"
+                      limits:
+                        +(cpu): "1"
+                        +(memory): "250Mi"

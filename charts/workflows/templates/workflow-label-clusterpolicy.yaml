@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ .Release.Name }}-posix-uid-label
+spec:
+  background: false
+  validationFailureAction: Enforce
+  rules:
+    - name: apply-posix-uid-label
+      match:
+        resources:
+          kinds:
+            - argoproj.io/*/Workflow
+          operations:
+            - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              {{- with .Values.uid }}
+              workflows.diamond.ac.uk/creator-posix-uid: '{{ . }}'
+              {{- else }}
+              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra | "workflows.diamond.ac.uk/posixuid" | [0] }}` }}'
+              {{- end }}

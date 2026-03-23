@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: WorkflowTemplate
+metadata:
+  name: template1
+  labels:
+    placeholder: value
+  annotations:
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+data:
+  key: value

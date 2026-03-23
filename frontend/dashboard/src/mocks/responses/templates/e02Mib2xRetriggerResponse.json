@@ -1,0 +1,22 @@
+{
+  "parameters": {
+    "mib_path": "",
+    "no_reshaping": 0,
+    "use_fly_back": 1,
+    "known_shape": 0,
+    "Scan_X": 128,
+    "Scan_Y": 128,
+    "iBF": 1,
+    "bin_sig_flag": 1,
+    "bin_sig_factor": 4,
+    "bin_nav_flag": 1,
+    "bin_nav_factor": 4,
+    "create_json": 1,
+    "ptycho_config": "",
+    "ptycho_template": "",
+    "memory": "8Gi",
+    "nprocs": "4",
+    "visitdir": "mg36964-1",
+    "DEBUG": "1"
+  }
+}

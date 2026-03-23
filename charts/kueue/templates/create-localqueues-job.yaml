@@ -1,0 +1,77 @@
+{{- if $.Values.createDefaultLocalQueues }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: localqueue-creator
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: localqueue-creator-role
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["list", "get"]
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["localqueues"]
+    verbs: ["create", "get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: localqueue-creator-binding
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+subjects:
+  - kind: ServiceAccount
+    name: localqueue-creator
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: localqueue-creator-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kueue-create-default-localqueues
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    helm.sh/hook: post-install
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: localqueue-creator
+      restartPolicy: Never
+      containers:
+      - name: creator
+        image: alpine/kubectl:1.34.2
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          namespaces=$(kubectl get ns --no-headers -o custom-columns=":metadata.name")
+          for ns in $namespaces; do
+            if [[ "$ns" == "kube-system" || "$ns" == "kube-public" || "$ns" == "kube-node-lease" ]]; then
+              echo "Skipping system namespace: $ns"
+              continue
+            fi
+            echo "Ensuring LocalQueue default-queue in namespace: $ns"
+            cat <<EOF | kubectl apply -f - -n $ns
+          apiVersion: kueue.x-k8s.io/v1beta1
+          kind: LocalQueue
+          metadata:
+            name: default-queue
+          spec:
+            clusterQueue: default-queue
+          EOF
+          done
+{{- end }}

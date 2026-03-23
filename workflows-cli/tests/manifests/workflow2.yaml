@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: WorkflowTemplate
+metadata:
+  name: template2
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.diamond.ac.uk/repository: "url"
+data:
+  key: value

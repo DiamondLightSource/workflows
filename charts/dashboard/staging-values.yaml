@@ -1,0 +1,19 @@
+configuration:
+  keycloakUrl: https://identity-dev.diamond.ac.uk
+  keycloakRealm: dls
+  keycloakClient: workflows-ui-dev
+  keycloakScope: "openid profile posix-uid email"
+  graphUrl: https://staging.workflows.diamond.ac.uk/graphql
+  graphWsUrl: wss://staging.workflows.diamond.ac.uk/graphql/ws
+  sourceDir: "/usr/share/nginx/html"
+
+ingress:
+  hosts:
+    - host: staging.workflows.diamond.ac.uk
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls: true
+  secretName: dashboard-tls-cert
+  host: staging.workflows.diamond.ac.uk

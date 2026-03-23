@@ -1,0 +1,64 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: hostpath
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                data_directory: "/allowed/path"
+                gid: "1234"
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"
+              spec: {}
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: allowed
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: abc1234
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:latest
+                volumes:
+                - name: test-volume
+                  hostPath:
+                    path: "/allowed/path"
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: disallowed
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:latest
+                volumes:
+                - name: test-volume
+                  hostPath:
+                    path: "/disallowed/path"

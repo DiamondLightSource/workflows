@@ -1,0 +1,14 @@
+apiVersion: v2
+name: argocd
+description: ArgoCD, with a few extras
+type: application
+
+version: 0.3.25
+dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts
+  - name: argo-cd
+    repository: https://argoproj.github.io/argo-helm
+    version: 7.7.5
+    condition: argo-cd.enabled

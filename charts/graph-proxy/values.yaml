@@ -1,0 +1,66 @@
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-graph-proxy
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+argoServerUrl: https://argo-workflows.workflows.diamond.ac.uk
+kubernetesApiUrl: https://kubernetes.default
+prefixPath: /graphql
+
+deployment:
+  replicas: 3
+  annotations: []
+  podAnnotations: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+telemetry:
+  level: Info
+  metricsEndpoint: http://otel-collector-opentelemetry-collector.monitoring:4318/v1/metrics
+  tracingEndpoint: http://otel-collector-opentelemetry-collector.monitoring:4318/v1/traces
+
+s3:
+  url: https://sci-nas-s3.diamond.ac.uk
+  forcePathStyle: true
+  bucket: k8s-workflows-test
+
+cors:
+  matchOrigins:
+    - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?
+    - ^https?:\/\/localhost(:\d+)?\/?
+
+service:
+  create: true
+  annotations: []
+  type: ClusterIP
+  port: 80
+
+ingress:
+  create: true
+  className: nginx
+  tls: []
+  hosts:
+    - host: workflows.diamond.ac.uk
+      paths:
+        - path: /graphql
+          pathType: Exact
+    - host: workflows.diamond.ac.uk
+      paths:
+        - path: /graphql/ws
+          pathType: Exact
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: []

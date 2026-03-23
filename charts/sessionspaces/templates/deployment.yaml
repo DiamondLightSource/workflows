@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  {{- with $.Values.deployment.annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "common.labels.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with $.Values.deployment.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.labels.matchLabels" $ | nindent 8 }}
+    spec:
+      {{- if $.Values.serviceAccount.create }}
+      serviceAccountName: {{ default ( include "common.names.fullname" $ ) $.Values.serviceAccount.name }}
+      {{- else }}
+      serviceAccountName: {{ default "default" $.Values.serviceAccount.name }}
+      {{- end }}
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      containers:
+        - name: sessionspaces
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values.global "chart" $.Chart )}}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+            - name: DATABASE_PASSWORD
+              {{- if $.Values.database.create }}
+              value: {{ $.Values.database.password.value }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: sessionspaces-ispyb
+                  key: password
+              {{- end }}
+            - name: DATABASE_URL
+            {{- if $.Values.database.create }}
+              value: "mysql://{{ $.Values.database.user }}:{{ $.Values.database.password.value }}@{{ include "common.names.fullname" $ }}-database.{{ .Release.Namespace }}.svc.cluster.local:3306/ispyb_build"
+            {{- else }}
+              value: {{ include "sessionspaces.databaseURL" $ }}
+            {{- end }}
+            - name: LDAP_URL
+              value: {{ $.Values.ldapUrl }}
+            {{- if $.Values.requestRate }}
+            - name: REQUEST_RATE
+              value: "{{ $.Values.requestRate }}"
+            {{- end }}
+            - name: TELEMETRY_LEVEL
+              value: {{ $.Values.telemetry.level }}
+            {{- with $.Values.telemetry.metricsEndpoint }}
+            - name: METRICS_ENDPOINT
+              value: {{ . }}
+            {{- end }}
+            {{- with $.Values.telemetry.tracingEndpoint }}
+            - name: TRACING_ENDPOINT
+              value: {{ . }}
+            {{- end }}
+          resources:
+            {{- $.Values.deployment.resources | toYaml | nindent 12 }}
+          {{- with $.Values.deployment.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.deployment.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with $.Values.deployment.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}

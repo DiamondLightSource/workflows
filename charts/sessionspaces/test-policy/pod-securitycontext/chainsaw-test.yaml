@@ -1,0 +1,216 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-securitycontext
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                data_directory: "/allowed/path"
+                gid: "1234"
+        - create:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "4321"
+              spec: {}
+        - command:
+            env:
+              - name: namespace
+                value: ($namespace)
+            entrypoint: kubectl
+            args:
+              - get
+              - workflow
+              - test-workflow
+              - --namespace=$namespace
+              - --output=jsonpath={.metadata.uid}
+            outputs:
+              - name: workflow_uid
+                value: ($stdout)
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: ($workflow_uid)
+              spec:
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+              spec:
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 4321
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+        - create:
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: test-mpijob
+                labels:
+                  kueue.x-k8s.io/queue-name: default-queue
+                ownerReferences:
+                  - name: test-workflow
+                    kind: Workflow
+                    apiVersion: argoproj.io/v1alpha1
+                    uid: ($workflow_uid)
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
+                  Worker:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: worker
+                            image: docker.io/library/busybox:latest
+        - command:
+            env:
+              - name: namespace
+                value: ($namespace)
+            entrypoint: kubectl
+            args:
+              - get
+              - mpijob
+              - test-mpijob
+              - --namespace=$namespace
+              - --output=jsonpath={.metadata.uid}
+            outputs:
+              - name: mpijob_uid
+                value: ($stdout)
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-mpijob-launcher
+                labels:
+                  training.kubeflow.org/job-name: test-mpijob
+                  training.kubeflow.org/replica-type: launcher
+                ownerReferences:
+                  - name: test-mpijob
+                    kind: MPIJob
+                    apiVersion: kubeflow.org/v2beta1
+                    uid: ($mpijob_uid)
+              spec:
+                containers:
+                  - name: launcher
+                    image: docker.io/library/busybox:latest
+                initContainers:
+                  - name: init-container
+                    image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-mpijob-launcher
+                labels:
+                  training.kubeflow.org/job-name: test-mpijob
+              spec:
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 4321
+                containers:
+                  - name: launcher
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                initContainers:
+                  - name: init-container
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-mpijob-worker
+                labels:
+                  training.kubeflow.org/job-name: test-mpijob
+                  training.kubeflow.org/replica-type: worker
+                ownerReferences:
+                  - name: test-mpijob
+                    kind: MPIJob
+                    apiVersion: kubeflow.org/v2beta1
+                    uid: ($mpijob_uid)
+              spec:
+                containers:
+                  - name: worker
+                    image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-mpijob-worker
+                labels:
+                  training.kubeflow.org/job-name: test-mpijob
+              spec:
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 4321
+                containers:
+                  - name: worker
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true

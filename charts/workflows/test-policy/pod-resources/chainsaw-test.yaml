@@ -1,0 +1,273 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-kueue-defaults
+spec:
+  steps:
+    - name: default-pod-resources
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: full-defaults-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                containers:
+                  - name: main
+                    image: nginx
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: full-defaults-pod
+              spec:
+                containers:
+                  - name: main
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+
+    - name: unmanaged-pod-no-defaults
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: unmanaged-pod
+              spec:
+                containers:
+                  - name: main
+                    image: nginx
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: unmanaged-pod
+              spec:
+                containers:
+                  - name: main
+                    resources: {}
+
+    - name: existing-resources-preserved
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: existing-resources-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                containers:
+                  - name: main
+                    image: nginx
+                    resources:
+                      requests:
+                        cpu: "2"
+                        memory: "512Mi"
+                      limits:
+                        cpu: "4"
+                        memory: "1Gi"
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: existing-resources-pod
+              spec:
+                containers:
+                  - name: main
+                    resources:
+                      requests:
+                        cpu: "2"
+                        memory: "512Mi"
+                      limits:
+                        cpu: "4"
+                        memory: "1Gi"
+
+    - name: partial-resources-filled
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: partial-resources-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                containers:
+                  - name: main
+                    image: nginx
+                    resources:
+                      requests:
+                        cpu: "1"
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: partial-resources-pod
+              spec:
+                containers:
+                  - name: main
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+
+    - name: multiple-containers-defaults
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: multi-container-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                containers:
+                  - name: main
+                    image: nginx
+                  - name: sidecar
+                    image: busybox
+                  - name: helper
+                    image: alpine
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: multi-container-pod
+              spec:
+                containers:
+                  - name: main
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+                  - name: sidecar
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+                  - name: helper
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+
+    - name: init-container-defaults
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: init-container-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                initContainers:
+                  - name: init
+                    image: busybox
+                containers:
+                  - name: main
+                    image: nginx
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: init-container-pod
+              spec:
+                initContainers:
+                  - name: init
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+                containers:
+                  - name: main
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+
+    - name: mixed-container-resources
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: mixed-resources-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                containers:
+                  - name: with-resources
+                    image: nginx
+                    resources:
+                      requests:
+                        cpu: "500m"
+                        memory: "128Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "256Mi"
+                  - name: without-resources
+                    image: busybox
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: mixed-resources-pod
+              spec:
+                containers:
+                  - name: without-resources
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
+                  - name: with-resources
+                    resources:
+                      requests:
+                        cpu: "500m"
+                        memory: "128Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "256Mi"

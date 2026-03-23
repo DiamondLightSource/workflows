@@ -1,0 +1,157 @@
+destination:
+  server: https://kubernetes.default.svc
+
+argocd:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+events:
+  enabled: false
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+groups:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+kyverno:
+  enabled: true
+  targetRevision: 3.5.2
+  extraValuesFiles: []
+  valuesObject:
+    metricsConfig:
+      metricsRefreshInterval: 24h
+      metricsExposure:
+        kyverno_client_queries_total:
+          enabled: true
+        kyverno_controller_reconcile_total:
+          enabled: true
+        kyverno_http_requests_duration_seconds:
+          enabled: true
+        kyverno_http_requests_total:
+          enabled: true
+        kyverno_policy_changes_total:
+          enabled: true
+        kyverno_policy_execution_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+        kyverno_validating_policy_execution_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+        kyverno_image_validating_policy_execution_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+        kyverno_admission_review_duration_seconds:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace"]
+        kyverno_policy_rule_info:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_policy_results:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_admission_requests:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace"]
+        kyverno_cleanup_controller_deletedobjects:
+          enabled: false
+          disabledLabelDimensions: ["resource_namespace", "policy_namespace"]
+        kyverno_client_queries:
+          enabled: true
+          disabledLabelDimensions: ["resource_namespace"]
+        kyverno_controller_reconcile:
+          enabled: true
+        kyverno_http_requests:
+          enabled: true
+    admissionController:
+      metering:
+        collector: "otel-collector-opentelemetry-collector.monitoring.svc.cluster.local"
+        port: 4317
+        config: "grpc"
+      replicas: 3
+      container:
+        resources:
+          limits:
+            cpu: 6
+            memory: 12Gi
+          requests:
+            cpu: 5
+            memory: 8Gi
+    backgroundController:
+      extraArgs:
+        genWorkers: 50
+        clientRateLimitBurst: 500
+        clientRateLimitQPS: 500
+      replicas: 2
+      resources:
+        limits:
+          cpu: 8
+          memory: 32Gi
+        requests:
+          cpu: 6
+          memory: 16Gi
+      podAnnotations:
+        # disable logging to graylog due to very high volume of logs since upgrading to 1.15.2
+        fluentd-ignore: "true"
+    cleanupController:
+      enabled: false
+    reportsController:
+      enabled: false
+    features:
+      logging:
+        verbosity: 0
+
+sessionspaces:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+sealedsecrets:
+  enabled: true
+  targetRevision: 2.16.0
+  extraValuesFiles: []
+  valuesObject:
+    image:
+      repository: bitnamilegacy/sealed-secrets-controller
+
+workflows:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+graphProxy:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+dashboard:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+otel:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+kueue:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
+mpiOperator:
+  enabled: true
+  targetRevision: v0.7.0
+  extraValuesFiles: []
+  valuesObject: {}

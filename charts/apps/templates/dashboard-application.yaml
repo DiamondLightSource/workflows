@@ -1,0 +1,34 @@
+{{- if .Values.dashboard.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dashboard
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  destination:
+    namespace: dashboard
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/dashboard
+    targetRevision: {{ .Values.dashboard.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.dashboard.extraValueFiles }}
+        {{- .Values.dashboard.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.dashboard.valuesObject }}
+      valuesObject:
+        {{- .Values.dashboard.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}

@@ -1,0 +1,100 @@
+uid: "some-uid"
+s3mock:
+  enabled: true
+  image:
+    repository: adobe/s3mock
+    pullPolicy: Always
+    tag: "3.12.0"
+  config:
+    initialBuckets: k8s-workflows-test
+    debug: true
+  bucketPort: 9090
+  bucketPortS: 9091
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      cpu: 200m
+      memory: 1Gi
+
+argo-workflows:
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      accessKeySecret:
+        name: artifact-s3
+        key: access-key
+      secretKeySecret:
+        name: artifact-s3
+        key: secret-key
+      insecure: true
+      endpoint: workflows-s3mock.workflows.svc.cluster.local
+    bucket: k8s-workflows-test
+    region: unsupported
+  controller:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 2Gi
+        ephemeral-storage: 256Mi
+      requests:
+        cpu: 500m
+        memory: 2500Mi
+        ephemeral-storage: 128Mi
+  server:
+    replicas: 1
+    authModes: ["server"]
+    extraEnv:
+      - name: ARGO_SECURE
+        value: "false"
+    resources:
+      limits:
+        cpu: 1
+        memory: 1500Mi
+        ephemeral-storage: 256Mi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+        ephemeral-storage: 128Mi
+  executor:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+ingresstlssecret:
+  enabled: false
+s3sealedsecret:
+  enabled: false
+bitnamisecret:
+  enabled: false
+
+postgresql-ha:
+  postgresql:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+      limits:
+        cpu: 200m
+        memory: 600Mi
+  pgpool:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+  persistence:
+    storageClass: netapp
+    size: 5Gi
+
+oauth2-proxy:
+  enabled: false

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: opentelemetry-collector
+subjects:
+  - kind: ServiceAccount
+    name: "{{ .Release.Name }}-opentelemetry-collector"
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: opentelemetry-collector
+  apiGroup: rbac.authorization.k8s.io
