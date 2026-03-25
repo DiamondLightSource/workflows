@@ -32,7 +32,6 @@ argo-cd:
         g, david.hadley@diamond.ac.uk, role:admin
         g, james.gilbert@diamond.ac.uk, role:admin
         g, victoria.beilsten-edmands@diamond.ac.uk, role:admin
-        g, teo.ching@diamond.ac.uk, role:admin,
         g, mahir.abbas@diamond.ac.uk, role:admin
 
   repoServer:
