@@ -17,11 +17,19 @@ vcluster:
         apiServer:
           extraArgs:
             - --authentication-config=/etc/authn-config/authn-config.yaml
+        # vCluster documentation recommends keeping this version in sync with the host cluster
+        # see: https://www.vcluster.com/docs/vcluster/manage/upgrade/supported_versions#kubernetes-compatibility-matrix
+        version: v1.34.5
     backingStore:
       etcd:
         deploy:
           enabled: true
           statefulSet:
+            image:
+              # WARNING: once changed etcd database migrations
+              # may make rolling back to previous versions
+              # difficult or impossible
+              tag: 3.6.4-0
             extraArgs:
               - --quota-backend-bytes=8589934592  # 8Gi
             resources:
