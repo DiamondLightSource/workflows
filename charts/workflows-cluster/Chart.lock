@@ -7,6 +7,6 @@ dependencies:
   version: 0.28.0
 - name: secrets
   repository: file://./charts/secrets
-  version: 0.0.7
-digest: sha256:a0e228f37047066b016c3f288b4d5a4c27288cf310d2d5bace0c4a2502faa4e2
-generated: "2026-03-25T14:37:11.451744286Z"
+  version: 0.0.8
+digest: sha256:73cb5e4fa0772aa08f1f3309c27c2a902b942ddeeafb0164be6d8442390baa0a
+generated: "2026-03-26T09:20:27.2372031Z"
