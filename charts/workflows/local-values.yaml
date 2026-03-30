@@ -41,6 +41,9 @@ argo-workflows:
       endpoint: workflows-s3mock.workflows.svc.cluster.local
   controller:
     persistence: null
+    workflowDefaults:
+      spec:
+        ttlStrategy: null
     replicas: 1
     resources:
       limits:
