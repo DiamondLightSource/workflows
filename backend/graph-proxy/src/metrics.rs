@@ -22,7 +22,7 @@ pub struct Metrics {
 
 impl Metrics {
     /// Builds a new metrics carrier instance
-    pub fn new(meter_provider: &impl MeterProvider) -> Self {
+    pub fn new(meter_provider: &(impl MeterProvider + ?Sized)) -> Self {
         let meter = meter_provider.meter("otel-proxy");
 
         let total_requests = meter
@@ -61,7 +61,6 @@ impl Metrics {
     }
 }
 
-#[cfg(test)]
 pub mod noop {
 
     // Dummy metric provider for testing

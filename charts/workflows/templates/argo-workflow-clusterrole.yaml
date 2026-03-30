@@ -16,7 +16,7 @@ rules:
   resources: [
     "workflowtaskresults",
     ]
-  verbs: ["create","patch"] 
+  verbs: ["create","patch","update"] 
 - apiGroups: ["argoproj.io"]
   resources: [
     "workflowtasksets",

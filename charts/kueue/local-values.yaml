@@ -1,13 +1,6 @@
+createDefaultLocalQueues: false
+
 kueue:
-  controllerManager:
-    manager:
-      resources:
-        limits:
-          cpu: "8"
-          memory: 16Gi
-        requests:
-          cpu: '4'
-          memory: 8Gi
   managerConfig:
     controllerManagerConfigYaml: |-
       apiVersion: config.kueue.x-k8s.io/v1beta1
@@ -47,22 +40,18 @@ kueue:
         - "kubeflow.org/xgboostjob"
         - "kubeflow.org/jaxjob"
         - "workload.codeflare.dev/appwrapper"
-        - "pod"
       waitForPodsReady:
-        enable: true
-        blockAdmission: false
-        timeout: 5m
-        requeuingStrategy:
-          timestamp: Eviction
-          backoffLimitCount: 5
-          backoffBaseSeconds: 60
-          backoffMaxSeconds: 900
+        enable: false
       objectRetentionPolicies:
         workloads:
           afterFinished: "30s"
           afterDeactivatedByKueue: "30s"
-
-createDefaultLocalQueues: true
-
-bootstrapResources:
-  enabled: true
+  controllerManager:
+    manager:
+      resources:
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+        requests:
+          cpu: "100m"
+          memory: 256Mi

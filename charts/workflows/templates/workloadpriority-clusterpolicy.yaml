@@ -1,3 +1,4 @@
+{{- if .Values.workflowQueuePolicies.enabled }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -109,3 +110,4 @@ spec:
             - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\"  }}` }}"
               operator: NotEquals
               value: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" == 'live' && 'high' || request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" == 'test' && 'low' || 'medium'  }}` }}"
+{{- end }}

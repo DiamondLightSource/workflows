@@ -35,6 +35,12 @@ s3:
   forcePathStyle: true
   bucket: k8s-workflows-test
 
+artifactSecret:
+  create: false
+  name: artifact-s3-secret
+  accessKey: ""
+  secretKey: ""
+
 cors:
   matchOrigins:
     - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?

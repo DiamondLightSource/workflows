@@ -29,7 +29,10 @@ struct Cli {
     database_url: Url,
     /// The URL of the LDAP database where the posix attributes are stored
     #[clap(long, env)]
-    ldap_url: Url,
+    ldap_url: Option<Url>,
+    /// Skip LDAP integration and synthesize local session metadata instead
+    #[clap(long, env = "SKIP_LDAP", default_value_t = false)]
+    skip_ldap: bool,
     /// The period to wait after a succesful bundle server request
     #[clap(long, env, default_value = "60s")]
     update_interval: humantime::Duration,
@@ -53,8 +56,17 @@ async fn main() {
         .await
         .unwrap();
 
-    let (conn, mut ldap_connection) = LdapConnAsync::new(args.ldap_url.as_str()).await.unwrap();
-    ldap3::drive!(conn);
+    let mut ldap_connection = if args.skip_ldap {
+        None
+    } else {
+        let ldap_url = args
+            .ldap_url
+            .as_ref()
+            .expect("LDAP_URL is required unless SKIP_LDAP=true");
+        let (conn, ldap_connection) = LdapConnAsync::new(ldap_url.as_str()).await.unwrap();
+        ldap3::drive!(conn);
+        Some(ldap_connection)
+    };
 
     let k8s_client = {
         let mut builder =
@@ -70,7 +82,7 @@ async fn main() {
     let mut update_interval = interval(args.update_interval.into());
     loop {
         update_interval.tick().await;
-        match Sessions::fetch(&ispyb_pool, &mut ldap_connection).await {
+        match Sessions::fetch(&ispyb_pool, ldap_connection.as_mut()).await {
             Ok(mut new_sessions) => {
                 update_sessionspaces(&mut current_sessions, &mut new_sessions, &k8s_client).await;
             }

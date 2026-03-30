@@ -13,7 +13,7 @@ mod metrics;
 
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
-    metrics::{Metrics, MetricsState},
+    metrics::{noop::NoopMeterProvider, Metrics, MetricsState},
 };
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{
@@ -111,10 +111,13 @@ async fn main() {
         Cli::Serve(args) => {
             let otlp_guard = setup_telemetry(args.telemetry_config.clone()).unwrap();
 
-            // TODO: This unwrap isn't ideal, but the telemetry lib is configured in such a way that
-            // it's necessary. probably needs a tweak on the telemetry lib.
-            let metrics = otlp_guard.meter_provider.as_ref().unwrap();
-            let metrics_state = Arc::new(Metrics::new(metrics));
+            let noop_meter_provider = NoopMeterProvider::new();
+            let metrics_provider = otlp_guard
+                .meter_provider
+                .as_ref()
+                .map(|provider| provider as &dyn opentelemetry::metrics::MeterProvider)
+                .unwrap_or(&noop_meter_provider);
+            let metrics_state = Arc::new(Metrics::new(metrics_provider));
 
             info!(?args, "Starting GraphQL Server");
             let s3_client = Client::from(args.s3_client);

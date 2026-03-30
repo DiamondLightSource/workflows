@@ -1,0 +1,33 @@
+{{- range .Values.staticSessions }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: sessionspaces
+    workflows.diamond.ac.uk/static-sessionspace: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sessionspaces
+  namespace: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: sessionspaces
+    workflows.diamond.ac.uk/static-sessionspace: "true"
+data:
+  proposal_code: {{ .proposalCode | quote }}
+  proposal_number: {{ printf "%v" .proposalNumber | quote }}
+  visit: {{ printf "%v" .visit | quote }}
+  instrument: {{ .instrument | quote }}
+  members: {{ .members | default (list) | toJson | quote }}
+  start_date: {{ .startDate | quote }}
+  end_date: {{ .endDate | quote }}
+  {{- with .gid }}
+  gid: {{ printf "%v" . | quote }}
+  {{- end }}
+  {{- with .dataDirectory }}
+  data_directory: {{ . | quote }}
+  {{- end }}
+{{- end }}

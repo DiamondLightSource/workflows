@@ -10,7 +10,6 @@ import {
 } from "relay-runtime";
 import { getKeycloak } from "./keycloak";
 import { createClient } from "graphql-ws";
-
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
 const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;

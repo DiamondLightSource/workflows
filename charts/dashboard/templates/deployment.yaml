@@ -52,6 +52,8 @@ spec:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
           env:
+            - name: KEYCLOAK_DISABLED
+              value: {{ .Values.configuration.keycloakDisabled | quote }}
             - name: KEYCLOAK_URL
               value: {{ .Values.configuration.keycloakUrl }}
             - name: KEYCLOAK_REALM
@@ -64,6 +66,8 @@ spec:
               value: {{ .Values.configuration.graphUrl }}
             - name: GRAPH_WS_URL
               value: {{ .Values.configuration.graphWsUrl }}
+            - name: ENABLE_MOCKING
+              value: {{ .Values.configuration.enableMocking | quote }}
             - name: SOURCE_DIR
               value: {{ .Values.configuration.sourceDir }}
           livenessProbe:

@@ -1,7 +1,9 @@
 import Keycloak from "keycloak-js";
 
 export async function getKeycloak() {
-  const isMocking = import.meta.env.VITE_ENABLE_MOCKING === "true";
+  const isMocking =
+    import.meta.env.VITE_ENABLE_MOCKING === "true" ||
+    import.meta.env.VITE_KEYCLOAK_URL === "mock://local";
 
   if (isMocking) {
     // only import when mocking

@@ -7,7 +7,14 @@ database:
     secretKey: ""
     value: ""
 ldapUrl: ldap://ldapmaster.diamond.ac.uk
+ldap:
+  skip: false
 requestRate: 1
+
+controller:
+  enabled: true
+
+staticSessions: []
 
 image:
   repository: ghcr.io/diamondlightsource/workflows-sessionspaces

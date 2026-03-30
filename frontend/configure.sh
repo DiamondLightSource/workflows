@@ -26,5 +26,6 @@ replace_placeholder KEYCLOAK_CLIENT
 replace_placeholder KEYCLOAK_SCOPE
 replace_placeholder GRAPH_URL
 replace_placeholder GRAPH_WS_URL
+replace_placeholder ENABLE_MOCKING
 
 nginx -g 'daemon off;'

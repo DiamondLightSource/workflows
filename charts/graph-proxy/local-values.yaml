@@ -1,0 +1,30 @@
+argoServerUrl: http://workflows-argo-workflows-server.workflows.svc.cluster.local:2746
+kubernetesApiUrl: https://kubernetes.default.svc
+
+deployment:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+
+telemetry:
+  metricsEndpoint: ""
+  tracingEndpoint: ""
+
+s3:
+  url: http://workflows-s3mock.workflows.svc.cluster.local:9090
+  forcePathStyle: true
+  bucket: k8s-workflows-local
+
+artifactSecret:
+  create: true
+  name: artifact-s3-secret
+  accessKey: username
+  secretKey: password
+
+ingress:
+  create: false

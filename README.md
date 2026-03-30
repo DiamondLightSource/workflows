@@ -29,6 +29,15 @@ helm install workflows-cluster charts/workflows-cluster -f charts/workflows-clus
 
 If you wish to run workflows, you should override the `uid` in the workflows app with your own uid.
 
+## Local profile
+
+For a workspace-first local setup, use the direct-install helper instead of
+the vcluster / Argo CD path:
+
+```sh
+./scripts/local-up.sh
+```
+
 ## Serve Docs
 
 Firstly, install `mkdocs` and the requisite dependencies in `docs/requirements.txt`; For this you may wish to use `pipx`, as:

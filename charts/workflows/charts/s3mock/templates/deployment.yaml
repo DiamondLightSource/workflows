@@ -21,6 +21,18 @@ spec:
         {{- include "common.labels.matchLabels" $ | nindent 8 }}
     spec:
       imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.image) "context" $ ) }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
       containers:
         - name: s3mock
           image: {{ include "common.images.image" ( dict "imageRoot" $.Values.image "global" $.Values "chart" $.Chart )}}
@@ -28,7 +40,6 @@ spec:
           ports:
             - name: bucket
               protocol: TCP
-              targetPort: {{ $.Values.bucketPort }}
               containerPort: {{ $.Values.bucketPort }}
           resources:
             {{- $.Values.resources | toYaml | nindent 12 }}
@@ -37,16 +48,4 @@ spec:
               value: {{ $.Values.config.initialBuckets }}
             - name: debug
               value: "{{ $.Values.config.debug }}"
-          {{- with $.Values.nodeSelector }}
-          nodeSelector:
-            {{- . | toYaml | nindent 8 }}
-          {{- end }}
-          {{- with $.Values.affinity }}
-          affinity:
-            {{- . | toYaml | nindent 8 }}
-          {{- end }}
-          {{- with $.Values.tolerations }}
-          tolerations:
-            {{- . | toYaml | nindent 8 }}
-          {{- end }}
 {{- end }}

@@ -1,0 +1,31 @@
+database:
+  create: false
+
+controller:
+  enabled: false
+
+policy:
+  create: true
+
+serviceAccount:
+  create: false
+
+secret:
+  create: false
+
+telemetry:
+  metricsEndpoint: ""
+  tracingEndpoint: ""
+
+staticSessions:
+  - name: cm37235-3
+    proposalCode: cm
+    proposalNumber: 37235
+    visit: 3
+    instrument: i03
+    members:
+      - local-user
+    gid: 2000
+    startDate: "2024-05-24 09:00:00"
+    endDate: "2024-08-09 09:00:00"
+    dataDirectory: /tmp/cm37235-3

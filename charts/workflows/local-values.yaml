@@ -1,0 +1,100 @@
+uid: "1000"
+
+localSecrets:
+  create: true
+  artifactS3:
+    accessKey: username
+    secretKey: password
+
+s3mock:
+  enabled: true
+  image:
+    repository: adobe/s3mock
+    pullPolicy: IfNotPresent
+    tag: "3.12.0"
+  config:
+    initialBuckets: k8s-workflows-local
+    debug: true
+  bucketPort: 9090
+  bucketPortS: 9091
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+argo-workflows:
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      accessKeySecret:
+        name: artifact-s3
+        key: access-key
+      secretKeySecret:
+        name: artifact-s3
+        key: secret-key
+      bucket: k8s-workflows-local
+      region: unsupported
+      insecure: true
+      endpoint: workflows-s3mock.workflows.svc.cluster.local
+  controller:
+    persistence: null
+    replicas: 1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+        ephemeral-storage: 256Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+        ephemeral-storage: 128Mi
+  server:
+    replicas: 1
+    authModes: ["server"]
+    extraEnv:
+      - name: ARGO_SECURE
+        value: "false"
+      - name: FIRST_TIME_USER_MODAL
+        value: "false"
+      - name: FEEDBACK_MODAL
+        value: "false"
+      - name: NEW_VERSION_MODAL
+        value: "false"
+      - name: POD_NAMES
+        value: "v1"
+    resources:
+      limits:
+        cpu: 500m
+        memory: 768Mi
+        ephemeral-storage: 256Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+        ephemeral-storage: 128Mi
+  executor:
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+workflowQueuePolicies:
+  enabled: false
+
+postgresql-ha:
+  enabled: false
+
+oauth2-proxy:
+  enabled: false
+
+ingresstlssecret:
+  enabled: false
+s3sealedsecret:
+  enabled: false
+bitnamisecret:
+  enabled: false

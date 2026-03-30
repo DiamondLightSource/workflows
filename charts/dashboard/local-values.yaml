@@ -1,0 +1,22 @@
+configuration:
+  keycloakDisabled: "true"
+  keycloakUrl: mock://local
+  keycloakRealm: local
+  keycloakClient: workflows-dashboard
+  keycloakScope: "openid profile posix-uid email"
+  graphUrl: http://localhost:8081/graphql
+  graphWsUrl: ws://localhost:8081/graphql/ws
+  enableMocking: "false"
+  sourceDir: "/usr/share/nginx/html"
+
+deployment:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+ingress:
+  create: false

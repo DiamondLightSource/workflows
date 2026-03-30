@@ -1,3 +1,4 @@
+{{- if $.Values.controller.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,8 +50,12 @@ spec:
             {{- else }}
               value: {{ include "sessionspaces.databaseURL" $ }}
             {{- end }}
+            {{- with $.Values.ldapUrl }}
             - name: LDAP_URL
-              value: {{ $.Values.ldapUrl }}
+              value: {{ . }}
+            {{- end }}
+            - name: SKIP_LDAP
+              value: {{ $.Values.ldap.skip | quote }}
             {{- if $.Values.requestRate }}
             - name: REQUEST_RATE
               value: "{{ $.Values.requestRate }}"
@@ -79,3 +84,4 @@ spec:
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
+{{- end }}

@@ -14,6 +14,11 @@
    - VITE_GRAPH_WS_URL
 5. yarn dev in frontend/dashboard
 
+For the local cluster profile, start from
+`frontend/dashboard/.env.local.example`. Setting
+`VITE_KEYCLOAK_DISABLED=true` bypasses real Keycloak for local development and
+lets the dashboard talk directly to a locally port-forwarded graph-proxy.
+
 ## Linting, Formatting, Compiling and Testing
 
 You can use the following commands for linting, formatting compiling and testing

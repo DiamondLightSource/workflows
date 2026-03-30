@@ -60,10 +60,12 @@ spec:
         - |
           namespaces=$(kubectl get ns --no-headers -o custom-columns=":metadata.name")
           for ns in $namespaces; do
-            if [[ "$ns" == "kube-system" || "$ns" == "kube-public" || "$ns" == "kube-node-lease" ]]; then
-              echo "Skipping system namespace: $ns"
-              continue
-            fi
+            case "$ns" in
+              kube-system|kube-public|kube-node-lease)
+                echo "Skipping system namespace: $ns"
+                continue
+                ;;
+            esac
             echo "Ensuring LocalQueue default-queue in namespace: $ns"
             cat <<EOF | kubectl apply -f - -n $ns
           apiVersion: kueue.x-k8s.io/v1beta1

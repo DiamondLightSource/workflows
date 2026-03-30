@@ -79,6 +79,9 @@ argo-workflows:
         value: "v1"
   createAggregateRoles: false
 
+workflowQueuePolicies:
+  enabled: true
+
 postgresql-ha:
   enabled: true
   postgresql:
@@ -201,3 +204,15 @@ bitnamisecret:
 
 s3mock:
   enabled: false
+
+localSecrets:
+  create: false
+  artifactS3:
+    accessKey: ""
+    secretKey: ""
+  postgres:
+    postgresPassword: postgres
+    repmgrPassword: repmgr
+    argoUsername: argo
+    argoPassword: argo
+    initdbScript: ""

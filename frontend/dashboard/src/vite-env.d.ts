@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_KEYCLOAK_SCOPE: string;
   readonly VITE_GRAPH_URL: string;
   readonly VITE_GRAPH_WS_URL: string;
+  readonly VITE_ENABLE_MOCKING: string;
 }
 
 interface importMeta {

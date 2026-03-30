@@ -89,6 +89,15 @@ impl Session {
     }
 }
 
+fn synthetic_gid(session_name: &str) -> u32 {
+    const BASE_GID: u32 = 40_000;
+    const RANGE: u32 = 20_000;
+    let hash = session_name.bytes().fold(0u32, |acc, byte| {
+        acc.wrapping_mul(16_777_619).wrapping_add(byte as u32)
+    });
+    BASE_GID + (hash % RANGE)
+}
+
 /// A mapping of session namespaces to their session info
 #[derive(Debug, Default, derive_more::Deref, derive_more::DerefMut, Clone)]
 pub struct Sessions(BTreeMap<String, Session>);
@@ -99,8 +108,9 @@ impl Sessions {
         basic_info: Vec<BasicInfo>,
         mut direct_subjects: DirectSubjects,
         proposal_subjects: ProposalSubjects,
-        instrument_subjects: InstrumentSubjects,
-        mut posix_attributes: SessionPosixAttributes,
+        instrument_subjects: Option<InstrumentSubjects>,
+        mut posix_attributes: Option<SessionPosixAttributes>,
+        synthesize_gids: bool,
     ) -> Self {
         let mut sessions = Self::default();
         for session in basic_info.into_iter() {
@@ -115,13 +125,18 @@ impl Sessions {
                     .cloned()
                     .unwrap_or_default(),
                 instrument_subjects
-                    .get(&session.instrument)
-                    .cloned()
+                    .as_ref()
+                    .and_then(|subjects| subjects.get(&session.instrument).cloned())
                     .unwrap_or_default(),
             ]
             .into_iter()
             .flatten()
             .collect();
+            let gid = posix_attributes
+                .as_mut()
+                .and_then(|attributes| attributes.remove(&session_name))
+                .map(|attributes| attributes.gid)
+                .or_else(|| synthesize_gids.then(|| synthetic_gid(&session_name)));
             sessions.insert(
                 session_name.clone(),
                 Session {
@@ -130,9 +145,7 @@ impl Sessions {
                     visit: session.visit,
                     instrument: session.instrument,
                     members,
-                    gid: posix_attributes
-                        .remove(&session_name)
-                        .map(|attributes| attributes.gid),
+                    gid,
                     start_date: session.start_date,
                     end_date: session.end_date,
                 },
@@ -145,19 +158,65 @@ impl Sessions {
     #[instrument(name = "sessionspaces_fetch_info", skip_all)]
     pub async fn fetch(
         ispyb_pool: &MySqlPool,
-        ldap_connection: &mut Ldap,
+        ldap_connection: Option<&mut Ldap>,
     ) -> Result<Self, anyhow::Error> {
         let basic_info = BasicInfo::fetch(ispyb_pool).await?;
         let direct_subjects = DirectSubjects::fetch(ispyb_pool).await?;
         let proposal_subjects = ProposalSubjects::fetch(ispyb_pool).await?;
-        let instrument_subjects = InstrumentSubjects::fetch(ldap_connection).await?;
-        let posix_attributes = SessionPosixAttributes::fetch(ldap_connection).await?;
+        let (instrument_subjects, posix_attributes, synthesize_gids) = match ldap_connection {
+            Some(ldap_connection) => (
+                Some(InstrumentSubjects::fetch(ldap_connection).await?),
+                Some(SessionPosixAttributes::fetch(ldap_connection).await?),
+                false,
+            ),
+            None => (None, None, true),
+        };
         Ok(Self::new(
             basic_info,
             direct_subjects,
             proposal_subjects,
             instrument_subjects,
             posix_attributes,
+            synthesize_gids,
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{synthetic_gid, DirectSubjects, Instrument, ProposalSubjects, Sessions};
+    use crate::permissionables::basic_info::BasicInfo;
+    use std::collections::BTreeSet;
+    use time::macros::datetime;
+
+    #[test]
+    fn synthetic_gid_is_deterministic() {
+        let session_name = "cm37235-3";
+        assert_eq!(synthetic_gid(session_name), synthetic_gid(session_name));
+    }
+
+    #[test]
+    fn sessions_without_ldap_use_synthetic_gids() {
+        let sessions = Sessions::new(
+            vec![BasicInfo {
+                id: 43,
+                proposal_id: 31,
+                proposal_code: "cm".to_string(),
+                proposal_number: 10031,
+                visit: 4,
+                instrument: Instrument::I22,
+                start_date: datetime!(2024-05-24 09:00:00),
+                end_date: datetime!(2024-08-09 09:00:00),
+            }],
+            DirectSubjects::default(),
+            ProposalSubjects::default(),
+            None,
+            None,
+            true,
+        );
+
+        let session = sessions.get("cm10031-4").expect("session should exist");
+        assert_eq!(session.gid, Some(synthetic_gid("cm10031-4")));
+        assert_eq!(session.members, BTreeSet::new());
     }
 }

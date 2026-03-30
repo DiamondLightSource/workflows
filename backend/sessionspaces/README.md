@@ -13,6 +13,13 @@ to ensure efficient and organized management of namespaces. Specifically, it:
 These operations are executed periodically to maintain an up-to-date session
 namespaces within the virtual cluster.
 
+## Local mode
+
+Set `SKIP_LDAP=true` to run sessionspaces without connecting to LDAP. In that
+mode the controller still reads ISPyB, keeps the direct and proposal member
+lists, omits LDAP-derived members, and synthesizes deterministic GIDs for each
+session namespace.
+
 ## Connect to vcluster and use kubectl inside dev contanier
 
 First download the vcluster binary:
