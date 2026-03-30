@@ -38,4 +38,4 @@ testcontainers = {version = "0.26.0", features = ["http_wait_plain"]}
 [dev-dependencies]
 mockito.workspace = true
 serde_json.workspace = true
-migration = { version = "0.1.0", path = "../oidc-bff/migration" }
+migration = { version = "0.1.0", path = "../auth-core/migration" }
