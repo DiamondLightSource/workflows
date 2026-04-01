@@ -2,7 +2,11 @@ secrets:
   cluster: pollux
 
 backup:
-  enabled: true
+  etcd:
+    enabled: true
+    snapshotDir: /backup/
+    snapshotName: etcd-snapshot
+    fileExtension: .db
   bucket:
     prefix: staging
 

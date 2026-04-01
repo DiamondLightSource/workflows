@@ -1,10 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: etcd-rclone-scripts
+  name: rclone-scripts
 data:
   rclone-upload.sh: |
-    SNAP=/backup/etcd-snapshot.db
+    SNAP="${SNAPSHOT_DIR}${SNAPSHOT_NAME}${SNAPSHOT_EXT}"
+
     # Check for today's backup
     if [ ! -s "$SNAP" ]; then
       echo "Backup does not exist"
@@ -15,10 +16,10 @@ data:
     failed="false"
 
     # Timestamp
-    mv "$SNAP" /backup/etcd-snapshot-$(date +%Y-%m-%d_%H-%M-%S_%Z).db || failed="true"
+    mv $SNAP "${SNAPSHOT_DIR}${SNAPSHOT_NAME}-$(date +%Y-%m-%d)${SNAPSHOT_EXT}" || failed="true"
 
     echo "backing up to echo S3"
-    rclone copy /backup/ echo:dls-workflows-prod/${PREFIX}
+    rclone copy ${SNAPSHOT_DIR} echo:dls-workflows-prod/${PREFIX}
     rclone_echo_s3_exit_code=$?
 
     if [ $rclone_echo_s3_exit_code -eq 0 ]; then
@@ -30,7 +31,7 @@ data:
 
     # Delete old backed up objects, with age >= 2 days.
     echo "deleting old backups from echo s3"
-    rclone delete --min-age=2d echo:dls-workflows-prod/${PREFIX}
+    rclone delete --min-age=2d --include "*${SNAPSHOT_EXT}" echo:dls-workflows-prod/${PREFIX}
     rclone_delete_echo_s3_exit_code=$?
 
     if [ $rclone_delete_echo_s3_exit_code -eq 0 ]; then
@@ -47,7 +48,14 @@ data:
 
   rclone-download.sh: |
     echo "Starting script"
-    LAST=$(rclone lsf --files-only --include "etcd-snapshot*.db" echo:dls-workflows-prod/${PREFIX} | sort | tail -1)
-    rclone copyto -P echo:dls-workflows-prod/${PREFIX}/${LAST} /snapshot/snapshot.db
-    rm -rf /var/lib/etcd
-    mkdir -p /var/lib/etcd
+    LAST=$(rclone lsf -R --files-only --include "${SNAPSHOT_NAME}*${SNAPSHOT_EXT}" echo:dls-workflows-prod | sort | tail -1)
+    if [ -z "$LAST" ]; then
+      echo "No backups found in bucket"
+      exit 1
+    fi
+    echo "Downloading $LAST"
+    rclone copyto -P echo:dls-workflows-prod/${LAST} /snapshot/snapshot${SNAPSHOT_EXT}
+    if [ "$RESET_ETCD" = true ]; then
+      rm -rf /var/lib/etcd
+      mkdir -p /var/lib/etcd
+    fi
