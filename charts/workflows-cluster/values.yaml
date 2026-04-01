@@ -3,7 +3,11 @@ secrets:
   cluster: argus
 
 backup:
-  enabled: false
+  etcd:
+    enabled: false
+    snapshotDir: /backup/
+    snapshotName: etcd-snapshot
+    fileExtension: .db
   bucket:
     prefix: prod
 
@@ -142,6 +146,7 @@ vcluster:
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/postgres-application-passwords": "workflows/postgres-application-passwords"
             "/postgres-initdb-script": "workflows/postgres-initdb-script"
+            "/etcd-rclone-config": "workflows/etcd-rclone-config"
   rbac:
     clusterRole:
       enabled: false
