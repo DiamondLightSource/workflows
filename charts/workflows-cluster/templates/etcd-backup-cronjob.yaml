@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: backup-etcd
 spec:
-  {{- if .Values.backup.enabled }}
+  {{- if .Values.backup.etcd.enabled }}
   schedule: "@daily"
   {{ else }}
   schedule: "@yearly"
@@ -16,7 +16,7 @@ spec:
         spec:
           initContainers:
           - name: backup
-            image: registry.k8s.io/etcd:3.5.21-0
+            image: registry.k8s.io/etcd:3.6.4-0
             env:
             - name: ETCDCTL_CACERT
               value: /certs/etcd-ca.crt
@@ -30,7 +30,7 @@ spec:
               - --debug
               - snapshot
               - save
-              - /backup/etcd-snapshot.db
+              - "{{- $.Values.backup.etcd.snapshotDir -}}{{- $.Values.backup.etcd.snapshotName -}}{{- $.Values.backup.etcd.fileExtension }}"
             volumeMounts:
             - name: backup
               mountPath: /backup
@@ -51,9 +51,15 @@ spec:
               value: /etc/rclone.conf
             - name: PREFIX
               value: {{ $.Values.backup.bucket.prefix | quote }}
+            - name: SNAPSHOT_DIR
+              value: {{ $.Values.backup.etcd.snapshotDir | quote }}
+            - name: SNAPSHOT_NAME
+              value: {{ $.Values.backup.etcd.snapshotName | quote }}
+            - name: SNAPSHOT_EXT
+              value: {{ $.Values.backup.etcd.fileExtension | quote }}
             volumeMounts:
             - name: backup
-              mountPath: /backup
+              mountPath: {{ $.Values.backup.etcd.snapshotDir | quote }}
             - name: scripts
               mountPath: /scripts
             - name: rclone-conf
@@ -70,7 +76,7 @@ spec:
             emptyDir: {}
           - name: scripts
             configMap:
-              name: etcd-rclone-scripts
+              name: rclone-scripts
           - name: rclone-conf
             secret:
               secretName: etcd-rclone-config

@@ -3,7 +3,11 @@ secrets:
   cluster: dev
 
 backup:
-  enabled: false
+  etcd:
+    enabled: false
+    snapshotDir: /backup/
+    snapshotName: etcd-snapshot
+    fileExtension: .db
   bucket:
     prefix: dev
 

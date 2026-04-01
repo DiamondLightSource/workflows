@@ -17,7 +17,7 @@ spec:
           volumes:
             - name: scripts
               configMap:
-                name: etcd-rclone-scripts
+                name: rclone-scripts
                 defaultMode: 0755
             - name: snapshot
               emptyDir: {}
@@ -30,12 +30,16 @@ spec:
           initContainers:
             - name: rclone
               image: docker.io/rclone/rclone
-              command: [/bin/sh, "-c", "/scripts/rclone-download.sh"]
+              command: [/bin/sh, "-c", "/scripts/rclone-download-etcd.sh"]
               env:
                 - name: RCLONE_CONFIG
                   value: /etc/rclone.conf
                 - name: PREFIX
                   value: {{ $.Values.backup.bucket.prefix | quote }}
+                - name: SNAPSHOT_NAME
+                  value: {{ $.Values.backup.etcd.snapshotName | quote }}
+                - name: RESET_ETCD
+                  value: true
               volumeMounts:
                 - name: scripts
                   mountPath: /scripts
@@ -53,8 +57,8 @@ spec:
                   ephemeral-storage: "8Gi"
           containers:
             - name: restore-etcd
-              image: registry.k8s.io/etcd:3.5.21-0
-              command: ["etcdctl"]
+              image: registry.k8s.io/etcd:3.6.4-0
+              command: ["etcdutl"]
               args:
                 - snapshot
                 - restore
