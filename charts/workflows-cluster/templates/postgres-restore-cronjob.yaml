@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "restore-postgres"
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: scripts
+          configMap:
+            name: rclone-scripts
+            defaultMode: 0755
+        - name: snapshot
+          emptyDir: {}
+        - name: rclone-conf
+          secret:
+            secretName: etcd-rclone-config
+      initContainers:
+        - name: rclone
+          image: docker.io/rclone/rclone
+          command: [/bin/sh, "-c", "/scripts/rclone-download.sh"]
+          env:
+            - name: RCLONE_CONFIG
+              value: /etc/rclone.conf
+            - name: PREFIX
+              value: {{ $.Values.backup.bucket.prefix | quote }}
+            - name: SNAPSHOT_NAME
+              value: {{ $.Values.backup.postgres.snapshotName | quote }}
+            - name: SNAPSHOT_EXT
+              value: {{ $.Values.backup.postgres.fileExtension | quote }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: snapshot
+              mountPath: /snapshot
+            - name: rclone-conf
+              mountPath: /etc/rclone.conf
+              subPath: rclone.conf
+          resources:
+            requests:
+              ephemeral-storage: "1Gi"
+            limits:
+              ephemeral-storage: "2Gi"
+      containers:
+        - name: restore-postgres
+          image: docker.io/postgres
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              host="workflows-postgresql-ha-postgresql-0.workflows-postgresql-ha-postgresql-headless"
+              if psql -h "$host" -U postgres -tAc "SELECT pg_is_in_recovery()" | grep -q t; then
+                echo "This is not the primary host"
+                exit 1
+              fi
+              echo "Beginning restore"
+              psql -h "$PRIMARY" -d $DB -U $PGUSER -f /snapshot/snapshot$(SNAPSHOT_EXT)
+              echo "Restore complete."
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-passwords
+                  key: password
+            - name: PGUSER
+              value: postgres
+            - name: DB
+              value: argo_workflows
+            - name: SNAPSHOT_NAME
+              value: {{ $.Values.backup.postgres.snapshotName | quote }}
+            - name: SNAPSHOT_EXT
+              value: {{ $.Values.backup.postgres.fileExtension | quote }}
+          volumeMounts:
+            - name: snapshot
+              mountPath: /snapshot
+          

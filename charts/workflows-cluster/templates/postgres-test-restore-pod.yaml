@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-test
+spec:
+  dnsPolicy: ClusterFirst
+  initContainers:
+    - name: rclone
+      image: docker.io/rclone/rclone
+      command: [/bin/sh, "-c", "/scripts/rclone-download.sh"]
+      env:
+        - name: RCLONE_CONFIG
+          value: /etc/rclone.conf
+        - name: PREFIX
+          value: staging
+        - name: SNAPSHOT_NAME
+          value: postgres-snapshot
+        - name: SNAPSHOT_EXT
+          value: ".pgdump"
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        - name: snapshot
+          mountPath: /snapshot
+        - name: rclone-conf
+          mountPath: /etc/rclone.conf
+          subPath: rclone.conf
+      resources:
+        requests:
+          ephemeral-storage: "1Gi"
+        limits:
+          ephemeral-storage: "2Gi"
+  containers:
+    - name: postgres-test
+      image: docker.io/postgres
+      command: ["/bin/sh", -c]
+      args:
+        - |
+          sleep infinity
+      env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-passwords
+              key: password
+        - name: PGUSER
+          value: argo_workflows
+        - name: DB
+          value: argo_workflows
+        - name: PGPORT
+          value: "5432"
+      volumeMounts:
+        - mountPath: "/snapshot/"
+          name: snapshot
+          readOnly: false
+      resources:
+        requests:
+          ephemeral-storage: "1Gi"
+        limits:
+          ephemeral-storage: "2Gi"
+  volumes:
+    - name: scripts
+      configMap:
+        name: rclone-scripts
+        defaultMode: 0755
+    - name: snapshot
+      emptyDir: {}
+    - name: rclone-conf
+      secret:
+        secretName: etcd-rclone-config
