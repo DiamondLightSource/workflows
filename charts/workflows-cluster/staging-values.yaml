@@ -7,6 +7,11 @@ backup:
     snapshotDir: /backup/
     snapshotName: etcd-snapshot
     fileExtension: .db
+  postgres:
+    enabled: true
+    snapshotDir: /backup/
+    snapshotName: postgres-snapshot
+    fileExtension: .pgdump
   bucket:
     prefix: staging
 

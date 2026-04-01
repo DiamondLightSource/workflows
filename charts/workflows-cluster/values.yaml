@@ -8,6 +8,11 @@ backup:
     snapshotDir: /backup/
     snapshotName: etcd-snapshot
     fileExtension: .db
+  postgres:
+    enabled: false
+    snapshotDir: /backup/
+    snapshotName: postgres-snapshot
+    fileExtension: .pgdump
   bucket:
     prefix: prod
 
