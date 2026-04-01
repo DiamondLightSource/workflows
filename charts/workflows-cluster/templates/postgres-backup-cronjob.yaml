@@ -1,0 +1,96 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-postgres
+spec:
+  {{- if $.Values.backup.postgres.enabled }}
+  schedule: "@daily"
+  {{ else }}
+  schedule: "@yearly"
+  suspend: true
+  {{- end }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          initContainers:
+            - name: create-backup
+              image: docker.io/postgres
+              command: ["pg_dump"]
+              args:
+                - -h
+                - $(PGHOST)
+                - -U
+                - $(PGUSER)
+                - -d
+                - $(DB)
+                - --clean
+                - --if-exists
+                - --no-password
+                - --file={{- $.Values.backup.postgres.snapshotDir -}}{{- $.Values.backup.postgres.snapshotName -}}{{- $.Values.backup.postgres.fileExtension }}
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-argo-workflows-password
+                      key: password
+                - name: PGHOST
+                  value: workflows-postgresql-ha-pgpool-x-workflows-x-workflows-cluster
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-argo-workflows-password
+                      key: username
+                - name: DB
+                  value: argo_workflows
+                - name: PGPORT
+                  value: "5432"
+              volumeMounts:
+                - mountPath: {{ $.Values.backup.postgres.snapshotDir | quote }}
+                  name: backup
+                  readOnly: false
+              resources:
+                requests:
+                  ephemeral-storage: "1Gi"
+                limits:
+                  ephemeral-storage: "2Gi"
+          containers:
+          - name: rclone
+            image: docker.io/rclone/rclone
+            command: ["/bin/sh"]
+            args: ["/scripts/rclone-upload.sh"]
+            env:
+            - name: RCLONE_CONFIG
+              value: /etc/rclone.conf
+            - name: PREFIX
+              value: {{ $.Values.backup.bucket.prefix | quote }}
+            - name: SNAPSHOT_DIR
+              value: {{ $.Values.backup.postgres.snapshotDir | quote }}
+            - name: SNAPSHOT_NAME
+              value: {{ $.Values.backup.postgres.snapshotName | quote }}
+            - name: SNAPSHOT_EXT
+              value: {{ $.Values.backup.postgres.fileExtension | quote }}
+            volumeMounts:
+            - name: backup
+              mountPath: {{ $.Values.backup.postgres.snapshotDir | quote }}
+            - name: scripts
+              mountPath: /scripts
+            - name: rclone-conf
+              mountPath: /etc/rclone.conf
+              subPath: rclone.conf
+            resources:
+              requests:
+                ephemeral-storage: "1Gi"
+              limits:
+                ephemeral-storage: "2Gi"
+          restartPolicy: Never
+          volumes:
+            - name: backup
+              emptyDir: {}
+            - name: scripts
+              configMap:
+                name: rclone-scripts
+            - name: rclone-conf
+              secret:
+                secretName: etcd-rclone-config
