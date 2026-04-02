@@ -16,6 +16,8 @@ groups:
 kyverno:
   enabled: true
   valuesObject:
+    config:
+      updateRequestThreshold: 50000
     admissionController:
       replicas: 1
       container:
