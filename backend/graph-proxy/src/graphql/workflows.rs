@@ -1758,7 +1758,7 @@ mod tests {
             .expect("missing code")
             .clone()
             .into_json()
-            .expect("invaldi json");
+            .expect("invalid json");
         let expected_value = json!(AuthErrorCode::UNAUTHENTICATED.to_string());
         assert_eq!(error_code, expected_value);
     }

@@ -338,7 +338,7 @@ fn to_argo_parameter(name: String, value: Value) -> Result<Option<String>, serde
 
 #[cfg(test)]
 mod tests {
-    use crate::graphql::validate_auth::ValidatedAuthToken;
+    use crate::graphql::{auth_guard::AuthErrorCode, validate_auth::ValidatedAuthToken};
 
     use super::WorkflowTemplatesQuery;
     use anyhow::Ok;
@@ -522,4 +522,59 @@ mod tests {
         workflows_endpoint.assert_async().await;
         assert_eq!(response.data.into_json().unwrap(), expected);
     }
+
+
+    #[tokio::test]
+    async fn unauthenticated_query_returns_null() -> anyhow::Result<()> {
+
+
+        let workflow_template_name = "numpy-benchmark";
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-template.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/cluster-workflow-templates/{workflow_template_name}")[..],
+            )
+            .expect(0)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(ValidatedAuthToken::Invalid)
+            .finish();
+        let response = schema
+            .execute(format!(
+                "{{ workflowTemplate(name: \"{workflow_template_name}\") {{ name repository }} }}"
+            ))
+            .await;
+        workflow_endpoint.assert_async().await;
+
+        let expected_data = json!(null);
+        assert_eq!(
+            response.data.into_json().expect("invalid response json"),
+            expected_data
+        );
+        let error_code = response.errors[0]
+            .extensions
+            .as_ref()
+            .expect("missing extensions")
+            .get("code")
+            .expect("missing code")
+            .clone()
+            .into_json()
+            .expect("invalid json");
+        let expected_value = json!(AuthErrorCode::UNAUTHENTICATED.to_string());
+        assert_eq!(error_code, expected_value);
+        Ok(())
+    }
+    
 }
