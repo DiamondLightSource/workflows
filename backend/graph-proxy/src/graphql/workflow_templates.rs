@@ -344,6 +344,7 @@ mod tests {
     use anyhow::Ok;
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
     use axum_extra::headers::{authorization::Bearer, Authorization};
+    use rstest::rstest;
     use serde_json::json;
 
     fn test_token() -> ValidatedAuthToken {
@@ -523,11 +524,14 @@ mod tests {
         assert_eq!(response.data.into_json().unwrap(), expected);
     }
 
-
     #[tokio::test]
-    async fn unauthenticated_query_returns_null() -> anyhow::Result<()> {
-
-
+    #[rstest]
+    #[case(ValidatedAuthToken::Missing)]
+    #[case(ValidatedAuthToken::Invalid)]
+    #[case(ValidatedAuthToken::Failed("reason".to_string()))]
+    async fn unauthenticated_query_returns_null(
+        #[case] auth_token: ValidatedAuthToken,
+    ) -> anyhow::Result<()> {
         let workflow_template_name = "numpy-benchmark";
 
         let mut server = mockito::Server::new_async().await;
@@ -549,7 +553,7 @@ mod tests {
         let argo_server_url = url::Url::parse(&server.url())?;
         let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
             .data(crate::ArgoServerUrl(argo_server_url))
-            .data(ValidatedAuthToken::Invalid)
+            .data(auth_token)
             .finish();
         let response = schema
             .execute(format!(
@@ -576,5 +580,4 @@ mod tests {
         assert_eq!(error_code, expected_value);
         Ok(())
     }
-    
 }

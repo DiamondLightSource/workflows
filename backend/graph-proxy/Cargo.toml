@@ -42,6 +42,7 @@ eventsource-stream = "0.2.3"
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
 openidconnect = "4.0.1"
+rstest = "0.26.1"
 
 [dev-dependencies]
 graphql-ws-client = { version = "0.12.0", features = ["client-graphql-client", "tungstenite-0.28"] }

@@ -689,6 +689,7 @@ mod tests {
     use crate::graphql::validate_auth::ValidatedAuthToken;
     use crate::graphql::{root_schema_builder, Authorization, Bearer, Visit};
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
+    use rstest::rstest;
     use serde_json::json;
     use std::path::PathBuf;
     use url::Url;
@@ -1732,10 +1733,46 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn unauthenticated_query_returns_null() {
-        let schema = root_schema_builder()
-            .data(ValidatedAuthToken::Missing)
-            .finish();
+    #[rstest]
+    #[case(ValidatedAuthToken::Missing)]
+    #[case(ValidatedAuthToken::Invalid)]
+    #[case(ValidatedAuthToken::Failed("reason".to_string()))]
+    async fn unauthenticated_query_returns_null(#[case] auth_token: ValidatedAuthToken) {
+        let schema = root_schema_builder().data(auth_token).finish();
+        let query = r#"
+            query {
+                workflow(name: "workflowName", visit: {proposalCode: "xy", proposalNumber: 1234, number: 5678}) {
+                    name
+                }
+            }
+        "#;
+        let resp = schema.execute(query).await;
+
+        let expected_data = json!(null);
+        assert_eq!(
+            resp.data.into_json().expect("invalid response json"),
+            expected_data
+        );
+        let error_code = resp.errors[0]
+            .extensions
+            .as_ref()
+            .expect("missing extensions")
+            .get("code")
+            .expect("missing code")
+            .clone()
+            .into_json()
+            .expect("invalid json");
+        let expected_value = json!(AuthErrorCode::UNAUTHENTICATED.to_string());
+        assert_eq!(error_code, expected_value);
+    }
+
+    #[tokio::test]
+    #[rstest]
+    #[case(ValidatedAuthToken::Missing)]
+    #[case(ValidatedAuthToken::Invalid)]
+    #[case(ValidatedAuthToken::Failed("reason".to_string()))]
+    async fn unauthenticated_mutation_returns_null(#[case] auth_token: ValidatedAuthToken) {
+        let schema = root_schema_builder().data(auth_token).finish();
         let query = r#"
             query {
                 workflow(name: "workflowName", visit: {proposalCode: "xy", proposalNumber: 1234, number: 5678}) {
