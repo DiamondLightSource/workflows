@@ -1,5 +1,5 @@
 use super::{Visit, VisitInput, CLIENT};
-use crate::{ArgoServerUrl, S3Bucket, graphql::{auth_guard::AuthGuard, filters::WorkflowFilter}};
+use crate::{ArgoServerUrl, S3Bucket, graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, validate_auth::ValidatedAuthToken}};
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
@@ -223,7 +223,7 @@ impl WorkflowRunningStatus<'_> {
     async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
         let url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let token = ctx
-            .data_unchecked::<Option<Authorization<Bearer>>>()
+            .data_unchecked::<ValidatedAuthToken>().as_token()
             .to_owned();
         let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
         Ok(TaskMap(nodes).into_tasks())
@@ -291,8 +291,7 @@ impl WorkflowCompleteStatus<'_> {
     async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
         let url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let token = ctx
-            .data_unchecked::<Option<Authorization<Bearer>>>()
-            .to_owned();
+            .data_unchecked::<ValidatedAuthToken>().as_token();
         let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
         Ok(TaskMap(nodes).into_tasks())
     }
@@ -476,7 +475,7 @@ impl Task {
 /// Fetch missing task information
 async fn fetch_missing_task_info(
     mut url: Url,
-    token: Option<Authorization<Bearer>>,
+    token: Option<&Authorization<Bearer>>,
     manifest: &IoArgoprojWorkflowV1alpha1WorkflowStatus,
     metadata: &Metadata,
 ) -> anyhow::Result<HashMap<String, IoArgoprojWorkflowV1alpha1NodeStatus>> {
@@ -546,11 +545,10 @@ impl TaskMap {
 #[derive(Debug, Clone, Default)]
 pub struct WorkflowsQuery;
 
-#[Object]
+#[Object(guard = "AuthGuard")]
 impl WorkflowsQuery {
     /// Get a single [`Workflow`] by proposal, visit, and name
     #[instrument(name = "graph_proxy_workflow", skip(self, ctx))]
-    #[graphql(guard = AuthGuard)]
     pub async fn workflow(
         &self,
         ctx: &Context<'_>,
@@ -558,7 +556,7 @@ impl WorkflowsQuery {
         name: String,
     ) -> anyhow::Result<Workflow> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
         let mut url = server_url.clone();
         url.path_segments_mut().unwrap().extend([
             "api",
@@ -592,7 +590,7 @@ impl WorkflowsQuery {
         filter: Option<WorkflowFilter>,
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, Workflow, EmptyFields, EmptyFields>> {
         let mut url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
-        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &visit.to_string()]);
@@ -692,6 +690,11 @@ mod tests {
     use std::path::PathBuf;
     use url::Url;
 
+    fn test_token() -> ValidatedAuthToken {
+        let token = Authorization::bearer("test-token").expect("token always valid");
+        ValidatedAuthToken::Valid(token)
+    }
+
     #[tokio::test]
     async fn single_workflow_query() {
         let workflow_name = "numpy-benchmark-wdkwj";
@@ -719,7 +722,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -769,7 +772,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -833,7 +836,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -897,7 +900,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -961,7 +964,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1031,7 +1034,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1085,7 +1088,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1179,7 +1182,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1252,7 +1255,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1307,7 +1310,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .data(s3_client)
             .data(s3_bucket.clone())
             .finish();
@@ -1393,7 +1396,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1459,7 +1462,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1510,7 +1513,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url.clone()))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
 
         let query = format!(
@@ -1590,7 +1593,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url.clone()))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
 
         let query = format!(
@@ -1647,7 +1650,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"
@@ -1700,7 +1703,7 @@ mod tests {
         let argo_server_url = Url::parse(&server.url()).unwrap();
         let schema = root_schema_builder()
             .data(ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let query = format!(
             r#"

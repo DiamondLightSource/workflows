@@ -10,7 +10,10 @@ pub enum AuthErrorCode {
 
 impl Guard for AuthGuard {
     async fn check(&self, ctx: &Context<'_>) -> Result<()> {
-        let auth = ctx.data::<ValidatedAuthToken>().map_err(|_| "Internal Server Error")?;
+        let auth = ctx.data::<ValidatedAuthToken>().map_err(|_| 
+Error::new("Authentication context missing")
+        .extend_with(|_, e| e.set("code", "UNAUTHENTICATED"))
+)?;
 
         match auth {
             ValidatedAuthToken::Valid(_) => Ok(()),

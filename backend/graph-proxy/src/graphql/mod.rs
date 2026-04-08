@@ -160,7 +160,8 @@ pub async fn graphql_handler(
             .add(1, &[KeyValue::new("request_type", "unparseable")]);
     };
 
-    let auth_token = ValidatedAuthToken::from_typed_header(auth_token_header);
+    let auth_token = ValidatedAuthToken::from_typed_header(auth_token_header).await;
+
     let mut response = state.schema.execute(query.data(auth_token)).await;
     if let Some(Value::Object(analyzer)) = response.extensions.remove("analyzer") {
         let depth = analyzer.get("depth").and_then(|value| match value {
