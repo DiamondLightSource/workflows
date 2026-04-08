@@ -6,14 +6,15 @@ use openidconnect::{AccessToken, ClientId, ClientSecret, IntrospectionUrl, Issue
 #[derive(Clone, Debug)]
 pub enum ValidatedAuthToken {
     Valid(Authorization<Bearer>),
-    Invalid(String),
+    Invalid,
     Missing,
+    Failed(String),
 }
 
 impl ValidatedAuthToken {
-    pub fn from_typed_header(authorization_header: Option<TypedHeader<Authorization<Bearer>>>) -> Self {
+    pub async fn from_typed_header(authorization_header: Option<TypedHeader<Authorization<Bearer>>>) -> Self {
         return match authorization_header { 
-            Some(bearer_token) => validate_token(bearer_token.0),
+            Some(bearer_token) => validate_token(bearer_token.0).await.unwrap_or_else(|it| ValidatedAuthToken::Failed(it.to_string())),
             None  => ValidatedAuthToken::Missing
         }
     }
@@ -21,11 +22,14 @@ impl ValidatedAuthToken {
     pub fn as_token(&self) -> Option<&Authorization<Bearer>> {
         match self {
             ValidatedAuthToken::Valid(authorization) => Some(authorization),
-            ValidatedAuthToken::Invalid(_) => None,
+            ValidatedAuthToken::Invalid => None,
             ValidatedAuthToken::Missing => None,
+            ValidatedAuthToken::Failed(_) => None,
         }
     }
 }
+
+
 
 async fn validate_token(token: Authorization<Bearer>) -> anyhow::Result<ValidatedAuthToken> {
 
@@ -58,6 +62,6 @@ async fn validate_token(token: Authorization<Bearer>) -> anyhow::Result<Validate
     if introspection_response.active() {
         return Ok(ValidatedAuthToken::Valid(token))
     } else {
-        return Ok(ValidatedAuthToken::Invalid("Inactive token".to_string()))
+        return Ok(ValidatedAuthToken::Invalid)
     }
 }

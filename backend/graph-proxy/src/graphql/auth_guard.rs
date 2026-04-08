@@ -14,14 +14,18 @@ impl Guard for AuthGuard {
 
         match auth {
             ValidatedAuthToken::Valid(_) => Ok(()),
-            ValidatedAuthToken::Invalid(reason) => {
-                Err(Error::new(format!("Authentication error: Invalid token: {}", reason))
+            ValidatedAuthToken::Invalid => {
+                Err(Error::new(format!("Authentication error: Invalid token"))
                     .extend_with(|_, e| e.set("code", AuthErrorCode::UNAUTHENTICATED.to_string())))
             }
             ValidatedAuthToken::Missing => {
                 Err(Error::new("Authentication error: Missing Bearer token")
                     .extend_with(|_, e| e.set("code", AuthErrorCode::UNAUTHENTICATED.to_string())))
             }
+            ValidatedAuthToken::Failed(reason) => {
+                Err(Error::new(format!("Authentication failed: {reason}"))
+                    .extend_with(|_, e| e.set("code", AuthErrorCode::UNAUTHENTICATED.to_string())))
+            },
         }
     }
 }
