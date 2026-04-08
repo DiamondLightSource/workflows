@@ -1,19 +1,19 @@
 use std::fmt::Display;
 
-use async_graphql::{Context, Error, ErrorExtensions, Guard, Result};
 use crate::graphql::validate_auth::ValidatedAuthToken;
+use async_graphql::{Context, Error, ErrorExtensions, Guard, Result};
 
 pub struct AuthGuard;
 pub enum AuthErrorCode {
-    UNAUTHENTICATED
+    UNAUTHENTICATED,
 }
 
 impl Guard for AuthGuard {
     async fn check(&self, ctx: &Context<'_>) -> Result<()> {
-        let auth = ctx.data::<ValidatedAuthToken>().map_err(|_| 
-Error::new("Authentication context missing")
-        .extend_with(|_, e| e.set("code", "UNAUTHENTICATED"))
-)?;
+        let auth = ctx.data::<ValidatedAuthToken>().map_err(|_| {
+            Error::new("Authentication context missing")
+                .extend_with(|_, e| e.set("code", "UNAUTHENTICATED"))
+        })?;
 
         match auth {
             ValidatedAuthToken::Valid(_) => Ok(()),
@@ -28,7 +28,7 @@ Error::new("Authentication context missing")
             ValidatedAuthToken::Failed(reason) => {
                 Err(Error::new(format!("Authentication failed: {reason}"))
                     .extend_with(|_, e| e.set("code", AuthErrorCode::UNAUTHENTICATED.to_string())))
-            },
+            }
         }
     }
 }

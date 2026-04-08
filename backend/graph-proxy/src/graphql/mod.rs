@@ -14,7 +14,8 @@ mod subscription;
 /// Axum-specific websocket handling to support subscriptions
 pub mod subscription_integration;
 
-use crate::{RouterState, graphql::validate_auth::ValidatedAuthToken};
+use crate::graphql::auth_guard::AuthGuard;
+use crate::{graphql::validate_auth::ValidatedAuthToken, RouterState};
 
 use self::{
     subscription::WorkflowsSubscription,
@@ -60,7 +61,7 @@ pub struct Query(NodeQuery, WorkflowsQuery, WorkflowTemplatesQuery);
 #[derive(Debug, Clone, Default)]
 pub struct NodeQuery;
 
-#[Object]
+#[Object(guard = "AuthGuard")]
 impl NodeQuery {
     async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<NodeValue> {
         let id_str = id.to_string();

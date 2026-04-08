@@ -1,5 +1,8 @@
 use super::{Visit, VisitInput, CLIENT};
-use crate::{ArgoServerUrl, S3Bucket, graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, validate_auth::ValidatedAuthToken}};
+use crate::{
+    graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, validate_auth::ValidatedAuthToken},
+    ArgoServerUrl, S3Bucket,
+};
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
@@ -223,7 +226,8 @@ impl WorkflowRunningStatus<'_> {
     async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
         let url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
         let token = ctx
-            .data_unchecked::<ValidatedAuthToken>().as_token()
+            .data_unchecked::<ValidatedAuthToken>()
+            .as_token()
             .to_owned();
         let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
         Ok(TaskMap(nodes).into_tasks())
@@ -290,8 +294,7 @@ impl WorkflowCompleteStatus<'_> {
     /// Tasks created by the workflow
     async fn tasks(&self, ctx: &Context<'_>) -> anyhow::Result<Vec<Task>> {
         let url = ctx.data_unchecked::<ArgoServerUrl>().deref().to_owned();
-        let token = ctx
-            .data_unchecked::<ValidatedAuthToken>().as_token();
+        let token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
         let nodes = fetch_missing_task_info(url, token, self.manifest, self.metadata).await?;
         Ok(TaskMap(nodes).into_tasks())
     }
@@ -1728,7 +1731,6 @@ mod tests {
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
     }
 
-
     #[tokio::test]
     async fn unauthenticated_query_returns_null() {
         let schema = root_schema_builder()
@@ -1744,8 +1746,19 @@ mod tests {
         let resp = schema.execute(query).await;
 
         let expected_data = json!(null);
-        assert_eq!(resp.data.into_json().expect("invalid response json"), expected_data);
-        let error_code = resp.errors[0].extensions.as_ref().expect("missing extensions").get("code").expect("missing code").clone().into_json().expect("invaldi json");
+        assert_eq!(
+            resp.data.into_json().expect("invalid response json"),
+            expected_data
+        );
+        let error_code = resp.errors[0]
+            .extensions
+            .as_ref()
+            .expect("missing extensions")
+            .get("code")
+            .expect("missing code")
+            .clone()
+            .into_json()
+            .expect("invaldi json");
         let expected_value = json!(AuthErrorCode::UNAUTHENTICATED.to_string());
         assert_eq!(error_code, expected_value);
     }
