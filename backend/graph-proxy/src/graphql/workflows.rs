@@ -1,5 +1,5 @@
 use super::{Visit, VisitInput, CLIENT};
-use crate::{graphql::filters::WorkflowFilter, ArgoServerUrl, S3Bucket};
+use crate::{ArgoServerUrl, S3Bucket, graphql::{auth_guard::AuthGuard, filters::WorkflowFilter}};
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
@@ -550,6 +550,7 @@ pub struct WorkflowsQuery;
 impl WorkflowsQuery {
     /// Get a single [`Workflow`] by proposal, visit, and name
     #[instrument(name = "graph_proxy_workflow", skip(self, ctx))]
+    #[graphql(guard = AuthGuard)]
     pub async fn workflow(
         &self,
         ctx: &Context<'_>,
@@ -683,6 +684,8 @@ impl WorkflowCreator {
 
 #[cfg(test)]
 mod tests {
+    use crate::graphql::auth_guard::AuthErrorCode;
+    use crate::graphql::validate_auth::ValidatedAuthToken;
     use crate::graphql::{root_schema_builder, Authorization, Bearer, Visit};
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
     use serde_json::json;
@@ -1720,5 +1723,27 @@ mod tests {
             }
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+
+    #[tokio::test]
+    async fn unauthenticated_query_returns_null() {
+        let schema = root_schema_builder()
+            .data(ValidatedAuthToken::Missing)
+            .finish();
+        let query = r#"
+            query {
+                workflow(name: "workflowName", visit: {proposalCode: "xy", proposalNumber: 1234, number: 5678}) {
+                    name
+                }
+            }
+        "#;
+        let resp = schema.execute(query).await;
+
+        let expected_data = json!(null);
+        assert_eq!(resp.data.into_json().expect("invalid response json"), expected_data);
+        let error_code = resp.errors[0].extensions.as_ref().expect("missing extensions").get("code").expect("missing code").clone().into_json().expect("invaldi json");
+        let expected_value = json!(AuthErrorCode::UNAUTHENTICATED.to_string());
+        assert_eq!(error_code, expected_value);
     }
 }
