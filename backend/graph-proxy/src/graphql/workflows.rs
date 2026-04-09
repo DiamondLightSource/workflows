@@ -1,6 +1,7 @@
 use super::{Visit, VisitInput, CLIENT};
 use crate::{
-    graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, validate_auth::ValidatedAuthToken},
+    graphql::{auth_guard::AuthGuard, filters::WorkflowFilter},
+    validate_token::ValidatedAuthToken,
     ArgoServerUrl, S3Bucket,
 };
 use argo_workflows_openapi::{
@@ -686,8 +687,8 @@ impl WorkflowCreator {
 #[cfg(test)]
 mod tests {
     use crate::graphql::auth_guard::AuthErrorCode;
-    use crate::graphql::validate_auth::ValidatedAuthToken;
     use crate::graphql::{root_schema_builder, Authorization, Bearer, Visit};
+    use crate::validate_token::ValidatedAuthToken;
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
     use rstest::rstest;
     use serde_json::json;

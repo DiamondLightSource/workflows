@@ -11,9 +11,12 @@ mod s3client;
 /// Graph-proxy-specific metrics
 mod metrics;
 
+mod validate_token;
+
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
     metrics::{Metrics, MetricsState},
+    validate_token::TokenValidator,
 };
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
 use axum::{
@@ -81,6 +84,15 @@ struct ServeArgs {
     /// Configuration argument of the S3 client.
     #[command(flatten)]
     s3_client: S3ClientArgs,
+    /// The URL of the OIDC issuer (usually Keycloak)
+    #[arg(long, env = "OIDC_ISSUER_URL")]
+    oidc_issuer_url: Uri,
+    /// Client ID used to connect to OIDC issuer
+    #[arg(long, env = "OIDC_CLIENT_ID")]
+    oidc_client_id: String,
+    /// Client secret user to connect to OIDC issuer
+    #[arg(long, env = "OIDC_CLIENT_SECRET")]
+    oidc_client_secret: Option<String>,
 }
 
 /// Arguments for producing the GraphQL schema
@@ -125,8 +137,22 @@ async fn main() {
                 .data(args.s3_bucket)
                 .data(metrics_state.clone())
                 .finish();
-            let router =
-                setup_router(schema, &args.prefix_path, args.cors_allow, metrics_state).unwrap();
+            let token_validator = TokenValidator::new(
+                &args.oidc_issuer_url,
+                args.oidc_client_id,
+                args.oidc_client_secret,
+            )
+            .await
+            .expect("Failed to build OIDC token validator, Is Keycloak down?");
+            let router = setup_router(
+                schema,
+                &args.prefix_path,
+                args.cors_allow,
+                metrics_state,
+                token_validator,
+            )
+            .await
+            .unwrap();
             serve(router, args.host, args.port).await.unwrap();
         }
         Cli::Schema(args) => {
@@ -154,11 +180,12 @@ async fn main() {
 
 /// Creates an [`axum::Router`] serving GraphiQL and sychronous GraphQL
 #[instrument(name = "graph_proxy_router_setup", skip(schema))]
-fn setup_router(
+async fn setup_router(
     schema: RootSchema,
     prefix_path: &str,
     cors_allow: Option<Vec<Regex>>,
     metrics_state: MetricsState,
+    token_validator: TokenValidator,
 ) -> anyhow::Result<Router> {
     info!("Setting up the router");
     let cors_origin = if let Some(cors_allow) = cors_allow {
@@ -189,6 +216,7 @@ fn setup_router(
             .with_state(RouterState {
                 schema: schema.clone(),
                 metrics_state: metrics_state.clone(),
+                token_validator,
             }),
         )
         .route_service(
@@ -233,4 +261,5 @@ struct RouterState {
     schema: RootSchema,
     /// Arc of metric counters/histograms
     metrics_state: MetricsState,
+    token_validator: TokenValidator,
 }

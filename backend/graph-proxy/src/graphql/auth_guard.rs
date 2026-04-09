@@ -1,7 +1,8 @@
 use std::fmt::Display;
 
-use crate::graphql::validate_auth::ValidatedAuthToken;
 use async_graphql::{Context, Error, ErrorExtensions, Guard, Result};
+
+use crate::validate_token::ValidatedAuthToken;
 
 pub struct AuthGuard;
 pub enum AuthErrorCode {

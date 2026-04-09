@@ -4,11 +4,8 @@ use super::{
     workflows::Workflow,
     VisitInput, CLIENT,
 };
-use crate::graphql::auth_guard::AuthGuard;
-use crate::{
-    graphql::{filters::WorkflowTemplatesFilter, validate_auth::ValidatedAuthToken},
-    ArgoServerUrl,
-};
+use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidatedAuthToken};
+use crate::{graphql::filters::WorkflowTemplatesFilter, ArgoServerUrl};
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
@@ -338,7 +335,7 @@ fn to_argo_parameter(name: String, value: Value) -> Result<Option<String>, serde
 
 #[cfg(test)]
 mod tests {
-    use crate::graphql::{auth_guard::AuthErrorCode, validate_auth::ValidatedAuthToken};
+    use crate::{graphql::auth_guard::AuthErrorCode, validate_token::ValidatedAuthToken};
 
     use super::WorkflowTemplatesQuery;
     use anyhow::Ok;
