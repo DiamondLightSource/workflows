@@ -134,14 +134,14 @@ mod tests {
             .await
             .expect("failed to start mock OIDC server");
         let port = oidc_container.get_host_port_ipv4(8080).await?;
-
-        let mock_admin_url = format!("http://localhost:{}/default/token", port);
+        let host = oidc_container.get_host().await?;
+        let mock_admin_url = format!("http://{}:{}/default/token", host, port);
         let params = [
-            ("grant_type", "refresh_token"),
-            ("scope", "openid offline_access"),
+            ("grant_type", "client_credentials"),
+            ("scope", "openid"),
             ("subject", "test-subject"),
-            ("refresh_token", "test-refresh-token"),
             ("client_id", "test-client"),
+            ("client_secret", "test-secret"),
         ];
 
         let response: serde_json::Value = reqwest::Client::new()
@@ -152,15 +152,16 @@ mod tests {
             .await?
             .json()
             .await?;
+        println!("{}", response);
         let access_token = response
             .get("access_token")
             .context("no access token")?
             .as_str()
             .context("invalid access token")?;
         let access_token = Authorization::bearer(access_token)?;
-        let issuer_url = format!("http://localhost:{}/default", port).parse::<Uri>()?;
+        let issuer_url = format!("http://{}:{}/default", host, port).parse::<Uri>()?;
 
-        let token_validator = TokenValidator::new(&issuer_url, "test-client", None).await?;
+        let token_validator = TokenValidator::new(&issuer_url, "test-client", Some("test-secret".to_string())).await?;
 
         let authenticated_token = token_validator
             .validate_token(Some(access_token.clone()))
