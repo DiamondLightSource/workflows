@@ -10,6 +10,18 @@ use openidconnect::{
     IntrospectionUrl, IssuerUrl, TokenIntrospectionResponse,
 };
 
+use serde::{Deserialize, Serialize};
+
+use openidconnect::{
+    core::{
+        CoreAuthDisplay, CoreClaimName, CoreClaimType, CoreClientAuthMethod, CoreGrantType,
+        CoreJsonWebKey, CoreJsonWebKeyType, CoreJsonWebKeyUse, CoreJweContentEncryptionAlgorithm,
+        CoreJweKeyManagementAlgorithm, CoreJwsSigningAlgorithm, CoreResponseMode, CoreResponseType,
+        CoreSubjectIdentifierType,
+    },
+    AdditionalProviderMetadata, ProviderMetadata,
+};
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum ValidatedAuthToken {
     Valid(Authorization<Bearer>),
@@ -54,11 +66,20 @@ impl TokenValidator {
             .build()?;
         let oidc_issuer_url = oidc_issuer_url.into();
         // Use OpenID Connect Discovery to fetch the provider metadata.
-        let provider_metadata = CoreProviderMetadata::discover_async(
+        let provider_metadata = ProviderMetadataWithInstrospectionEndpoint::discover_async(
             IssuerUrl::new(oidc_issuer_url.to_string())?,
             &http_client,
         )
         .await?;
+
+        let introspection_endpoint = &provider_metadata
+            .additional_metadata()
+            .introspection_endpoint;
+        let introspection_endpoint = if let Some(introspection_endpoint) = introspection_endpoint {
+            introspection_endpoint.clone()
+        } else {
+            format!("{oidc_issuer_url}/protocol/openid-connect/token/introspect").to_string()
+        };
 
         let client = CoreClient::from_provider_metadata(
             provider_metadata,
@@ -66,9 +87,7 @@ impl TokenValidator {
             oidc_client_secret.into().map(ClientSecret::new),
         );
 
-        let client = client.set_introspection_url(IntrospectionUrl::new(
-            format!("{oidc_issuer_url}/protocol/openid-connect/token/introspect").to_string(),
-        )?);
+        let client = client.set_introspection_url(IntrospectionUrl::new(introspection_endpoint)?);
 
         Ok(Self {
             http_client,
@@ -106,6 +125,28 @@ impl TokenValidator {
         }
     }
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct IntrospectionEndpointProviderMetadata {
+    // Make it optional so discovery doesn't fail for providers that don't publish it.
+    introspection_endpoint: Option<String>,
+}
+impl AdditionalProviderMetadata for IntrospectionEndpointProviderMetadata {}
+
+type ProviderMetadataWithInstrospectionEndpoint = ProviderMetadata<
+    IntrospectionEndpointProviderMetadata,
+    CoreAuthDisplay,
+    CoreClientAuthMethod,
+    CoreClaimName,
+    CoreClaimType,
+    CoreGrantType,
+    CoreJweContentEncryptionAlgorithm,
+    CoreJweKeyManagementAlgorithm,
+    CoreJsonWebKey,
+    CoreResponseMode,
+    CoreResponseType,
+    CoreSubjectIdentifierType,
+>;
 
 #[cfg(test)]
 mod tests {
@@ -161,7 +202,9 @@ mod tests {
         let access_token = Authorization::bearer(access_token)?;
         let issuer_url = format!("http://{}:{}/default", host, port).parse::<Uri>()?;
 
-        let token_validator = TokenValidator::new(&issuer_url, "test-client", Some("test-secret".to_string())).await?;
+        let token_validator =
+            TokenValidator::new(&issuer_url, "test-client", Some("test-secret".to_string()))
+                .await?;
 
         let authenticated_token = token_validator
             .validate_token(Some(access_token.clone()))
