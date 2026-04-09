@@ -11,6 +11,7 @@ use async_graphql::{
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
+use serde_json::{from_str, Value};
 use std::{collections::HashMap, ops::Deref, path::Path};
 use tracing::{debug, instrument};
 use url::Url;
@@ -92,18 +93,18 @@ impl Workflow {
     }
 
     /// The top-level workflow parameters
-    async fn parameters(&self) -> Option<HashMap<&str, Option<&str>>> {
-        let arguments = self.manifest.spec.arguments.as_ref();
+    async fn parameters(&self) -> Option<HashMap<&str, Value>> {
+        let arguments = self.manifest.spec.arguments.as_ref()?;
+        let mut param_map = HashMap::new();
 
-        if let Some(args) = arguments {
-            let params = &args.parameters;
-            let mut param_map: HashMap<&str, Option<&str>> = HashMap::new();
-            params.iter().for_each(|this_parameter| {
-                param_map.insert(&this_parameter.name, this_parameter.value.as_deref());
-            });
-            return Some(param_map);
+        for p in &arguments.parameters {
+            let value = match &p.value {
+                Some(v) => from_str(v).unwrap_or(Value::String(v.clone())),
+                None => Value::Null,
+            };
+            param_map.insert(p.name.as_str(), value);
         }
-        None
+        Some(param_map)
     }
 
     /// The name of the template used to run the workflow
@@ -1663,7 +1664,77 @@ mod tests {
             "workflow": {
                 "parameters": {
                     "memory": "10Gi",
-                    "size": "1000"
+                    "size": 1000
+                }
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
+    async fn workflow_array_parameters() {
+        let workflow_name = "xrf-tomography-chbrh";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-with-arrays.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(None::<Authorization<Bearer>>)
+            .finish();
+        let query = format!(
+            r#"
+            query {{
+                workflow(name: "{}", visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}) {{
+                   parameters
+                }}
+            }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert_async().await;
+        let expected_data = json!({
+            "workflow": {
+                "parameters": {
+                    "multiScan": [
+                        {
+                        "multiScan": {
+                            "end": 100,
+                            "excluded": [],
+                            "start": 10
+                        }
+                        }
+                    ],
+                    "outputFolder": "testing",
+                    "multiEdge": [
+                        {
+                        "edgeElement": "N",
+                        "edgeTransition": "Lb"
+                        },
+
+                    ],
+                    "normalise": true,
+                    "alignmentSection": "all",
                 }
             }
         });
