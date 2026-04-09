@@ -1,0 +1,64 @@
+{
+    "metadata": {
+        "annotations": {
+            "workflows.argoproj.io/pod-name-format": "v1"
+        },
+        "creationTimestamp": "2026-04-08T13:23:58Z",
+        "generateName": "xrf-tomography-",
+        "generation": 3,
+        "labels": {
+            "workflows.argoproj.io/cluster-workflow-template": "xrf-tomography",
+            "workflows.argoproj.io/completed": "false",
+            "workflows.argoproj.io/creator": "8c6c8d05-0dc8-49bf-b732-f4c842d71086",
+            "workflows.argoproj.io/creator-email": "james.gilbert.at.diamond.ac.uk",
+            "workflows.argoproj.io/creator-preferred-username": "gmg29649",
+            "workflows.argoproj.io/phase": "Running",
+            "workflows.diamond.ac.uk/creator-posix-uid": "1227486"
+        },
+        "name": "xrf-tomography-chbrh",
+        "namespace": "mg36964-1",
+        "resourceVersion": "1983737624",
+        "uid": "bdb252fc-75e3-40c4-893f-e0210b79f64a"
+    },
+    "spec": {
+        "arguments": {
+            "parameters": [
+                {
+                    "name": "normalise",
+                    "value": "true"
+                },
+                {
+                    "name": "alignmentSection",
+                    "value": "all"
+                },
+                {
+                    "name": "outputFolder",
+                    "value": "testing"
+                },
+                {
+                    "name": "multiEdge",
+                    "value": "[{\"edgeElement\":\"N\",\"edgeTransition\":\"Lb\"}]"
+                },
+                {
+                    "name": "multiScan",
+                    "value": "[{\"multiScan\":{\"end\":100,\"excluded\":[],\"start\":10}}]"
+                }
+            ]
+        },
+        "podGC": {
+            "deleteDelayDuration": "60s",
+            "strategy": "OnPodCompletion"
+        },
+        "podMetadata": {
+            "labels": {
+                "kueue.x-k8s.io/priority-class": "medium",
+                "kueue.x-k8s.io/queue-name": "default-queue"
+            }
+        },
+        "workflowTemplateRef": {
+            "clusterScope": true,
+            "name": "xrf-tomography"
+        }
+    },
+    "status": {}
+}
