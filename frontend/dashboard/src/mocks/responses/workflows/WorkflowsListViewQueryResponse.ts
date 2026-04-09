@@ -912,9 +912,9 @@ export const workflowsListViewQueryResponse = {
         },
         templateRef: "sin-simulate-artifact",
         parameters: {
-          stop: "10",
-          step: "1",
-          start: "0",
+          stop: 10,
+          step: 1,
+          start: 0,
         },
         creator: {
           creatorId: "abc12345",
