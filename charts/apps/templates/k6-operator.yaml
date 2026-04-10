@@ -1,0 +1,35 @@
+{{- if .Values.k6Operator.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k6-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  destination:
+    namespace: {{ .Values.k6Operator.namespace }}
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/k6-operator
+    targetRevision: {{ .Values.k6Operator.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.k6Operator.extraValueFiles }}
+        {{- .Values.k6Operator.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.k6Operator.valuesObject }}
+      valuesObject:
+        {{- .Values.k6Operator.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+{{- end }}
