@@ -1,13 +1,8 @@
-use async_graphql::{Context, Error, Guard, Result};
 use axum::http::Uri;
-use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
-    TypedHeader,
-};
+use axum_extra::headers::{authorization::Bearer, Authorization};
 use openidconnect::{
-    core::{CoreClient, CoreProviderMetadata},
-    AccessToken, ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet,
-    IntrospectionUrl, IssuerUrl, TokenIntrospectionResponse,
+    core::CoreClient, AccessToken, ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet,
+    EndpointSet, IntrospectionUrl, IssuerUrl, TokenIntrospectionResponse,
 };
 
 use serde::{Deserialize, Serialize};
@@ -15,9 +10,8 @@ use serde::{Deserialize, Serialize};
 use openidconnect::{
     core::{
         CoreAuthDisplay, CoreClaimName, CoreClaimType, CoreClientAuthMethod, CoreGrantType,
-        CoreJsonWebKey, CoreJsonWebKeyType, CoreJsonWebKeyUse, CoreJweContentEncryptionAlgorithm,
-        CoreJweKeyManagementAlgorithm, CoreJwsSigningAlgorithm, CoreResponseMode, CoreResponseType,
-        CoreSubjectIdentifierType,
+        CoreJsonWebKey, CoreJweContentEncryptionAlgorithm, CoreJweKeyManagementAlgorithm,
+        CoreResponseMode, CoreResponseType, CoreSubjectIdentifierType,
     },
     AdditionalProviderMetadata, ProviderMetadata,
 };
@@ -43,7 +37,6 @@ impl ValidatedAuthToken {
 
 #[derive(Debug, Clone)]
 pub struct TokenValidator {
-    http_client: reqwest::Client,
     client: CoreClient<
         EndpointSet,
         EndpointNotSet,
@@ -89,10 +82,7 @@ impl TokenValidator {
 
         let client = client.set_introspection_url(IntrospectionUrl::new(introspection_endpoint)?);
 
-        Ok(Self {
-            http_client,
-            client,
-        })
+        Ok(Self { client })
     }
 
     pub async fn validate_token<T>(&self, authorization_header: Option<T>) -> ValidatedAuthToken
@@ -157,7 +147,7 @@ mod tests {
     use axum::http::Uri;
     use axum_extra::headers::Authorization;
     use testcontainers::core::wait::HttpWaitStrategy;
-    use testcontainers::core::{IntoContainerPort, WaitFor};
+    use testcontainers::core::WaitFor;
     use testcontainers::runners::AsyncRunner;
     use testcontainers::{GenericImage, ImageExt};
 
@@ -165,6 +155,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_token_validator() -> anyhow::Result<()> {
+        if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
+            eprintln!("Skipping test: running inside dev container");
+            return Ok(());
+        }
+
         let wait_strategy = HttpWaitStrategy::new("default/.well-known/openid-configuration")
             .with_expected_status_code(200u16);
         let oidc_container = GenericImage::new("ghcr.io/navikt/mock-oauth2-server", "3.0.1")

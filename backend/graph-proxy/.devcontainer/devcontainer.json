@@ -11,7 +11,8 @@
     "S3_BUCKET": "k8s-workflows-test",
     "S3_ENDPOINT_URL": "https://sci-nas-s3.diamond.ac.uk",
     // Connects to 'popup' monitoring stack. No issue if the endpoint can't be found
-    "METRICS_ENDPOINT": "http://localhost:4318/v1/metrics"
+    "METRICS_ENDPOINT": "http://localhost:4318/v1/metrics",
+    "WORKFLOWS_DEV_CONTAINER": "true"
   },
   "customizations": {
     "vscode": {

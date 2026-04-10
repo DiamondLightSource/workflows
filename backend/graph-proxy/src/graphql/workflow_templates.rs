@@ -12,7 +12,6 @@ use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
     Context, Json, Object, SimpleObject,
 };
-use axum_extra::headers::{authorization::Bearer, Authorization};
 use kube::{
     api::{ApiResource, DynamicObject},
     core::GroupVersionKind,
@@ -340,7 +339,7 @@ mod tests {
     use super::WorkflowTemplatesQuery;
     use anyhow::Ok;
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-    use axum_extra::headers::{authorization::Bearer, Authorization};
+    use axum_extra::headers::Authorization;
     use rstest::rstest;
     use serde_json::json;
 

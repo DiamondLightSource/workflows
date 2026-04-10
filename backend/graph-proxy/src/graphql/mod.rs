@@ -15,7 +15,6 @@ mod subscription;
 pub mod subscription_integration;
 
 use crate::graphql::auth_guard::AuthGuard;
-use crate::validate_token::ValidatedAuthToken;
 use crate::RouterState;
 
 use self::{

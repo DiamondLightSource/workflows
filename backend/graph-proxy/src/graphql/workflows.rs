@@ -687,7 +687,7 @@ impl WorkflowCreator {
 #[cfg(test)]
 mod tests {
     use crate::graphql::auth_guard::AuthErrorCode;
-    use crate::graphql::{root_schema_builder, Authorization, Bearer, Visit};
+    use crate::graphql::{root_schema_builder, Authorization, Visit};
     use crate::validate_token::ValidatedAuthToken;
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
     use rstest::rstest;
