@@ -9,6 +9,7 @@ use std::ops::Deref;
 
 use crate::{
     graphql::{
+        auth_guard::AuthGuard,
         workflows::{Workflow, WorkflowParsingError},
         VisitInput,
     },
@@ -65,6 +66,7 @@ fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
 #[Subscription]
 impl WorkflowsSubscription {
     /// Processing to subscribe to logs for a single pod of a workflow
+    #[graphql(guard = AuthGuard)]
     async fn logs(
         &self,
         ctx: &Context<'_>,
@@ -139,6 +141,7 @@ impl WorkflowsSubscription {
     }
 
     /// Processing to subscribe to data for all workflows in a session
+    #[graphql(guard = AuthGuard)]
     async fn workflow(
         &self,
         ctx: &Context<'_>,

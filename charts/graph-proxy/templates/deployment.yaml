@@ -72,6 +72,10 @@ spec:
                 secretKeyRef:
                   name: artifact-s3-secret
                   key: secret-key
+            - name: OIDC_ISSUER_URL
+              value: {{ $.Values.oidcIssuerUrl }}
+            - name: OIDC_AUDIENCES
+              value: {{ $.Values.oidcAudiences }}
           ports:
             - name: graphql
               containerPort: 80
