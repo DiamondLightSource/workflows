@@ -12,6 +12,7 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
+async-trait = { version = "0.1.89" }
 anyhow = { version = "1.0.100" }
 clap = { version = "4.5.49", features = ["derive", "env"] }
 chrono = { version = "0.4.42" }

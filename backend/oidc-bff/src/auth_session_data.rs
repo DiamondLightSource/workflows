@@ -2,11 +2,10 @@ use std::time::Duration;
 
 use crate::Result;
 use anyhow::anyhow;
-use chrono::{DateTime, Utc};
-use openidconnect::{
-    AccessToken, CsrfToken, IssuerUrl, Nonce, PkceCodeVerifier,
-    RefreshToken, SubjectIdentifier,
+use auth_core::openidconnect::{
+    AccessToken, CsrfToken, IssuerUrl, Nonce, PkceCodeVerifier, RefreshToken, SubjectIdentifier,
 };
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,7 +43,7 @@ impl TokenSessionData {
         }
     }
 
-    pub fn from_token_response<T: oauth2::TokenResponse>(
+    pub fn from_token_response<T: auth_core::oauth2::TokenResponse>(
         token_response: &T,
         issuer: IssuerUrl,
         subject: SubjectIdentifier,
@@ -67,7 +66,7 @@ impl TokenSessionData {
         ))
     }
 
-    pub fn update_tokens_mut<T: oauth2::TokenResponse>(&mut self, token_response: &T) {
+    pub fn update_tokens_mut<T: auth_core::oauth2::TokenResponse>(&mut self, token_response: &T) {
         let access_token = token_response.access_token().clone();
         let refresh_token = token_response.refresh_token();
         let access_token_expires_at = Utc::now()
@@ -81,7 +80,7 @@ impl TokenSessionData {
         self.access_token_expires_at = access_token_expires_at;
     }
 
-    pub fn update_tokens<T: oauth2::TokenResponse>(&self, token_response: &T) -> Self {
+    pub fn update_tokens<T: auth_core::oauth2::TokenResponse>(&self, token_response: &T) -> Self {
         let mut clone = self.clone();
         clone.update_tokens_mut(token_response);
         clone

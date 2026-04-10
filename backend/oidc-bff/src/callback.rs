@@ -1,19 +1,18 @@
 use std::borrow::Cow;
 use std::sync::Arc;
 
+use auth_core::openidconnect::{
+    AccessTokenHash, AuthorizationCode, CsrfToken, OAuth2TokenResponse, RedirectUrl, TokenResponse,
+};
 use axum::debug_handler;
 use axum::extract::{Query, State};
-use openidconnect::{
-    AccessTokenHash, AuthorizationCode,CsrfToken,
-    OAuth2TokenResponse, RedirectUrl, TokenResponse,
-};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
 use crate::Result;
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
-use crate::database::write_token_to_database;
 use crate::state::AppState;
+use auth_core::database::write_token_to_database;
 
 #[derive(Serialize, Deserialize)]
 pub struct CallbackQuery {

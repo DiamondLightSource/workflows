@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
+use auth_core::openidconnect::core::CoreAuthenticationFlow;
+use auth_core::openidconnect::{CsrfToken, Nonce, PkceCodeChallenge, RedirectUrl, Scope};
 use axum::extract::State;
 use axum::response::Redirect;
-use openidconnect::core::CoreAuthenticationFlow;
-use openidconnect::{
-    CsrfToken, Nonce, PkceCodeChallenge, RedirectUrl, Scope,
-};
 use tower_sessions::Session;
 
 use crate::Result;
@@ -34,6 +32,9 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
         // Set the desired scopes.
         .add_scope(Scope::new("openid".to_string()))
         .add_scope(Scope::new("offline_access".to_string()))
+        .add_scope(Scope::new("posix-uid".to_string()))
+        .add_scope(Scope::new("posix-gid".to_string()))
+        .add_scope(Scope::new("fedid".to_string()))
         // Set the PKCE code challenge.
         .set_pkce_challenge(pkce_challenge)
         .url();
