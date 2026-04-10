@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
+use auth_core::openidconnect::core::CoreAuthenticationFlow;
+use auth_core::openidconnect::{CsrfToken, Nonce, PkceCodeChallenge, RedirectUrl, Scope};
 use axum::extract::State;
 use axum::response::Redirect;
-use openidconnect::core::CoreAuthenticationFlow;
-use openidconnect::{
-    CsrfToken, Nonce, PkceCodeChallenge, RedirectUrl, Scope,
-};
 use tower_sessions::Session;
 
 use crate::Result;
