@@ -8,6 +8,8 @@ image:
 
 argoServerUrl: https://argo-workflows.workflows.diamond.ac.uk
 kubernetesApiUrl: https://kubernetes.default
+oidcIssuerUrl: https://identity.diamond.ac.uk/realms/dls
+oidcAudiences: "workflows-cluster,graph"
 prefixPath: /graphql
 
 deployment:

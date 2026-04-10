@@ -1,4 +1,6 @@
 argoServerUrl: https://argo-workflows.staging.workflows.diamond.ac.uk
+oidcIssuerUrl: https://identity-dev.diamond.ac.uk/realms/dls
+oidcAudiences: "workflows-cluster-staging,graph"
 
 s3:
   url: https://sci-nas-s3.diamond.ac.uk

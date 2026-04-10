@@ -15,6 +15,7 @@ mod subscription;
 pub mod subscription_integration;
 
 use crate::RouterState;
+use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidationMethod};
 
 use self::{
     subscription::WorkflowsSubscription,
@@ -35,6 +36,8 @@ use lazy_static::lazy_static;
 use opentelemetry::KeyValue;
 use std::fmt::Display;
 use workflow_templates::WorkflowTemplatesMutation;
+/// Ensure valid authn on GraphQL fields
+mod auth_guard;
 
 /// The root schema of the service
 pub type RootSchema = Schema<Query, Mutation, Subscription>;
@@ -58,7 +61,7 @@ pub struct Query(NodeQuery, WorkflowsQuery, WorkflowTemplatesQuery);
 #[derive(Debug, Clone, Default)]
 pub struct NodeQuery;
 
-#[Object]
+#[Object(guard = "AuthGuard")]
 impl NodeQuery {
     async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<NodeValue> {
         let id_str = id.to_string();
@@ -158,7 +161,11 @@ pub async fn graphql_handler(
             .add(1, &[KeyValue::new("request_type", "unparseable")]);
     };
 
-    let auth_token = auth_token_header.map(|header| header.0);
+    let auth_token = state
+        .token_validator
+        .validate_token(auth_token_header.map(|it| it.0), ValidationMethod::Jwt)
+        .await;
+
     let mut response = state.schema.execute(query.data(auth_token)).await;
     if let Some(Value::Object(analyzer)) = response.extensions.remove("analyzer") {
         let depth = analyzer.get("depth").and_then(|value| match value {
