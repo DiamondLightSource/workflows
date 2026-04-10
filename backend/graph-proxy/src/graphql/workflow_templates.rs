@@ -4,6 +4,7 @@ use super::{
     workflows::Workflow,
     VisitInput, CLIENT,
 };
+use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidatedAuthToken};
 use crate::{graphql::filters::WorkflowTemplatesFilter, ArgoServerUrl};
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
@@ -11,7 +12,6 @@ use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
     Context, Json, Object, SimpleObject,
 };
-use axum_extra::headers::{authorization::Bearer, Authorization};
 use kube::{
     api::{ApiResource, DynamicObject},
     core::GroupVersionKind,
@@ -52,7 +52,7 @@ struct TemplateSource {
 #[derive(Debug, derive_more::Deref, derive_more::From)]
 struct WorkflowTemplate(argo_workflows_openapi::IoArgoprojWorkflowV1alpha1ClusterWorkflowTemplate);
 
-#[Object]
+#[Object(guard = "AuthGuard")]
 impl WorkflowTemplate {
     /// The name given to the workflow template, globally unique
     async fn name(&self) -> &String {
@@ -147,7 +147,7 @@ impl WorkflowTemplate {
 #[derive(Debug, Clone, Default)]
 pub struct WorkflowTemplatesQuery;
 
-#[Object]
+#[Object(guard = "AuthGuard")]
 impl WorkflowTemplatesQuery {
     #[instrument(name = "graph_proxy_workflow_template", skip(self, ctx))]
     async fn workflow_template(
@@ -156,7 +156,7 @@ impl WorkflowTemplatesQuery {
         name: String,
     ) -> anyhow::Result<WorkflowTemplate> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
         let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
@@ -189,7 +189,7 @@ impl WorkflowTemplatesQuery {
     ) -> anyhow::Result<Connection<OpaqueCursor<usize>, WorkflowTemplate, EmptyFields, EmptyFields>>
     {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
         let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
@@ -259,7 +259,7 @@ impl WorkflowTemplatesQuery {
 #[derive(Debug, Clone, Default)]
 pub struct WorkflowTemplatesMutation;
 
-#[Object]
+#[Object(guard = "AuthGuard")]
 impl WorkflowTemplatesMutation {
     #[instrument(name = "graph_proxy_submit_workflow_template", skip(self, ctx))]
     async fn submit_workflow_template(
@@ -270,7 +270,7 @@ impl WorkflowTemplatesMutation {
         parameters: Json<HashMap<String, Value>>,
     ) -> anyhow::Result<Workflow> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let auth_token = ctx.data_unchecked::<Option<Authorization<Bearer>>>();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
         let mut url = server_url.clone();
         let namespace = visit.to_string();
         url.path_segments_mut()
@@ -334,11 +334,19 @@ fn to_argo_parameter(name: String, value: Value) -> Result<Option<String>, serde
 
 #[cfg(test)]
 mod tests {
+    use crate::{graphql::auth_guard::AuthErrorCode, validate_token::ValidatedAuthToken};
+
     use super::WorkflowTemplatesQuery;
     use anyhow::Ok;
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-    use axum_extra::headers::{authorization::Bearer, Authorization};
+    use axum_extra::headers::Authorization;
+    use rstest::rstest;
     use serde_json::json;
+
+    fn test_token() -> ValidatedAuthToken {
+        let token = Authorization::bearer("test-token").expect("token always valid");
+        ValidatedAuthToken::Valid(token)
+    }
 
     #[tokio::test]
     async fn workflow_template_query() -> anyhow::Result<()> {
@@ -362,11 +370,7 @@ mod tests {
         let argo_server_url = url::Url::parse(&server.url())?;
         let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
             .data(crate::ArgoServerUrl(argo_server_url))
-            .data(
-                None::<
-                    axum_extra::headers::Authorization<axum_extra::headers::authorization::Bearer>,
-                >,
-            )
+            .data(test_token())
             .finish();
         let response = schema
             .execute(format!(
@@ -411,7 +415,7 @@ mod tests {
         let argo_server_url = url::Url::parse(&server.url())?;
         let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
             .data(crate::ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
         let response = schema
             .execute(format!(
@@ -490,7 +494,7 @@ mod tests {
         let argo_server_url = url::Url::parse(&server.url()).unwrap();
         let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
             .data(crate::ArgoServerUrl(argo_server_url))
-            .data(None::<Authorization<Bearer>>)
+            .data(test_token())
             .finish();
 
         let query = r#"
@@ -514,5 +518,62 @@ mod tests {
         let response = schema.execute(query).await.into_result().unwrap();
         workflows_endpoint.assert_async().await;
         assert_eq!(response.data.into_json().unwrap(), expected);
+    }
+
+    #[tokio::test]
+    #[rstest]
+    #[case(ValidatedAuthToken::Missing)]
+    #[case(ValidatedAuthToken::Invalid)]
+    #[case(ValidatedAuthToken::Failed("reason".to_string()))]
+    async fn unauthenticated_query_returns_null(
+        #[case] auth_token: ValidatedAuthToken,
+    ) -> anyhow::Result<()> {
+        let workflow_template_name = "numpy-benchmark";
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-template.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/cluster-workflow-templates/{workflow_template_name}")[..],
+            )
+            .expect(0)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowTemplatesQuery, EmptyMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(auth_token)
+            .finish();
+        let response = schema
+            .execute(format!(
+                "{{ workflowTemplate(name: \"{workflow_template_name}\") {{ name repository }} }}"
+            ))
+            .await;
+        workflow_endpoint.assert_async().await;
+
+        let expected_data = json!(null);
+        assert_eq!(
+            response.data.into_json().expect("invalid response json"),
+            expected_data
+        );
+        let error_code = response.errors[0]
+            .extensions
+            .as_ref()
+            .expect("missing extensions")
+            .get("code")
+            .expect("missing code")
+            .clone()
+            .into_json()
+            .expect("invalid json");
+        let expected_value = json!(AuthErrorCode::Unauthenticated.to_string());
+        assert_eq!(error_code, expected_value);
+        Ok(())
     }
 }

@@ -41,10 +41,14 @@ async-stream = "0.3.6"
 eventsource-stream = "0.2.3"
 opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
+openidconnect = "4.0.1"
+rstest = "0.26.1"
+jsonwebtoken = { version = "10.3.0", features = ["aws_lc_rs"] }
 
 [dev-dependencies]
 graphql-ws-client = { version = "0.12.0", features = ["client-graphql-client", "tungstenite-0.28"] }
 graphql_client = "0.14.0"
 mockito = { workspace = true }
+testcontainers = { version = "0.27.2", features = ["http_wait_plain"] }
 tokio-tungstenite = "0.28.0"
 tungstenite = "0.28.0"
