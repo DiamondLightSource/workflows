@@ -1,9 +1,9 @@
-use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
-use sodiumoxide::crypto::box_::gen_keypair;
+use auth_core::base64::{Engine, engine::general_purpose::STANDARD as BASE64};
+use auth_core::sodiumoxide::crypto::box_::gen_keypair;
 
 fn main() {
     // Initialize sodiumoxide (required before using crypto functions)
-    if sodiumoxide::init().is_err() {
+    if auth_core::sodiumoxide::init().is_err() {
         eprintln!("Failed to initialize libsodium");
         std::process::exit(1);
     }
