@@ -8,7 +8,8 @@ COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
 COPY oidc-bff/Cargo.toml oidc-bff/
-COPY oidc-bff/migration/Cargo.toml oidc-bff/migration/
+COPY auth-core/Cargo.toml auth-core/
+COPY auth-core/migration/Cargo.toml auth-core/migration/
 COPY auth-daemon/Cargo.toml auth-daemon/
 COPY telemetry/build.rs telemetry/build.rs
 COPY telemetry/Cargo.toml telemetry/Cargo.toml
