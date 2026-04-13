@@ -1,32 +1,18 @@
+use crate::Result;
+use auth_core::config::{self, CommonConfig};
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 
-use serde::{Deserialize, Serialize};
-use crate::Result;
-
-#[derive(Serialize, Deserialize)]
-pub struct Config {
-    pub client_id: String,
-    pub client_secret: String,
-    pub oidc_provider_url: String,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DaemonConfig {
+    #[serde(flatten)]
+    pub common: CommonConfig,
     pub graph_url: String,
-    pub port: u16,
-    pub postgres_user: String,
-    pub postgres_password: String,
-    pub postgres_database: String,
-    pub postgres_hostname: String,
-    pub postgres_port: u16,
-    pub encryption_public_key: String,
     pub encryption_private_key: String,
 }
 
-impl Config {
-    /// Load config from JSON or YAML file
+impl DaemonConfig {
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let content = std::fs::read_to_string(&path)?;
-        match path.as_ref().extension().and_then(|e| e.to_str()) {
-            Some("json") => Ok(serde_json::from_str(&content)?),
-            // otherwise assume yaml
-            _ => Ok(serde_yaml::from_str(&content)?),
-        }
+        config::load_config_from_file(path)
     }
 }
