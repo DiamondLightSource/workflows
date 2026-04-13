@@ -155,3 +155,9 @@ mpiOperator:
   targetRevision: v0.7.0
   extraValuesFiles: []
   valuesObject: {}
+
+k6Operator:
+  enabled: false
+  targetRevision: HEAD
+  extraValueFiles: []
+  valuesObject: {}
