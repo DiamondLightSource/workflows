@@ -19,7 +19,7 @@
     "workflows-lib": "*"
   },
   "devDependencies": {
-    "@jsonforms/core": "^3.6.0",
+    "@jsonforms/core": "^3.7.0",
     "@types/react-relay": "^18.2.1",
     "@types/relay-runtime": "^19.0.3",
     "relay-compiler": "^20.1.1",
