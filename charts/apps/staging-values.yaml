@@ -63,7 +63,7 @@ workflows:
 
 graphProxy:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: drh-authenticate-graph-proxy-2
   extraValueFiles:
     - staging-values.yaml
 

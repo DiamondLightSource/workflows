@@ -2,10 +2,9 @@ image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-graph-proxy
   tag: ""
-  digest: ""
+  digest: "sha256:bc136ceb87e2ea3e4ae8e24464628e312f69455e778a10929ac6c63ed429d885"
   pullPolicy: IfNotPresent
   pullSecrets: []
-
 argoServerUrl: https://argo-workflows.workflows.diamond.ac.uk
 kubernetesApiUrl: https://kubernetes.default
 oidcIssuerUrl: https://identity.diamond.ac.uk/realms/dls
