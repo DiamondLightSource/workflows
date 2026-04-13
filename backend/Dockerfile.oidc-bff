@@ -3,7 +3,8 @@ FROM docker.io/library/rust:1.91.0-bookworm AS build
 WORKDIR /app
 
 RUN cargo install cargo-auditable
-
+COPY auth-core/Cargo.toml auth-core/
+COPY auth-core/migration/Cargo.toml auth-core/migration/
 COPY Cargo.toml Cargo.lock ./
 
 COPY . .
