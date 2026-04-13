@@ -84,3 +84,9 @@ kueue:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
+
+k6Operator:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles: []
+  valuesObject: {}

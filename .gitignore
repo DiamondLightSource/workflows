@@ -13,6 +13,7 @@ supergraph.graphql
 
 # File Types
 **/*.tgz # Chart files created when deploying helm dep build
+.DS_Store
 
 # Rust
 target
