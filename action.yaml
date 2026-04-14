@@ -30,6 +30,7 @@ runs:
       shell: bash
       run: |
         wget -qO- https://api.github.com/repos/DiamondLightSource/workflows/releases \
+        --header='authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
         | jq -r '[.[] | select(.tag_name | contains("workflows-cli"))][0]
          | .assets[]
          | select(.name | endswith(".zip"))
