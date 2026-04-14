@@ -3,6 +3,7 @@ name = "oidc-bff"
 version = "0.1.0"
 edition = "2024"
 default-run = "oidc-bff"
+license-file = "../../LICENSE"
 
 [[bin]]
 name = "keygen"
@@ -14,7 +15,7 @@ async-trait = {workspace = true }
 auth-core = { path = "../auth-core" }
 anyhow = { workspace = true, features = ["backtrace"] }
 axum = { workspace = true, features = ["macros"] }
-axum-reverse-proxy = "1.0.3"
+axum-reverse-proxy = { workspace = true }
 bytes = "1.11.0"
 chrono.workspace = true
 clap.workspace = true

@@ -22,8 +22,8 @@ chrono = { workspace = true }
 http-body-util = "0.1.3"
 migration = { version = "0.1.0", path = "migration" }
 oauth2 = "5.0.0"
-openidconnect = { version = "4.0.1", features = ["timing-resistant-secret-traits"] }
-rustls = { version = "0.23.35", features = ["ring"] }
+openidconnect = { workspace = true, features = ["timing-resistant-secret-traits"] }
+rustls = { workspace = true, features = ["ring"] }
 sea-orm = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
