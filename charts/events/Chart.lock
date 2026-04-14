@@ -1,6 +1,6 @@
 dependencies:
 - name: argo-events
   repository: https://argoproj.github.io/argo-helm
-  version: 2.4.4
-digest: sha256:771d2ad27dd8a4521e5f8a5a4ad78d09785413efd7414ace4fbfe98e9ed677df
-generated: "2024-05-23T17:05:28.447115602+01:00"
+  version: 2.4.9
+digest: sha256:5ff9d1d6df66d89986dedf48471f04c95f32ad1ce0175edbc6584635cf5a766f
+generated: "2026-04-14T15:17:37.915149836+01:00"
