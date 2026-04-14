@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: log-debug
+spec:
+  template:
+    container:
+      env:
+        - name: LOG_LEVEL
+          value: debug
+  dependencies:
+    - name: webhook-dependency
+      eventSourceName: webhook
+      eventName: example
+  triggers:
+    - template:
+        name: log-trigger
+        log:
+          intervalSeconds: 1
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: submit-workflow
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: webhook-dependency
+      eventSourceName: webhook
+      eventName: example
+  triggers:
+    - template:
+        name: workflow-trigger
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: example-workflow-
+              spec:
+                serviceAccountName: argo-workflow
+                workflowTemplateRef:
+                  name: echo-workflow-template
+                  clusterScope: true
+                arguments:
+                  parameters:
+                    - name: message
+          parameters:
+            - src:
+                dependencyName: webhook-dependency
+                dataKey: body.user_namespace
+              dest: metadata.namespace
+
+            - src:
+                dependencyName: webhook-dependency
+                dataKey: body.payload
+              dest: spec.arguments.parameters.0.value
