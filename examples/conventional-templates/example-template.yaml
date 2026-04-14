@@ -8,7 +8,8 @@ metadata:
   annotations:
     workflows.argoproj.io/title: Example Template
     workflows.argoproj.io/description: |
-      This is an example template to use during testing and developement.
+      This is an example template to use during testing and development.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.diamond.ac.uk/parameter-schema.png: |
       {
         "type": "boolean",

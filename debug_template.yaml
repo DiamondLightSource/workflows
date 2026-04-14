@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"ClusterWorkflowTemplate","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"i15-1-group"},"name":"i15-1-notebook-test"},"spec":{"arguments":[{"name":"processed_file","value":"i15-1-81948-pe2AD-ae484995-b6fa-440b-8210-e00eb1e1ee06.pe2AD.bragg.nxs"},{"name":"visitdir","valueFrom":{"configMapKeyRef":{"key":"data_directory","name":"sessionspaces"}}}],"entrypoint":"notebook","outputs":{"artifacts":[{"archive":{"none":{}},"name":"diffrac-image","path":"/tmp/result_image.png"}]},"templates":[{"container":{"command":["tree","/dls/session"],"image":"docker.io/library/busybox:latest","volumeMounts":[{"mountPath":"/dls/session","name":"session"}]},"name":"hostpath-mount-example","volumes":[{"hostPath":{"path":"{{ workflow.parameters.visitdir }}","type":"Directory"},"name":"session"}]},{"name":"mount-files","script":{"command":["bash"],"image":"docker.io/library/python:bookworm","source":"echo 'ewogImNlbGxzIjogWwogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgImlucGF0aCA9IFwiXCIiCiAgIF0KICB9LAogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgIm91dHBhdGggPSBcIlwiIgogICBdCiAgfSwKICB7CiAgICJjZWxsX3R5cGUiOiAiY29kZSIsCiAgICJleGVjdXRpb25fY291bnQiOiBudWxsLAogICAibWV0YWRhdGEiOiB7fSwKICAgIm91dHB1dHMiOiBbXSwKICAgInNvdXJjZSI6IFsKICAgICJpbXBvcnQgaDVweVxuIiwKICAgICJpbXBvcnQgbWF0cGxvdGxpYi5weXBsb3QgYXMgcGx0XG4iLAogICAgImltcG9ydCBudW1weSBhcyBucCIKICAgXQogIH0sCiAgewogICAiY2VsbF90eXBlIjogIm1hcmtkb3duIiwKICAgIm1ldGFkYXRhIjoge30sCiAgICJzb3VyY2UiOiBbCiAgICAiUHJvY2Vzc2luZyBzdGVwcyB1c2VkIHRvIGdlbmVyYXRlIHRoaXMgZmlsZToiCiAgIF0KICB9LAogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgIndpdGggaDVweS5GaWxlKGlucGF0aCwgXCJyXCIpIGFzIGZoOlxuIiwKICAgICIgICAgbG9jYXRpb24gPSBcIi9wcm9jZXNzZWQvcHJvY2Vzc1wiXG4iLAogICAgIiAgICBuYW1lID0gXCJuYW1lXCJcbiIsCiAgICAiICAgIGlmIGxvY2F0aW9uIGluIGZoOlxuIiwKICAgICIgICAgICAgIHByb2MgPSBmaFtsb2NhdGlvbl1cbiIsCiAgICAiICAgICAgICBmb3IgaSBpbiByYW5nZShsZW4ocHJvYykpOiBcbiIsCiAgICAiICAgICAgICAgICAgaWYgc3RyKGkpIGluIHByb2M6IFxuIiwKICAgICIgICAgICAgICAgICAgICAgcHJpbnQocHJvY1tzdHIoaSldW25hbWVdWy4uLl0pIFxuIiwKICAgICJcbiIsCiAgICAiICAgICAgICAiCiAgIF0KICB9LAogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgIndpdGggaDVweS5GaWxlKGlucGF0aCwgXCJyXCIpIGFzIGZoOlxuIiwKICAgICIgICAgbG9jYXRpb24gPSBcIi9wcm9jZXNzZWQvcmVzdWx0XCJcbiIsCiAgICAiICAgIGF4ZXMgPSBcImF4ZXNcIlxuIiwKICAgICIgICAgc2lnbmFsID0gXCJzaWduYWxcIlxuIiwKICAgICIgICAgZGF0YSA9IGZoW2xvY2F0aW9uXVxuIiwKICAgICIgICAgaDVfc2lnbmFsID0gZGF0YVtkYXRhLmF0dHJzW3NpZ25hbF1dXG4iLAogICAgIiAgICBheGlzX25hbWVfYXJyYXkgPSBkYXRhLmF0dHJzW2F4ZXNdXG4iLAogICAgIiAgICBheGlzX2FycmF5ID0gW2RhdGFbbl0gaWYgbiBpcyBub3QgXCIuXCIgZWxzZSBOb25lIGZvciBuIGluIGF4aXNfbmFtZV9hcnJheV1cbiIsCiAgICAiICAgIHNoYXBlID0gaDVfc2lnbmFsLnNoYXBlXG4iLAogICAgIiAgICBzbGljZXMgPSBbXVxuIiwKICAgICIgICAgZm9yIGkgaW4gcmFuZ2UobGVuKHNoYXBlKSk6XG4iLAogICAgIiAgICAgICAgc2xpY2VzLmFwcGVuZChzbGljZSgwLDEsMSkpXG4iLAogICAgIiAgICBzbGljZXNbLTFdID0gc2xpY2UoMCxzaGFwZVstMV0sMSlcbiIsCiAgICAiICAgIFxuIiwKICAgICIgICAgcGQgPSBoNV9zaWduYWxbdHVwbGUoc2xpY2VzKV0uc3F1ZWV6ZSgpXG4iLAogICAgIiAgICB4ID0gbnAuYXJhbmdlKHBkLnNpemUpXG4iLAogICAgIiAgICBcbiIsCiAgICAiICAgIGlmIGF4aXNfbmFtZV9hcnJheVstMV0gaXMgbm90IFwiLlwiOlxuIiwKICAgICIgICAgICAgIHggPSBheGlzX2FycmF5Wy0xXVsuLi5dLnNxdWVlemUoKVxuIiwKICAgICIgICAgXG4iLAogICAgIiAgICBwbHQuZmlndXJlKGZpZ3NpemU9KDIwLCAxNSksIGRwaT0gODAsIGZhY2Vjb2xvcj0ndycsIGVkZ2Vjb2xvcj0naycpXG4iLAogICAgIiAgICBwbHQucGxvdCh4LHBkKVxuIiwKICAgICIgICAgcGx0LnhsYWJlbChzdHIoYXhpc19uYW1lX2FycmF5Wy0xXSwndXRmLTgnKSlcbiIsCiAgICAiICAgIFxuIiwKICAgICIgICAgcGx0LnNhdmVmaWcoXCIvdG1wL3Jlc3VsdF9pbWFnZS5wbmdcIilcbiIsCiAgICAiICAgICIKICAgXQogIH0sCiAgewogICAiY2VsbF90eXBlIjogImNvZGUiLAogICAiZXhlY3V0aW9uX2NvdW50IjogbnVsbCwKICAgIm1ldGFkYXRhIjoge30sCiAgICJvdXRwdXRzIjogW10sCiAgICJzb3VyY2UiOiBbXQogIH0KIF0sCiAibWV0YWRhdGEiOiB7CiAgImtlcm5lbHNwZWMiOiB7CiAgICJkaXNwbGF5X25hbWUiOiAiUHl0aG9uIDMgKGlweWtlcm5lbCkiLAogICAibGFuZ3VhZ2UiOiAicHl0aG9uIiwKICAgIm5hbWUiOiAicHl0aG9uMyIKICB9LAogICJsYW5ndWFnZV9pbmZvIjogewogICAiY29kZW1pcnJvcl9tb2RlIjogewogICAgIm5hbWUiOiAiaXB5dGhvbiIsCiAgICAidmVyc2lvbiI6IDMKICAgfSwKICAgImZpbGVfZXh0ZW5zaW9uIjogIi5weSIsCiAgICJtaW1ldHlwZSI6ICJ0ZXh0L3gtcHl0aG9uIiwKICAgIm5hbWUiOiAicHl0aG9uIiwKICAgIm5iY29udmVydF9leHBvcnRlciI6ICJweXRob24iLAogICAicHlnbWVudHNfbGV4ZXIiOiAiaXB5dGhvbjMiLAogICAidmVyc2lvbiI6ICIzLjEwLjEyIgogIH0KIH0sCiAibmJmb3JtYXQiOiA0LAogIm5iZm9ybWF0X21pbm9yIjogNAp9Cg==' | base64 -d \u003e /tmp/notebook.ipynb\necho 'bnVtcHk9PTIuMi41Cm1hdHBsb3RsaWI9PTMuMTAuMwpoNXB5PTMuMTMuMApuYmNvbnZlcnQ9PTcuMTYuNgppcHlrZXJuZWw9PTYuMjkuNQppcHl0aG9uPT05LjIuMApwYXBlcm1pbGw9PTIuNi4w' | base64 -d \u003e /tmp/requirements.txt\n","volumeMounts":[{"mountPath":"/tmp","name":"tmp"}]}},{"name":"convert-notebook","script":{"command":["bash"],"image":"docker.io/library/python:bookworm","source":"python -m venv /tmp/venv\n/tmp/venv/bin/pip install -r /tmp/requirements.txt\n/tmp/venv/bin/python -m ipykernel install --prefix=/tmp/venv --name=venv\n/tmp/venv/bin/python -m papermill /tmp/notebook.ipynb /tmp/notebook-parametrized.ipynb \\\n  -p inpath 'dls/session/processed/{{workflow.parameters.processed_file}}'\n  \n/tmp/venv/bin/python -m jupyter nbconvert --execute --allow-errors --to html --output notebook --output-dir /tmp /tmp/notebook-parametrized.ipynb\n","volumeMounts":[{"mountPath":"/tmp","name":"tmp"}]}}],"volumeClaimTemplates":[{"metadata":{"name":"tmp"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"local-path"}}]}}
+  creationTimestamp: "2026-03-27T11:44:40Z"
+  generation: 1
+  labels:
+    argocd.argoproj.io/instance: i15-1-group
+  name: i15-1-notebook-test
+  resourceVersion: "4310"
+  uid: 90e26c12-1de0-4ca0-b5dd-f9ace76409a0
+spec:
+  arguments:
+  - name: processed_file
+    value: i15-1-81948-pe2AD-ae484995-b6fa-440b-8210-e00eb1e1ee06.pe2AD.bragg.nxs
+  - name: visitdir
+    valueFrom:
+      configMapKeyRef:
+        key: data_directory
+        name: sessionspaces
+  entrypoint: notebook
+  outputs:
+    artifacts:
+    - archive:
+        none: {}
+      name: diffrac-image
+      path: /tmp/result_image.png
+  templates:
+  - container:
+      command:
+      - tree
+      - /dls/session
+      image: docker.io/library/busybox:latest
+      volumeMounts:
+      - mountPath: /dls/session
+        name: session
+    name: hostpath-mount-example
+    volumes:
+    - hostPath:
+        path: '{{ workflow.parameters.visitdir }}'
+        type: Directory
+      name: session
+  - name: mount-files
+    script:
+      command:
+      - bash
+      image: docker.io/library/python:bookworm
+      source: |
+        echo 'ewogImNlbGxzIjogWwogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgImlucGF0aCA9IFwiXCIiCiAgIF0KICB9LAogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgIm91dHBhdGggPSBcIlwiIgogICBdCiAgfSwKICB7CiAgICJjZWxsX3R5cGUiOiAiY29kZSIsCiAgICJleGVjdXRpb25fY291bnQiOiBudWxsLAogICAibWV0YWRhdGEiOiB7fSwKICAgIm91dHB1dHMiOiBbXSwKICAgInNvdXJjZSI6IFsKICAgICJpbXBvcnQgaDVweVxuIiwKICAgICJpbXBvcnQgbWF0cGxvdGxpYi5weXBsb3QgYXMgcGx0XG4iLAogICAgImltcG9ydCBudW1weSBhcyBucCIKICAgXQogIH0sCiAgewogICAiY2VsbF90eXBlIjogIm1hcmtkb3duIiwKICAgIm1ldGFkYXRhIjoge30sCiAgICJzb3VyY2UiOiBbCiAgICAiUHJvY2Vzc2luZyBzdGVwcyB1c2VkIHRvIGdlbmVyYXRlIHRoaXMgZmlsZToiCiAgIF0KICB9LAogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgIndpdGggaDVweS5GaWxlKGlucGF0aCwgXCJyXCIpIGFzIGZoOlxuIiwKICAgICIgICAgbG9jYXRpb24gPSBcIi9wcm9jZXNzZWQvcHJvY2Vzc1wiXG4iLAogICAgIiAgICBuYW1lID0gXCJuYW1lXCJcbiIsCiAgICAiICAgIGlmIGxvY2F0aW9uIGluIGZoOlxuIiwKICAgICIgICAgICAgIHByb2MgPSBmaFtsb2NhdGlvbl1cbiIsCiAgICAiICAgICAgICBmb3IgaSBpbiByYW5nZShsZW4ocHJvYykpOiBcbiIsCiAgICAiICAgICAgICAgICAgaWYgc3RyKGkpIGluIHByb2M6IFxuIiwKICAgICIgICAgICAgICAgICAgICAgcHJpbnQocHJvY1tzdHIoaSldW25hbWVdWy4uLl0pIFxuIiwKICAgICJcbiIsCiAgICAiICAgICAgICAiCiAgIF0KICB9LAogIHsKICAgImNlbGxfdHlwZSI6ICJjb2RlIiwKICAgImV4ZWN1dGlvbl9jb3VudCI6IG51bGwsCiAgICJtZXRhZGF0YSI6IHt9LAogICAib3V0cHV0cyI6IFtdLAogICAic291cmNlIjogWwogICAgIndpdGggaDVweS5GaWxlKGlucGF0aCwgXCJyXCIpIGFzIGZoOlxuIiwKICAgICIgICAgbG9jYXRpb24gPSBcIi9wcm9jZXNzZWQvcmVzdWx0XCJcbiIsCiAgICAiICAgIGF4ZXMgPSBcImF4ZXNcIlxuIiwKICAgICIgICAgc2lnbmFsID0gXCJzaWduYWxcIlxuIiwKICAgICIgICAgZGF0YSA9IGZoW2xvY2F0aW9uXVxuIiwKICAgICIgICAgaDVfc2lnbmFsID0gZGF0YVtkYXRhLmF0dHJzW3NpZ25hbF1dXG4iLAogICAgIiAgICBheGlzX25hbWVfYXJyYXkgPSBkYXRhLmF0dHJzW2F4ZXNdXG4iLAogICAgIiAgICBheGlzX2FycmF5ID0gW2RhdGFbbl0gaWYgbiBpcyBub3QgXCIuXCIgZWxzZSBOb25lIGZvciBuIGluIGF4aXNfbmFtZV9hcnJheV1cbiIsCiAgICAiICAgIHNoYXBlID0gaDVfc2lnbmFsLnNoYXBlXG4iLAogICAgIiAgICBzbGljZXMgPSBbXVxuIiwKICAgICIgICAgZm9yIGkgaW4gcmFuZ2UobGVuKHNoYXBlKSk6XG4iLAogICAgIiAgICAgICAgc2xpY2VzLmFwcGVuZChzbGljZSgwLDEsMSkpXG4iLAogICAgIiAgICBzbGljZXNbLTFdID0gc2xpY2UoMCxzaGFwZVstMV0sMSlcbiIsCiAgICAiICAgIFxuIiwKICAgICIgICAgcGQgPSBoNV9zaWduYWxbdHVwbGUoc2xpY2VzKV0uc3F1ZWV6ZSgpXG4iLAogICAgIiAgICB4ID0gbnAuYXJhbmdlKHBkLnNpemUpXG4iLAogICAgIiAgICBcbiIsCiAgICAiICAgIGlmIGF4aXNfbmFtZV9hcnJheVstMV0gaXMgbm90IFwiLlwiOlxuIiwKICAgICIgICAgICAgIHggPSBheGlzX2FycmF5Wy0xXVsuLi5dLnNxdWVlemUoKVxuIiwKICAgICIgICAgXG4iLAogICAgIiAgICBwbHQuZmlndXJlKGZpZ3NpemU9KDIwLCAxNSksIGRwaT0gODAsIGZhY2Vjb2xvcj0ndycsIGVkZ2Vjb2xvcj0naycpXG4iLAogICAgIiAgICBwbHQucGxvdCh4LHBkKVxuIiwKICAgICIgICAgcGx0LnhsYWJlbChzdHIoYXhpc19uYW1lX2FycmF5Wy0xXSwndXRmLTgnKSlcbiIsCiAgICAiICAgIFxuIiwKICAgICIgICAgcGx0LnNhdmVmaWcoXCIvdG1wL3Jlc3VsdF9pbWFnZS5wbmdcIilcbiIsCiAgICAiICAgICIKICAgXQogIH0sCiAgewogICAiY2VsbF90eXBlIjogImNvZGUiLAogICAiZXhlY3V0aW9uX2NvdW50IjogbnVsbCwKICAgIm1ldGFkYXRhIjoge30sCiAgICJvdXRwdXRzIjogW10sCiAgICJzb3VyY2UiOiBbXQogIH0KIF0sCiAibWV0YWRhdGEiOiB7CiAgImtlcm5lbHNwZWMiOiB7CiAgICJkaXNwbGF5X25hbWUiOiAiUHl0aG9uIDMgKGlweWtlcm5lbCkiLAogICAibGFuZ3VhZ2UiOiAicHl0aG9uIiwKICAgIm5hbWUiOiAicHl0aG9uMyIKICB9LAogICJsYW5ndWFnZV9pbmZvIjogewogICAiY29kZW1pcnJvcl9tb2RlIjogewogICAgIm5hbWUiOiAiaXB5dGhvbiIsCiAgICAidmVyc2lvbiI6IDMKICAgfSwKICAgImZpbGVfZXh0ZW5zaW9uIjogIi5weSIsCiAgICJtaW1ldHlwZSI6ICJ0ZXh0L3gtcHl0aG9uIiwKICAgIm5hbWUiOiAicHl0aG9uIiwKICAgIm5iY29udmVydF9leHBvcnRlciI6ICJweXRob24iLAogICAicHlnbWVudHNfbGV4ZXIiOiAiaXB5dGhvbjMiLAogICAidmVyc2lvbiI6ICIzLjEwLjEyIgogIH0KIH0sCiAibmJmb3JtYXQiOiA0LAogIm5iZm9ybWF0X21pbm9yIjogNAp9Cg==' | base64 -d > /tmp/notebook.ipynb
+        echo 'bnVtcHk9PTIuMi41Cm1hdHBsb3RsaWI9PTMuMTAuMwpoNXB5PTMuMTMuMApuYmNvbnZlcnQ9PTcuMTYuNgppcHlrZXJuZWw9PTYuMjkuNQppcHl0aG9uPT05LjIuMApwYXBlcm1pbGw9PTIuNi4w' | base64 -d > /tmp/requirements.txt
+      volumeMounts:
+      - mountPath: /tmp
+        name: tmp
+  - name: convert-notebook
+    script:
+      command:
+      - bash
+      image: docker.io/library/python:bookworm
+      source: "python -m venv /tmp/venv\n/tmp/venv/bin/pip install -r /tmp/requirements.txt\n/tmp/venv/bin/python
+        -m ipykernel install --prefix=/tmp/venv --name=venv\n/tmp/venv/bin/python
+        -m papermill /tmp/notebook.ipynb /tmp/notebook-parametrized.ipynb \\\n  -p
+        inpath 'dls/session/processed/{{workflow.parameters.processed_file}}'\n  \n/tmp/venv/bin/python
+        -m jupyter nbconvert --execute --allow-errors --to html --output notebook
+        --output-dir /tmp /tmp/notebook-parametrized.ipynb\n"
+      volumeMounts:
+      - mountPath: /tmp
+        name: tmp
+  volumeClaimTemplates:
+  - metadata:
+      name: tmp
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: local-path

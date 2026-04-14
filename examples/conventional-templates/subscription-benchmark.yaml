@@ -2,6 +2,11 @@ apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
   name: subscription-benchmarking
+  annotations:
+    workflows.argoproj.io/title: Subscription Benchmark
+    workflows.argoproj.io/description: |
+      A high-duration template for testing and demonstrating subscriptions.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 spec:
   entrypoint: workflow-entry
   templates:

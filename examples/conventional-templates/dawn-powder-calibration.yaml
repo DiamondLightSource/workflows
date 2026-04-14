@@ -10,7 +10,8 @@ metadata:
       Runs the DAWN command-line powder calibration tool from a given config JSON file. All file paths used
       in the config must be in the same directory as the config file (or within a sub-directory).
       (https://diamondlightsource.atlassian.net/wiki/spaces/DT/pages/1378465/Command-Line+Powder+Calibration)
-    
+
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.diamond.ac.uk/parameter-schema.confpath : |
       {
         "type": "string",
