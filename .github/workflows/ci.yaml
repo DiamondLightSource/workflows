@@ -138,5 +138,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Lint Workflows
-        uses: diamondlightsource/workflows@main
+        uses: diamondlightsource/workflows@jg/update-lint-action
 
