@@ -5,7 +5,7 @@ argocd:
     - staging-values.yaml
 
 events:
-  enabled: false
+  enabled: true
   extraValueFiles:
     - staging-values.yaml
 
