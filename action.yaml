@@ -29,7 +29,12 @@ runs:
     - name: Install Workflows CLI
       shell: bash
       run: |
-        curl -OL https://github.com/DiamondLightSource/workflows/releases/download/workflows-cli%40v0.1.0/workflows-cli.zip 
+        wget -qO- https://api.github.com/repos/DiamondLightSource/workflows/releases \
+        | jq -r '[.[] | select(.tag_name | contains("workflows-cli"))][0]
+         | .assets[]
+         | select(.name | endswith(".zip"))
+         | .browser_download_url' \
+        | wget -qi-
         unzip workflows-cli.zip
         mv workflows /usr/local/bin/workflows
 
