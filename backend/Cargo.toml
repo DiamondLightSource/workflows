@@ -23,6 +23,7 @@ derive_more = { version = "2.0.1" , features = [
     "from_str",
     "into",
 ]}
+axum-reverse-proxy = { version = "1.0.3" }
 dotenvy = { version = "0.15.7" }
 mockito = { version = "1.7.0" }
 reqwest = { version = "0.12.15", default-features = false, features = [
@@ -45,6 +46,7 @@ tracing-subscriber = { version = "0.3.20" }
 url = { version = "2.5.4" }
 k8s-openapi = { version = "0.26.0", features = ["latest"] }
 kube = { version = "2.0.1", features = ["runtime", "derive"] }
+openidconnect = "4.0.1"
 opentelemetry = { version = "0.31.0" }
 opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.31.0", features = ["metrics", "grpc-tonic"] }
@@ -52,5 +54,7 @@ opentelemetry-semantic-conventions = "0.31.0"
 tracing-opentelemetry = { version = "0.32.0" }
 axum = { version = "0.8.6" }
 regex = "1.12.2"
+rustls = "0.23.35"
+testcontainers = { version = "0.27.2", features = ["http_wait_plain"] }
 tower-http = { version = "0.6.6", features = ["cors"] }
 sea-orm = { version = "2.0.0-rc", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono" ] }
