@@ -53,7 +53,7 @@ spec:
                 dependencyName: webhook-dependency
                 dataKey: body.user_namespace
               dest: metadata.namespace
-            
+
             - src:
                 dependencyName: webhook-dependency
                 dataKey: body.payload

@@ -16,4 +16,4 @@ spec:
       container:
         image: alpine:latest
         command: ["sh", "-c"]
-        args: ["echo \"Received message: {{`{{inputs.parameters.message}}`}}\""]
+        args: ['echo "Received message: {{`{{inputs.parameters.message}}`}}"']
