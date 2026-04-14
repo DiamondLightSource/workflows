@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: echo-workflow-template
+spec:
+  entrypoint: echo
+  arguments:
+    parameters:
+      - name: message
+        value: "default message will get overridden by event payload"
+  templates:
+    - name: echo
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: alpine:latest
+        command: ["sh", "-c"]
+        args: ["echo \"Received message: {{`{{inputs.parameters.message}}`}}\""]
