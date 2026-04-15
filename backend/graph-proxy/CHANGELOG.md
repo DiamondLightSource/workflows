@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.18](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.17...graph-proxy@v0.1.18) (2026-04-15)
+
+
+### Features
+
+* graph-proxy requires authn for all querys/mutations ([ef8c5ea](https://github.com/DiamondLightSource/workflows/commit/ef8c5ea7d2b69cd789f518492c6ec106c3e6a002))
+
+
+### Bug Fixes
+
+* **graph-proxy:** stop casting of workflow parameters to strings ([3f9ddbd](https://github.com/DiamondLightSource/workflows/commit/3f9ddbd32f9d2d9e0fe56ab64e4a8e0b99c18e9a))
+
 ## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.16...graph-proxy@v0.1.17) (2026-02-16)
 
 
