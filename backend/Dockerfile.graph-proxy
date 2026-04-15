@@ -11,6 +11,8 @@ COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY argo-workflows-openapi/build.rs argo-workflows-openapi/build.rs
 COPY argo-workflows-openapi/src/lib.rs argo-workflows-openapi/src/lib.rs
 COPY sessionspaces/Cargo.toml sessionspaces/Cargo.toml
+COPY auth-core/Cargo.toml auth-core/
+COPY auth-core/migration/Cargo.toml auth-core/migration/
 COPY auth-daemon/Cargo.toml auth-daemon/
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY telemetry/build.rs telemetry/Cargo.toml telemetry/
@@ -26,9 +28,6 @@ RUN mkdir graph-proxy/src \
     && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
 RUN cargo build --release --package telemetry
-
-RUN touch --date @0 graph-proxy/src/main.rs \
-    && cargo build --release --package graph-proxy
 
 COPY . .
 
