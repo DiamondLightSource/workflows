@@ -17,7 +17,7 @@ spec:
         valueFrom:
           secretKeyRef:
             name: graph-proxy-k6-auth
-            key: AgCMaOjO+iRsnpa1Ot8QBCt8SWfq+b3wuc2dPh6DTyNt2iHbFZhCxqMe8sB6mfe6TOmu8UD9Ew16HYujRGbSyDB74htx2XqFdarBNNMzxHrXeqew8kl40f/ktq0+6wr1Z6I5KM8J9oN6fcqCz3EGZcLo0GzTfibyIFlYDGRiXsnYDhHNOvMEY2cVrfiq03z9DJ/yc3191dHWqcBQL6xfHGebJ/sPZlVJOZOzZgVhYgucoM6SEj+UjFGXwmr70VtJ+LDPmp3IoLseYVBp5zt/xPSYiX8ZhsUEtiqCzT9ITzFsJNctPnc5BzyGYOqt7HW2j15xOHZaMQt0OWHeIkQN3DpJukrJtY7zYbolJIVDQFt2Ahr6sIsFMpSxfDBjKsvmBhlROipTh3yGndeMwnTlP18gor+jw5NGB5+VjpplC9LYwOKvFLyIA+xf8ZbAPwuFL6+fmVjnq7Jd8Qnc/P8c/v0Z6k7KHBMjhYPf/WMA//CsSEP2tlyDs/+RNXJD9/RnX3Pig7Dmwap4//g7RHQmfHxJ7KuGoJbyGO4ncpTpOG7Z+gPllmQh82uFy/MnlCs0sA+K7sWvIULJp8MuZFErt+W0NS91dUx1oCqkFnBMKeGrjQqq1LTkNmp3D7Fe7/vzEPLw5b1wlUGQR2yDz15kQ8vsPiq6dHSOePZDzVCNkHIZR1Zuc5H+mu/Ton8JnexwohPhWeZ96P/MjvYkcULzWAzTxxkDa1QcMbY=
+            key: password_for_my_app
       - name: GRAPH_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
     resources:
