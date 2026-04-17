@@ -123,8 +123,6 @@ vcluster:
     toHost:
       ingresses:
         enabled: true
-      volumeSnapshots:
-        enabled: false
     fromHost:
       nodes:
         enabled: true
@@ -144,58 +142,9 @@ vcluster:
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/postgres-application-passwords": "workflows/postgres-application-passwords"
             "/postgres-initdb-script": "workflows/postgres-initdb-script"
-      events:
-        enabled: false
-
   rbac:
     clusterRole:
       enabled: false
-    role:
-      enabled: true
-      overwriteRules:
-        - apiGroups: [""]
-          resources:
-            - configmaps
-            - secrets
-            - services
-            - pods
-            - pods/attach
-            - pods/portforward
-            - pods/exec
-            - persistentvolumeclaims
-          verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-        - apiGroups: [""]
-          resources:
-            - pods/status
-            - pods/ephemeralcontainers
-          verbs: ["patch", "update"]
-        - apiGroups: ["apps"]
-          resources:
-            - statefulsets
-            - replicasets
-            - deployments
-          verbs: ["get", "list", "watch"]
-        - apiGroups: [""]
-          resources:
-            - endpoints
-            - pods/log
-          verbs: ["get", "list", "watch"]
-        - apiGroups: [""]
-          resources:
-            - endpoints
-          verbs: ["create", "delete", "patch", "update"]
-        - apiGroups: ["discovery.k8s.io"]
-          resources:
-            - endpointslices
-          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
-        - apiGroups: ["coordination.k8s.io"]
-          resources:
-            - leases
-          verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-        - apiGroups: ["metrics.k8s.io"]
-          resources:
-            - pods
-          verbs: ["get", "list"]
 
   integrations:
     metricsServer:
