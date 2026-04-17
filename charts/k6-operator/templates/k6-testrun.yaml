@@ -18,7 +18,7 @@ spec:
           secretKeyRef:
             name: graph-proxy-k6-auth
             key: password_for_my_app
-      - name: GRAPH_URL
+      - name: GRAPH_PROXY_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
     resources:
       limits:
