@@ -2,12 +2,8 @@ import http, { RefinedResponse, ResponseType } from 'k6/http';
 import { Options } from 'k6/options';
 import { fail } from 'k6';
 
-const token = __ENV.GRAPH_PROXY_BEARER_TOKEN;
 const url = __ENV.GRAPH_PROXY_URL ?? 'http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql';
 
-if (!token) {
-  fail('GRAPH_PROXY_BEARER_TOKEN required');
-}
 
 interface VisitInput {
   proposalCode: string;
@@ -82,6 +78,11 @@ export const options: Options = {
 };
 
 export default function(): void {
+  const token = __ENV.GRAPH_PROXY_BEARER_TOKEN;
+  if (!token) {
+    fail('GRAPH_PROXY_BEARER_TOKEN required');
+  }
+
   const payload = JSON.stringify({
     query: queryExamples.listWorkflowsForVisit.query,
     variables: queryExamples.listWorkflowsForVisit.variables,

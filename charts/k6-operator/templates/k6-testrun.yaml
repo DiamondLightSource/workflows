@@ -18,7 +18,7 @@ spec:
           secretKeyRef: 
             name: graph-proxy-k6-auth
             key: GRAPH_PROXY_BEARER_TOKEN
-      - name: GRAPH_URL
+      - name: GRAPH_PROXY_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
     resources:
       limits:
@@ -35,4 +35,3 @@ spec:
       requests:
         cpu: 500m
         memory: 500Mi
-
