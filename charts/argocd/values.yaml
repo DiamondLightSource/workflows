@@ -33,6 +33,7 @@ argo-cd:
         g, james.gilbert@diamond.ac.uk, role:admin
         g, victoria.beilsten-edmands@diamond.ac.uk, role:admin
         g, mahir.abbas@diamond.ac.uk, role:admin
+        g, hazem.nureldin@diamond.ac.uk, role:admin
 
   repoServer:
     podAnnotations:
