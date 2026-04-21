@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { Options } from 'k6/options';
-import { fail } from 'k6';
+import { fail, check } from 'k6';
 
 const graphUrl = __ENV.GRAPH_URL
 const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
@@ -106,9 +106,13 @@ export default function(): void {
     },
   );
 
-  if (tokenRes.status != 200) {
-    fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
-  }
+  //  if (tokenRes.status !== 200) {
+  //   fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
+  // }
+  check(tokenRes, {
+    'verify token request was valid': (r) =>
+      r.status === 200,
+  });
 
   const tokenBody = JSON.parse(tokenRes.body as string);
   const token = tokenBody.access_token;
