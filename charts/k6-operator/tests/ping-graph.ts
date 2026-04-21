@@ -135,4 +135,6 @@ export default function(): void {
   const res = http.post(graphUrl, payload, params);
   console.log(`status=${res && res.status}`);
   console.log(`body=${res && res.body}`);
+  console.log(`status=${tokenRes && tokenRes.status}`)
+  console.log(`body=${tokenRes && tokenRes.body}`)
 }
