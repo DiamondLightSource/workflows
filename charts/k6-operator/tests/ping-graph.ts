@@ -112,6 +112,8 @@ export function setup(): { token: string } {
     'verify token request was valid': (r) =>
       r.status === 200,
   });
+  console.log(tokenRes.status)
+  console.log(tokenRes.body)
 
   const tokenBody = JSON.parse(tokenRes.body as string);
   const token = tokenBody.access_token;
