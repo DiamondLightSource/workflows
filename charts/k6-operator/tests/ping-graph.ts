@@ -106,7 +106,7 @@ export default function(): void {
     },
   );
 
-  if (tokenRes.status !== 200) {
+  if (tokenRes.status != 200) {
     fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
   }
 
