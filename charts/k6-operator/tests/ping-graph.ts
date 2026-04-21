@@ -8,7 +8,6 @@ const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
 const clientID = __ENV.KEYCLOAK_CLIENT_ID
 const clientSecret = __ENV.KEYCLOAK_CLIENT_SECRET
 
-
 interface VisitInput {
   proposalCode: string;
   proposalNumber: number;
@@ -22,10 +21,13 @@ interface ListWorkflowsVariables {
 
 interface QueryExample {
   query: string;
-  variables: ListWorkflowsVariables;
+  variables?: ListWorkflowsVariables;
 }
 
-const queryExamples: { listWorkflowsForVisit: QueryExample } = {
+const queryExamples: {
+  listWorkflowsForVisit: QueryExample;
+  listTemplates: QueryExample;
+} = {
   listWorkflowsForVisit: {
     query: `
       query ListWorkflowsForVisit($visit: VisitInput!, $limit: Int) {
@@ -53,6 +55,19 @@ const queryExamples: { listWorkflowsForVisit: QueryExample } = {
       },
       limit: 30,
     },
+  },
+  listTemplates: {
+    query: `
+      query {
+        workflowTemplates {
+          nodes {
+            name
+            title
+            description
+          }
+        }
+      }
+    `,
   },
 };
 
@@ -129,8 +144,7 @@ export default function(data: { token: string }): void {
 
 
   const payload = JSON.stringify({
-    query: queryExamples.listWorkflowsForVisit.query,
-    variables: queryExamples.listWorkflowsForVisit.variables,
+    query: queryExamples.listTemplates.query,
   });
 
   const params = {
