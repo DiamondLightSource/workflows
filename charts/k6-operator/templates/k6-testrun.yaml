@@ -24,7 +24,7 @@ spec:
             name: graph-proxy-k6-auth
             key: KEYCLOAK_CLIENT_SECRET
       - name: KEYCLOAK_TOKEN_URL
-        value: https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+        value: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/token
       - name: GRAPH_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
     resources:
