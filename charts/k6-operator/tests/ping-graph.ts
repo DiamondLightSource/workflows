@@ -102,9 +102,6 @@ export function setup(): { token: string } {
       client_id: clientID,
       client_secret: clientSecret,
     },
-    {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    },
   );
 
   if (tokenRes.status !== 200) {
