@@ -101,10 +101,7 @@ export function setup(): { token: string } {
       grant_type: 'client_credentials',
       client_id: clientID,
       client_secret: clientSecret,
-    },
-    {
-      headers: {},
-    },
+    }
   );
 
   if (tokenRes.status !== 200) {
