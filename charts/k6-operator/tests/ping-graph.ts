@@ -1,8 +1,11 @@
-import http, { RefinedResponse, ResponseType } from 'k6/http';
+import http from 'k6/http';
 import { Options } from 'k6/options';
 import { fail } from 'k6';
 
-const url = __ENV.GRAPH_PROXY_URL ?? 'http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql';
+const graphUrl = __ENV.GRAPH_URL
+const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
+const clientID = __ENV.KEYCLOAK_CLIENT_ID
+const clientSecret = __ENV.KEYCLOAK_CLIENT_SECRET
 
 
 interface VisitInput {
@@ -78,15 +81,46 @@ export const options: Options = {
 };
 
 export default function(): void {
-  const token = __ENV.GRAPH_PROXY_BEARER_TOKEN;
+  if (!clientSecret) {
+    fail('KEYCLOAK_CLIENT_SECRET requried');
+  }
+  if (!clientID) {
+    fail('KEYCLOAK_CLIENT_ID required');
+  }
+  if (!keycloakUrl) {
+    fail('KEYCLOAK_TOKEN_URL required');
+  }
+  if (!graphUrl) {
+    fail('GRAPH_URL required');
+  }
+
+  const tokenRes = http.post(
+    keycloakUrl,
+    {
+      grant_type: 'client_credentials',
+      client_id: clientID,
+      client_secret: clientSecret,
+    },
+    {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    },
+  );
+
+  if (tokenRes.status !== 200) {
+    fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
+  }
+
+  const tokenBody = JSON.parse(tokenRes.body as string);
+  const token = tokenBody.access_token;
   if (!token) {
-    fail('GRAPH_PROXY_BEARER_TOKEN required');
+    fail('No access_token in Keycloak response');
   }
 
   const payload = JSON.stringify({
     query: queryExamples.listWorkflowsForVisit.query,
     variables: queryExamples.listWorkflowsForVisit.variables,
   });
+
   const params = {
     headers: {
       Accept: 'application/json, multipart/mixed',
@@ -94,7 +128,7 @@ export default function(): void {
       Authorization: `Bearer ${token}`,
     },
   };
-  const res = http.post(url, payload, params);
+  const res = http.post(graphUrl, payload, params);
   console.log(`status=${res && res.status}`);
   console.log(`body=${res && res.body}`);
 }
