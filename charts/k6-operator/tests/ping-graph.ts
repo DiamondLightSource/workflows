@@ -102,6 +102,9 @@ export function setup(): { token: string } {
       client_id: clientID,
       client_secret: clientSecret,
     },
+    {
+      headers: {},
+    },
   );
 
   if (tokenRes.status !== 200) {
