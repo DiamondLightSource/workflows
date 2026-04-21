@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { Options } from 'k6/options';
 import { fail, check } from 'k6';
+import exec from 'k6/execution';
 
 const graphUrl = __ENV.GRAPH_URL
 const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
@@ -80,7 +81,7 @@ export const options: Options = {
   },
 };
 
-export default function(): void {
+export function setup(): { token: string } {
   if (!clientSecret) {
     fail('KEYCLOAK_CLIENT_SECRET requried');
   }
@@ -106,9 +107,10 @@ export default function(): void {
     },
   );
 
-  //  if (tokenRes.status !== 200) {
-  //   fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
-  // }
+  if (tokenRes.status !== 200) {
+    fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
+  }
+
   check(tokenRes, {
     'verify token request was valid': (r) =>
       r.status === 200,
@@ -117,8 +119,15 @@ export default function(): void {
   const tokenBody = JSON.parse(tokenRes.body as string);
   const token = tokenBody.access_token;
   if (!token) {
-    fail('No access_token in Keycloak response');
+    exec.test.abort('No access_token in Keycloak response');
   }
+
+  return { token };
+}
+
+export default function(data: { token: string }): void {
+
+
 
   const payload = JSON.stringify({
     query: queryExamples.listWorkflowsForVisit.query,
@@ -129,12 +138,12 @@ export default function(): void {
     headers: {
       Accept: 'application/json, multipart/mixed',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${data.token}`,
     },
   };
   const res = http.post(graphUrl, payload, params);
   console.log(`status=${res && res.status}`);
   console.log(`body=${res && res.body}`);
-  console.log(`status=${tokenRes && tokenRes.status}`)
-  console.log(`body=${tokenRes && tokenRes.body}`)
+  //  console.log(`status=${data && data.status}`)
+  //console.log(`body=${tokenRes && tokenRes.body}`)
 }
