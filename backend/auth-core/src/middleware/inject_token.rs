@@ -10,8 +10,10 @@ use super::traits::{RetryPolicy, TokenInspector, TokenStore};
 use crate::Result;
 use crate::request::{clone_request, prepare_headers};
 
-/// Core inject-token logic, usable by any caller that already has a store reference.
-/// Use this when the store must be constructed per-request (e.g. BFF wrapping AppState + Session).
+/// Injects a token into the request, refreshing it if expired, and retries on auth failure.
+/// Use this when the store cannot be expressed as a single `Arc<S>` in axum `State` — for
+/// example, when it must be assembled per-request from multiple sources such as shared app
+/// state and a per-request session (as in oidc-bff's `GatewayTokenContext`).
 pub async fn inject_token_with<S>(
     store: &S,
     req: Request,
@@ -59,7 +61,9 @@ where
 }
 
 /// Axum middleware that extracts `State<Arc<S>>` and delegates to [`inject_token_with`].
-/// Use this when the store is shared application state (e.g. auth-daemon's RouterState).
+/// Use this when the store is self-contained in the router state — for example, auth-daemon's
+/// `RouterState`, which holds everything needed to load and refresh tokens without per-request
+/// context.
 pub async fn inject_token<S>(
     State(store): State<Arc<S>>,
     req: Request,
