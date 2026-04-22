@@ -152,7 +152,7 @@ export default function(data: { token: string }): void {
     headers: {
       Accept: 'application/json, multipart/mixed',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${hardToken}`,
+      Authorization: `Bearer ${data.token}`,
     },
   };
   const res = http.post(graphUrl, payload, params);
