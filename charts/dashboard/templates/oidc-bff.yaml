@@ -1,3 +1,4 @@
+{{- if $.Values.oidcBff.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -68,3 +69,4 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
+  {{- end }}
