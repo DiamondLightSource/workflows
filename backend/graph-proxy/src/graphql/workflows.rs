@@ -585,6 +585,7 @@ impl WorkflowsQuery {
         Ok(Workflow::new(workflow, visit.into()))
     }
 
+    /// Find all workflows available for a given visit
     #[instrument(name = "graph_proxy_workflows", skip(self, ctx))]
     async fn workflows(
         &self,

@@ -149,6 +149,7 @@ pub struct WorkflowTemplatesQuery;
 
 #[Object(guard = "AuthGuard")]
 impl WorkflowTemplatesQuery {
+    /// Retrieves a single cluster workflow template by name
     #[instrument(name = "graph_proxy_workflow_template", skip(self, ctx))]
     async fn workflow_template(
         &self,
@@ -179,6 +180,7 @@ impl WorkflowTemplatesQuery {
         Ok(workflow_templates.into())
     }
 
+    /// Retrieves all cluster workflow templates with respective pagination data
     #[instrument(name = "graph_proxy_workflow_templates", skip(self, ctx))]
     async fn workflow_templates(
         &self,
@@ -261,6 +263,7 @@ pub struct WorkflowTemplatesMutation;
 
 #[Object(guard = "AuthGuard")]
 impl WorkflowTemplatesMutation {
+    /// submit specific workflow template
     #[instrument(name = "graph_proxy_submit_workflow_template", skip(self, ctx))]
     async fn submit_workflow_template(
         &self,
