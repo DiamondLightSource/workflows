@@ -22,12 +22,12 @@ RUN mkdir argo-workflows-openapi/src \
   && mkdir sessionspaces/src \
   && echo "fn main() {}" > sessionspaces/src/main.rs \
   && mkdir oidc-bff/src \
-  && touch oidc-bff/src/lib.rs \
   && echo "fn main() {}" > oidc-bff/src/main.rs \
-  && mkdir oidc-bff/migration/src \
-  && touch oidc-bff/migration/src/lib.rs \
   && mkdir auth-daemon/src \
   && echo "fn main() {}" > auth-daemon/src/main.rs \
+  && mkdir auth-core/src \
+  && touch auth-core/src/lib.rs \
+  && echo "fn main() {}" > auth-core/src/main.rs \
   && mkdir telemetry/src \
   && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
