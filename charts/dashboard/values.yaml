@@ -70,12 +70,4 @@ serviceAccount:
   annotations: []
 
 oidcBff:
-  image:
-    registry: ghcr.io
-    repository: diamondlightsource/workflows-oidc-bff
-    tag: "davehadley"
-    digest: "sha256:e259494171d5115d060dd9f3d9da971312d39e9afabd91478c0b7a49c7c5f6d3"
-    pullPolicy: IfNotPresent
-    pullSecrets: []
-  configuration:
-    secretName: oidc-bff-config
+  enabled: false
