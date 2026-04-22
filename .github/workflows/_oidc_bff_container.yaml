@@ -45,7 +45,7 @@ jobs:
           context: backend
           file: backend/Dockerfile.oidc-bff
           target: deploy
-          push: true
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/oidc-bff@') }}
           load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/oidc-bff@')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
