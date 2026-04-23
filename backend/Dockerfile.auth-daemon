@@ -15,20 +15,22 @@ COPY telemetry/build.rs telemetry/build.rs
 COPY telemetry/Cargo.toml telemetry/Cargo.toml
 COPY Cargo.toml Cargo.lock ./
 
-RUN mkdir argo-workflows-openapi/src \
+RUN mkdir -p argo-workflows-openapi/src \
   && touch argo-workflows-openapi/src/lib.rs \
-  && mkdir graph-proxy/src \
+  && mkdir -p graph-proxy/src \
   && echo "fn main() {}" > graph-proxy/src/main.rs \
-  && mkdir sessionspaces/src \
+  && mkdir -p sessionspaces/src \
   && echo "fn main() {}" > sessionspaces/src/main.rs \
-  && mkdir oidc-bff/src \
+  && mkdir -p oidc-bff/src \
   && echo "fn main() {}" > oidc-bff/src/main.rs \
-  && mkdir auth-daemon/src \
+  && mkdir -p auth-daemon/src \
   && echo "fn main() {}" > auth-daemon/src/main.rs \
-  && mkdir auth-core/src \
+  && mkdir -p auth-core/src \
   && touch auth-core/src/lib.rs \
   && echo "fn main() {}" > auth-core/src/main.rs \
-  && mkdir telemetry/src \
+  && mkdir -p auth-core/migration/src \
+  && touch auth-core/migration/src/lib.rs \
+  && mkdir -p telemetry/src \
   && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
 RUN cargo build --release --package telemetry
