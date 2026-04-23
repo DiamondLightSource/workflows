@@ -1,0 +1,29 @@
+[package]
+name = "oidc-bff"
+version = "0.1.0"
+edition = "2024"
+default-run = "oidc-bff"
+license-file = "../../LICENSE"
+
+[[bin]]
+name = "keygen"
+path = "src/bin/keygen.rs"
+publish = false
+
+[dependencies]
+async-trait = {workspace = true } 
+auth-core = { path = "../auth-core" }
+anyhow = { workspace = true, features = ["backtrace"] }
+axum = { workspace = true, features = ["macros"] }
+axum-reverse-proxy = { workspace = true }
+bytes = "1.11.0"
+chrono.workspace = true
+clap.workspace = true
+dotenvy.workspace = true
+hyper = "1.8.1"
+moka =  { version = "0.12.11", features = ["future"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tower-sessions = "0.14.0"
