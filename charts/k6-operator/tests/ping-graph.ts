@@ -1,9 +1,12 @@
-import http, { RefinedResponse, ResponseType } from 'k6/http';
+import http from 'k6/http';
 import { Options } from 'k6/options';
-import { fail } from 'k6';
+import { fail, check } from 'k6';
+import exec from 'k6/execution';
 
-const url = __ENV.GRAPH_PROXY_URL ?? 'http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql';
-
+const graphUrl = __ENV.GRAPH_URL
+const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
+const clientID = __ENV.KEYCLOAK_CLIENT_ID
+const clientSecret = __ENV.KEYCLOAK_CLIENT_SECRET
 
 interface VisitInput {
   proposalCode: string;
@@ -18,10 +21,13 @@ interface ListWorkflowsVariables {
 
 interface QueryExample {
   query: string;
-  variables: ListWorkflowsVariables;
+  variables?: ListWorkflowsVariables;
 }
 
-const queryExamples: { listWorkflowsForVisit: QueryExample } = {
+const queryExamples: {
+  listWorkflowsForVisit: QueryExample;
+  listTemplates: QueryExample;
+} = {
   listWorkflowsForVisit: {
     query: `
       query ListWorkflowsForVisit($visit: VisitInput!, $limit: Int) {
@@ -50,6 +56,19 @@ const queryExamples: { listWorkflowsForVisit: QueryExample } = {
       limit: 30,
     },
   },
+  listTemplates: {
+    query: `
+      query {
+        workflowTemplates {
+          nodes {
+            name
+            title
+            description
+          }
+        }
+      }
+    `,
+  },
 };
 
 export const options: Options = {
@@ -77,24 +96,67 @@ export const options: Options = {
   },
 };
 
-export default function(): void {
-  const token = __ENV.GRAPH_PROXY_BEARER_TOKEN;
-  if (!token) {
-    fail('GRAPH_PROXY_BEARER_TOKEN required');
+export function setup(): { token: string } {
+  if (!clientSecret) {
+    fail('KEYCLOAK_CLIENT_SECRET requried');
+  }
+  if (!clientID) {
+    fail('KEYCLOAK_CLIENT_ID required');
+  }
+  if (!keycloakUrl) {
+    fail('KEYCLOAK_TOKEN_URL required');
+  }
+  if (!graphUrl) {
+    fail('GRAPH_URL required');
   }
 
-  const payload = JSON.stringify({
-    query: queryExamples.listWorkflowsForVisit.query,
-    variables: queryExamples.listWorkflowsForVisit.variables,
+  const tokenRes = http.post(
+    keycloakUrl,
+    {
+      grant_type: 'client_credentials',
+      client_id: clientID,
+      client_secret: clientSecret,
+    }
+  );
+
+  if (tokenRes.status !== 200) {
+    fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
+  }
+
+  check(tokenRes, {
+    'verify token request was valid': (r) =>
+      r.status === 200,
   });
+  console.log(tokenRes.status)
+  console.log(tokenRes.body)
+
+  const tokenBody = JSON.parse(tokenRes.body as string);
+  const token = tokenBody.access_token;
+  if (!token) {
+    exec.test.abort('No access_token in Keycloak response');
+  }
+
+  return { token };
+}
+
+export default function(data: { token: string }): void {
+
+
+
+  const payload = JSON.stringify({
+    query: queryExamples.listTemplates.query,
+  });
+
   const params = {
     headers: {
       Accept: 'application/json, multipart/mixed',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${data.token}`,
     },
   };
-  const res = http.post(url, payload, params);
+  const res = http.post(graphUrl, payload, params);
   console.log(`status=${res && res.status}`);
   console.log(`body=${res && res.body}`);
+  //  console.log(`status=${data && data.status}`)
+  //console.log(`body=${tokenRes && tokenRes.body}`)
 }
