@@ -1,0 +1,23 @@
+{{- if .Values.metacontroller.enabled -}}
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: trigger-controller
+spec:
+  generateSelector: true
+  parentResource:
+    apiVersion: argoproj.io/v1alpha1
+    resource: eventsources
+  childResources:
+    - apiVersion: argoproj.io/v1alpha1
+      resource: sensors
+      updateStrategy:
+        method: InPlace
+  hooks:
+    sync:
+      webhook:
+        url: http://workflows-metacontroller.events/sync
+    customize:
+      webhook:
+        url: http://workflows-metacontroller.events/customize
+{{- end }}
