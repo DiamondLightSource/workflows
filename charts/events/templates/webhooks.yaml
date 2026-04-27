@@ -1,0 +1,44 @@
+{{- if .Values.metacontroller.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trigger-controller-hooks
+data:
+  {{- (.Files.Glob "hooks/sync.py").AsConfig | nindent 2 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflows-metacontroller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workflows-metacontroller
+  template:
+    metadata:
+      labels:
+        app: workflows-metacontroller
+    spec:
+      containers:
+      - name: controller
+        image: python:3
+        command: ["python3", "/hooks/sync.py"]
+        volumeMounts:
+        - name: hooks
+          mountPath: /hooks
+      volumes:
+      - name: hooks
+        configMap:
+          name: trigger-controller-hooks
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workflows-metacontroller
+spec:
+  selector:
+    app: workflows-metacontroller
+  ports:
+  - port: 80
+{{- end }}

@@ -28,7 +28,8 @@ eventBuses:
         cpu: 100m
 
 eventSources:
-  - name: webhook
+  - name: example
+    beamline: test-beamline
     port: 12000
     webhook:
       # event-source can run multiple HTTP servers. Simply define a unique port to start a new HTTP server
@@ -39,3 +40,6 @@ eventSources:
         endpoint: /example
         # HTTP request method to allow. In this case, only POST requests are accepted
         method: POST
+
+metacontroller:
+  enabled: true
