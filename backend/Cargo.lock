@@ -1986,7 +1986,7 @@ dependencies = [
 
 [[package]]
 name = "graph-proxy"
-version = "0.1.17"
+version = "0.1.18"
 dependencies = [
  "anyhow",
  "argo-workflows-openapi",
