@@ -7,17 +7,14 @@ const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL;
 const clientID = __ENV.KEYCLOAK_CLIENT_ID;
 const clientSecret = __ENV.KEYCLOAK_CLIENT_SECRET;
 
-export interface SetupData {
-  token: string | void;
-}
-
-export function setup(): SetupData {
+export function setup(): { token: string } {
   if (!clientSecret) fail('KEYCLOAK_CLIENT_SECRET required');
   if (!clientID) fail('KEYCLOAK_CLIENT_ID required');
   if (!keycloakUrl) fail('KEYCLOAK_TOKEN_URL required');
   if (!graphUrl) fail('GRAPH_URL required');
 
-  const tokenRes = http.post(keycloakUrl, {
+  const tokenRes = http.post(
+    keycloakUrl, {
     grant_type: 'client_credentials',
     client_id: clientID,
     client_secret: clientSecret,
@@ -31,7 +28,8 @@ export function setup(): SetupData {
     fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
   }
 
-  const token = (JSON.parse(tokenRes.body as string) as { access_token?: string }).access_token;
+  const tokenBody = JSON.parse(tokenRes.body as string);
+  const token = tokenBody.access_token;
   if (!token) {
     exec.test.abort('No access_token in Keycloak response');
   }

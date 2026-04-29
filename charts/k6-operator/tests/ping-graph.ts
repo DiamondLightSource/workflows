@@ -1,12 +1,13 @@
 import http from 'k6/http';
 import { Options } from 'k6/options';
-import { fail, check } from 'k6';
-import exec from 'k6/execution';
+//import { fail, check } from 'k6';
+//import exec from 'k6/execution';
+export { setup } from './common.ts';
 
 const graphUrl = __ENV.GRAPH_URL
-const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
-const clientID = __ENV.KEYCLOAK_CLIENT_ID
-const clientSecret = __ENV.KEYCLOAK_CLIENT_SECRET
+//const keycloakUrl = __ENV.KEYCLOAK_TOKEN_URL
+//const clientID = __ENV.KEYCLOAK_CLIENT_ID
+//const clientSecret = __ENV.KEYCLOAK_CLIENT_SECRET
 
 interface VisitInput {
   proposalCode: string;
@@ -96,48 +97,6 @@ export const options: Options = {
   },
 };
 
-export function setup(): { token: string } {
-  if (!clientSecret) {
-    fail('KEYCLOAK_CLIENT_SECRET requried');
-  }
-  if (!clientID) {
-    fail('KEYCLOAK_CLIENT_ID required');
-  }
-  if (!keycloakUrl) {
-    fail('KEYCLOAK_TOKEN_URL required');
-  }
-  if (!graphUrl) {
-    fail('GRAPH_URL required');
-  }
-
-  const tokenRes = http.post(
-    keycloakUrl,
-    {
-      grant_type: 'client_credentials',
-      client_id: clientID,
-      client_secret: clientSecret,
-    }
-  );
-
-  if (tokenRes.status !== 200) {
-    fail(`Token request failed: ${tokenRes.status} ${tokenRes.body}`);
-  }
-
-  check(tokenRes, {
-    'verify token request was valid': (r) =>
-      r.status === 200,
-  });
-  console.log(tokenRes.status)
-  console.log(tokenRes.body)
-
-  const tokenBody = JSON.parse(tokenRes.body as string);
-  const token = tokenBody.access_token;
-  if (!token) {
-    exec.test.abort('No access_token in Keycloak response');
-  }
-
-  return { token };
-}
 
 export default function(data: { token: string }): void {
 
