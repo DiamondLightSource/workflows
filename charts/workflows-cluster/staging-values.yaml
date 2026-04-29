@@ -112,7 +112,6 @@ authenticationConfiguration:
     - issuer:
         url: https://authn.diamond.ac.uk/realms/master
         audiences:
-          - workflows-dashboard-staging
           - workflows-cluster-staging
           - graph
         audienceMatchPolicy: MatchAny
