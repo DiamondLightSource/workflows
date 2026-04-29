@@ -7,7 +7,7 @@ import vitest from "@vitest/eslint-plugin";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig(
-  { ignores: ["**/dist"] },
+  { ignores: ["**/dist", "**/storybook-static"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked],
     files: ["**/*.{ts,tsx}"],
