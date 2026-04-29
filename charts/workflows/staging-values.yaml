@@ -20,7 +20,6 @@ oauth2-proxy:
             emailClaim: email
             userIDClaim: fedid
             extraAudiences:
-              - workflows-dashboard-staging
               - workflows-cluster-staging
               - graph
   ingress:
