@@ -1,211 +1,143 @@
-import http, { head } from 'k6/http';
+import http from 'k6/http';
+import { check, fail } from 'k6';
+import { Options } from 'k6/options';
+import * as ws from 'k6/ws';
+//import { setup } from './common.ts';
 export { setup } from './common.ts';
-const diamondToken = '';
 
-interface somethingInterface {
-  executor: string;
-  startVUs?: number;
-  stages: [{ duration: string; target: number; }]
-  gracefulRampDown: string;
+const graphUrl = __ENV.GRAPH_URL;
 
+interface VisitInput {
+  proposalCode: string;
+  proposalNumber: number;
+  number: number;
 }
 
-interface k6Config {
-  insecureSkipTLSVerify: boolean;
-  scenarios: {
-    ping_graph_ramp: somethingInterface;
-  }
+//const templateQuery = `query K6WsTemplate($templateName: String!) { workflowTemplate(name: $templateName) { name } }`;
+//const subscriptionQuery = `subscription K6WsSubscription($visit: VisitInput!, $name: String!) { workflow(visit: $visit, name: $name) { status { __typename } } }`;
+
+export const options: Options = {
+  vus: 1,
+  iterations: 1,
   thresholds: {
-    http_req_duration: [string];
-  }
+    http_req_failed: ['rate<0.05'],
+  },
+};
+
+
+function graphWsUrl(): string {
+  const explicitUrl = __ENV.GRAPH_WS_URL || __ENV.WS_URL;
+  if (explicitUrl) return explicitUrl;
+  const url = new URL(graphUrl as string);
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  url.pathname = `${url.pathname.replace(/\/$/, '')}/ws`;
+  return url.toString();
 }
 
-export const options = {
-  insecureSkipTLSVerify: true,
-  scenarios: {
-    ping_graph_ramp: {
-      executor: 'ramping-vus',
-      startVUs: 0,
-      stages: [
-        { duration: '30s', target: 10 },
-        { duration: '1m', target: 50 },
-        { duration: '2m', target: 100 },
-        { duration: '1m', target: 200 },
-        { duration: '1m', target: 300 },
-        { duration: '1m', target: 500 },
-        { duration: '30s', target: 0 },
-      ],
-      gracefulRampDown: '10s',
-    },
-  },
-  thresholds: {
-    //http_req_failed: ['rate<0.05'],
-    http_req_duration: ['p(95)<2000'],
-  },
-};
-
-
-const queryExamples = {
-  getWorkFlow: {
-    query: `
-      query GetWorkFlow($visit: VisitInput!, $name: String!) {
-        workflow(visit: $visit, name: $name) {
-          visit {
-            proposalCode
-            proposalNumber
-            number
-          }
-          name
-        }
-      }
-    `,
-    variables: {
-      visit: {
-        proposalCode: "mg",
-        proposalNumber: 36964,
-        number: 1,
+function graphqlRequest(token: string, query: string, variables: Record<string, unknown>, operation: string): unknown {
+  const response = http.post(
+    graphUrl as string,
+    JSON.stringify({ query, variables }),
+    {
+      headers: {
+        Accept: 'application/json, multipart/mixed',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
-      name: "yeltsa-kcir",
+      tags: { endpoint: 'graphql', scenario: 'ws_subscription', operation },
     },
-  },
-  getWorkflowByName: {
-    query: `
-      query GetWorkflowByName($visit: VisitInput!, $name: String!) {
-        workflow(visit: $visit, name: $name) {
-          visit {
-            proposalCode
-            proposalNumber
-            number
-          }
-          name
-        }
-      }
-    `,
-    variables: {
-      visit: {
-        proposalCode: "mg",
-        proposalNumber: 36964,
-        number: 1,
-      },
-      name: "yeltsa-kcir",
-    },
-  },
-  getWorkflowStatus: {
-    query: `
-      query GetWorkflowStatus($visit: VisitInput!, $name: String!) {
-        workflow(visit: $visit, name: $name) {
-          name
-          status {
-            __typename
-          }
-        }
-      }
-    `,
-    variables: {
-      visit: {
-        proposalCode: "mg",
-        proposalNumber: 36964,
-        number: 1,
-      },
-      name: "yeltsa-kcir",
-    },
-  },
-  getWorkflowCreator: {
-    query: `
-      query GetWorkflowCreator($visit: VisitInput!, $name: String!) {
-        workflow(visit: $visit, name: $name) {
-          name
-          creator {
-            fedid
-          }
-        }
-      }
-    `,
-    variables: {
-      visit: {
-        proposalCode: "mg",
-        proposalNumber: 36964,
-        number: 1,
-      },
-      name: "yeltsa-kcir",
-    },
-  },
-  listWorkflowTemplates: {
-    query: `
-      query ListWorkflowTemplates($first: Int) {
-        workflowTemplates(first: $first) {
-          edges {
-            node {
-              name
-            }
-          }
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-        }
-      }
-    `,
-    variables: {
-      first: 10,
-    },
-  },
-  listWorkflowsForVisit: {
-    query: `
-      query ListWorkflowsForVisit($visit: VisitInput!, $limit: Int) {
-        workflows(visit: $visit, limit: $limit) {
-          edges {
-            node {
-              name
-              status {
-                __typename
-              }
-            }
-          }
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-        }
-      }
-    `,
-    variables: {
-      visit: {
-        proposalCode: "cm",
-        proposalNumber: 40661,
-        number: 1,
-      },
-      limit: 30,
-    },
-  },
-};
+  );
+  if (response.status !== 200) fail(`GraphQL request failed: ${response.status} ${response.body}`);
+  const body = response.json() as { errors?: unknown[] };
+  if (body.errors?.length) fail(`GraphQL returned errors: ${JSON.stringify(body.errors)}`);
+  return body;
+}
 
+export default function(data: { token: string }): void {
+  const visit: VisitInput = {
+    proposalCode: "mg",
+    proposalNumber: 23,
+    number: 1
+  }
+  const templateName = __ENV.WS_TEMPLATE_NAME || __ENV.TINY_TEMPLATE_NAME;
+  if (!templateName) fail('WS_TEMPLATE_NAME or TINY_TEMPLATE_NAME required');
+  const submitMutation = `mutation K6WsSubmit($templateName: String!, $visit: VisitInput!, $parameters: JSON!) { submitWorkflowTemplate(name: $templateName, visit: $visit, parameters: $parameters) { name } }`;
 
-const headers = {
-  'Authorization': `Bearer ${diamondToken}`,
-  'Content-Type': 'application/json',
-};
+  const submitted = graphqlRequest(
+    data.token,
+    submitMutation,
+    { templateName, visit, parameters },
+    'submitWorkflowTemplate',
+  ) as { data?: { submitWorkflowTemplate?: { name?: string } | null } };
+  const workflowName = submitted.data?.submitWorkflowTemplate?.name;
+  if (!workflowName) fail('Websocket subscription submission did not return a workflow name');
 
+  const timeoutSeconds = Number(__ENV.K6_POLL_TIMEOUT_SECONDS || '300');
+  let connectionAck = false;
+  let nextCount = 0;
+  let terminalStatus: string | null = null;
+  let timedOut = false;
 
-export default function() {
-  //const res = http.post('https://api.github.com/graphql', JSON.stringify({query: query}), {headers: headers});
-  const url = 'https://staging.workflows.diamond.ac.uk/graphql';
-  const payload = JSON.stringify({
-    query: queryExamples.listWorkflowsForVisit.query,
-    variables: queryExamples.listWorkflowsForVisit.variables,
+  const response = ws.connect(
+    graphWsUrl(),
+    {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+        'Sec-WebSocket-Protocol': 'graphql-transport-ws',
+      },
+      tags: { endpoint: 'graphql_ws', scenario: 'ws_subscription' },
+    },
+    (socket) => {
+      socket.on('open', () => {
+        socket.send(JSON.stringify({ type: 'connection_init', payload: { Authorization: `Bearer ${data.token}` } }));
+        socket.setTimeout(() => {
+          timedOut = true;
+          socket.close();
+        }, timeoutSeconds * 1000);
+      });
+
+      socket.on('message', (message) => {
+        const frame = JSON.parse(message) as {
+          type: string;
+          payload?: { data?: { workflow?: { status?: { __typename?: string } } } };
+        };
+        if (frame.type === 'connection_ack') {
+          connectionAck = true;
+          socket.send(JSON.stringify({
+            id: '1',
+            type: 'subscribe',
+            payload: {
+              operationName: 'K6WsSubscription',
+              query: subscriptionQuery,
+              variables: { visit, name: workflowName },
+            },
+          }));
+          return;
+        }
+        if (frame.type === 'next') {
+          nextCount += 1;
+          terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
+          if (
+            terminalStatus === 'WorkflowSucceededStatus' ||
+            terminalStatus === 'WorkflowFailedStatus' ||
+            terminalStatus === 'WorkflowErroredStatus'
+          ) {
+            socket.send(JSON.stringify({ id: '1', type: 'complete' }));
+            socket.close();
+          }
+        }
+      });
+    },
+  );
+
+  check(response, {
+    'websocket upgrade succeeded': (r) => r.status === 101,
   });
-  const params = {
-    headers: {
-      Accept: 'application/json, multipart/mixed',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${diamondToken}`,
-      Origin: 'https://staging.workflows.diamond.ac.uk',
-      Referer: 'https://staging.workflows.diamond.ac.uk',
-    },
-  };
-  const res = http.post(url, payload, params)
-  console.log(`status=${res && res.status}`);
-  console.log(`body=${res && res.body}`);
-  res;
+  check({ connectionAck, nextCount, terminalStatus, timedOut }, {
+    'websocket connection acknowledged': (state) => state.connectionAck,
+    'websocket emitted updates': (state) => state.nextCount > 0,
+    'subscription saw workflow reach terminal success': (state) =>
+      state.terminalStatus === 'WorkflowSucceededStatus',
+    'websocket did not time out': (state) => !state.timedOut,
+  });
 }
-
