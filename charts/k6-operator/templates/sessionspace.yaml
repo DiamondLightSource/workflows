@@ -1,0 +1,30 @@
+{{- if .Values.sessionspace.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/managed-by: sessionspaces
+  name: {{ .Values.sessionspace.name }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/managed-by: sessionspaces
+    workflows.argoproj.io/configmap-type: Parameter
+  name: sessionspaces
+  namespace: {{ .Values.sessionspace.name }}
+data:
+  end_date: {{ .Values.sessionspace.endDate | quote }}
+  gid: {{ .Values.sessionspace.gid | quote }}
+  instrument: {{ .Values.sessionspace.instrument | quote }}
+  members: {{ .Values.sessionspace.members | toJson | squote }}
+  proposal_code: {{ .Values.sessionspace.proposalCode | quote }}
+  proposal_number: {{ .Values.sessionspace.proposalNumber | quote }}
+  start_date: {{ .Values.sessionspace.startDate | quote }}
+  visit: {{ .Values.sessionspace.visit | quote }}
+{{- end }}

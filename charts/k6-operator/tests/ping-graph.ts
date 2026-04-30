@@ -50,8 +50,8 @@ const queryExamples: {
     `,
     variables: {
       visit: {
-        proposalCode: 'cm',
-        proposalNumber: 40661,
+        proposalCode: 'ks',
+        proposalNumber: 10000,
         number: 1,
       },
       limit: 30,
@@ -115,7 +115,7 @@ export default function(data: { token: string }): void {
   };
   const res = http.post(graphUrl, payload, params);
   console.log(`status=${res && res.status}`);
-  console.log(`body=${res && res.body}`);
+  //console.log(`body=${res && res.body}`);
   //  console.log(`status=${data && data.status}`)
   //console.log(`body=${tokenRes && tokenRes.body}`)
 }
