@@ -27,9 +27,16 @@ spec:
       - - name: run
           template: run-job
           arguments:
-             parameters:
+            parameters:
                - name: visitdir
-                 value: "{{ workflow.parameters.visitdir }}"
+                 valueFrom:
+                    configMapKeyRef:
+                      name: sessionspaces
+                      key: data_directory
+          
+            # parameters:
+            #   - name: visitdir
+            #     value: "{{ workflow.parameters.visitdir }}"
 
   #LINT
   - name: lint
@@ -56,11 +63,14 @@ spec:
 
   #RUN STEP
   - name: run-job
-    inputs:
-      parameters:
-      - name: visitdir
-#        value: "{{ workflow.parameters.visitdir}}"
-
+  arguments:
+    parameters:
+    - name: visitdir
+      valueFrom:
+        configMapKeyRef:
+          name: sessionspaces
+          key: data_directory
+          
     container:
       image: alpine:3.19
       command: [sh, -c]
