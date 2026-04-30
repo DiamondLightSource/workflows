@@ -1,8 +1,7 @@
 import http from 'k6/http';
-import { check, fail } from 'k6';
+import { check, fail, JSONValue } from 'k6';
 import { Options } from 'k6/options';
 import * as ws from 'k6/ws';
-//import { setup } from './common.ts';
 export { setup } from './common.ts';
 
 const graphUrl = __ENV.GRAPH_URL;
@@ -13,8 +12,8 @@ interface VisitInput {
   number: number;
 }
 
-//const templateQuery = `query K6WsTemplate($templateName: String!) { workflowTemplate(name: $templateName) { name } }`;
-//const subscriptionQuery = `subscription K6WsSubscription($visit: VisitInput!, $name: String!) { workflow(visit: $visit, name: $name) { status { __typename } } }`;
+const submitMutation = `mutation K6WsSubmit($templateName: String!, $visit: VisitInput!, $parameters: JSON!) { submitWorkflowTemplate(name: $templateName, visit: $visit, parameters: $parameters) { name } }`;
+const subscriptionQuery = `subscription K6WsSubscription($visit: VisitInput!, $name: String!) { workflow(visit: $visit, name: $name) { status { __typename } } }`;
 
 export const options: Options = {
   vus: 1,
@@ -34,43 +33,58 @@ function graphWsUrl(): string {
   return url.toString();
 }
 
-function graphqlRequest(token: string, query: string, variables: Record<string, unknown>, operation: string): unknown {
-  const response = http.post(
-    graphUrl as string,
-    JSON.stringify({ query, variables }),
-    {
-      headers: {
-        Accept: 'application/json, multipart/mixed',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      tags: { endpoint: 'graphql', scenario: 'ws_subscription', operation },
-    },
-  );
-  if (response.status !== 200) fail(`GraphQL request failed: ${response.status} ${response.body}`);
-  const body = response.json() as { errors?: unknown[] };
-  if (body.errors?.length) fail(`GraphQL returned errors: ${JSON.stringify(body.errors)}`);
-  return body;
-}
-
 export default function(data: { token: string }): void {
   const visit: VisitInput = {
-    proposalCode: "mg",
-    proposalNumber: 23,
+    proposalCode: "cm",
+    proposalNumber: 40661,
     number: 1
   }
-  const templateName = __ENV.WS_TEMPLATE_NAME || __ENV.TINY_TEMPLATE_NAME;
-  if (!templateName) fail('WS_TEMPLATE_NAME or TINY_TEMPLATE_NAME required');
-  const submitMutation = `mutation K6WsSubmit($templateName: String!, $visit: VisitInput!, $parameters: JSON!) { submitWorkflowTemplate(name: $templateName, visit: $visit, parameters: $parameters) { name } }`;
+  const templateName = "conditional-steos"
+  //if (!templateName) fail('WS_TEMPLATE_NAME or TINY_TEMPLATE_NAME required');
+  //const parameters = optionalJsonEnv('K6_WS_SUBMISSION_PARAMETERS');
+  const parameters = {}
 
-  const submitted = graphqlRequest(
-    data.token,
-    submitMutation,
-    { templateName, visit, parameters },
-    'submitWorkflowTemplate',
-  ) as { data?: { submitWorkflowTemplate?: { name?: string } | null } };
-  const workflowName = submitted.data?.submitWorkflowTemplate?.name;
-  if (!workflowName) fail('Websocket subscription submission did not return a workflow name');
+  const submitResponse = http.post(
+    graphWsUrl(),
+    JSON.stringify({
+      query: submitMutation,
+      variables: {
+        name: templateName,
+        visit,
+        parameters,
+      },
+    }),
+    {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+      tags: {
+        endpoint: "graphql",
+        operation: "submit_workflow_template",
+        scenario: "graphql_ws_subscription",
+      },
+    },
+  );
+
+  check(submitResponse, {
+    "submit mutation status is 200": (res) => res && res.status === 200,
+  })
+  let submitBody: JSONValue | undefined = undefined;
+  try {
+    submitBody = submitResponse.json();
+  } catch (_err) {
+    fail(`submit mutation returned non-JSON body. Status=${submitResponse.status}`);
+  }
+
+  if (!submitBody || typeof submitBody !== "object" || Array.isArray(submitBody)) {
+    fail(`submit mutation returned errors: Status=${(submitResponse.status)}`);
+  }
+
+  const workflowName = submitBody.data?.submit_workflow_template?.name;
+  //submitBody &&
+  //submitBody.data &&
+  //submitBody.data.submit_workflow_template &&
+  //submitBody.data.submit_workflow_template.name;
 
   const timeoutSeconds = Number(__ENV.K6_POLL_TIMEOUT_SECONDS || '300');
   let connectionAck = false;
