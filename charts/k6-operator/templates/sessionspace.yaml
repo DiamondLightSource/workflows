@@ -21,4 +21,4 @@ metadata:
     app.kubernetes.io/managed-by: sessionspaces
     workflows.argoproj.io/configmap-type: Parameter
   name: sessionspaces
-  namespace: ks0000-1
+  namespace: ks10000-1
