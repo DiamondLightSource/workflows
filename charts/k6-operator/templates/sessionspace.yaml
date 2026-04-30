@@ -19,6 +19,9 @@ data:
 metadata:
   labels:
     app.kubernetes.io/managed-by: sessionspaces
-    workflows.argoproj.io/configmap-type: Parameter
+    #workflows.argoproj.io/configmap-type: Parameter
   name: sessionspaces
   namespace: ks10000-1
+
+  # rolebindings not created
+  # v kubectl get roles -n ks10000-1
