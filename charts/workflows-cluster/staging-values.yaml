@@ -92,16 +92,40 @@ authenticationConfiguration:
         audienceMatchPolicy: MatchAny
       claimMappings:
         username:
-          claim: fedid
-          prefix: "oidc:"
+          expression: >
+            claims.?fedid.hasValue()
+            ? ('oidc:' + claims.fedid)
+            : (claims.iss + '/' + claims.client_id)
+        uid:
+          expression: "claims.?fedid.orValue(claims.sub)"
         groups:
           claim: groups
           prefix: "oidc:"
-        uid:
-          claim: fedid
         extra:
         - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: 'string(claims.posix_uid)'
+          valueExpression: "string(claims.?posix_uid.orValue(36055))" # use k8s-workflows uid
+        - key: 'workflows.diamond.ac.uk/is-service-account'
+          valueExpression: "claims.?fedid.hasValue() ? '' : 'true'"
+      claimValidationRules:
+      - expression: >
+          claims.?fedid.hasValue()
+          ||
+          claims.?client_id.hasValue()
+        message: "Invalid access token (no fedid or client_id). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+      - expression: >
+          claims.?fedid.hasValue()
+          ||
+          claims.?preferred_username.orValue('').startsWith('service-account-')
+        message: "Invalid access token (service-account tokens must use service-account-* preferred_username). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+      - expression: >
+          claims.?fedid.hasValue()
+          ||
+          (
+            claims.?client_id.hasValue()
+            &&
+            ['k6Operator'].exists(allowed, allowed == claims.client_id)
+          )
+        message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
       userValidationRules:
       - expression: "!user.username.startsWith('system:')"
         message: 'username cannot use reserved system: prefix'
