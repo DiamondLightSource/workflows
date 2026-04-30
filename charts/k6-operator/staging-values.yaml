@@ -8,3 +8,16 @@ k6-operator:
       limits:
         cpu: 1000m
         memory: 1Gi
+
+sessionspace:
+  enabled: true
+  name: ks0000-1
+  proposalCode: ks
+  proposalNumber: "10000"
+  visit: "1"
+  instrument: b01-1
+  gid: "36055"
+  startDate: "2026-04-30 9:00:00.0"
+  endDate: "2026-05-22 9:00:00.0"
+  members:
+    - https://identity-dev.diamond.ac.uk/realms/dls/k6Operator
