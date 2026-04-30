@@ -95,7 +95,7 @@ authenticationConfiguration:
           expression: >
             claims.?fedid.hasValue()
             ? ('oidc:' + claims.fedid)
-            : (claims.iss + '/' + claims.client_id)
+            : ('oidc:' + claims.iss + '/' + claims.client_id)
         uid:
           expression: "claims.?fedid.orValue(claims.sub)"
         groups:
