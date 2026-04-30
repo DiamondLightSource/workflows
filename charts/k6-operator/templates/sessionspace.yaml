@@ -1,4 +1,4 @@
-{{- if .Values.sessionspace.enabled }}
+{{- if and .Values.sessionspace .Values.sessionspace.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:

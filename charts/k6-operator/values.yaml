@@ -9,3 +9,5 @@ k6-operator:
         cpu: 2000m
         memory: 2Gi
 
+sessionspace:
+  enabled: false

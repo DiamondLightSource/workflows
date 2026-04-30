@@ -8,7 +8,6 @@ k6-operator:
       limits:
         cpu: 1000m
         memory: 1Gi
-
 sessionspace:
   enabled: true
   name: ks0000-1
@@ -21,3 +20,4 @@ sessionspace:
   endDate: "2026-05-22 9:00:00.0"
   members:
     - https://identity-dev.diamond.ac.uk/realms/dls/k6Operator
+

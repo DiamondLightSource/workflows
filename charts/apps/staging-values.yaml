@@ -88,5 +88,6 @@ kueue:
 k6Operator:
   enabled: true
   targetRevision: HEAD
-  extraValueFiles: []
+  extraValueFiles:
+    - staging-values.yaml
   valuesObject: {}
