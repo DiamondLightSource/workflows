@@ -10,7 +10,7 @@ k6-operator:
         memory: 1Gi
 sessionspace:
   enabled: true
-  name: ks0000-1
+  name: ks10000-1
   proposalCode: ks
   proposalNumber: "10000"
   visit: "1"

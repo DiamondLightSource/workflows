@@ -1,30 +1,24 @@
-{{- if and .Values.sessionspace .Values.sessionspace.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  annotations:
-    argocd.argoproj.io/sync-wave: "-1"
   labels:
     app.kubernetes.io/managed-by: sessionspaces
-  name: {{ .Values.sessionspace.name }}
+  name: ks0000-1
 ---
 apiVersion: v1
 kind: ConfigMap
+data:
+  end_date: "2026-05-22 9:00:00.0"
+  gid: "36055"
+  instrument: b01-1
+  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator"]'
+  proposal_code: ks
+  proposal_number: "0000"
+  start_date: "2026-04-30 9:00:00.0"
+  visit: "1"
 metadata:
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
   labels:
     app.kubernetes.io/managed-by: sessionspaces
     workflows.argoproj.io/configmap-type: Parameter
   name: sessionspaces
-  namespace: {{ .Values.sessionspace.name }}
-data:
-  end_date: {{ .Values.sessionspace.endDate | quote }}
-  gid: {{ .Values.sessionspace.gid | quote }}
-  instrument: {{ .Values.sessionspace.instrument | quote }}
-  members: {{ .Values.sessionspace.members | toJson | squote }}
-  proposal_code: {{ .Values.sessionspace.proposalCode | quote }}
-  proposal_number: {{ .Values.sessionspace.proposalNumber | quote }}
-  start_date: {{ .Values.sessionspace.startDate | quote }}
-  visit: {{ .Values.sessionspace.visit | quote }}
-{{- end }}
+  namespace: ks0000-1
