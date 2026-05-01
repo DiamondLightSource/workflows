@@ -23,6 +23,16 @@ export const options: Options = {
   },
 };
 
+interface MutationResponse {
+  data?: {
+    submitWorkflowTemplate?: {
+      name?: string;
+      visit?: VisitInput;
+      status?: string | null;
+    };
+  };
+}
+
 
 function graphWsUrl(): string {
   const explicitUrl = __ENV.GRAPH_WS_URL || __ENV.WS_URL;
@@ -35,11 +45,11 @@ function graphWsUrl(): string {
 
 export default function(data: { token: string }): void {
   const visit: VisitInput = {
-    proposalCode: "cm",
-    proposalNumber: 40661,
+    proposalCode: "ks",
+    proposalNumber: 10000,
     number: 1
   }
-  const templateName = "conditional-steos"
+  const templateName = "example-template"
   //if (!templateName) fail('WS_TEMPLATE_NAME or TINY_TEMPLATE_NAME required');
   //const parameters = optionalJsonEnv('K6_WS_SUBMISSION_PARAMETERS');
   const parameters = {}
@@ -69,9 +79,9 @@ export default function(data: { token: string }): void {
   check(submitResponse, {
     "submit mutation status is 200": (res) => res && res.status === 200,
   })
-  let submitBody: JSONValue | undefined = undefined;
+  let submitBody: MutationResponse | undefined = undefined;
   try {
-    submitBody = submitResponse.json();
+    submitBody = submitResponse.json() as MutationResponse;
   } catch (_err) {
     fail(`submit mutation returned non-JSON body. Status=${submitResponse.status}`);
   }
@@ -80,11 +90,10 @@ export default function(data: { token: string }): void {
     fail(`submit mutation returned errors: Status=${(submitResponse.status)}`);
   }
 
-  const workflowName = submitBody.data?.submit_workflow_template?.name;
-  //submitBody &&
-  //submitBody.data &&
-  //submitBody.data.submit_workflow_template &&
-  //submitBody.data.submit_workflow_template.name;
+  const workflowName = submitBody?.data?.submitWorkflowTemplate?.name;
+  if (!workflowName) {
+    fail(`submit mutation returned no workflows name. Status=${submitResponse.status}`);
+  }
 
   const timeoutSeconds = Number(__ENV.K6_POLL_TIMEOUT_SECONDS || '300');
   let connectionAck = false;

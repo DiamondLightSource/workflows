@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kyverno
+    generate.kyverno.io/policy-name: workflows-sessionspace
+    generate.kyverno.io/policy-namespace: ""
+    generate.kyverno.io/rule-name: generate-argo-workflow-service-account
+    generate.kyverno.io/trigger-group: ""
+    generate.kyverno.io/trigger-kind: Namespace
+    generate.kyverno.io/trigger-namespace: ""
+    generate.kyverno.io/trigger-uid: 225e0bc5-1410-419d-880c-97fcc98d17bf
+    generate.kyverno.io/trigger-version: v1
+  name: argo-workflow
+  namespace: ks10000-1
