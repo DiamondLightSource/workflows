@@ -11,8 +11,17 @@ metadata:
     workflows.diamond.ac.uk/science-group-examples: "true"
     kueue.x-k8s.io/priority-class: high
 
+
 spec:
   entrypoint: pipeline
+  arguments:
+    parameters:
+    - name: visitdir
+      valueFrom:
+        configMapKeyRef:
+          name: sessionspaces
+          key: data_directory
+
 
 
   templates:
@@ -27,16 +36,9 @@ spec:
       - - name: run
           template: run-job
           arguments:
-            parameters:
+             parameters:
                - name: visitdir
-                 valueFrom:
-                    configMapKeyRef:
-                      name: sessionspaces
-                      key: data_directory
-          
-            # parameters:
-            #   - name: visitdir
-            #     value: "{{ workflow.parameters.visitdir }}"
+                 value: "{{ workflow.parameters.visitdir }}"
 
   #LINT
   - name: lint
@@ -63,25 +65,15 @@ spec:
 
   #RUN STEP
   - name: run-job
-  arguments:
-    parameters:
-    - name: visitdir
-      valueFrom:
-        configMapKeyRef:
-          name: sessionspaces
-          key: data_directory
-          
+    inputs:
+      parameters:
+          - name: visitdir
     container:
       image: alpine:3.19
       command: [sh, -c]
       args:
         - |
           echo "Pipeline complete"
-          echo "VisitDir = {{ inputs.parameters.visitdir }}"
+          echo "VisitDir = {{inputs.parameters.visitdir}}"
           echo "TOKEN is available"
-
-  #SECRET INJECTION (from SealedSecret-created Secret)
-      env:
-        - name: TOKEN
-          value: "tem-token"     # to replace with the commented lines once sealedsecret cmd works !
 
