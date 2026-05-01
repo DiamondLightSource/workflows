@@ -5,24 +5,24 @@ metadata:
     app.kubernetes.io/managed-by: sessionspaces
   name: ks10000-1
 ---
-apiVersion: v1
-kind: ConfigMap
-data:
-  end_date: "2026-05-22 9:00:00.0"
-  gid: "36055"
-  instrument: b01-1
-  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator"]'
-  proposal_code: ks
-  proposal_number: "10000"
-  start_date: "2026-04-30 9:00:00.0"
-  visit: "1"
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: sessionspaces
-    #workflows.argoproj.io/configmap-type: Parameter
-  name: sessionspaces
-  namespace: ks10000-1
----
+#apiVersion: v1
+#kind: ConfigMap
+#data:
+#  end_date: "2026-05-22 9:00:00.0"
+#  gid: "36055"
+#  instrument: b01-1
+#  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator"]'
+#  proposal_code: ks
+#  proposal_number: "10000"
+#  start_date: "2026-04-30 9:00:00.0"
+#  visit: "1"
+#metadata:
+#  labels:
+#    app.kubernetes.io/managed-by: sessionspaces
+#    #workflows.argoproj.io/configmap-type: Parameter
+#  name: sessionspaces
+#  namespace: ks10000-1
+#---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
