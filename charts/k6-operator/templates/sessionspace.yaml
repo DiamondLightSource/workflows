@@ -22,6 +22,37 @@ metadata:
     #workflows.argoproj.io/configmap-type: Parameter
   name: sessionspaces
   namespace: ks10000-1
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argo-workflow
+  namespace: ks10000-1
+  ownerReferences:
+  - apiVersion: v1
+    kind: ServiceAccount
+    name: argo-workflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-workflow
+subjects:
+- kind: ServiceAccount
+  name: argo-workflow
+  namespace: ks10000-1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: visit-member
+  namespace: ks10000-1
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: visit-member
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: oidc:https://identity-dev.diamond.ac.uk/realms/dls/k6Operator
 
   # rolebindings not created
   # v kubectl get roles -n ks10000-1
