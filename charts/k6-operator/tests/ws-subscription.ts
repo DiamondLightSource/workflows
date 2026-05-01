@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check, fail, JSONValue } from 'k6';
+import { check, fail } from 'k6';
 import { Options } from 'k6/options';
 import * as ws from 'k6/ws';
 export { setup } from './common.ts';
