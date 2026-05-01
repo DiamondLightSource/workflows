@@ -47,6 +47,7 @@ export default function(data: { token: string }): void {
   //const parameters = optionalJsonEnv('K6_WS_SUBMISSION_PARAMETERS');
   const parameters = {}
 
+  console.log(`submitting workflow template=${templateName} visit=${JSON.stringify(visit)} graphUrl=${graphUrl}`);
   const submitResponse = http.post(
     graphUrl,
     JSON.stringify({
@@ -68,6 +69,7 @@ export default function(data: { token: string }): void {
       },
     },
   );
+  console.log(`submit mutation response status=${submitResponse.status}`);
 
   check(submitResponse, {
     "submit mutation status is 200": (res) => res && res.status === 200,
@@ -75,7 +77,9 @@ export default function(data: { token: string }): void {
   let submitBody: MutationResponse | undefined = undefined;
   try {
     submitBody = submitResponse.json() as MutationResponse;
+    console.log(`submit mutation response body=${JSON.stringify(submitBody)}`);
   } catch (_err) {
+    console.log(`submit mutation non-JSON body=${String(submitResponse.body)}`);
     fail(`submit mutation returned non-JSON body. Status=${submitResponse.status}`);
   }
 
@@ -87,6 +91,7 @@ export default function(data: { token: string }): void {
   if (!workflowName) {
     fail(`submit mutation returned no workflows name. Status=${submitResponse.status}`);
   }
+  console.log(`submitted workflow name=${workflowName}`);
 
   const timeoutSeconds = Number(__ENV.K6_POLL_TIMEOUT_SECONDS || '300');
   let connectionAck = false;
@@ -97,6 +102,7 @@ export default function(data: { token: string }): void {
   if (!graphWsUrl) {
     fail("GRAPH_WS_URL required");
   }
+  console.log(`connecting websocket url=${graphWsUrl} timeoutSeconds=${timeoutSeconds}`);
   const response = ws.connect(
     graphWsUrl,
     {
@@ -108,20 +114,24 @@ export default function(data: { token: string }): void {
     },
     (socket) => {
       socket.on('open', () => {
+        console.log('websocket open; sending connection_init');
         socket.send(JSON.stringify({ type: 'connection_init', payload: { Authorization: `Bearer ${data.token}` } }));
         socket.setTimeout(() => {
           timedOut = true;
+          console.log(`websocket timed out after ${timeoutSeconds}s; closing`);
           socket.close();
         }, timeoutSeconds * 1000);
       });
 
       socket.on('message', (message) => {
+        console.log(`websocket message=${message}`);
         const frame = JSON.parse(message) as {
           type: string;
           payload?: { data?: { workflow?: { status?: { __typename?: string } } } };
         };
         if (frame.type === 'connection_ack') {
           connectionAck = true;
+          console.log(`websocket connection_ack; subscribing workflow=${workflowName}`);
           socket.send(JSON.stringify({
             id: '1',
             type: 'subscribe',
@@ -136,22 +146,37 @@ export default function(data: { token: string }): void {
         if (frame.type === 'next') {
           nextCount += 1;
           terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
+          console.log(`websocket next count=${nextCount} terminalStatus=${terminalStatus}`);
           if (
             terminalStatus === 'WorkflowSucceededStatus' ||
             terminalStatus === 'WorkflowFailedStatus' ||
-            terminalStatus === 'WorkflowErroredStatus'
+            terminalStatus === 'WorkflowErroredStatus' ||
+            terminalStatus === 'WorkflowRunningStatus'
           ) {
+            console.log(`websocket terminal status=${terminalStatus}; sending complete and closing`);
             socket.send(JSON.stringify({ id: '1', type: 'complete' }));
             socket.close();
           }
         }
       });
+
+      socket.on('close', () => {
+        console.log('websocket closed');
+      });
+
+      socket.on('error', (err) => {
+        console.log(`websocket error=${JSON.stringify(err)}`);
+      });
     },
   );
+  console.log(`websocket connect response status=${response.status}`);
 
   check(response, {
     'websocket upgrade succeeded': (r) => r.status === 101,
   });
+  console.log(
+    `websocket final state connectionAck=${connectionAck} nextCount=${nextCount} terminalStatus=${terminalStatus} timedOut=${timedOut}`,
+  );
   check({ connectionAck, nextCount, terminalStatus, timedOut }, {
     'websocket connection acknowledged': (state) => state.connectionAck,
     'websocket emitted updates': (state) => state.nextCount > 0,
