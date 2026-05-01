@@ -27,6 +27,8 @@ spec:
         value: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/token
       - name: GRAPH_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
+      - name: GRAPH_WS_URL
+        value: ws://graph-proxy.graph-proxy.svc.cluster.local:80/graphql/ws
     resources:
       limits:
         cpu: 1000m

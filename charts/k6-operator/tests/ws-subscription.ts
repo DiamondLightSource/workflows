@@ -5,6 +5,7 @@ import * as ws from 'k6/ws';
 export { setup } from './common.ts';
 
 const graphUrl = __ENV.GRAPH_URL;
+const graphWsUrl = __ENV.GRAPH_WS_URL;
 
 interface VisitInput {
   proposalCode: string;
@@ -34,14 +35,6 @@ interface MutationResponse {
 }
 
 
-function graphWsUrl(): string {
-  const explicitUrl = __ENV.GRAPH_WS_URL || __ENV.WS_URL;
-  if (explicitUrl) return explicitUrl;
-  const url = new URL(graphUrl as string);
-  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-  url.pathname = `${url.pathname.replace(/\/$/, '')}/ws`;
-  return url.toString();
-}
 
 export default function(data: { token: string }): void {
   const visit: VisitInput = {
@@ -55,7 +48,7 @@ export default function(data: { token: string }): void {
   const parameters = {}
 
   const submitResponse = http.post(
-    graphWsUrl(),
+    graphUrl,
     JSON.stringify({
       query: submitMutation,
       variables: {
@@ -102,7 +95,7 @@ export default function(data: { token: string }): void {
   let timedOut = false;
 
   const response = ws.connect(
-    graphWsUrl(),
+    graphWsUrl,
     {
       headers: {
         Authorization: `Bearer ${data.token}`,
