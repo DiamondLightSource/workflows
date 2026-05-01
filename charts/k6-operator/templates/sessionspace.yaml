@@ -5,55 +5,23 @@ metadata:
     app.kubernetes.io/managed-by: sessionspaces
   name: ks10000-1
 ---
-#apiVersion: v1
-#kind: ConfigMap
-#data:
-#  end_date: "2026-05-22 9:00:00.0"
-#  gid: "36055"
-#  instrument: b01-1
-#  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator"]'
-#  proposal_code: ks
-#  proposal_number: "10000"
-#  start_date: "2026-04-30 9:00:00.0"
-#  visit: "1"
-#metadata:
-#  labels:
-#    app.kubernetes.io/managed-by: sessionspaces
-#    #workflows.argoproj.io/configmap-type: Parameter
-#  name: sessionspaces
-#  namespace: ks10000-1
-#---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+apiVersion: v1
+kind: ConfigMap
+data:
+  end_date: "2026-05-22 9:00:00.0"
+  gid: "36055"
+  instrument: b01-1
+  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator"]'
+  proposal_code: ks
+  proposal_number: "10000"
+  start_date: "2026-04-30 9:00:00.0"
+  visit: "1"
 metadata:
-  name: argo-workflow
+  labels:
+    app.kubernetes.io/managed-by: sessionspaces
+    #workflows.argoproj.io/configmap-type: Parameter
+  name: sessionspaces
   namespace: ks10000-1
-  ownerReferences:
-  - apiVersion: v1
-    kind: ServiceAccount
-    name: argo-workflow
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: argo-workflow
-subjects:
-- kind: ServiceAccount
-  name: argo-workflow
-  namespace: ks10000-1
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: visit-member
-  namespace: ks10000-1
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: visit-member
-subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: oidc:https://identity-dev.diamond.ac.uk/realms/dls/k6Operator
 
   # rolebindings not created
   # v kubectl get roles -n ks10000-1
