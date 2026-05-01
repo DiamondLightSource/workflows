@@ -8,6 +8,8 @@ mod instrument_subjects;
 mod posix_attributes;
 /// Associations between proposals and subjects
 mod proposal_subjects;
+/// Statically-configured sessions for testing
+pub mod static_sessions;
 
 use self::{basic_info::BasicInfo, direct_subjects::DirectSubjects};
 use crate::instruments::Instrument::{self, *};

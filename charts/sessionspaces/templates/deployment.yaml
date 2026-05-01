@@ -65,6 +65,16 @@ spec:
             - name: TRACING_ENDPOINT
               value: {{ . }}
             {{- end }}
+            {{- if $.Values.staticSessions.enabled }}
+            - name: STATIC_SESSIONS
+              value: /etc/sessionspaces/static-sessions.json
+            {{- end }}
+          {{- if $.Values.staticSessions.enabled }}
+          volumeMounts:
+            - name: static-sessions
+              mountPath: /etc/sessionspaces
+              readOnly: true
+          {{- end }}
           resources:
             {{- $.Values.deployment.resources | toYaml | nindent 12 }}
           {{- with $.Values.deployment.nodeSelector }}
@@ -79,3 +89,9 @@ spec:
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
+      {{- if $.Values.staticSessions.enabled }}
+      volumes:
+        - name: static-sessions
+          configMap:
+            name: {{ include "common.names.fullname" $ }}-static-sessions
+      {{- end }}

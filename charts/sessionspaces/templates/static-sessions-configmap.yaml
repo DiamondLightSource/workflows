@@ -1,0 +1,11 @@
+{{- if $.Values.staticSessions.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" $ }}-static-sessions
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+data:
+  static-sessions.json: {{ $.Values.staticSessions.sessions | toJson | quote }}
+{{- end }}

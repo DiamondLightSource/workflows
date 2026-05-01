@@ -161,4 +161,6 @@ pub enum Instrument {
     S03,
     #[strum(serialize = "s04")]
     S04,
+    #[strum(serialize = "t01")]
+    T01,
 }

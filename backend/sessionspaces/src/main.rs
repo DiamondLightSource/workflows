@@ -10,12 +10,12 @@ pub mod permissionables;
 /// Kubernetes resource templating
 mod resources;
 
-use crate::permissionables::Sessions;
+use crate::permissionables::{static_sessions::StaticSessions, Sessions};
 use clap::Parser;
 use ldap3::LdapConnAsync;
 use resources::{create_configmap, create_namespace, delete_namespace};
 use sqlx::mysql::MySqlPoolOptions;
-use std::{collections::BTreeSet, time::Duration};
+use std::{collections::BTreeSet, path::PathBuf, time::Duration};
 use telemetry::{setup_telemetry, TelemetryConfig};
 use tokio::time::interval;
 use tracing::{info, instrument, warn};
@@ -30,12 +30,15 @@ struct Cli {
     /// The URL of the LDAP database where the posix attributes are stored
     #[clap(long, env)]
     ldap_url: Url,
-    /// The period to wait after a succesful bundle server request
+    /// The period to wait after a successful bundle server request
     #[clap(long, env, default_value = "60s")]
     update_interval: humantime::Duration,
     /// The maximum allowable k8s API requests per second
     #[clap(long, env, default_value = "10")]
     request_rate: Option<u64>,
+    /// Optional path to a JSON file containing static sessions to always be present
+    #[clap(long, env)]
+    static_sessions: Option<PathBuf>,
     /// Args to setup telemetry
     #[command(flatten)]
     telemetry_config: TelemetryConfig,
@@ -66,12 +69,22 @@ async fn main() {
         }
         builder.build()
     };
+    let static_sessions = args
+        .static_sessions
+        .as_deref()
+        .map(StaticSessions::from_path)
+        .transpose()
+        .expect("Failed to laod static sessions from file");
+
     let mut current_sessions = Sessions::default();
     let mut update_interval = interval(args.update_interval.into());
     loop {
         update_interval.tick().await;
         match Sessions::fetch(&ispyb_pool, &mut ldap_connection).await {
             Ok(mut new_sessions) => {
+                if let Some(ref statistics) = static_sessions {
+                    statistics.merge_into(&mut new_sessions);
+                }
                 update_sessionspaces(&mut current_sessions, &mut new_sessions, &k8s_client).await;
             }
             Err(err) => warn!("Encountered error when fetching sessions: {err}"),
