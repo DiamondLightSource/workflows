@@ -6,6 +6,7 @@ export { setup } from './common.ts';
 
 const graphUrl = __ENV.GRAPH_URL;
 const graphWsUrl = __ENV.GRAPH_WS_URL;
+const timeoutSeconds = 1800;
 
 interface VisitInput {
   proposalCode: string;
@@ -93,7 +94,6 @@ export default function(data: { token: string }): void {
   }
   console.log(`submitted workflow name=${workflowName}`);
 
-  const timeoutSeconds = Number(__ENV.K6_POLL_TIMEOUT_SECONDS || '300');
   let connectionAck = false;
   let nextCount = 0;
   let terminalStatus: string | null = null;
