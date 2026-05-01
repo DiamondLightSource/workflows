@@ -52,7 +52,7 @@ export default function(data: { token: string }): void {
     JSON.stringify({
       query: submitMutation,
       variables: {
-        name: templateName,
+        templateName,
         visit,
         parameters,
       },
@@ -94,6 +94,9 @@ export default function(data: { token: string }): void {
   let terminalStatus: string | null = null;
   let timedOut = false;
 
+  if (!graphWsUrl) {
+    fail("GRAPH_WS_URL required");
+  }
   const response = ws.connect(
     graphWsUrl,
     {
