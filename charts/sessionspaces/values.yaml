@@ -48,3 +48,7 @@ telemetry:
   level: Info
   metricsEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/metrics
   tracingEndpoint: https://otelcollector.workflows.diamond.ac.uk/v1/traces
+
+staticSessions:
+  enabled: false
+  sessions: []
