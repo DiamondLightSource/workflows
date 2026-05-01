@@ -147,11 +147,13 @@ export default function(data: { token: string }): void {
           nextCount += 1;
           terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
           console.log(`websocket next count=${nextCount} terminalStatus=${terminalStatus}`);
+          if (terminalStatus === 'WorkflowRunningStatus') {
+            console.log(`workflow is running workflow=${workflowName}`);
+          }
           if (
             terminalStatus === 'WorkflowSucceededStatus' ||
             terminalStatus === 'WorkflowFailedStatus' ||
-            terminalStatus === 'WorkflowErroredStatus' ||
-            terminalStatus === 'WorkflowRunningStatus'
+            terminalStatus === 'WorkflowErroredStatus'
           ) {
             console.log(`websocket terminal status=${terminalStatus}; sending complete and closing`);
             socket.send(JSON.stringify({ id: '1', type: 'complete' }));
