@@ -22,6 +22,7 @@ metadata:
     #workflows.argoproj.io/configmap-type: Parameter
   name: sessionspaces
   namespace: ks10000-1
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
