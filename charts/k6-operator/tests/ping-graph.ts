@@ -103,7 +103,8 @@ export default function(data: { token: string }): void {
 
 
   const payload = JSON.stringify({
-    query: queryExamples.listTemplates.query,
+    query: queryExamples.listWorkflowsForVisit.query,
+    variables: queryExamples.listWorkflowsForVisit.variables,
   });
 
   const params = {
