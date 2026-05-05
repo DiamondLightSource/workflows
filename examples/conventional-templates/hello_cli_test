@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: hello-cli-test
+spec:
+  entrypoint: hello-sleep
+  templates:
+    - name: hello-sleep
+      container:
+        image: alpine:3.18
+        command: [sh, -c]
+        args:
+          - |
+            echo "Hello World from workflows CLI"
+            echo "Sleeping for 30 seconds...Zzz...ZZzzz.."
+            sleep 30
+            echo "Done"
