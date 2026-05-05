@@ -1,14 +1,12 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
 metadata:
-  Name: hello-world-cli-test
+  name: hello-world-cli-test
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: Example
     workflows.argoproj.io/description: |
-      This workflow is used to test the workflows CLI by running
-      a simple Hello World example.
+      This workflow is used to test the workflows CLI
+      with a simple long-running Hello World example.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 spec:
   entrypoint: hello-sleep
