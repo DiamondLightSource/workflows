@@ -26,11 +26,11 @@ spec:
                 claimName: {{ $volume }}
             - name: rclone-conf
               secret:
-                secretName: etcd-rclone-config
+                secretName: rclone-config
           initContainers:
             - name: rclone
               image: docker.io/rclone/rclone
-              command: [/bin/sh, "-c", "/scripts/rclone-download-etcd.sh"]
+              command: [/bin/sh, "-c", "/scripts/rclone-download.sh"]
               env:
                 - name: RCLONE_CONFIG
                   value: /etc/rclone.conf
@@ -39,7 +39,9 @@ spec:
                 - name: SNAPSHOT_NAME
                   value: {{ $.Values.backup.etcd.snapshotName | quote }}
                 - name: RESET_ETCD
-                  value: true
+                  value: "true"
+                - name: SNAPSHOT_EXT
+                  value: {{ $.Values.backup.etcd.fileExtension | quote }}
               volumeMounts:
                 - name: scripts
                   mountPath: /scripts
@@ -57,7 +59,7 @@ spec:
                   ephemeral-storage: "8Gi"
           containers:
             - name: restore-etcd
-              image: registry.k8s.io/etcd:3.6.4-0
+              image: registry.k8s.io/etcd:3.6.8-0
               command: ["etcdutl"]
               args:
                 - snapshot

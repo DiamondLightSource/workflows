@@ -55,7 +55,7 @@ data:
     fi
     echo "Downloading $LAST"
     rclone copyto -P echo:dls-workflows-prod/${LAST} /snapshot/snapshot${SNAPSHOT_EXT}
+    ls /snapshot
     if [ "$RESET_ETCD" = true ]; then
-      rm -rf /var/lib/etcd
-      mkdir -p /var/lib/etcd
+      find /var/lib/etcd -mindepth 1 -delete
     fi

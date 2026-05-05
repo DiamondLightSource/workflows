@@ -16,7 +16,7 @@ if [[ "$CLUSTER" == vcluster* ]]; then
     read -p "WARNING: You are about to attempt a full restore of the Argo Workflows database on $CLUSTER_NAME. Proceed? (y/n)" -r
     if [[ $REPLY =~ ^[Yy]$ && ! -z "$CLUSTER_NAME" ]]; then
         kubectl -n workflows delete job restore-postgres --ignore-not-found
-        helm template . -s templates/postgres-restore-job.yaml | kubectl -n workflows apply -f -
+        helm template . -s templates/postgres-restore-job.yaml --set runPostgresRestore=true | kubectl -n workflows apply -f -
         kubectl -n workflows get job restore-postgres >/dev/null
         if ! kubectl -n workflows wait --for=condition=complete job/restore-postgres --timeout=120s; then
             echo "Restore job failed or timed out. Fetching logs..."
@@ -26,7 +26,7 @@ if [[ "$CLUSTER" == vcluster* ]]; then
         echo "Restore complete."
     fi
 else 
-    echo "ERROR: This scipt must be run inside the VCluster"
+    echo "ERROR: This script must be run inside the VCluster"
     exit 1
 fi
 

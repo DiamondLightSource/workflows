@@ -4,7 +4,7 @@ set -euo pipefail
 
 if [ -z "$KUBECONFIG" ]
 then
-    echo "Kube config not found - have you loaded a cluster?"
+    echo "ERROR: Kube config not found - have you loaded a cluster?"
     exit 1
 fi
 
@@ -21,8 +21,8 @@ then
     kubectl scale sts workflows-cluster-etcd -n workflows --replicas=0
     kubectl scale deploy workflows-cluster -n workflows --replicas=0
 
-    kubectl wait --for=delete pod -l app=vcluster-etcd -n workflows --timeout=300s
-    kubectl wait --for=delete pod -l app=vcluster -n workflows --timeout=300s
+    kubectl wait --for=delete pod -l app=vcluster-etcd -n workflows --timeout=300s --ignore-not-found
+    kubectl wait --for=delete pod -l app=vcluster -n workflows --timeout=300s --ignore-not-found
 
     echo "Scale down complete. Creating restoration Jobs."
 

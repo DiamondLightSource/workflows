@@ -1,3 +1,4 @@
+{{- if .Values.runPostgresRestore }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -15,7 +16,7 @@ spec:
           emptyDir: {}
         - name: rclone-conf
           secret:
-            secretName: etcd-rclone-config
+            secretName: rclone-config
       initContainers:
         - name: rclone
           image: docker.io/rclone/rclone
@@ -48,13 +49,13 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              host="workflows-postgresql-ha-postgresql-0.workflows-postgresql-ha-postgresql-headless"
-              if psql -h "$host" -U postgres -tAc "SELECT pg_is_in_recovery()" | grep -q t; then
+              HOST="workflows-postgresql-ha-postgresql-0.workflows-postgresql-ha-postgresql-headless"
+              if psql -h "$HOST" -U postgres -tAc "SELECT pg_is_in_recovery()" | grep -q t; then
                 echo "This is not the primary host"
                 exit 1
               fi
               echo "Beginning restore"
-              psql -h "$PRIMARY" -d $DB -U $PGUSER -f /snapshot/snapshot$(SNAPSHOT_EXT)
+              psql -h "$HOST" -d $DB -U $PGUSER -f /snapshot/snapshot$(SNAPSHOT_EXT)
               echo "Restore complete."
           env:
             - name: PGPASSWORD
@@ -73,4 +74,4 @@ spec:
           volumeMounts:
             - name: snapshot
               mountPath: /snapshot
-          
+{{- end }}

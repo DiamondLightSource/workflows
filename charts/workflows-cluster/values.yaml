@@ -150,7 +150,12 @@ vcluster:
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/postgres-postgres-auth-service-password": "workflows/postgres-postgres-auth-service-password"
-            "/etcd-rclone-config": "workflows/etcd-rclone-config"
+            "/rclone-config": "workflows/rclone-config"
+      configMaps:
+        enabled: true
+        mappings:
+          byName:
+            "/rclone-scripts": "workflows/rclone-scripts"
   rbac:
     clusterRole:
       enabled: false

@@ -93,4 +93,4 @@ spec:
                 name: rclone-scripts
             - name: rclone-conf
               secret:
-                secretName: etcd-rclone-config
+                secretName: rclone-config
