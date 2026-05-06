@@ -30,3 +30,6 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: oidc:https://identity-dev.diamond.ac.uk/realms/dls/k6Operator
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: oidc:umi13827
