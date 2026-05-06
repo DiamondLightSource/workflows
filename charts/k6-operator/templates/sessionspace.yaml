@@ -11,7 +11,7 @@ data:
   end_date: "2026-05-22 9:00:00.0"
   gid: "36055"
   instrument: b01-1
-  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator"]'
+  members: '["https://identity-dev.diamond.ac.uk/realms/dls/k6Operator", "umi13827"]'
   proposal_code: ks
   proposal_number: "10000"
   start_date: "2026-04-30 9:00:00.0"
