@@ -52,6 +52,9 @@
     },
     "backend/telemetry": {
       "release-type": "rust"
+    },
+    "backend/oidc-bff": {
+      "release-type": "rust"
     }
   }
 }
