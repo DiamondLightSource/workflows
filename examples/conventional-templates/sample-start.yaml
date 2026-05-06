@@ -21,6 +21,9 @@ spec:
         configMapKeyRef:
           name: sessionspaces
           key: data_directory
+  volumes:
+    - name: tmp
+        emptyDir: {}
 
 
 
@@ -50,6 +53,10 @@ spec:
           pip install flake8
           echo "Running lint..."
           flake8 . || exit 1
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+
 
   #TEST
   - name: test
@@ -61,6 +68,10 @@ spec:
           pip install pytest
           echo "Running tests..."
           pytest -q || exit 1
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+
 
 
   #RUN STEP
