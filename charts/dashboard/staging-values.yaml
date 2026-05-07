@@ -35,9 +35,9 @@ oidcBff:
   enabled: true
   image:
     registry: ghcr.io
-    repository: diamondlightsource/workflows-oidc-bff
-    tag: "davehadley"
-    digest: "sha256:e259494171d5115d060dd9f3d9da971312d39e9afabd91478c0b7a49c7c5f6d3"
+    repository: diamondlightsource/oidc-bff
+    tag: "tbt"
+    digest: "sha256:105cf0c8221b78749e1c201e0f588d76f85ac6f5447856e53f988c01600722da"
     pullPolicy: IfNotPresent
     pullSecrets: []
   configuration:
