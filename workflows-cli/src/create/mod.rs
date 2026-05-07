@@ -1,7 +1,7 @@
 use crate::CreateArgs;
 use std::io;
 use std::os::unix::fs as fs_sym;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::{fs, process};
 
 pub fn create(args: CreateArgs) {
@@ -22,7 +22,7 @@ fn generate_template_repo(
     args: &CreateArgs,
     prompt_fn: fn(&str) -> bool,
 ) -> Result<(), String> {
-    // ✅ Reject workflow files
+    //  Reject workflow files
     if args.name.ends_with(".yaml") || args.name.ends_with(".yml") {
         return Err(format!(
             "Invalid name '{}': create expects a directory name, not a workflow file",
