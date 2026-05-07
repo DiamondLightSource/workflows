@@ -22,7 +22,7 @@ fn generate_template_repo(
     args: &CreateArgs,
     prompt_fn: fn(&str) -> bool,
 ) -> Result<(), String> {
-    // Reject workflow YAML files
+    // ✅ Reject workflow files
     if args.name.ends_with(".yaml") || args.name.ends_with(".yml") {
         return Err(format!(
             "Invalid name '{}': create expects a directory name, not a workflow file",
@@ -33,18 +33,11 @@ fn generate_template_repo(
     let root_path = Path::new(&args.name);
     println!("Generating Template Repo: {}", root_path.display());
 
-    // Create root directory safely
-    if let Err(e) = fs::create_dir(root_path) {
-        if e.kind() != std::io::ErrorKind::AlreadyExists {
-            return Err(format!(
-                "Failed to create directory {}: {}",
-                root_path.display(),
-                e
-            ));
-        }
-    } else {
-        println!("Created directory: {}", root_path.display());
-    }
+    fs::create_dir(root_path).map_err(|e| {
+        format!("Failed to create directory {}: {}", root_path.display(), e)
+    })?;
+
+    println!("Created directory: {}", root_path.display());
 
     let workflows_home = Path::new(&args.workflows_home);
 
@@ -53,14 +46,13 @@ fn generate_template_repo(
     let helm_src =
         workflows_home.join("template-boilerplate/helm-based-templates");
 
-    // Validate sources BEFORE prompting
+    //  Validate sources BEFORE asking user anything
     if !conventional_src.exists() {
         return Err(format!(
             "Missing conventional template source directory: {}",
             conventional_src.display()
         ));
     }
-
     if !helm_src.exists() {
         return Err(format!(
             "Missing helm template source directory: {}",
@@ -71,7 +63,6 @@ fn generate_template_repo(
     let conventional_dest = root_path.join("conventional-templates");
     let helm_dest = root_path.join("helm-based-templates");
 
-    // Conventional templates
     let include_conventional = if args.manifest {
         true
     } else {
@@ -82,7 +73,6 @@ fn generate_template_repo(
         copy_directory(&conventional_src, &conventional_dest)?;
     }
 
-    // Helm templates
     let include_helm = if args.helm {
         true
     } else {
@@ -95,6 +85,7 @@ fn generate_template_repo(
 
     Ok(())
 }
+
 
 
 fn prompt(message: &str) -> bool {
@@ -116,16 +107,8 @@ fn prompt(message: &str) -> bool {
 }
 
 fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
-    if !src.exists() {
-        return Err(format!("Source directory does not exist: {}", src.display()));
-    }
-
     fs::create_dir_all(dest).map_err(|e| {
-        format!(
-            "Failed to create destination directory {}: {}",
-            dest.display(),
-            e
-        )
+        format!("Failed to create destination directory {}: {}", dest.display(), e)
     })?;
 
     for entry in fs::read_dir(src)
@@ -141,27 +124,20 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
 
             #[cfg(unix)]
             fs_sym::symlink(&target, &dest_path).map_err(|e| {
-                format!(
-                    "Failed to create symlink {}: {}",
-                    dest_path.display(),
-                    e
-                )
+                format!("Failed to create symlink {}: {}", dest_path.display(), e)
             })?;
         } else if src_path.is_dir() {
             copy_directory(&src_path, &dest_path)?;
         } else if src_path.is_file() {
             fs::copy(&src_path, &dest_path).map_err(|e| {
-                format!(
-                    "Failed to copy file {}: {}",
-                    src_path.display(),
-                    e
-                )
+                format!("Failed to copy file {}: {}", src_path.display(), e)
             })?;
         }
     }
 
     Ok(())
 }
+
 
 #[cfg(test)]
 mod tests {
