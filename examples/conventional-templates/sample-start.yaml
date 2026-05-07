@@ -24,11 +24,9 @@ spec:
     # Writable temp dir for pip installs and temp files
     - name: tmp
       emptyDir: {}
-
-    # Persistent workspace
+    #  workspace
     - name: workspace
-      persistentVolumeClaim:
-        claimName: workspace-pvc
+      emptyDir: {}
 
   templates:
 
@@ -46,17 +44,15 @@ spec:
                 - name: visitdir
                   value: "{{ workflow.parameters.visitdir }}"
 
-    # LINT STEP (using ruff, excluding tests)
+    # LINT STEP (using ruff)
     - name: lint
       container:
         image: python:3.11-slim
         command: ["sh", "-c"]
         args:
           - |
-            # Install ruff in writable temp
             pip install --quiet --target=/tmp/.local ruff
             export PATH=/tmp/.local/bin:$PATH
-
             cd /workspace
             echo "Running lint (excluding tests)..."
             ruff . --exclude tests || exit 1
@@ -65,6 +61,7 @@ spec:
             mountPath: /tmp
           - name: workspace
             mountPath: /workspace
+      activeDeadlineSeconds: 300  # 5 min timeout
 
     # TEST STEP (using pytest)
     - name: test
@@ -73,10 +70,8 @@ spec:
         command: ["sh", "-c"]
         args:
           - |
-            # Install pytest in writable temp
             pip install --quiet --target=/tmp/.local pytest
             export PATH=/tmp/.local/bin:$PATH
-
             cd /workspace
             echo "Running tests..."
             pytest -q || exit 1
@@ -85,6 +80,7 @@ spec:
             mountPath: /tmp
           - name: workspace
             mountPath: /workspace
+      activeDeadlineSeconds: 600  # 10 min timeout
 
     # RUN JOB STEP
     - name: run-job
@@ -99,3 +95,4 @@ spec:
             echo "Pipeline complete"
             echo "VisitDir = {{inputs.parameters.visitdir}}"
             echo "TOKEN is available"
+      activeDeadlineSeconds: 120  # 2 min timeout
