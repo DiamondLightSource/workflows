@@ -9,7 +9,4 @@ dependencies:
   - name: k6-operator
     repository: https://grafana.github.io/helm-charts
     version: 4.3.0
-  - name: sealed-secrets
-    repository: bitnamilegacy/sealed-secrets-controller
-    version: 2.16.0
 
