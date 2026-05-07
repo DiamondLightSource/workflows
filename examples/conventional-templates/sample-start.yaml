@@ -11,81 +11,76 @@ metadata:
     workflows.diamond.ac.uk/science-group-examples: "true"
     kueue.x-k8s.io/priority-class: high
 
-
 spec:
   entrypoint: pipeline
   arguments:
     parameters:
-    - name: visitdir
-      valueFrom:
-        configMapKeyRef:
-          name: sessionspaces
-          key: data_directory
+      - name: visitdir
+        valueFrom:
+          configMapKeyRef:
+            name: sessionspaces
+            key: data_directory
+
   volumes:
     - name: tmp
-        emptyDir: {}
-
-
+      emptyDir: {}   # fixed indentation
 
   templates:
 
-  #PIPELINE
-  - name: pipeline
-    steps:
-      - - name: lint
-          template: lint
-      - - name: test
-          template: test
-      - - name: run
-          template: run-job
-          arguments:
-             parameters:
-               - name: visitdir
-                 value: "{{ workflow.parameters.visitdir }}"
+    # PIPELINE
+    - name: pipeline
+      steps:
+        - - name: lint
+            template: lint
+        - - name: test
+            template: test
+        - - name: run
+            template: run-job
+            arguments:
+              parameters:
+                - name: visitdir
+                  value: "{{ workflow.parameters.visitdir }}"
 
-  #LINT
-  - name: lint
-    container:
-      image: python:3.11
-      command: [sh, -c]
-      args:
-        - |
-          pip install flake8
-          echo "Running lint..."
-          flake8 . || exit 1
-      volumeMounts:
-        - name: tmp
-          mountPath: /tmp
+    # LINT
+    - name: lint
+      container:
+        image: python:3.11
+        command: ["sh", "-c"]   # added quotes
+        args:
+          - |
+            export TMPDIR=/tmp
+            pip install --user flake8
+            echo "Running lint..."
+            ~/.local/bin/flake8 . || exit 1
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
 
+    # TEST
+    - name: test
+      container:
+        image: python:3.11
+        command: ["sh", "-c"]
+        args:
+          - |
+            export TMPDIR=/tmp
+            pip install --user pytest
+            echo "Running tests..."
+            ~/.local/bin/pytest -q || exit 1
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
 
-
-  #TEST
-  - name: test
-    container:
-      image: python:3.11
-      command: [sh, -c]
-      args:
-        - |
-          pip install pytest
-          echo "Running tests..."
-          pytest -q || exit 1
-      volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-
-
-
-  #RUN STEP
-  - name: run-job
-    inputs:
-      parameters:
+    # RUN STEP
+    - name: run-job
+      inputs:
+        parameters:
           - name: visitdir
-    container:
-      image: alpine:3.19
-      command: [sh, -c]
-      args:
-        - |
-          echo "Pipeline complete"
-          echo "VisitDir = {{inputs.parameters.visitdir}}"
-          echo "TOKEN is available"
-
+      container:
+        image: alpine:3.19
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "Pipeline complete"
+            echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "TOKEN is available"
