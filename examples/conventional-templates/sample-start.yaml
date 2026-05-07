@@ -10,7 +10,6 @@ metadata:
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
     kueue.x-k8s.io/priority-class: high
-
 spec:
   entrypoint: pipeline
   arguments:
@@ -22,8 +21,14 @@ spec:
             key: data_directory
 
   volumes:
+    # Writable temp dir for pip installs and temp files
     - name: tmp
-      emptyDir: {}   # fixed indentation
+      emptyDir: {}
+
+    # Persistent workspace
+    - name: workspace
+      persistentVolumeClaim:
+        claimName: workspace-pvc
 
   templates:
 
@@ -41,37 +46,47 @@ spec:
                 - name: visitdir
                   value: "{{ workflow.parameters.visitdir }}"
 
-    # LINT
+    # LINT STEP (using ruff, excluding tests)
     - name: lint
       container:
-        image: python:3.11
-        command: ["sh", "-c"]   # added quotes
-        args:
-          - |
-            export TMPDIR=/tmp
-            pip install --user flake8
-            echo "Running lint..."
-            ~/.local/bin/flake8 . || exit 1
-        volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-
-    # TEST
-    - name: test
-      container:
-        image: python:3.11
+        image: python:3.11-slim
         command: ["sh", "-c"]
         args:
           - |
-            export TMPDIR=/tmp
-            pip install --user pytest
-            echo "Running tests..."
-            ~/.local/bin/pytest -q || exit 1
+            # Install ruff in writable temp
+            pip install --quiet --target=/tmp/.local ruff
+            export PATH=/tmp/.local/bin:$PATH
+
+            cd /workspace
+            echo "Running lint (excluding tests)..."
+            ruff . --exclude tests || exit 1
         volumeMounts:
           - name: tmp
             mountPath: /tmp
+          - name: workspace
+            mountPath: /workspace
 
-    # RUN STEP
+    # TEST STEP (using pytest)
+    - name: test
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            # Install pytest in writable temp
+            pip install --quiet --target=/tmp/.local pytest
+            export PATH=/tmp/.local/bin:$PATH
+
+            cd /workspace
+            echo "Running tests..."
+            pytest -q || exit 1
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+          - name: workspace
+            mountPath: /workspace
+
+    # RUN JOB STEP
     - name: run-job
       inputs:
         parameters:
