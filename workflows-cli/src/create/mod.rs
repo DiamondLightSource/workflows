@@ -18,10 +18,7 @@ pub fn create(args: CreateArgs) {
     };
 }
 
-fn generate_template_repo(
-    args: &CreateArgs,
-    prompt_fn: fn(&str) -> bool,
-) -> Result<(), String> {
+fn generate_template_repo(args: &CreateArgs, prompt_fn: fn(&str) -> bool) -> Result<(), String> {
     //  Reject workflow files
     if args.name.ends_with(".yaml") || args.name.ends_with(".yml") {
         return Err(format!(
@@ -33,18 +30,15 @@ fn generate_template_repo(
     let root_path = Path::new(&args.name);
     println!("Generating Template Repo: {}", root_path.display());
 
-    fs::create_dir(root_path).map_err(|e| {
-        format!("Failed to create directory {}: {}", root_path.display(), e)
-    })?;
+    fs::create_dir(root_path)
+        .map_err(|e| format!("Failed to create directory {}: {}", root_path.display(), e))?;
 
     println!("Created directory: {}", root_path.display());
 
     let workflows_home = Path::new(&args.workflows_home);
 
-    let conventional_src =
-        workflows_home.join("template-boilerplate/conventional-templates");
-    let helm_src =
-        workflows_home.join("template-boilerplate/helm-based-templates");
+    let conventional_src = workflows_home.join("template-boilerplate/conventional-templates");
+    let helm_src = workflows_home.join("template-boilerplate/helm-based-templates");
 
     //  Validate sources BEFORE asking user anything
     if !conventional_src.exists() {
@@ -86,8 +80,6 @@ fn generate_template_repo(
     Ok(())
 }
 
-
-
 fn prompt(message: &str) -> bool {
     println!("{message}");
     let mut selection = String::new();
@@ -108,7 +100,11 @@ fn prompt(message: &str) -> bool {
 
 fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
     fs::create_dir_all(dest).map_err(|e| {
-        format!("Failed to create destination directory {}: {}", dest.display(), e)
+        format!(
+            "Failed to create destination directory {}: {}",
+            dest.display(),
+            e
+        )
     })?;
 
     for entry in fs::read_dir(src)
@@ -123,21 +119,18 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
                 .map_err(|e| format!("Failed to read symlink {}: {}", src_path.display(), e))?;
 
             #[cfg(unix)]
-            fs_sym::symlink(&target, &dest_path).map_err(|e| {
-                format!("Failed to create symlink {}: {}", dest_path.display(), e)
-            })?;
+            fs_sym::symlink(&target, &dest_path)
+                .map_err(|e| format!("Failed to create symlink {}: {}", dest_path.display(), e))?;
         } else if src_path.is_dir() {
             copy_directory(&src_path, &dest_path)?;
         } else if src_path.is_file() {
-            fs::copy(&src_path, &dest_path).map_err(|e| {
-                format!("Failed to copy file {}: {}", src_path.display(), e)
-            })?;
+            fs::copy(&src_path, &dest_path)
+                .map_err(|e| format!("Failed to copy file {}: {}", src_path.display(), e))?;
         }
     }
 
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {
