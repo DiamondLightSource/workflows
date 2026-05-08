@@ -147,9 +147,6 @@ export default function(data: { token: string }): void {
           nextCount += 1;
           terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
           console.log(`websocket next count=${nextCount} terminalStatus=${terminalStatus}`);
-          if (terminalStatus === 'WorkflowRunningStatus') {
-            console.log(`workflow is running workflow=${workflowName}`);
-          }
           if (
             terminalStatus === 'WorkflowSucceededStatus' ||
             terminalStatus === 'WorkflowFailedStatus' ||
