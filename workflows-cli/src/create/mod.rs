@@ -101,9 +101,7 @@ fn prompt(message: &str) -> bool {
     }
 }
 
-
-
-// Recursively copy directory contents
+/// Recursively copy directory contents
 fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
     fs::create_dir_all(dest).map_err(|e| {
         format!(
@@ -133,7 +131,7 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
             )
         })?;
 
-        //SYMLINK
+        // SYMLINK
         if metadata.file_type().is_symlink() {
             let target = fs::read_link(&src_path).map_err(|e| {
                 format!(
@@ -151,7 +149,7 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
                 )
             })?;
         }
-        //DIRECTORY
+        // DIRECTORY
         else if metadata.is_dir() {
             copy_directory(&src_path, &dest_path)?;
         }
