@@ -65,6 +65,7 @@ fn generate_template_repo(args: &CreateArgs, prompt_fn: fn(&str) -> bool) -> Res
 
     if include_conventional {
         copy_directory(&conventional_src, &conventional_dest)?;
+        println!("Copied conventional templates");
     }
 
     let include_helm = if args.helm {
@@ -75,6 +76,7 @@ fn generate_template_repo(args: &CreateArgs, prompt_fn: fn(&str) -> bool) -> Res
 
     if include_helm {
         copy_directory(&helm_src, &helm_dest)?;
+        println!("Copied helm templates");
     }
 
     Ok(())
@@ -85,19 +87,19 @@ fn prompt(message: &str) -> bool {
     let mut selection = String::new();
 
     loop {
+        selection.clear();
         io::stdin()
             .read_line(&mut selection)
             .expect("Failed to read line");
-        if selection.to_lowercase().trim() == "y" {
-            return true;
-        } else if selection.to_lowercase().trim() == "n" {
-            return false;
-        } else {
-            println!("Invalid input. Please enter 'y' or 'n'.");
+        if selection.trim().to_lowercase().as_str() {
+            "y" => return true, 
+            "n" => return false,
+            _ => println!("Invalid input. Please enter 'y' or 'n'."),
         }
     }
 }
 
+// Recursively copy directory contents
 fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
     fs::create_dir_all(dest).map_err(|e| {
         format!(
@@ -107,25 +109,63 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
         )
     })?;
 
-    for entry in fs::read_dir(src)
-        .map_err(|e| format!("Failed to read source folder {}: {}", src.display(), e))?
-    {
+    for entry in fs::read_dir(src).map_err(|e| {
+        format!(
+            "Failed to read source folder {}: {}",
+            src.display(),
+            e
+        )
+    })? {
         let entry = entry.map_err(|e| e.to_string())?;
+
         let src_path = entry.path();
+
         let dest_path = dest.join(entry.file_name());
 
-        if src_path.is_symlink() {
-            let target = fs::read_link(&src_path)
-                .map_err(|e| format!("Failed to read symlink {}: {}", src_path.display(), e))?;
+        // Important: use symlink_metadata
+        let metadata = fs::symlink_metadata(&src_path).map_err(|e| {
+            format!(
+                "Failed to read metadata for {}: {}",
+                src_path.display(),
+                e
+            )
+        })?;
+
+        // Handle symlink
+        if metadata.file_type().is_symlink() {
+            let target = fs::read_link(&src_path).map_err(|e| {
+                format!(
+                    "Failed to read symlink {}: {}",
+                    src_path.display(),
+                    e
+                )
+            })?;
 
             #[cfg(unix)]
-            fs_sym::symlink(&target, &dest_path)
-                .map_err(|e| format!("Failed to create symlink {}: {}", dest_path.display(), e))?;
-        } else if src_path.is_dir() {
+            {
+                fs_sym::symlink(&target, &dest_path).map_err(|e| {
+                    format!(
+                        "Failed to create symlink {}: {}",
+                        dest_path.display(),
+                        e
+                    )
+                })?;
+            }
+
+        // Handle directory
+        else if metadata.is_dir() {
             copy_directory(&src_path, &dest_path)?;
-        } else if src_path.is_file() {
-            fs::copy(&src_path, &dest_path)
-                .map_err(|e| format!("Failed to copy file {}: {}", src_path.display(), e))?;
+        }
+        // Handle regular file
+        else if metadata.is_file() {
+            fs::copy(&src_path, &dest_path).map_err(|e| {
+                format!(
+                    "Failed to copy file {} -> {}: {}",
+                    src_path.display(),
+                    dest_path.display(),
+                    e
+                )
+            })?;
         }
     }
 
