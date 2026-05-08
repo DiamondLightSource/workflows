@@ -87,17 +87,19 @@ fn prompt(message: &str) -> bool {
     let mut selection = String::new();
 
     loop {
-        selection.clear();
+	selection.clear();
         io::stdin()
             .read_line(&mut selection)
             .expect("Failed to read line");
         if selection.trim().to_lowercase().as_str() {
-            "y" => return true, 
+            "y" => return true,
             "n" => return false,
             _ => println!("Invalid input. Please enter 'y' or 'n'."),
         }
     }
 }
+
+
 
 // Recursively copy directory contents
 fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
