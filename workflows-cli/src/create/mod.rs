@@ -111,43 +111,24 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
         )
     })?;
 
-    for entry in fs::read_dir(src).map_err(|e| {
-        format!(
-            "Failed to read source folder {}: {}",
-            src.display(),
-            e
-        )
-    })? {
+    for entry in fs::read_dir(src)
+        .map_err(|e| format!("Failed to read source folder {}: {}", src.display(), e))?
+    {
         let entry = entry.map_err(|e| e.to_string())?;
 
         let src_path = entry.path();
         let dest_path = dest.join(entry.file_name());
 
-        let metadata = fs::symlink_metadata(&src_path).map_err(|e| {
-            format!(
-                "Failed to read metadata for {}: {}",
-                src_path.display(),
-                e
-            )
-        })?;
+        let metadata = fs::symlink_metadata(&src_path)
+            .map_err(|e| format!("Failed to read metadata for {}: {}", src_path.display(), e))?;
 
         // SYMLINK
         if metadata.file_type().is_symlink() {
-            let target = fs::read_link(&src_path).map_err(|e| {
-                format!(
-                    "Failed to read symlink {}: {}",
-                    src_path.display(),
-                    e
-                )
-            })?;
+            let target = fs::read_link(&src_path)
+                .map_err(|e| format!("Failed to read symlink {}: {}", src_path.display(), e))?;
 
-            fs_sym::symlink(&target, &dest_path).map_err(|e| {
-                format!(
-                    "Failed to create symlink {}: {}",
-                    dest_path.display(),
-                    e
-                )
-            })?;
+            fs_sym::symlink(&target, &dest_path)
+                .map_err(|e| format!("Failed to create symlink {}: {}", dest_path.display(), e))?;
         }
         // DIRECTORY
         else if metadata.is_dir() {
@@ -168,7 +149,6 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
 
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,6 @@
 # auth-daemon
 
-Sidecar HTTP proxy that injects valid OIDC access tokens into GraphQL requests made from within Argo workflows. Workflows call the daemon on `localhost` instead of the GraphQL API directly; the daemon handles token refresh and auth header injection transparently.
+ Sidecar HTTP proxy that injects valid OIDC access tokens into GraphQL requests made from within Argo workflows. Workflows call the daemon on `localhost` instead of the GraphQL API directly; the daemon handles token refresh and auth header injection transparently.
 
 ## Usage
 
