@@ -44,6 +44,19 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+          service:
+            name: dashboard
+            port: 80
+        - path: /api
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
+        - path: /auth
+          pathType: Prefix
+          service:
+            name: oidc-bff
+            port: 80
   tls: false
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -55,3 +68,6 @@ serviceAccount:
   create: true
   name: ""
   annotations: []
+
+oidcBff:
+  enabled: false

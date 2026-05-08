@@ -70,6 +70,7 @@ graphProxy:
 dashboard:
   enabled: true
   targetRevision: HEAD
+  namespace: workflows
   extraValueFiles:
     - staging-values.yaml
 

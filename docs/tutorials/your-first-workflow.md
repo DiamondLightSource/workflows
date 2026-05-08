@@ -48,7 +48,7 @@ kind: Workflow
 metadata:
   name: boilerplate-example
   labels:
-    workflows.diamond.ac.uk/science-group: workflows-examples
+    workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: boiler-plate-example for docs
     workflows.argoproj.io/description: |
@@ -277,7 +277,7 @@ The whole workflow can be viewed below
     metadata:
       name: boilerplate-example
       labels:
-        workflows.diamond.ac.uk/science-group: workflows-examples
+        workflows.diamond.ac.uk/science-group-examples: "true"
       annotations:
         workflows.argoproj.io/title: boiler-plate-example for docs
         workflows.argoproj.io/description: |
