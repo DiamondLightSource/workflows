@@ -95,6 +95,8 @@ jobs:
           routing-url: https://workflows.diamond.ac.uk/graphql
           subgraph-schema-artifact: graph-proxy
           subgraph-schema-filename: workflows.graphql
+          subscription-url: wss://workflows.diamond.ac.uk/graphql/ws
+          subscription-protocol: graphql-ws
           github-app-id: 1010045
           github-app-private-key: ${{ secrets.GRAPH_FEDERATOR }}
           publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/graph-proxy@') }}
