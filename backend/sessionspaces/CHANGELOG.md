@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.4...sessionspaces@v0.1.5) (2026-04-30)
+
+
+### Bug Fixes
+
+* **sessionspaces:** add p51_staff group to sessionspaces ([47f4f3f](https://github.com/DiamondLightSource/workflows/commit/47f4f3fb6f9bb3c52d166604bf67d81bbe333d7b))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.3...sessionspaces@v0.1.4) (2026-04-29)
 
 

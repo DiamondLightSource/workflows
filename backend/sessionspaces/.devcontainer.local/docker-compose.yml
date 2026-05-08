@@ -16,6 +16,7 @@ services:
 
   ispyb:
     image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0
+    platform: linux/amd64
     restart: unless-stopped
     ports:
     - "3306:3306"
