@@ -119,10 +119,8 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
         let entry = entry.map_err(|e| e.to_string())?;
 
         let src_path = entry.path();
-
         let dest_path = dest.join(entry.file_name());
 
-        // Important: use symlink_metadata
         let metadata = fs::symlink_metadata(&src_path).map_err(|e| {
             format!(
                 "Failed to read metadata for {}: {}",
@@ -131,7 +129,7 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
             )
         })?;
 
-        // Handle symlink
+        //SYMLINK
         if metadata.file_type().is_symlink() {
             let target = fs::read_link(&src_path).map_err(|e| {
                 format!(
@@ -141,22 +139,19 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
                 )
             })?;
 
-            #[cfg(unix)]
-            {
-                fs_sym::symlink(&target, &dest_path).map_err(|e| {
-                    format!(
-                        "Failed to create symlink {}: {}",
-                        dest_path.display(),
-                        e
-                    )
-                })?;
-            }
-
-        // Handle directory
+            fs_sym::symlink(&target, &dest_path).map_err(|e| {
+                format!(
+                    "Failed to create symlink {}: {}",
+                    dest_path.display(),
+                    e
+                )
+            })?;
+        }
+        //DIRECTORY
         else if metadata.is_dir() {
             copy_directory(&src_path, &dest_path)?;
         }
-        // Handle regular file
+        // FILE
         else if metadata.is_file() {
             fs::copy(&src_path, &dest_path).map_err(|e| {
                 format!(
@@ -171,6 +166,7 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
 
     Ok(())
 }
+
 
 #[cfg(test)]
 mod tests {
