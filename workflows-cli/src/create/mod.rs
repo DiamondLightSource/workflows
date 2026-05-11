@@ -129,13 +129,9 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
 
             fs_sym::symlink(&target, &dest_path)
                 .map_err(|e| format!("Failed to create symlink {}: {}", dest_path.display(), e))?;
-        }
-        // DIRECTORY
-        else if metadata.is_dir() {
+        } else if metadata.is_dir() {
             copy_directory(&src_path, &dest_path)?;
-        }
-        // FILE
-        else if metadata.is_file() {
+        } else if metadata.is_file() {
             fs::copy(&src_path, &dest_path).map_err(|e| {
                 format!(
                     "Failed to copy file {} -> {}: {}",
@@ -153,7 +149,7 @@ fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::serial_test::serial;
+    use serial_test::serial;
     struct TestCleanup {
         directory: String,
     }
