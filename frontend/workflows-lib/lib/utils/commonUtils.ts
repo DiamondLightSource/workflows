@@ -74,3 +74,8 @@ export function convertStringToScienceGroup(
     ? (input as ScienceGroup)
     : undefined;
 }
+
+//** An abstraction to allow mocking of window.location.assign in tests */
+export function externalRedirect(url: string) {
+  window.location.assign(url);
+}
