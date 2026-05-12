@@ -16,7 +16,7 @@ runs:
     - name: Install argo CLI
       shell: bash
       run: |
-        curl -sLO "https://github.com/argoproj/argo-workflows/releases/download/v3.7.0-rc2/argo-linux-amd64.gz"
+        curl -sLO "https://github.com/argoproj/argo-workflows/releases/download/v4.0.5/argo-linux-amd64.gz"
         gunzip "argo-linux-amd64.gz"
         chmod +x "argo-linux-amd64"
         mv "./argo-linux-amd64" /usr/local/bin/argo
@@ -29,7 +29,7 @@ runs:
     - name: Install Workflows CLI
       shell: bash
       run: |
-        curl -OL https://github.com/DiamondLightSource/workflows/releases/download/workflows-cli%40v0.1.0/workflows-cli.zip 
+        curl -OL https://github.com/DiamondLightSource/workflows/releases/download/workflows-cli%40v0.1.1/workflows-cli.zip
         unzip workflows-cli.zip
         mv workflows /usr/local/bin/workflows
 
