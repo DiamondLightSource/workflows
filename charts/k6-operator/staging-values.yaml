@@ -8,3 +8,4 @@ k6-operator:
       limits:
         cpu: 1000m
         memory: 1Gi
+
