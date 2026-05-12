@@ -76,6 +76,7 @@ vcluster:
             "/oidc-bff-config": "workflows/oidc-bff-config"
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
+            "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
             "/postgres-auth-service-password": "workflows/postgres-auth-service-password"
 
 ingress:

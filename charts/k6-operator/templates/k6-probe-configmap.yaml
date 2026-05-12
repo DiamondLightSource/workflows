@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-ws-map
+  namespace: {{ .Release.Namespace}}
+data: 
+  k6-ws-subscription-testrun.yaml: |
+    apiVersion: k6.io/v1alpha1
+    kind: TestRun
+    metadata:
+      name: k6-ws-subscription-probe
+      namespace: {{ .Release.Namespace}}
+    spec:
+      cleanup: 'post'
+      parallelism: 1
+      script:
+        configMap:
+          name: k6-configmap
+          file: ws-subscription.ts
+      runner:
+        env:
+          - name: KEYCLOAK_CLIENT_ID
+            valueFrom: 
+              secretKeyRef: 
+                name: graph-proxy-k6-auth
+                key: KEYCLOAK_CLIENT_ID
+          - name: KEYCLOAK_CLIENT_SECRET
+            valueFrom: 
+              secretKeyRef: 
+                name: graph-proxy-k6-auth
+                key: KEYCLOAK_CLIENT_SECRET
+          - name: KEYCLOAK_TOKEN_URL
+            value: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+          - name: GRAPH_URL
+            value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
+          - name: GRAPH_WS_URL
+            value: ws://graph-proxy.graph-proxy.svc.cluster.local:80/graphql/ws
+          - name: OTEL_ENDPOINT
+            value: https://otel.tracing.diamond.ac.uk:4318
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 500Mi
+      starter:
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 500Mi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: k6-probe-runner
+rules:
+  - apiGroups:
+      - k6.io
+    resources:
+      - testruns
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k6-probe-runner
+roleRef:
+  kind: Role
+  name: k6-probe-runner
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: k6-probe-runner
+    namespace: {{ .Release.Namespace}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k6-probe-runner
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: k6-ws-cron
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: k6-probe-runner
+          containers:
+            - name: kubectl
+              image: bitnami/kubectl
+              volumeMounts:
+                - name: k6-yaml
+                  mountPath: /tmp/
+              command:
+                - /bin/bash
+              args:
+                - -c
+                - 'kubectl delete -f /tmp/k6-ws-subscription-testrun.yaml --ignore-not-found=true; kubectl apply -f /tmp/k6-ws-subscription-testrun.yaml'
+          restartPolicy: OnFailure
+          volumes:
+            - name: k6-yaml
+              configMap:
+                name: k6-ws-map
+

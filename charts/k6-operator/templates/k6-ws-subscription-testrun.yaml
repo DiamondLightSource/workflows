@@ -3,15 +3,15 @@
 apiVersion: k6.io/v1alpha1
 kind: TestRun
 metadata:
-  name: k6-ping-graph
+  name: k6-ws-subscription
   namespace: {{ .Release.Namespace}}
 spec:
   cleanup: 'post'
-  parallelism: 4
+  parallelism: 1
   script:
     configMap:
       name: k6-configmap
-      file: ping-graph.ts
+      file: ws-subscription.ts
   runner:
     env:
       - name: KEYCLOAK_CLIENT_ID
@@ -28,6 +28,8 @@ spec:
         value: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/token
       - name: GRAPH_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
+      - name: GRAPH_WS_URL
+        value: ws://graph-proxy.graph-proxy.svc.cluster.local:80/graphql/ws
     resources:
       limits:
         cpu: 1000m

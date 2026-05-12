@@ -1,9 +1,8 @@
-import http, { RefinedResponse, ResponseType } from 'k6/http';
+import http from 'k6/http';
 import { Options } from 'k6/options';
-import { fail } from 'k6';
+export { setup } from './common.ts';
 
-const url = __ENV.GRAPH_PROXY_URL ?? 'http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql';
-
+const graphUrl = __ENV.GRAPH_URL
 
 interface VisitInput {
   proposalCode: string;
@@ -18,10 +17,12 @@ interface ListWorkflowsVariables {
 
 interface QueryExample {
   query: string;
-  variables: ListWorkflowsVariables;
+  variables?: ListWorkflowsVariables;
 }
 
-const queryExamples: { listWorkflowsForVisit: QueryExample } = {
+const queryExamples: {
+  listWorkflowsForVisit: QueryExample;
+} = {
   listWorkflowsForVisit: {
     query: `
       query ListWorkflowsForVisit($visit: VisitInput!, $limit: Int) {
@@ -43,8 +44,8 @@ const queryExamples: { listWorkflowsForVisit: QueryExample } = {
     `,
     variables: {
       visit: {
-        proposalCode: 'cm',
-        proposalNumber: 40661,
+        proposalCode: 'ks',
+        proposalNumber: 10000,
         number: 1,
       },
       limit: 30,
@@ -53,20 +54,19 @@ const queryExamples: { listWorkflowsForVisit: QueryExample } = {
 };
 
 export const options: Options = {
-  //insecureSkipTLSVerify: true,
   scenarios: {
     ping_graph_ramp: {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
         { duration: '60s', target: 10 },
-        //{ duration: '1m', target: 50 },
-        //{ duration: '2m', target: 100 },
-        //{ duration: '1m', target: 200 },
-        //{ duration: '1m', target: 300 },
-        //{ duration: '1m', target: 500 },
-        //{ duration: '1m', target: 1000 },
-        //{ duration: '30s', target: 0 },
+        { duration: '1m', target: 50 },
+        { duration: '2m', target: 100 },
+        { duration: '1m', target: 200 },
+        { duration: '1m', target: 300 },
+        { duration: '1m', target: 500 },
+        { duration: '1m', target: 1000 },
+        { duration: '30s', target: 0 },
       ],
       gracefulRampDown: '10s',
     },
@@ -77,24 +77,26 @@ export const options: Options = {
   },
 };
 
-export default function(): void {
-  const token = __ENV.GRAPH_PROXY_BEARER_TOKEN;
-  if (!token) {
-    fail('GRAPH_PROXY_BEARER_TOKEN required');
-  }
+
+export default function(data: { token: string }): void {
+
+
 
   const payload = JSON.stringify({
     query: queryExamples.listWorkflowsForVisit.query,
     variables: queryExamples.listWorkflowsForVisit.variables,
   });
+
   const params = {
     headers: {
       Accept: 'application/json, multipart/mixed',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${data.token}`,
     },
   };
-  const res = http.post(url, payload, params);
+  const res = http.post(graphUrl, payload, params);
   console.log(`status=${res && res.status}`);
   console.log(`body=${res && res.body}`);
+  //console.log(`status=${data && data.status}`)
+  //console.log(`body=${tokenRes && tokenRes.body}`)
 }
