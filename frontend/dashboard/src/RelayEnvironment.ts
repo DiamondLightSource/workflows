@@ -10,6 +10,9 @@ import {
 } from "relay-runtime";
 import { getKeycloak } from "./keycloak";
 import { createClient } from "graphql-ws";
+import { AuthState } from "@diamondlightsource/sci-react-ui";
+import { parseJwt } from "./routes/utils";
+import { JSONObject } from "workflows-lib";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
@@ -55,7 +58,6 @@ const fetchFn: FetchFunction = async (request, variables) => {
   if (!keycloak.authenticated) {
     await ensureKeycloakInit();
   }
-
   if (keycloak.token) {
     const resp = await fetch(HTTP_ENDPOINT, {
       method: "POST",
@@ -129,4 +131,23 @@ export async function getRelayEnvironment(): Promise<Environment> {
     });
   }
   return RelayEnvironment;
+}
+
+export async function getUser(): Promise<AuthState | null> {
+  if (!keycloak.authenticated) {
+    await ensureKeycloakInit();
+  }
+  if (keycloak.token) {
+    let parsedToken: JSONObject = {};
+    try {
+      parsedToken = parseJwt(keycloak.token);
+    } catch (error) {
+      console.error("Could not parse JWT: ", error);
+    }
+    const user: AuthState = {
+      name: parsedToken.name as string,
+      fedid: (parsedToken.preferred_username ?? parsedToken.fedid) as string,
+    };
+    return user;
+  } else return null;
 }
