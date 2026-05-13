@@ -1,5 +1,9 @@
 import "@testing-library/jest-dom";
-import { getFilterFromParams } from "../src/routes/utils";
+import { getFilterFromParams, parseJwt } from "../src/routes/utils";
+import {
+  mockJwtPayload,
+  default as mockKeycloak,
+} from "../src/mocks/mockKeycloak";
 
 describe("getFilterFromParams", () => {
   test.each([
@@ -12,5 +16,11 @@ describe("getFilterFromParams", () => {
     expect(getFilterFromParams(params)).toStrictEqual({
       scienceGroup: expected,
     });
+  });
+});
+
+describe("parseJwt", () => {
+  it("should decode a JWT", () => {
+    expect(parseJwt(mockKeycloak.token)).toStrictEqual(mockJwtPayload);
   });
 });
