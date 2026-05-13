@@ -6,7 +6,6 @@ metadata:
   name: k6-ping-graph
   namespace: {{ .Release.Namespace}}
 spec:
-  cleanup: 'post'
   parallelism: 4
   script:
     configMap:

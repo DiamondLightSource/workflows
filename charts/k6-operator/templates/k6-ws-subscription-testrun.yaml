@@ -6,7 +6,6 @@ metadata:
   name: k6-ws-subscription
   namespace: {{ .Release.Namespace}}
 spec:
-  cleanup: 'post'
   parallelism: 1
   script:
     configMap:
