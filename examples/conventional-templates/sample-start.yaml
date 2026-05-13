@@ -12,7 +12,6 @@ metadata:
 
 spec:
   entrypoint: pipeline
-
   #This ensures all submitted workflows inherit the label.
   workflowMetadata:
     labels:
