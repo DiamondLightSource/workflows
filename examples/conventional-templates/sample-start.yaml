@@ -3,15 +3,21 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: python-hellow
   annotations:
-    workflows.diamond.ac.uk/type: live
+    workflows.diamond.ac.uk/type: "live"
     workflows.argoproj.io/description: |
       Just a basic test workflow.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
-    kueue.x-k8s.io/priority-class: high
+
 spec:
   entrypoint: pipeline
+
+  #This ensures all submitted workflows inherit the label.
+  workflowMetadata:
+    labels:
+      kueue.x-k8s.io/priority-class: high
+
   arguments:
     parameters:
       - name: visitdir
@@ -92,7 +98,10 @@ spec:
         command: ["sh", "-c"]
         args:
           - |
-            echo "Pipeline complete"
+            echo "=== LIVE DATA PROCESSING ==="
+            echo "User is waiting at beamline"
+            sleep 5
+            echo "Process  complete"
             echo "VisitDir = {{inputs.parameters.visitdir}}"
-            echo "TOKEN is available"
+            
       activeDeadlineSeconds: 120  # 2 min timeout
