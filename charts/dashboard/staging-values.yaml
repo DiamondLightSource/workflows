@@ -1,5 +1,5 @@
 configuration:
-  keycloakUrl: https://identity-dev.diamond.ac.uk
+  keycloakUrl: https://identity-test.diamond.ac.uk
   keycloakRealm: dls
   keycloakClient: workflows-ui-dev
   keycloakScope: "openid profile posix-uid email"
