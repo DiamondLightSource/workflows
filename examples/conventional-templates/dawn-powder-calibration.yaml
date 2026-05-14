@@ -6,6 +6,7 @@ metadata:
     workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: DAWN Powder calibration
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.argoproj.io/description: |
       Runs the DAWN command-line powder calibration tool from a given config JSON file. All file paths used
       in the config must be in the same directory as the config file (or within a sub-directory).

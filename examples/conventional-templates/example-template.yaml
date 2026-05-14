@@ -7,6 +7,7 @@ metadata:
     workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: Example Template
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
     workflows.argoproj.io/description: |
       This is an example template to use during testing and developement.
     workflows.diamond.ac.uk/parameter-schema.png: |
