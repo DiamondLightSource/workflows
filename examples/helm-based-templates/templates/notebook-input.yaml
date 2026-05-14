@@ -4,6 +4,8 @@ metadata:
   name: notebook-with-input
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 spec:
   entrypoint: notebook
   arguments:
