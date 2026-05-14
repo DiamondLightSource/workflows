@@ -16,9 +16,9 @@ grafana:
       root_url: https://grafana.staging.workflows.diamond.ac.uk
       serve_from_sub_path: false
     auth.generic_oauth:
-      auth_url: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/auth
-      token_url: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/token
-      api_url: https://identity-dev.diamond.ac.uk/realms/dls/protocol/openid-connect/userinfo
+      auth_url: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/auth
+      token_url: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+      api_url: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/userinfo
 
 thanos:
   existingObjstoreSecret: ""
