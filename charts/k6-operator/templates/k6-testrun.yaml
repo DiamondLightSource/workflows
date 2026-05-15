@@ -24,7 +24,13 @@ spec:
             name: graph-proxy-k6-auth
             key: KEYCLOAK_CLIENT_SECRET
       - name: KEYCLOAK_TOKEN_URL
+      {{- if eq .Values.cluster "pollux"}}
         value: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+      {{- else if eq .Values.cluster "argus"}}
+        value: https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+      {{- end}}
+      - name: OTEL_ENDPOINT
+        value: https://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318
       - name: GRAPH_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
     resources:
