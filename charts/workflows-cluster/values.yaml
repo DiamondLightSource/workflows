@@ -151,6 +151,7 @@ vcluster:
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/postgres-postgres-auth-service-password": "workflows/postgres-postgres-auth-service-password"
             "/rclone-config": "workflows/rclone-config"
+            "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
       configMaps:
         enabled: true
         mappings:
