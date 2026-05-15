@@ -3,11 +3,10 @@ name: events
 description: Data Analysis event triggering
 type: application
 
-version: 0.2.1
+version: 0.2.2
 
 dependencies:
   - name: argo-events
-    alias: argoevents
     repository: https://argoproj.github.io/argo-helm
     version: 2.4.9
     condition: argo-events.enabled

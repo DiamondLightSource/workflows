@@ -1,0 +1,101 @@
+{{- if .Values.genericServers.stomp.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: stomp-service
+spec:
+  selector:
+    app.kubernetes.io/name: stomp-server
+  ports:
+    - name: stomp-server
+      protocol: TCP
+      port: 80
+      targetPort: stomp-server
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stomp-server
+data: {{- (.Files.Glob "generic-servers/stomp-server.py").AsConfig | nindent 2 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: generic-proto
+data:
+  generic.proto: |
+    syntax = "proto3";
+    package generic;
+
+    service Eventing {
+        rpc StartEventSource(EventSource) returns (stream Event);
+    }
+
+    message EventSource {
+        // The event source name.
+        string name = 1;
+        // The event source configuration value.
+        bytes config = 2;
+    }
+
+    message Event {
+        // The event source name.
+        string name = 1;
+        // The event payload.
+        bytes payload = 2;
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stomp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stomp-server
+  template:
+    metadata:
+      labels:
+        app: stomp-server
+        app.kubernetes.io/name: stomp-server
+    spec:
+      containers:
+        - name: server
+          image: python:3.12-slim
+          ports:
+            - name: stomp-server
+              containerPort: 50051
+          workingDir: /server
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cp /scripts/stomp-server.py .
+              pip install stomp.py pydantic grpcio-tools --disable-pip-version-check --root-user-action=ignore
+              python -m grpc_tools.protoc -I /protos --python_out=. --pyi_out=. --grpc_python_out=. /protos/generic.proto && 
+              python stomp-server.py
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: LOGLEVEL
+              value: {{ .Values.genericServers.stomp.logLevel }}
+          volumeMounts:
+            - name: script-volume
+              mountPath: /scripts
+            - name: generic-proto-volume
+              mountPath: /protos
+            - name: server-volume
+              mountPath: /server
+      volumes:
+        - name: script-volume
+          configMap:
+            name: stomp-server
+        - name: generic-proto-volume
+          configMap:
+            name: generic-proto
+        - name: server-volume
+          emptyDir: {}
+{{- end }}
