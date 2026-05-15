@@ -17,4 +17,23 @@ spec:
     {{- $eventSource.webhook | toYaml | nindent 6 }}
   {{- end }}
   {{- end }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: waffle-generic
+  labels:
+    workflows.diamond.ac.uk/beamline: i15-1
+spec:
+  generic:
+    waffle-example:
+      insecure: true
+      jsonBody: true
+      url: "stomp-service.events.svc:80"
+      config: |
+        user: guest
+        password: guest
+        host: i15-1-rabbitmq-daq.diamond.ac.uk
+        port: 61613
+        destination: /queue/public.worker.event.workflows
 {{- end }}

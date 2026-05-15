@@ -65,7 +65,7 @@ class Controller(BaseHTTPRequestHandler):
       sensorParams = [{
           "src": {
             "dependencyName": name, 
-            "dataKey": "body.user_namespace"
+            "dataKey": "body.doc.instrument_session"
           },
           "dest": "metadata.namespace"
         }]

@@ -1,22 +1,16 @@
 argo-events:
   enabled: true
   controller:
-    replicas: 1
-    pdb:
-      minAvailable: 1
-    serviceAccount:
-      name: argo-events-sa
-    volumeMounts:
-      - name: controller-config-volume
-        mountPath: /etc/argo-events
-    volumes:
-      - name: controller-config-volume
-        configMap:
-          name: argo-events-controller-config
-  webhook:
-    enabled: true
-    serviceAccount:
-      name: argo-events-webhook-sa
+    containerSecurityContext:
+      runAsUser: 36055
+      runAsGroup: 36055
+    resources:
+      requests:
+        cpu: 100m
+        memory: 2Gi
+      limits:
+        cpu: 1
+        memory: 4Gi
 
 eventBuses:
   - name: default
@@ -24,8 +18,10 @@ eventBuses:
     resources:
       requests:
         cpu: 10m
+        memory: 1Gi
       limits:
         cpu: 100m
+        memory: 4Gi
 
 eventSources:
   - name: example
@@ -40,6 +36,11 @@ eventSources:
         endpoint: /example
         # HTTP request method to allow. In this case, only POST requests are accepted
         method: POST
+
+genericServers:
+  stomp:
+    enabled: true
+    logLevel: INFO
 
 metacontroller:
   enabled: true

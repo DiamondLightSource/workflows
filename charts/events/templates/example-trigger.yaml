@@ -22,4 +22,20 @@ spec:
         messagePath: body.parameters.tiff
       - name: png
         messagePath: body.parameters.png
+---
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: Trigger
+metadata:
+  name: waffle-trigger
+  labels:
+    workflows.diamond.ac.uk/source: generic
+    workflows.diamond.ac.uk/beamline: i15-1
+spec:
+  enabled: true
+  eventName: waffle-example
+  workflow:
+    template: echo-workflow-template
+    parameters:
+      - name: message
+        messagePath: body.name
 {{- end }}
