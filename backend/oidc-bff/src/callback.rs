@@ -14,12 +14,14 @@ use crate::auth_session_data::{LoginSessionData, TokenSessionData};
 use crate::state::AppState;
 use auth_core::database::write_token_to_database;
 
-#[derive(Serialize, Deserialize)]
-pub struct CallbackQuery {
-    pub code: String,
-    pub state: String,
-}
 use anyhow::anyhow;
+
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CallbackQuery {
+    Success { code: String, state: String },
+    Error { error: String, error_description: Option<String>, state: String },
+}
 
 #[debug_handler]
 pub async fn callback(
@@ -27,17 +29,25 @@ pub async fn callback(
     Query(params): Query<CallbackQuery>,
     session: Session,
 ) -> Result<String> {
+    let (code, params_state) = match params {
+        CallbackQuery::Error { error, error_description, .. } => {
+            return Err(anyhow!(
+                "Authorization error: {} — {}",
+                error,
+                error_description.as_deref().unwrap_or("no description")
+            )
+            .into());
+        }
+        CallbackQuery::Success { code, state } => (code, state),
+    };
+
     // Retrieve data from the users session
     let auth_session_data: LoginSessionData = session
         .remove(LoginSessionData::SESSION_KEY)
         .await?
         .ok_or(anyhow!("session expired"))?;
 
-    // Once the user has been redirected to the redirect URL, you'll have access to the
-    // authorization code. For security reasons, your code should verify that the `state`
-    // parameter returned by the server matches `csrf_state`.
-
-    if auth_session_data.csrf_token != CsrfToken::new(params.state) {
+    if auth_session_data.csrf_token != CsrfToken::new(params_state) {
         return Err(anyhow!("invalid state").into());
     }
     let redirect_url = Cow::Owned(RedirectUrl::new(
@@ -47,7 +57,7 @@ pub async fn callback(
     // Now you can exchange it for an access token and ID token.
     let token_response = state
         .oidc_client
-        .exchange_code(AuthorizationCode::new(params.code.to_string()))?
+        .exchange_code(AuthorizationCode::new(code))?
         // Set the PKCE code verifier.
         .set_pkce_verifier(auth_session_data.pcke_verifier)
         .set_redirect_uri(redirect_url)

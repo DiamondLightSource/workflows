@@ -30,7 +30,6 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
             Nonce::new_random,
         )
         // Set the desired scopes.
-        .add_scope(Scope::new("openid".to_string()))
         .add_scope(Scope::new("offline_access".to_string()))
         .add_scope(Scope::new("posix-uid".to_string()))
         .add_scope(Scope::new("fedid".to_string()))
