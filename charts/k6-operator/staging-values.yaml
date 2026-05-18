@@ -1,3 +1,5 @@
+cluster: pollux
+
 k6-operator:
   manager:
     replicas: 1

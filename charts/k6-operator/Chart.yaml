@@ -1,7 +1,7 @@
 apiVersion: v2
 name: k6-op
 description: k6 chart for k8s
-version: 0.2.0
+version: 0.2.1
 appVersion: "1.16.0"
 dependencies:
   - name: k6-operator
