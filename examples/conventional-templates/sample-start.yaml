@@ -14,14 +14,6 @@ metadata:
 spec:
   entrypoint: pipeline
 
-  arguments:
-    parameters:
-      - name: visitdir
-        valueFrom:
-          configMapKeyRef:
-            name: sessionspaces
-            key: data_directory
-
   volumes:
     - name: tmp
       emptyDir: {}
