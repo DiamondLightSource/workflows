@@ -13,7 +13,7 @@ use std::{
     process,
     sync::Arc,
 };
-use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
+use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
 
 type Result<T> = std::result::Result<T, auth_core::error::Error>;
 
@@ -71,8 +71,7 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
-        // .with_expiry(Expiry::OnInactivity(Duration::seconds(600)))
-        ;
+        .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
 
     let proxy: Router<()> = ReverseProxy::new("/", &graph_url).into();
     let proxy = proxy;
