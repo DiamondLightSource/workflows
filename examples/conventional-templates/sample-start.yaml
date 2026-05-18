@@ -16,7 +16,6 @@ spec:
 
   workflowMetadata:
     labels:
-      kueue.x-k8s.io/priority-class: high
 
   arguments:
     parameters:
