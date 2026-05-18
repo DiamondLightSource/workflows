@@ -33,7 +33,6 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
         .add_scope(Scope::new("openid".to_string()))
         .add_scope(Scope::new("offline_access".to_string()))
         .add_scope(Scope::new("posix-uid".to_string()))
-        .add_scope(Scope::new("posix-gid".to_string()))
         .add_scope(Scope::new("fedid".to_string()))
         // Set the PKCE code challenge.
         .set_pkce_challenge(pkce_challenge)
