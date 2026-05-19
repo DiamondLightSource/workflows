@@ -24,6 +24,16 @@
         }
       ]       
     },
+    "backend/oidc-bff": {
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/dashboard/staging-values.yaml",
+          "jsonpath": "$.oidcBff.image.tag"
+        }
+      ]
+    },
     "backend/sessionspaces": {
       "release-type": "rust",
       "extra-files": [
