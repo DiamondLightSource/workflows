@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: workflow-of-workflows
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: Workflow Of Workflows
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+spec:
+  entrypoint: entry
+  templates:
+  - name: entry
+    steps:
+    - - name: auth-daemon
+        template: auth
+
+    - - name: wait
+        template: wait
+
+    - - name: run-workflow
+        template: curl
+        arguments:
+          parameters:
+          - name: cmd
+            value: |
+              curl -v --request POST http://{{steps.auth-daemon.ip}}:6000 -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"ks\", proposalNumber: 10000, number: 1}, parameters: {}){     name   } }" }'
+
+  - name: auth
+    daemon: true
+    retryStrategy:
+      limit: 10
+    volumes:
+      - name: auth-daemon-config
+        secret:
+          secretName: auth-daemon-config
+    container:
+      image: ghcr.io/diamondlightsource/workflows-auth-daemon@sha256:b904a82a59a91d4d1ccc86198540ea44ff2112fd8b0f681b539dd8217bd4010b
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 6000
+        initialDelaySeconds: 5
+        periodSeconds: 1
+      volumeMounts:
+        - name: auth-daemon-config
+          mountPath: /etc/workflows-auth-daemon
+          readOnly: true
+      env:
+        - name: ARGO_WORKFLOW_NAME
+          value: "{{workflow.name}}"
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: WORKFLOWS_AUTH_DAEMON_CONFIG
+          value: /etc/workflows-auth-daemon/config.yaml
+      args:
+        - serve
+
+  - name: wait
+    container:
+      image: busybox
+      command: [sleep]
+      args: ["60"]
+
+  - name: curl
+    inputs:
+      parameters:
+      - name: cmd
+    container:
+      image: curlimages/curl:8.15.0
+      command: ["/bin/sh", "-c"]
+      args: ["{{inputs.parameters.cmd}}"]
+
