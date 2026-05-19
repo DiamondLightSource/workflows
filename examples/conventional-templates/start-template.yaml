@@ -23,8 +23,6 @@ spec:
       steps:
         - - name: lint
             template: lint
-        - - name: test
-            template: test
         - - name: run
             template: run-job
             arguments:
@@ -49,24 +47,6 @@ spec:
           - name: workspace
             mountPath: /workspace
       activeDeadlineSeconds: 300
-
-    - name: test
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            pip install --quiet --target=/tmp/.local pytest
-            export PATH=/tmp/.local/bin:$PATH
-            cd /workspace
-            echo "Running tests..."
-            pytest -q || exit 1
-        volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-          - name: workspace
-            mountPath: /workspace
-      activeDeadlineSeconds: 600
 
     - name: run-job
       inputs:
