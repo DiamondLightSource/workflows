@@ -89,6 +89,9 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_namespace]
                   regex: kube-system
                   action: drop
+                - source_labels: [__meta_kubernetes_namespace]
+                  regex: k6
+                  action: keep
                 - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
                   action: keep
                   regex: "true"
