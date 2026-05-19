@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.5...sessionspaces@v0.1.6) (2026-05-19)
+
+
+### Features
+
+* **backend:** added test sessionspaces for development ([fa1b182](https://github.com/DiamondLightSource/workflows/commit/fa1b182c21cd92026e71809175379c3a3daf15a6))
+
+
+### Bug Fixes
+
+* **backend:** deterministically specify platform to allow dev env ([e564db1](https://github.com/DiamondLightSource/workflows/commit/e564db157a923c534eade5aa630253ad50afa396))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.4...sessionspaces@v0.1.5) (2026-04-30)
 
 
