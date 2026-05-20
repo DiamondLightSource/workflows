@@ -15,6 +15,23 @@ spec:
     repoURL: https://github.com/kubeflow/mpi-operator.git
     path: deploy/v2beta1
     targetRevision: {{ .Values.kueue.targetRevision }}
+
+    kustomize:
+      patches:
+        - target:
+            kind: Deployment
+            name: mpi-operator
+          patch: |
+            - op: add
+              path: /spec/template/spec/containers/0/resources
+              value:
+                limits:
+                  cpu: 1000m
+                  memory: 4Gi
+                requests:
+                  cpu: 250m
+                  memory: 2.5Gi
+
   ignoreDifferences:
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
