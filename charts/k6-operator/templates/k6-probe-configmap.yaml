@@ -39,8 +39,18 @@ data:
             value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
           - name: GRAPH_WS_URL
             value: ws://graph-proxy.graph-proxy.svc.cluster.local:80/graphql/ws
-          - name: OTEL_ENDPOINT
-            value: https://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318
+          - name: K6_OTEL_SERVICE_NAME
+            value: workflows-k6-synthetic-probe
+          - name: K6_OTEL_METRIC_PREFIX
+            value: k6_
+          - name: K6_OTEL_EXPORTER_PROTOCOL
+            value: grpc
+          - name: K6_OTEL_GRPC_EXPORTER_ENDPOINT
+            value: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317
+          - name: K6_OTEL_GRPC_EXPORTER_INSECURE
+            value: "true"
+          - name: K6_OTEL_EXPORT_INTERVAL
+        value: 5s
         resources:
           limits:
             cpu: 1000m

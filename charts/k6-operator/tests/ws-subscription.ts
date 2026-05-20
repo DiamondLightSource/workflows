@@ -3,10 +3,13 @@ import { check, fail } from 'k6';
 import { Options } from 'k6/options';
 import * as ws from 'k6/ws';
 export { setup } from './common.ts';
+import { Rate } from 'k6/metrics';
 
 const graphUrl = __ENV.GRAPH_URL;
 const graphWsUrl = __ENV.GRAPH_WS_URL;
 const timeoutSeconds = 1800;
+
+const probeSuccess = new Rate('synthetic_probe_success')
 
 interface VisitInput {
   proposalCode: string;
@@ -147,6 +150,7 @@ export default function(data: { token: string }): void {
           nextCount += 1;
           terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
           console.log(`websocket next count=${nextCount} terminalStatus=${terminalStatus}`);
+          probeSuccess.add(terminalStatus === 'WorkflowSucceededStatus', {probe: ws-subscription});
           if (
             terminalStatus === 'WorkflowSucceededStatus' ||
             terminalStatus === 'WorkflowFailedStatus' ||
