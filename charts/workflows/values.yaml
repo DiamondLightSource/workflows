@@ -55,17 +55,6 @@ argo-workflows:
 
     workflowDefaults:
       spec:
-        podSpecPatch: |
-          containers:
-            - name: main
-              resources:
-                requests:
-                  memory: "2Gi"
-                  cpu: "500m"
-                limits:
-                  memory: "4Gi"
-                  cpu: "1000m"
-
         serviceAccountName: argo-workflow
 
         ttlStrategy:
