@@ -50,7 +50,7 @@ data:
           - name: K6_OTEL_GRPC_EXPORTER_INSECURE
             value: "true"
           - name: K6_OTEL_EXPORT_INTERVAL
-        value: 5s
+            value: 5s
         resources:
           limits:
             cpu: 1000m
