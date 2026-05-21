@@ -75,3 +75,11 @@ groups:
         repoURL: https://github.com/DiamondLightSource/structures-and-surfaces-workflows
         path: i07
         sourceType: helm
+  - name: spectroscopy
+    enabled: true
+    permittedRepos: []
+    apps:
+      - name: spectroscopy
+        repoURL: https://github.com/DiamondLightSource/spectroscopy-workflows
+        path: demos
+        sourceType: helm
