@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.12...dashboard@v0.1.13) (2026-05-21)
+
+
+### Features
+
+* **frontend:** add logout button ([d07e285](https://github.com/DiamondLightSource/workflows/commit/d07e2857db89caaeb5ce84f641e2b9fe38d791fb))
+* **frontend:** preserve template filter settings ([daef9f9](https://github.com/DiamondLightSource/workflows/commit/daef9f944e85c31fd80f9bb905113d7d6205ba01))
+
 ## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.11...dashboard@v0.1.12) (2026-02-03)
 
 
