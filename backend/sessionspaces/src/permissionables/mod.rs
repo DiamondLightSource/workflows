@@ -45,6 +45,8 @@ pub struct Session {
     pub start_date: PrimitiveDateTime,
     /// The session end date and time
     pub end_date: PrimitiveDateTime,
+    /// An explicit data directory path, set only for statically-configured sessions
+    pub data_directory: Option<String>,
 }
 
 impl Display for Session {
@@ -137,6 +139,7 @@ impl Sessions {
                         .map(|attributes| attributes.gid),
                     start_date: session.start_date,
                     end_date: session.end_date,
+                    data_directory: None,
                 },
             );
         }

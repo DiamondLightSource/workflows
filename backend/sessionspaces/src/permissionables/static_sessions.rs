@@ -28,6 +28,8 @@ where
 /// multiple visit numbers so one entry can produce several namespaces sharing the same members.
 #[derive(Debug, Deserialize)]
 struct StaticSessionEntry {
+    /// The data directory that will be added to the session's namespace
+    data_directory: String,
     /// The two-letter prefix code associated with the proposal (e.g. `"ks"`).
     proposal_code: String,
     /// The unique number of the proposal.
@@ -56,6 +58,7 @@ impl StaticSessionEntry {
         self.visits.into_iter().map(move |visit| {
             let name = format!("{}{}-{}", self.proposal_code, self.proposal_number, visit);
             let session = Session {
+                data_directory: Some(self.data_directory.clone()),
                 proposal_code: self.proposal_code.clone(),
                 proposal_number: self.proposal_number,
                 visit,

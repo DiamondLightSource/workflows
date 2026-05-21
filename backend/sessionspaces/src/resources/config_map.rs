@@ -6,6 +6,7 @@ use kube::{
     Api, Client,
 };
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use tracing::{info, instrument};
 
 /// The name to be given to the ConfigMap
@@ -19,7 +20,11 @@ pub async fn create_configmap(
     k8s_client: Client,
 ) -> std::result::Result<(), anyhow::Error> {
     let configmaps = Api::<ConfigMap>::namespaced(k8s_client, namespace);
-    let mount_path = session.directory();
+    let mount_path = session
+        .data_directory
+        .as_deref()
+        .map(PathBuf::from)
+        .or_else(|| session.directory());
     let mut configmap_data = BTreeMap::from([
         ("proposal_code".to_string(), session.proposal_code.clone()),
         (
@@ -140,6 +145,7 @@ mod tests {
                 gid: Some(161025),
                 start_date: datetime!(2024-05-24 09:00:00),
                 end_date: datetime!(2024-08-09 09:00:00),
+                data_directory: None,
             },
             k8s_client,
         )
