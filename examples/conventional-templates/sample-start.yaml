@@ -12,6 +12,8 @@ metadata:
 
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
+    workflows.diamond.ac.uk/category: "science"        # mandatory
+    
 spec:
   entrypoint: pipeline
   arguments:
