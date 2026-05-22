@@ -14,6 +14,13 @@ metadata:
     workflows.diamond.ac.uk/science-group-examples: "true"
 spec:
   entrypoint: pipeline
+  arguments:
+    parameters:
+    - name: visitdir
+      valueFrom:
+        configMapKeyRef:
+          name: sessionspaces
+          key: data_directory
 
   volumes:
     - name: tmp
