@@ -60,4 +60,73 @@ subjects:
   - kind: ServiceAccount
     name: auth-daemon-config-cloner
     namespace: workflows
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: copy-auth-daemon-config
+  namespace: workflows
+spec:
+  # Suspended: intended to be triggered manually on install and after secret rotation.
+  # eg kubectl create job --from=cronjob/copy-auth-daemon-config -nworkflows copy-auth-daemon-config-$(date +%s)
+  suspend: true
+  schedule: "0 3 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 300
+      template:
+        spec:
+          serviceAccountName: auth-daemon-config-cloner
+          restartPolicy: Never
+          containers:
+            - name: sync
+              image: alpine/kubectl:1.34.2
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
 
+                  SOURCE_NAMESPACE="${SOURCE_NAMESPACE:-workflows}"
+                  SECRET_NAME="${SECRET_NAME:-auth-daemon-config}"
+                  LABEL_SELECTOR="${LABEL_SELECTOR:-app.kubernetes.io/managed-by=sessionspaces}"
+
+                  echo "Starting sync of ${SOURCE_NAMESPACE}/${SECRET_NAME} to namespaces with ${LABEL_SELECTOR}"
+
+                  if ! kubectl -n "${SOURCE_NAMESPACE}" get secret "${SECRET_NAME}" >/dev/null 2>&1; then
+                    echo "ERROR: source secret ${SOURCE_NAMESPACE}/${SECRET_NAME} not found" >&2
+                    exit 1
+                  fi
+
+                  CONFIG_B64="$(kubectl -n "${SOURCE_NAMESPACE}" get secret "${SECRET_NAME}" -o jsonpath='{.data.config\.yaml}' || true)"
+
+                  if [ -z "${CONFIG_B64}" ]; then
+                    echo "ERROR: expected key 'config.yaml' missing from secret" >&2
+                    exit 2
+                  fi
+
+                  for ns in $(kubectl get ns -l "${LABEL_SELECTOR}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
+                    echo "Syncing into namespace: ${ns}"
+                    kubectl apply --server-side --force-conflicts -f - <<EOF
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: ${SECRET_NAME}
+                    namespace: ${ns}
+                  type: Opaque
+                  data:
+                    config.yaml: ${CONFIG_B64}
+                  EOF
+                  done
+
+                  echo "Sync completed."
+              env:
+                - name: SOURCE_NAMESPACE
+                  value: "workflows"
+                - name: SECRET_NAME
+                  value: "auth-daemon-config"
+                - name: LABEL_SELECTOR
+                  value: "app.kubernetes.io/managed-by=sessionspaces"
