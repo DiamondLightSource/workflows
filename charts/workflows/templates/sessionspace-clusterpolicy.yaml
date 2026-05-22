@@ -142,3 +142,30 @@ spec:
       expression: resource.Get("v1", "secrets", "workflows", "artifact-s3")
   generate:
     - expression: generator.Apply(variables.targetNs, [variables.sourceSecret])
+---
+apiVersion: policies.kyverno.io/v1alpha1
+kind: GeneratingPolicy
+metadata:
+  name: copy-auth-daemon-config
+spec:
+  evaluation:
+    generateExisting:
+      enabled: false
+    synchronize:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+    - apiGroups:   [""]
+      apiVersions: ["v1"]
+      operations:  ["CREATE"]
+      resources:   ["namespaces"]
+    namespaceSelector:
+      matchLabels:
+          app.kubernetes.io/managed-by: sessionspaces
+  variables:
+    - name: targetNs
+      expression: "object.metadata.name"
+    - name: sourceSecret
+      expression: resource.Get("v1", "secrets", "workflows", "auth-daemon-config")
+  generate:
+    - expression: generator.Apply(variables.targetNs, [variables.sourceSecret])
