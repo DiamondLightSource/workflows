@@ -10,7 +10,7 @@ use auth_core::openidconnect::SubjectIdentifier;
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     process,
-    sync::Arc,
+    sync::{Arc, OnceLock},
 };
 
 use axum::{Router, http::Method, middleware, routing::get};
@@ -27,8 +27,47 @@ mod state;
 
 use axum_reverse_proxy::ReverseProxy;
 use config::DaemonConfig;
+use kube::{
+    Api, Client,
+    api::{ApiResource, DynamicObject},
+    core::GroupVersionKind,
+};
 
 type Result<T> = std::result::Result<T, Error>;
+
+static CRYPTO_PROVIDER: OnceLock<()> = OnceLock::new();
+
+async fn resolve_subject() -> anyhow::Result<SubjectIdentifier> {
+    let workflow_name = std::env::var("ARGO_WORKFLOW_NAME")
+        .map_err(|_| anyhow::anyhow!("ARGO_WORKFLOW_NAME not set"))?;
+    let namespace =
+        std::fs::read_to_string("/var/run/secrets/kubernetes.io/serviceaccount/namespace")?;
+    let namespace = namespace.trim();
+    let namespace = std::env::var("MY_POD_NAMESPACE")
+        .map_err(|_| anyhow::anyhow!("MY_POD_NAMESPACE not set"))?;
+
+    let client = Client::try_default().await?;
+    let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "Workflow");
+    let api = Api::<DynamicObject>::namespaced_with(
+        client,
+        &namespace,
+        &ApiResource::from_gvk_with_plural(&gvk, "workflows"),
+    );
+    let workflow = api.get(&workflow_name).await?;
+    let subject = workflow
+        .metadata
+        .labels
+        .as_ref()
+        .and_then(|l| l.get("workflows.argoproj.io/creator"))
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "label workflows.argoproj.io/creator missing on workflow {}",
+                workflow_name
+            )
+        })?
+        .clone();
+    Ok(SubjectIdentifier::new(subject))
+}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
@@ -41,8 +80,6 @@ struct ServeArgs {
         default_value = "config.yaml"
     )]
     config: String,
-    #[arg(env = "WORKFLOWS_AUTH_DAEMON_SUBJECT")]
-    subject: String,
 }
 
 #[derive(Debug, Parser)]
@@ -54,6 +91,15 @@ enum Cli {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Must be installed before any TLS connection, setup_router duplicates this as a fallback for
+    // current or future tests that bypass main
+    // OnceLock ensures only one installation of which path is run
+    CRYPTO_PROVIDER.get_or_init(|| {
+        auth_core::rustls::crypto::aws_lc_rs::default_provider()
+            .install_default()
+            .expect("Failed to install rustls CryptoProvider");
+    });
+
     dotenvy::dotenv().ok();
     let args = Cli::parse();
     tracing_subscriber::fmt()
@@ -64,8 +110,8 @@ async fn main() -> Result<()> {
         Cli::Serve(args) => {
             let config = DaemonConfig::from_file(args.config)?;
             let requested_port = config.common.port;
-            let router_state =
-                Arc::new(RouterState::new(config, &SubjectIdentifier::new(args.subject)).await?);
+            let subject = resolve_subject().await?;
+            let router_state = Arc::new(RouterState::new(config, &subject).await?);
 
             let router = setup_router(router_state, None)?;
             serve(router, IpAddr::V4(Ipv4Addr::UNSPECIFIED), requested_port).await?;
@@ -78,9 +124,11 @@ async fn main() -> Result<()> {
 fn setup_router(state: Arc<RouterState>, cors_allow: Option<Vec<Regex>>) -> anyhow::Result<Router> {
     debug!("Setting up the router");
 
-    auth_core::rustls::crypto::ring::default_provider()
-        .install_default()
-        .expect("Failed to install rust TLS cryptography");
+    CRYPTO_PROVIDER.get_or_init(|| {
+        auth_core::rustls::crypto::aws_lc_rs::default_provider()
+            .install_default()
+            .expect("Failed to install rustls CryptoProvider");
+    });
 
     let cors_origin = if let Some(cors_allow) = cors_allow {
         info!("Allowing CORS Origin(s) matching: {:?}", cors_allow);
@@ -212,7 +260,6 @@ mod tests {
         let params = [
             ("grant_type", "refresh_token"),
             ("scope", "openid offline_access"),
-            ("subject", "test-subject"),
             ("refresh_token", "test-refresh-token"),
             ("client_id", "test-client"),
         ];
