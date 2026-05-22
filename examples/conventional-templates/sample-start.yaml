@@ -69,7 +69,7 @@ spec:
             mountPath: /tmp
           - name: workspace
             mountPath: /workspace
-      activeDeadlineSeconds: 600
+      activeDeadlineSeconds: 500
 
     - name: run-job
       inputs:
