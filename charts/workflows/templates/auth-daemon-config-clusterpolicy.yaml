@@ -1,0 +1,128 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ .Release.Name }}-auth-daemon-config
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: prohibit-auth-daemon-config-volume
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      validate:
+        message: "auth-daemon-config can only be used by the auth-daemon container"
+        pattern:
+          spec:
+            =(volumes):
+              - (name): "!auth-daemon-config"
+                =(secret):
+                  secretName: "!auth-daemon-config"
+                =(projected):
+                  =(sources):
+                    - =(secret):
+                        name: "!auth-daemon-config"
+    - name: prohibit-auth-daemon-config-env
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      validate:
+        message: "auth-daemon-config can only be used by the auth-daemon container"
+        pattern:
+          spec:
+            containers:
+              - (image): "!ghcr.io/diamondlightsource/workflows-auth-daemon:*"
+                =(env):
+                  - =(valueFrom):
+                      =(secretKeyRef):
+                        name: "!auth-daemon-config"
+                =(envFrom):
+                  - =(secretRef):
+                      name: "!auth-daemon-config"
+            =(initContainers):
+              - (name): "!init"
+                =(env):
+                  - =(valueFrom):
+                      =(secretKeyRef):
+                        name: "!auth-daemon-config"
+                =(envFrom):
+                  - =(secretRef):
+                      name: "!auth-daemon-config"
+            =(ephemeralContainers):
+              - name: "*"
+                =(env):
+                  - =(valueFrom):
+                      =(secretKeyRef):
+                        name: "!auth-daemon-config"
+                =(envFrom):
+                  - =(secretRef):
+                      name: "!auth-daemon-config"
+    - name: prohibit-auth-daemon-config-volumemounts
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      validate:
+        message: "auth-daemon-config can only be used by the auth-daemon container"
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                all:
+                  - key: '{{ "{{" }} element.name {{ "}}" }}'
+                    operator: NotEquals
+                    value: "wait"
+                  - key: '{{ "{{" }} contains(element.image, ''ghcr.io/diamondlightsource/workflows-auth-daemon'') {{ "}}" }}'
+                    operator: Equals
+                    value: false
+                  - key: '{{ "{{" }} (element.volumeMounts || `[]`)[?name == ''auth-daemon-config''] | length(@) {{ "}}" }}'
+                    operator: GreaterThan
+                    value: 0
+          - list: "request.object.spec.initContainers || []"
+            deny:
+              conditions:
+                all:
+                  - key: '{{ "{{" }} element.name {{ "}}" }}'
+                    operator: NotEquals
+                    value: "init"
+                  - key: '{{ "{{" }} (element.volumeMounts || `[]`)[?name == ''auth-daemon-config''] | length(@) {{ "}}" }}'
+                    operator: GreaterThan
+                    value: 0
+          - list: "request.object.spec.ephemeralContainers || []"
+            deny:
+              conditions:
+                all:
+                  - key: '{{ "{{" }} (element.volumeMounts || `[]`)[?name == ''auth-daemon-config''] | length(@) {{ "}}" }}'
+                    operator: GreaterThan
+                    value: 0
+    - name: block-exec-into-auth-daemon-pods
+      match:
+        resources:
+          kinds:
+            - Pod/exec
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      context:
+        - name: podContainers
+          apiCall:
+            urlPath: '/api/v1/namespaces/{{ "{{" }}request.namespace{{ "}}" }}/pods/{{ "{{" }}request.name{{ "}}" }}'
+            jmesPath: "spec.containers"
+      validate:
+        deny:
+          conditions:
+            any:
+              - key: '{{ "{{" }} podContainers[?contains(image, ''ghcr.io/diamondlightsource/workflows-auth-daemon'')] | length(@) {{ "}}" }}'
+                operator: GreaterThan
+                value: 0
