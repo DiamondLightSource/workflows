@@ -1,7 +1,43 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
-  name: template22
+  name: template22apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: haz-example
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: boiler-plate-example for docs
+    workflows.argoproj.io/description: |
+        This is an example demo-ing the boilerplate
+
+spec:
+  entrypoint: workflow-entry
+  volumeClaimTemplates:
+  - metadata:
+      name: tmpdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: local-path
+
+  templates:
+  - name: step-one
+    script:
+      image: busybox
+      command: [bash]
+      source: |
+        echo "Hello world"
+
+  - name: workflow-entry
+    dag:
+      tasks:
+      - name: step-one
+        template: step-one
+
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
