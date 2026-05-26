@@ -52,11 +52,7 @@ spec:
     - name: lint
       container:
         image: python:3.11-slim
-
-        command:
-          - sh
-          - -c
-
+        command: ["sh", "-c"]
         args:
           - |
             pip install --quiet --target=/tmp/.local ruff
@@ -79,11 +75,7 @@ spec:
     - name: test
       container:
         image: python:3.11-slim
-
-        command:
-          - sh
-          - -c
-
+        command: ["sh", "-c"]
         args:
           - |
             pip install --quiet --target=/tmp/.local pytest
@@ -104,18 +96,13 @@ spec:
       activeDeadlineSeconds: 500
 
     - name: run-job
-
       inputs:
         parameters:
           - name: visitdir
 
       container:
         image: alpine:3.19
-
-        command:
-          - sh
-          - -c
-
+        command: ["sh", "-c"]
         args:
           - |
             echo "=== LIVE DATA PROCESSING ==="
@@ -127,15 +114,3 @@ spec:
             echo "VisitDir = {{inputs.parameters.visitdir}}"
 
       activeDeadlineSeconds: 150
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-
-metadata:
-  generateName: python-hellow-
-
-spec:
-  workflowTemplateRef:
-    name: python-hellow
-    clusterScope: true
