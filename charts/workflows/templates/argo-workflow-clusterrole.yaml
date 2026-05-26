@@ -16,19 +16,22 @@ rules:
   resources: [
     "workflowtaskresults",
     ]
-  verbs: ["create","patch"] 
+  verbs: ["create","patch"]
+- apiGroups: ["argoproj.io"]
+  resources: ["workflows"]
+  verbs: ["get"]
 - apiGroups: ["argoproj.io"]
   resources: [
     "workflowtasksets",
     "workflowartifactgctasks",
     ]
-  verbs: ["list", "watch"] 
+  verbs: ["list", "watch"]
 - apiGroups: ["argoproj.io"]
   resources: [
     "workflowtasksets/status",
     "workflowartifactgctasks/status",
     ]
-  verbs: ["patch"] 
+  verbs: ["patch"]
 - apiGroups: ["kubeflow.org"]
   resources: ["mpijobs"]
   verbs: ["create", "get", "list", "watch", "update", "delete"]
