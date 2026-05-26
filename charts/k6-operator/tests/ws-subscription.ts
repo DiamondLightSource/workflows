@@ -150,7 +150,8 @@ export default function(data: { token: string }): void {
           nextCount += 1;
           terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
           console.log(`websocket next count=${nextCount} terminalStatus=${terminalStatus}`);
-          probeSuccess.add(terminalStatus === 'WorkflowSucceededStatus', {probe: ws-subscription});
+          probeSuccess.add(terminalStatus === 'WorkflowSucceededStatus', { probe: 'ws-subscription' });
+          probeSuccess.add(terminalStatus === 'WorkflowRunningStatus', { probe: 'ws-subscription' });
           if (
             terminalStatus === 'WorkflowSucceededStatus' ||
             terminalStatus === 'WorkflowFailedStatus' ||
