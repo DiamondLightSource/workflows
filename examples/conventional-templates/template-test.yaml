@@ -1,94 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
-
 metadata:
-  name: python-hellow
+  name: python-hello
 
-  annotations:
-    workflows.diamond.ac.uk/owner: "science"
-    workflows.argoproj.io/title: python-hellow
-    workflows.argoproj.io/description: Just a basic test workflow.
-    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-
-  labels:
-    workflows.diamond.ac.uk/science-group-examples: "true"
-    
 spec:
-  entrypoint: pipeline
-  arguments:
-    parameters:
-    - name: visitdir
-      value: "/tmp/data"
-
-  volumes:
-    - name: tmp
-      emptyDir: {}
-    - name: workspace
-      emptyDir: {}
+  entrypoint: main
 
   templates:
-
-    - name: pipeline
-      steps:
-        - - name: lint
-            template: lint
-        - - name: test
-            template: test
-        - - name: run
-            template: run-job
-            arguments:
-              parameters:
-                - name: visitdir
-                  value: "{{workflow.parameters.visitdir}}"
-
-    - name: lint
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            pip install --quiet --target=/tmp/.local ruff
-            export PATH=/tmp/.local/bin:$PATH
-            cd /workspace
-            echo "Running lint (excluding tests)..."
-            ruff . --exclude tests || exit 1
-        volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-          - name: workspace
-            mountPath: /workspace
-      activeDeadlineSeconds: 300
-
-    - name: test
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            pip install --quiet --target=/tmp/.local pytest
-            export PATH=/tmp/.local/bin:$PATH
-            cd /workspace
-            echo "Running tests..."
-            pytest -q || exit 1
-        volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-          - name: workspace
-            mountPath: /workspace
-      activeDeadlineSeconds: 500
-
-    - name: run-job
-      inputs:
-        parameters:
-          - name: visitdir
+    - name: main
       container:
         image: alpine:3.19
-        command: ["sh", "-c"]
+        command: [sh, -c]
         args:
-          - |
-            echo "=== LIVE DATA PROCESSING ==="
-            echo "User is waiting at beamline"
-            sleep 5
-            echo "Process complete"
-            echo "VisitDir = {{inputs.parameters.visitdir}}"
-      activeDeadlineSeconds: 150
+          - echo hello
