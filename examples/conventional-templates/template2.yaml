@@ -11,7 +11,6 @@ metadata:
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 spec:
   entrypoint: workflow-entry
-
   templates:
   - name: pick-a-number
     script:
