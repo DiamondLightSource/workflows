@@ -610,6 +610,8 @@ dependencies = [
  "clap",
  "dotenvy",
  "env_logger",
+ "k8s-openapi",
+ "kube",
  "migration",
  "mockito",
  "oauth2-test-server",
