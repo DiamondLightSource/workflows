@@ -1,116 +1,98 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
+
 metadata:
-  name: template22apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  name: haz-example
-  labels:
-    workflows.diamond.ac.uk/science-group-examples: "true"
+  name: python-hellow
+
   annotations:
-    workflows.argoproj.io/title: boiler-plate-example for docs
-    workflows.argoproj.io/description: |
-        This is an example demo-ing the boilerplate
-
-spec:
-  entrypoint: workflow-entry
-  volumeClaimTemplates:
-  - metadata:
-      name: tmpdir
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
-      storageClassName: local-path
-
-  templates:
-  - name: step-one
-    script:
-      image: busybox
-      command: [bash]
-      source: |
-        echo "Hello world"
-
-  - name: workflow-entry
-    dag:
-      tasks:
-      - name: step-one
-        template: step-one
-
-  labels:
-    workflows.diamond.ac.uk/science-group-examples: "true"
-  annotations:
-    workflows.argoproj.io/title: conditional-steps
-    workflows.argoproj.io/description: |
-      Run steps based on conditions from previous outputs.
+    workflows.diamond.ac.uk/owner: "science"
+    workflows.argoproj.io/title: python-hellow
+    workflows.argoproj.io/description: Just a basic test workflow.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+    workflows.diamond.ac.uk/category: "science"        # mandatory
+    
 spec:
-  entrypoint: workflow-entry
+  entrypoint: pipeline
+  arguments:
+    parameters:
+    - name: visitdir
+      valueFrom:
+        configMapKeyRef:
+          name: sessionspaces
+          key: data_directory
+
+  volumes:
+    - name: tmp
+      emptyDir: {}
+    - name: workspace
+      emptyDir: {}
+
   templates:
-  - name: pick-a-number
-    script:
-      image: python:3.10
-      command: [python]
-      source: |
-        import random
-        print(random.randint(1,11))
 
-  - name: greater-than-five
-    script:
-      image: python:3.10
-      command: [python]
-      source: |
-        print("This runs when the value is greater than 5")
+    - name: pipeline
+      steps:
+        - - name: lint
+            template: lint
+        - - name: test
+            template: test
+        - - name: run
+            template: run-job
+            arguments:
+              parameters:
+                - name: visitdir
+                  value: "{{workflow.parameters.visitdir}}"
 
-  - name: less-than-five
-    script:
-      image: python:3.10
-      command: [python]
-      source: |
-        print("This runs when the value is less than or equal to 5")
+    - name: lint
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet --target=/tmp/.local ruff
+            export PATH=/tmp/.local/bin:$PATH
+            cd /workspace
+            echo "Running lint (excluding tests)..."
+            ruff . --exclude tests || exit 1
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+          - name: workspace
+            mountPath: /workspace
+      activeDeadlineSeconds: 300
 
-  - name: even
-    script:
-      image: python:3.10
-      command: [python]
-      source: |
-        print("This runs when the value is even")
+    - name: test
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet --target=/tmp/.local pytest
+            export PATH=/tmp/.local/bin:$PATH
+            cd /workspace
+            echo "Running tests..."
+            pytest -q || exit 1
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+          - name: workspace
+            mountPath: /workspace
+      activeDeadlineSeconds: 500
 
-  - name: complex
-    script:
-      image: python:3.10
-      command: [python]
-      source: |
-        print("This is more complex")
-
-  - name: workflow-entry
-    dag:
-      tasks:
-      - name: pick-a-number
-        template: pick-a-number
-
-      - name: greater-than-5
-        template: greater-than-five
-        dependencies: [pick-a-number]
-        when: "{{tasks.pick-a-number.outputs.result}} > 5"
-
-      - name: less-than-5
-        template: less-than-five
-        dependencies: [pick-a-number]
-        when: "{{tasks.pick-a-number.outputs.result}} <= 5"
-
-      - name: even
-        template: even
-        dependencies: [pick-a-number]
-        when: "{{tasks.pick-a-number.outputs.result}} % 2 == 0"
-
-      - name: complex-condition
-        template: complex
-        dependencies: [pick-a-number]
-        when: >-
-          ( {{tasks.pick-a-number.outputs.result}} < 4 &&
-            {{tasks.pick-a-number.outputs.result}} > 1
-          ) ||
-          ( {{tasks.pick-a-number.outputs.result}} < 9 &&
-            {{tasks.pick-a-number.outputs.result}} > 6 )
+    - name: run-job
+      inputs:
+        parameters:
+          - name: visitdir
+      container:
+        image: alpine:3.19
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "=== LIVE DATA PROCESSING ==="
+            echo "User is waiting at beamline"
+            sleep 5
+            echo "Process complete"
+            echo "VisitDir = {{inputs.parameters.visitdir}}"
+      activeDeadlineSeconds: 150
