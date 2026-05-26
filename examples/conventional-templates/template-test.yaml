@@ -18,10 +18,7 @@ spec:
   arguments:
     parameters:
     - name: visitdir
-      valueFrom:
-        configMapKeyRef:
-          name: sessionspaces
-          key: data_directory
+      value: "/tmp/data"
 
   volumes:
     - name: tmp
