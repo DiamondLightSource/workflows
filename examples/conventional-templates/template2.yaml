@@ -6,27 +6,29 @@ metadata:
 
   annotations:
     workflows.diamond.ac.uk/owner: "science"
-    workflows.argoproj.io/title: python-hellow
-    workflows.argoproj.io/description: Just a basic test workflow.
+    workflows.argoproj.io/title: "python-hellow"
+    workflows.argoproj.io/description: "Basic Python workflow example."
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
-    workflows.diamond.ac.uk/category: "science"        # mandatory
-    
+    workflows.diamond.ac.uk/category: "science"
+
 spec:
   entrypoint: pipeline
+
   arguments:
     parameters:
-    - name: visitdir
-      valueFrom:
-        configMapKeyRef:
-          name: sessionspaces
-          key: data_directory
+      - name: visitdir
+        valueFrom:
+          configMapKeyRef:
+            name: sessionspaces
+            key: data_directory
 
   volumes:
     - name: tmp
       emptyDir: {}
+
     - name: workspace
       emptyDir: {}
 
@@ -36,8 +38,10 @@ spec:
       steps:
         - - name: lint
             template: lint
+
         - - name: test
             template: test
+
         - - name: run
             template: run-job
             arguments:
@@ -48,51 +52,90 @@ spec:
     - name: lint
       container:
         image: python:3.11-slim
-        command: ["sh", "-c"]
+
+        command:
+          - sh
+          - -c
+
         args:
           - |
             pip install --quiet --target=/tmp/.local ruff
             export PATH=/tmp/.local/bin:$PATH
+
+            echo "Running lint..."
             cd /workspace
-            echo "Running lint (excluding tests)..."
-            ruff . --exclude tests || exit 1
+
+            ruff . --exclude tests
+
         volumeMounts:
           - name: tmp
             mountPath: /tmp
+
           - name: workspace
             mountPath: /workspace
+
       activeDeadlineSeconds: 300
 
     - name: test
       container:
         image: python:3.11-slim
-        command: ["sh", "-c"]
+
+        command:
+          - sh
+          - -c
+
         args:
           - |
             pip install --quiet --target=/tmp/.local pytest
             export PATH=/tmp/.local/bin:$PATH
-            cd /workspace
+
             echo "Running tests..."
-            pytest -q || exit 1
+            cd /workspace
+
+            pytest -q
+
         volumeMounts:
           - name: tmp
             mountPath: /tmp
+
           - name: workspace
             mountPath: /workspace
+
       activeDeadlineSeconds: 500
 
     - name: run-job
+
       inputs:
         parameters:
           - name: visitdir
+
       container:
         image: alpine:3.19
-        command: ["sh", "-c"]
+
+        command:
+          - sh
+          - -c
+
         args:
           - |
             echo "=== LIVE DATA PROCESSING ==="
             echo "User is waiting at beamline"
+
             sleep 5
+
             echo "Process complete"
             echo "VisitDir = {{inputs.parameters.visitdir}}"
+
       activeDeadlineSeconds: 150
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+
+metadata:
+  generateName: python-hellow-
+
+spec:
+  workflowTemplateRef:
+    name: python-hellow
+    clusterScope: true
