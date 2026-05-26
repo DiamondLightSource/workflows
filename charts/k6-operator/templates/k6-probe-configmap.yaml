@@ -13,6 +13,7 @@ data:
     spec:
       cleanup: 'post'
       parallelism: 1
+      arguments: "--out opentelemetry --tag probe=synthetic-probe --tag synthetic=true"
       script:
         configMap:
           name: k6-configmap
