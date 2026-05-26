@@ -50,6 +50,6 @@ spec:
         - |
           echo "Pipeline completed
           echo "VisitDir = {{ inputs.parameters.visitdir }}"
-          echo "TOKEN is available"
+          echo "Done"
 
 
