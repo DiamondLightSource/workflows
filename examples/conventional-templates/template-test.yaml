@@ -13,8 +13,6 @@ metadata:
 
 spec:
   entrypoint: pipeline
-    workflows.diamond.ac.uk/science-group-examples: "true"
-    kueue.x-k8s.io/priority-class: high
     
   templates:
 
