@@ -3,11 +3,6 @@ name: Identity Mapper Container
 on:
   workflow_call:
 
-paths:
-      - 'backend/**'
-      - '.github/workflows/**'
-
-
 jobs:
   build:
     runs-on: ubuntu-latest

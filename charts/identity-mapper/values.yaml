@@ -1,0 +1,5 @@
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-identity-mapper
+  tag: latest
+  digest: ""
