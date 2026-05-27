@@ -153,7 +153,7 @@ def sync_ldap_to_kubernetes(
         if op_type == "add" and len(path_parts) == 1:
             body = {
                 "apiVersion": f"{_CRD_GROUP}/{_CRD_VERSION}",
-                "kind": "UserProfile",
+                "kind": "UserIdentity",
                 "metadata": {"name": username},
                 "spec": operation["value"],
             }
@@ -170,7 +170,7 @@ def sync_ldap_to_kubernetes(
             # Update the entire spec for the user to keep API calls clean
             body = {
                 "apiVersion": f"{_CRD_GROUP}/{_CRD_VERSION}",
-                "kind": "UserProfile",
+                "kind": "UserIdentity",
                 "metadata": {"name": username},
                 "spec": desired_state[username],
             }
