@@ -1,0 +1,62 @@
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: k6-spam-workflows
+  namespace: {{ .Release.Namespace}}
+spec:
+  parallelism: 4
+  arguments: "--out opentelemetry --tag probe=ping-graph --tag synthetic=true"
+  script:
+    configMap:
+      name: k6-configmap
+      file: spam-workflows.ts
+  runner:
+    env:
+      - name: KEYCLOAK_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: graph-proxy-k6-auth
+            key: KEYCLOAK_CLIENT_ID
+      - name: KEYCLOAK_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: graph-proxy-k6-auth
+            key: KEYCLOAK_CLIENT_SECRET
+      - name: KEYCLOAK_TOKEN_URL
+      {{- if eq .Values.cluster "pollux"}}
+        value: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+      {{- else if eq .Values.cluster "argus"}}
+        value: https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/token
+      {{- end}}
+      - name: GRAPH_URL
+        value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
+      - name: K6_OTEL_SERVICE_NAME
+        value: k6
+      - name: K6_OTEL_METRIC_PREFIX
+        value: k6_
+      - name: K6_OTEL_FLUSH_INTERVAL
+        value: 1s
+      - name: K6_OTEL_EXPORTER_PROTOCOL
+        value: grpc
+      - name: K6_OTEL_GRPC_EXPORTER_ENDPOINT
+        value: otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317
+      - name: K6_OTEL_GRPC_EXPORTER_INSECURE
+        value: "true"
+      - name: K6_OTEL_EXPORT_INTERVAL
+        value: 5s
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+  starter:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+
