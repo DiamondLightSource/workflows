@@ -18,6 +18,7 @@ use clap::Parser;
 use regex::Regex;
 use tokio::signal::unix::{SignalKind, signal};
 
+use anyhow::Context;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::{debug, info};
 use tracing_subscriber::EnvFilter;
@@ -40,20 +41,22 @@ static CRYPTO_PROVIDER: OnceLock<()> = OnceLock::new();
 async fn resolve_subject() -> anyhow::Result<SubjectIdentifier> {
     let workflow_name = std::env::var("ARGO_WORKFLOW_NAME")
         .map_err(|_| anyhow::anyhow!("ARGO_WORKFLOW_NAME not set"))?;
-    let namespace =
-        std::fs::read_to_string("/var/run/secrets/kubernetes.io/serviceaccount/namespace")?;
-    let namespace = namespace.trim();
     let namespace = std::env::var("MY_POD_NAMESPACE")
         .map_err(|_| anyhow::anyhow!("MY_POD_NAMESPACE not set"))?;
 
-    let client = Client::try_default().await?;
+    let client = Client::try_default()
+        .await
+        .context("failed to create Kubernetes client (check service account token mount)")?;
     let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "Workflow");
     let api = Api::<DynamicObject>::namespaced_with(
         client,
         &namespace,
         &ApiResource::from_gvk_with_plural(&gvk, "workflows"),
     );
-    let workflow = api.get(&workflow_name).await?;
+    let workflow = api
+        .get(&workflow_name)
+        .await
+        .with_context(|| format!("failed to get workflow {}/{}", namespace, workflow_name))?;
     let subject = workflow
         .metadata
         .labels
@@ -108,13 +111,20 @@ async fn main() -> Result<()> {
 
     match args {
         Cli::Serve(args) => {
-            let config = DaemonConfig::from_file(args.config)?;
+            let config = DaemonConfig::from_file(&args.config)
+                .map_err(|e| anyhow::anyhow!("failed to read config {}: {:?}", args.config, e))?;
             let requested_port = config.common.port;
             let subject = resolve_subject().await?;
-            let router_state = Arc::new(RouterState::new(config, &subject).await?);
+            let router_state = Arc::new(
+                RouterState::new(config, &subject)
+                    .await
+                    .map_err(|e| anyhow::anyhow!("failed to initialise router state: {:?}", e))?,
+            );
 
             let router = setup_router(router_state, None)?;
-            serve(router, IpAddr::V4(Ipv4Addr::UNSPECIFIED), requested_port).await?;
+            serve(router, IpAddr::V4(Ipv4Addr::UNSPECIFIED), requested_port)
+                .await
+                .with_context(|| format!("failed to bind/serve on port {}", requested_port))?;
         }
     }
 
