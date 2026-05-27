@@ -19,7 +19,7 @@ jobs:
         with:
           filters: |
             identity_mapper:
-              - 'backend/identity-mapper/'
+              - 'backend/identity-mapper/**'
 
   helm_lint:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
