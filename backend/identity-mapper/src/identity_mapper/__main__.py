@@ -4,7 +4,7 @@ import jsonpatch
 import kubernetes
 import ldap3
 
-_CRD_GROUP = "useridentities.workflows.internal.diamond.ac.uk"
+_CRD_GROUP = "workflows.internal.diamond.ac.uk"
 _CRD_VERSION = "v1"
 _CRD_PLURAL = "useridentities"
 _BASE_DN = "dc=diamond,dc=ac,dc=uk"
