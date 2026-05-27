@@ -16,17 +16,17 @@ spec:
       context:
         - name: posixUidString
           variable:
-            value: "{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}"
+            value: "{{`{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}`}}"
         
         - name: userProfile
           apiCall:
-            urlPath: "/apis/useridentity.workflows.internal.diamond.ac.uk/v1/useridentities/{{ posixUidString }}"
+            urlPath: "/apis/useridentity.workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
             jmesPath: "spec"
             
       mutate:
         patchStrategicMerge:
           spec:
             securityContext:
-              runAsUser: {{`{{ userProfile.uid }}`}}
-              runAsGroup: {{`{{ userProfile.gid }}`}}
-              supplementalGroups: {{`{{ userProfile.supplementalGroups }}`}}
+              runAsUser: "{{`{{ userProfile.uid }}`}}"
+              runAsGroup: "{{`{{ userProfile.gid }}`}}"
+              supplementalGroups: "{{`{{ userProfile.supplementalGroups }}`}}"
