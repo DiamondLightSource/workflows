@@ -8,13 +8,10 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "cachetools>=7.1.4",
-    "fastapi>=0.136.1",
     "kubernetes>=36.0.0",
     "ldap3>=2.9.1",
-    "pydantic-settings>=2.14.1",
     "structlog>=25.5.0",
-    "uvicorn>=0.47.0",
+    "jsonpatch>=1.33",
 ]
 
 [project.scripts]
@@ -26,8 +23,6 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
-    "jsonpatch>=1.33",
     "pytest>=9.0.3",
     "ruff>=0.15.13",
 ]
