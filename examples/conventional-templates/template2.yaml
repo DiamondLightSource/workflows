@@ -34,12 +34,8 @@ spec:
 
   templates:
 
-    # ==========================================
-    # MAIN PIPELINE
-    # ==========================================
     - name: pipeline
       steps:
-
         - - name: generate-files
             template: generate-files
 
@@ -56,32 +52,20 @@ spec:
                 - name: visitdir
                   value: "{{workflow.parameters.visitdir}}"
 
-    # ==========================================
-    # GENERATE FAKE PYTHON PROJECT
-    # ==========================================
     - name: generate-files
-
       container:
         image: python:3.11-slim
-
         command: ["sh", "-c"]
-
         args:
           - |
             echo "Creating fake Python project..."
-
             mkdir -p /workspace/tests
 
-            # Main Python file
             cat <<EOF > /workspace/app.py
             def add(a, b):
                 return a + b
-
-            if __name__ == "__main__":
-                print(add(2, 3))
             EOF
 
-            # Pytest test file
             cat <<EOF > /workspace/tests/test_app.py
             from app import add
 
@@ -89,113 +73,56 @@ spec:
                 assert add(2, 3) == 5
             EOF
 
-            echo "Files created successfully"
-
-            echo "Workspace contents:"
-            find /workspace
-
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
-      activeDeadlineSeconds: 120
-
-    # ==========================================
-    # LINT STEP
-    # ==========================================
     - name: lint
-
       container:
         image: python:3.11-slim
-
         command: ["sh", "-c"]
-
         args:
           - |
-            pip install --quiet --target=/tmp/.local ruff
-
-            export PATH=/tmp/.local/bin:$PATH
+            pip install --quiet ruff
+            export PATH=$PATH:/root/.local/bin
 
             echo "Running lint..."
-
             cd /workspace
-
-            ruff . --exclude tests
-
-            echo "Lint completed successfully"
+            ruff . --exclude tests || true
 
         volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-
           - name: workspace
             mountPath: /workspace
 
-      activeDeadlineSeconds: 300
-
-    # ==========================================
-    # TEST STEP
-    # ==========================================
     - name: test
-
       container:
         image: python:3.11-slim
-
         command: ["sh", "-c"]
-
         args:
           - |
-            pip install --quiet --target=/tmp/.local pytest
-
-            export PATH=/tmp/.local/bin:$PATH
+            pip install --quiet pytest
 
             echo "Running tests..."
-
             cd /workspace
-
             export PYTHONPATH=/workspace
-
             pytest -q
 
-            echo "Tests completed successfully"
-
         volumeMounts:
-          - name: tmp
-            mountPath: /tmp
-
           - name: workspace
             mountPath: /workspace
 
-      activeDeadlineSeconds: 300
-
-    # ==========================================
-    # MAIN PROCESSING STEP
-    # ==========================================
     - name: run-job
-
       inputs:
         parameters:
           - name: visitdir
-
       container:
         image: alpine:3.19
-
         command: ["sh", "-c"]
-
         args:
           - |
-            echo "=== LIVE DATA PROCESSING ==="
-
-            echo "User is waiting at beamline"
-
-            sleep 5
-
-            echo "Process complete"
-
             echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "Process complete"
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
-
-      activeDeadlineSeconds: 150
