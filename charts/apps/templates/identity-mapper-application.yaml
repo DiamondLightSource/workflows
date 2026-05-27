@@ -1,0 +1,34 @@
+{{- if .Values.identityMapper.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: identity-mapper
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  destination:
+    namespace: {{ .Values.identityMapper.namespace }}
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/identity-mapper
+    targetRevision: {{ .Values.identityMapper.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- if .Values.identityMapper.extraValueFiles }}
+        {{- .Values.identityMapper.extraValueFiles | toYaml | nindent 8 }}
+        {{- end }}
+      {{- if .Values.identityMapper.valuesObject }}
+      valuesObject:
+        {{- .Values.identityMapper.valuesObject | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+{{- end }}

@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: identity-mapper
+  namespace: kube-system
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: identity-mapper
+          restartPolicy: OnFailure
+          containers:
+            - name: identity-mapper
+              image: ghcr.io/diamondlightsource/workflows-identity-mapper:v0.1.0

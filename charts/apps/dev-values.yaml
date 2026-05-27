@@ -70,3 +70,9 @@ dashboard:
   targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
+
+identityMapper:
+  enabled: false
+  targetRevision: HEAD
+  extraValueFiles:
+    - dev-values.yaml

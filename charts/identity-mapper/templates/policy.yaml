@@ -1,0 +1,32 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mutate-argo-workflow-security-context
+spec:
+  background: false
+  rules:
+    - name: inject-posix-ids
+      match:
+        any:
+          - resources:
+              kinds:
+                - argoproj.io/v1alpha1/Workflow
+              operations:
+                - CREATE
+      context:
+        - name: posixUidString
+          variable:
+            value: "{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}"
+        
+        - name: userProfile
+          apiCall:
+            urlPath: "/apis/useridentity.workflows.internal.diamond.ac.uk/v1/useridentities/{{ posixUidString }}"
+            jmesPath: "spec"
+            
+      mutate:
+        patchStrategicMerge:
+          spec:
+            securityContext:
+              runAsUser: {{`{{ userProfile.uid }}`}}
+              runAsGroup: {{`{{ userProfile.gid }}`}}
+              supplementalGroups: {{`{{ userProfile.supplementalGroups }}`}}

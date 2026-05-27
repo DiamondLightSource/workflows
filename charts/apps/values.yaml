@@ -162,3 +162,7 @@ k6Operator:
   targetRevision: HEAD
   extraValueFiles: []
   valuesObject: {}
+
+identityMapper:
+  enabled: false
+  targetRevision: HEAD

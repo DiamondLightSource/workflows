@@ -1,0 +1,40 @@
+[project]
+name = "identity-mapper"
+version = "0.1.0"
+description = "Determines pod security context for Diamond Workflows"
+readme = "README.md"
+authors = [
+    { name = "David Hadley", email = "davehadley@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "cachetools>=7.1.4",
+    "fastapi>=0.136.1",
+    "kubernetes>=36.0.0",
+    "ldap3>=2.9.1",
+    "pydantic-settings>=2.14.1",
+    "structlog>=25.5.0",
+    "uvicorn>=0.47.0",
+]
+
+[project.scripts]
+identity-mapper = "identity_mapper:__main__._main"
+
+[build-system]
+requires = ["uv_build>=0.11.15,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "jsonpatch>=1.33",
+    "pytest>=9.0.3",
+    "ruff>=0.15.13",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["N806", "D203", "D213", "D106", "S104", "D101", "D103", "D102", "COM812"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "D103", "D100", "INP001"]
