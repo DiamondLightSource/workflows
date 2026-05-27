@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: identity-mapper
-  namespace: kube-system
+  namespace: identity-mapper
 spec:
   schedule: "*/30 * * * *"
   concurrencyPolicy: Forbid
