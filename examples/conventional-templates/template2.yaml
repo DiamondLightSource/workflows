@@ -7,7 +7,7 @@ metadata:
   annotations:
     workflows.diamond.ac.uk/owner: "science"
     workflows.argoproj.io/title: "python-hello"
-    workflows.argoproj.io/description: "Basic Python workflow example."
+    workflows.argoproj.io/description: "Basic Python workflow example with generated files."
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 
   labels:
@@ -20,7 +20,10 @@ spec:
   arguments:
     parameters:
       - name: visitdir
-        value: "/tmp/data"
+        valueFrom:
+          configMapKeyRef:
+            name: sessionspaces
+            key: data_directory
 
   volumes:
     - name: tmp
@@ -37,8 +40,8 @@ spec:
     - name: pipeline
       steps:
 
-        - - name: clone
-            template: git-clone
+        - - name: generate-files
+            template: generate-files
 
         - - name: lint
             template: lint
@@ -54,35 +57,54 @@ spec:
                   value: "{{workflow.parameters.visitdir}}"
 
     # ==========================================
-    # GIT CLONE STEP
+    # GENERATE FAKE PYTHON PROJECT
     # ==========================================
-    - name: git-clone
+    - name: generate-files
+
       container:
-        image: alpine/git:latest
+        image: python:3.11-slim
 
         command: ["sh", "-c"]
 
         args:
           - |
-            echo "Cloning repository..."
+            echo "Creating fake Python project..."
 
-            git clone https://github.com/DiamondLightSource/workflows.git /workspace
+            mkdir -p /workspace/tests
 
-            echo "Repository cloned successfully"
+            # Main Python file
+            cat <<EOF > /workspace/app.py
+            def add(a, b):
+                return a + b
+
+            if __name__ == "__main__":
+                print(add(2, 3))
+            EOF
+
+            # Pytest test file
+            cat <<EOF > /workspace/tests/test_app.py
+            from app import add
+
+            def test_add():
+                assert add(2, 3) == 5
+            EOF
+
+            echo "Files created successfully"
 
             echo "Workspace contents:"
-            ls -la /workspace
+            find /workspace
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
-      activeDeadlineSeconds: 300
+      activeDeadlineSeconds: 120
 
     # ==========================================
     # LINT STEP
     # ==========================================
     - name: lint
+
       container:
         image: python:3.11-slim
 
@@ -95,9 +117,12 @@ spec:
             export PATH=/tmp/.local/bin:$PATH
 
             echo "Running lint..."
+
             cd /workspace
 
             ruff . --exclude tests
+
+            echo "Lint completed successfully"
 
         volumeMounts:
           - name: tmp
@@ -112,6 +137,7 @@ spec:
     # TEST STEP
     # ==========================================
     - name: test
+
       container:
         image: python:3.11-slim
 
@@ -124,9 +150,14 @@ spec:
             export PATH=/tmp/.local/bin:$PATH
 
             echo "Running tests..."
+
             cd /workspace
 
-            pytest -q || true
+            export PYTHONPATH=/workspace
+
+            pytest -q
+
+            echo "Tests completed successfully"
 
         volumeMounts:
           - name: tmp
@@ -135,7 +166,7 @@ spec:
           - name: workspace
             mountPath: /workspace
 
-      activeDeadlineSeconds: 500
+      activeDeadlineSeconds: 300
 
     # ==========================================
     # MAIN PROCESSING STEP
