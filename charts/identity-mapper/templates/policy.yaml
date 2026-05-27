@@ -20,7 +20,7 @@ spec:
         
         - name: userProfile
           apiCall:
-            urlPath: "/apis/useridentity.workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
+            urlPath: "/apis/useridentities.workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
             jmesPath: "spec"
             
       mutate:

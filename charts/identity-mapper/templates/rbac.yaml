@@ -23,7 +23,7 @@ metadata:
   name: kyverno:manage-user-identities
 rules:
 - apiGroups:
-    - "/apis/useridentity.workflows.internal.diamond.ac.uk"
+    - "/apis/useridentities.workflows.internal.diamond.ac.uk"
   resources:
     - useridentities
   verbs:
