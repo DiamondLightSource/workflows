@@ -13,6 +13,7 @@ metadata:
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
     workflows.diamond.ac.uk/category: "science"
+    workflows.diamond.ac.uk/type: "live" 
 
 spec:
   entrypoint: pipeline
