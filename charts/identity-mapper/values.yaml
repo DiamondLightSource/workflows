@@ -2,4 +2,4 @@ image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-identity-mapper
   tag: latest
-  digest: "sha256:e7c6b2de242ae8500c71875d2c34afdf2d78b987b81d3548ab37f5a4ec9691a2"
+  digest: "sha256:661952deba7632e616ccfe648b843a33071d4a9346d637ee35509eba5bc5648e"
