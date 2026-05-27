@@ -46,7 +46,6 @@ jobs:
         uses: docker/build-push-action@v6.18.0
         with:
           context: backend/identity-mapper
-          target: deploy
           push: ${{ github.event_name == 'push' }}
           load: false
           tags: ${{ steps.meta.outputs.tags }}
