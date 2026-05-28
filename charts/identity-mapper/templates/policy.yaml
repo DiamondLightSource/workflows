@@ -1,4 +1,5 @@
 {{- if .Values.policy.enable }}
+
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -6,8 +7,7 @@ metadata:
 spec:
   background: false
   rules:
-
-    - name: inject-posix-ids-workflow-level
+    - name: inject-posix-ids
       match:
         any:
           - resources:
@@ -15,14 +15,17 @@ spec:
                 - argoproj.io/v1alpha1/Workflow
               operations:
                 - CREATE
+
       context:
         - name: posixUidString
           variable:
             value: "{{`{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}`}}"
+
         - name: userProfile
           apiCall:
             urlPath: "/apis/workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
             jmesPath: "spec"
+
       mutate:
         patchStrategicMerge:
           spec:
@@ -31,25 +34,7 @@ spec:
               runAsGroup: "{{`{{ userProfile.gid }}`}}"
               supplementalGroups: "{{`{{ userProfile.supplementalGroups }}`}}"
 
-    - name: inject-posix-ids-into-templates
-      match:
-        any:
-          - resources:
-              kinds:
-                - argoproj.io/v1alpha1/Workflow
-              operations:
-                - CREATE
-      context:
-        - name: posixUidString
-          variable:
-            value: "{{`{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}`}}"
-        - name: userProfile
-          apiCall:
-            urlPath: "/apis/workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
-            jmesPath: "spec"
-      mutate:
         foreach:
-          # container template: spec.templates[].container.securityContext
           - list: "request.object.spec.templates[?container]"
             patchStrategicMerge:
               spec:
@@ -60,7 +45,6 @@ spec:
                         runAsUser: "{{`{{ userProfile.uid }}`}}"
                         runAsGroup: "{{`{{ userProfile.gid }}`}}"
 
-          # script template: spec.templates[].script.securityContext
           - list: "request.object.spec.templates[?script]"
             patchStrategicMerge:
               spec:
@@ -71,7 +55,6 @@ spec:
                         runAsUser: "{{`{{ userProfile.uid }}`}}"
                         runAsGroup: "{{`{{ userProfile.gid }}`}}"
 
-          # initContainers: spec.templates[].initContainers[].securityContext
           - list: "request.object.spec.templates[?initContainers]"
             patchStrategicMerge:
               spec:
@@ -83,7 +66,6 @@ spec:
                           runAsUser: "{{`{{ userProfile.uid }}`}}"
                           runAsGroup: "{{`{{ userProfile.gid }}`}}"
 
-          # sidecars: spec.templates[].sidecars[].securityContext
           - list: "request.object.spec.templates[?sidecars]"
             patchStrategicMerge:
               spec:
@@ -95,7 +77,6 @@ spec:
                           runAsUser: "{{`{{ userProfile.uid }}`}}"
                           runAsGroup: "{{`{{ userProfile.gid }}`}}"
 
-          # containerSet.containers: spec.templates[].containerSet.containers[].securityContext
           - list: "request.object.spec.templates[?containerSet && containerSet.containers]"
             patchStrategicMerge:
               spec:
