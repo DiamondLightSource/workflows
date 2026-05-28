@@ -18,6 +18,14 @@ argo-events:
 #     serviceAccount:
 #       name: argo-events-webhook-sa
 
+argoevents:
+  controller:
+    resources:
+      requests:
+        memory: 4Gi
+      limits:
+        memory: 16Gi
+
 eventBuses:
   - name: default
     namespace: events
