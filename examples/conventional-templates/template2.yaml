@@ -13,7 +13,7 @@ metadata:
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
     workflows.diamond.ac.uk/category: "science"
-    workflows.diamond.ac.uk/type: "live" 
+    workflows.diamond.ac.uk/type: "live"
 
 spec:
   entrypoint: pipeline
@@ -26,12 +26,23 @@ spec:
             name: sessionspaces
             key: data_directory
 
-  volumes:
-    - name: tmp
-      emptyDir: {}
+  # Dynamically create PVCs for the workflow
+  volumeClaimTemplates:
+    - metadata:
+        name: workspace
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
 
-    - name: workspace
-      emptyDir: {}
+    - metadata:
+        name: tmp
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
 
   templates:
 
@@ -78,6 +89,9 @@ spec:
           - name: workspace
             mountPath: /workspace
 
+          - name: tmp
+            mountPath: /tmp
+
     - name: lint
       container:
         image: python:3.11-slim
@@ -94,6 +108,9 @@ spec:
         volumeMounts:
           - name: workspace
             mountPath: /workspace
+
+          - name: tmp
+            mountPath: /tmp
 
     - name: test
       container:
@@ -112,10 +129,14 @@ spec:
           - name: workspace
             mountPath: /workspace
 
+          - name: tmp
+            mountPath: /tmp
+
     - name: run-job
       inputs:
         parameters:
           - name: visitdir
+
       container:
         image: alpine:3.19
         command: ["sh", "-c"]
@@ -127,3 +148,6 @@ spec:
         volumeMounts:
           - name: workspace
             mountPath: /workspace
+
+          - name: tmp
+            mountPath: /tmp
