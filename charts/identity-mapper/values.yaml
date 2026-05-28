@@ -5,4 +5,4 @@ image:
   digest: "sha256:a73b61f43cad4e5e45a3aba48458e603dc7fefc16e19a2262ed518a8bfb98311"
 
 policy:
-  enable: false
+  enable: true
