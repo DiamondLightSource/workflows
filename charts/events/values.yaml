@@ -1,22 +1,22 @@
 argo-events:
   enabled: true
-  controller:
-    replicas: 1
-    pdb:
-      minAvailable: 1
-    serviceAccount:
-      name: argo-events-sa
-    volumeMounts:
-      - name: controller-config-volume
-        mountPath: /etc/argo-events
-    volumes:
-      - name: controller-config-volume
-        configMap:
-          name: argo-events-controller-config
-  webhook:
-    enabled: true
-    serviceAccount:
-      name: argo-events-webhook-sa
+#   controller:
+#     replicas: 1
+#     pdb:
+#       minAvailable: 1
+#     serviceAccount:
+#       name: argo-events-sa
+#     volumeMounts:
+#       - name: controller-config-volume
+#         mountPath: /etc/argo-events
+#     volumes:
+#       - name: controller-config-volume
+#         configMap:
+#           name: argo-events-controller-config
+#   webhook:
+#     enabled: true
+#     serviceAccount:
+#       name: argo-events-webhook-sa
 
 eventBuses:
   - name: default
