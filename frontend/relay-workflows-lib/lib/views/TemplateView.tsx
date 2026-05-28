@@ -5,7 +5,7 @@ import { Box } from "@mui/material";
 import { SubmissionData, Visit } from "workflows-lib";
 import { visitToText } from "@diamondlightsource/sci-react-ui";
 import SubmissionForm from "../components/SubmissionForm";
-import SubmittedMessagesList from "workflows-lib/lib/components/workflow/SubmittedMessagesList";
+import SubmittedMessagesList from "../components/SubmittedMessagesList";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 import { TemplateViewMutation } from "./__generated__/TemplateViewMutation.graphql";
 import { TemplateViewQuery as TemplateViewQueryType } from "./__generated__/TemplateViewQuery.graphql";
