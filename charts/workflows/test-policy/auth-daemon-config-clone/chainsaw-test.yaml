@@ -1,0 +1,137 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: auth-daemon-config-clone
+spec:
+  concurrent: false
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: workflows
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: workflows
+              data:
+                config.yaml: Y29uZmlnOiB2YWx1ZQ==
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: auth-daemon-session
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: auth-daemon-session
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: auth-daemon-config-clone-via-cronjob
+spec:
+  concurrent: false
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: workflows
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: workflows
+              type: Opaque
+              data:
+                config.yaml: Y29uZmlnOiB2YWx1ZQ==
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: auth-daemon-session-cronjob
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+        # kyverno generating policy should create the initial secret
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: auth-daemon-session-cronjob
+              data:
+                config.yaml: Y29uZmlnOiB2YWx1ZQ==
+        # update the secret
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: workflows
+              data:
+                config.yaml: dXBkYXRlZC1jb25maWc=
+        # confirm that the kyverno policy does not sync the updated secret
+        - sleep:
+            duration: 5s
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: auth-daemon-session-cronjob
+              data:
+                config.yaml: Y29uZmlnOiB2YWx1ZQ==
+        # apply the CronJob and associated RBAC
+        - apply:
+            file: ../../templates/synchronize-auth-daemon-config.yaml
+        - assert:
+            resource:
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: copy-auth-daemon-config
+                namespace: workflows
+        # run job and wait for it to complete
+        - script:
+            content: |
+              kubectl -n workflows create job --from=cronjob/copy-auth-daemon-config copy-auth-daemon-config-manual
+        - wait:
+            apiVersion: batch/v1
+            kind: Job
+            namespace: workflows
+            name: copy-auth-daemon-config-manual
+            timeout: 2m
+            for:
+              condition:
+                name: Complete
+                value: "True"
+        # confirm that the Secret has been updated
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: auth-daemon-config
+                namespace: auth-daemon-session-cronjob
+              data:
+                config.yaml: dXBkYXRlZC1jb25maWc=
