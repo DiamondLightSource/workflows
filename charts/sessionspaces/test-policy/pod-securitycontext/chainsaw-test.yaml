@@ -3,6 +3,13 @@ kind: Test
 metadata:
   name: pod-securitycontext
 spec:
+  timeouts:
+    apply: 45s
+    assert: 30s
+    cleanup: 2m
+    delete: 1m
+    error: 30s
+    exec: 15s
   namespaceTemplate:
     metadata:
       labels:
