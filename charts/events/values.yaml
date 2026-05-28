@@ -25,6 +25,9 @@ argoevents:
         memory: 4Gi
       limits:
         memory: 16Gi
+    containerSecurityContext:
+      runAsUser: 36055
+      runAsGroup: 36055
 
 eventBuses:
   - name: default
