@@ -1,5 +1,4 @@
 {{- if .Values.policy.enable }}
-
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -15,17 +14,16 @@ spec:
                 - argoproj.io/v1alpha1/Workflow
               operations:
                 - CREATE
-
       context:
         - name: posixUidString
           variable:
             value: "{{`{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}`}}"
-
+        
         - name: userProfile
           apiCall:
             urlPath: "/apis/workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
             jmesPath: "spec"
-
+            
       mutate:
         patchStrategicMerge:
           spec:
@@ -33,59 +31,4 @@ spec:
               runAsUser: "{{`{{ userProfile.uid }}`}}"
               runAsGroup: "{{`{{ userProfile.gid }}`}}"
               supplementalGroups: "{{`{{ userProfile.supplementalGroups }}`}}"
-
-        foreach:
-          - list: "request.object.spec.templates[?container]"
-            patchStrategicMerge:
-              spec:
-                templates:
-                  - (name): "{{`{{ element.name }}`}}"
-                    container:
-                      securityContext:
-                        runAsUser: "{{`{{ userProfile.uid }}`}}"
-                        runAsGroup: "{{`{{ userProfile.gid }}`}}"
-
-          - list: "request.object.spec.templates[?script]"
-            patchStrategicMerge:
-              spec:
-                templates:
-                  - (name): "{{`{{ element.name }}`}}"
-                    script:
-                      securityContext:
-                        runAsUser: "{{`{{ userProfile.uid }}`}}"
-                        runAsGroup: "{{`{{ userProfile.gid }}`}}"
-
-          - list: "request.object.spec.templates[?initContainers]"
-            patchStrategicMerge:
-              spec:
-                templates:
-                  - (name): "{{`{{ element.name }}`}}"
-                    initContainers:
-                      - (name): "*"
-                        securityContext:
-                          runAsUser: "{{`{{ userProfile.uid }}`}}"
-                          runAsGroup: "{{`{{ userProfile.gid }}`}}"
-
-          - list: "request.object.spec.templates[?sidecars]"
-            patchStrategicMerge:
-              spec:
-                templates:
-                  - (name): "{{`{{ element.name }}`}}"
-                    sidecars:
-                      - (name): "*"
-                        securityContext:
-                          runAsUser: "{{`{{ userProfile.uid }}`}}"
-                          runAsGroup: "{{`{{ userProfile.gid }}`}}"
-
-          - list: "request.object.spec.templates[?containerSet && containerSet.containers]"
-            patchStrategicMerge:
-              spec:
-                templates:
-                  - (name): "{{`{{ element.name }}`}}"
-                    containerSet:
-                      containers:
-                        - (name): "*"
-                          securityContext:
-                            runAsUser: "{{`{{ userProfile.uid }}`}}"
-                            runAsGroup: "{{`{{ userProfile.gid }}`}}"
 {{- end }}
