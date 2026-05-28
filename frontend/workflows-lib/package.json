@@ -32,14 +32,14 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.2",
-    "@storybook/addon-links": "^10.4.1",
-    "@storybook/builder-vite": "^10.4.1",
-    "@storybook/react-vite": "^10.4.1",
+    "@storybook/addon-links": "^10.3.5",
+    "@storybook/builder-vite": "^10.3.5",
+    "@storybook/react-vite": "^10.3.5",
     "@types/jest": "^30.0.0",
     "@types/react-resizable": "^3.0.8",
     "react-resizable": "^3.0.5",
-    "storybook": "^10.4.1",
-    "@storybook/addon-docs": "^10.4.1"
+    "storybook": "^10.3.5",
+    "@storybook/addon-docs": "^10.3.5"
   },
   "eslintConfig": {
     "extends": [
