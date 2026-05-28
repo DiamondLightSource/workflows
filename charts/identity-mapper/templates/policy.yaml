@@ -1,3 +1,4 @@
+{{- if .Values.policy.enable }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -30,3 +31,4 @@ spec:
               runAsUser: "{{`{{ userProfile.uid }}`}}"
               runAsGroup: "{{`{{ userProfile.gid }}`}}"
               supplementalGroups: "{{`{{ userProfile.supplementalGroups }}`}}"
+{{- end }}
