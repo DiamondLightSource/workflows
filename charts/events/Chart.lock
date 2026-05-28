@@ -1,9 +1,9 @@
 dependencies:
 - name: argo-events
   repository: https://argoproj.github.io/argo-helm
-  version: 2.4.9
+  version: 2.4.21
 - name: metacontroller-helm
   repository: oci://ghcr.io/metacontroller
   version: 4.15.0
-digest: sha256:cce917621c4901d4b789c0610b11ae33dfb2d5b20483671a755871ed569b3e6d
-generated: "2026-04-28T14:20:52.776857429+01:00"
+digest: sha256:e0a1f31c3d1357b5a75469076566ae510c0a5952b18f99c0e3666983d68c9644
+generated: "2026-05-28T08:52:28.707844786+01:00"
