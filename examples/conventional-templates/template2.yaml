@@ -2,37 +2,128 @@ apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 
 metadata:
-  name: basic-runner
+  name: python-hello
 
   annotations:
     workflows.diamond.ac.uk/owner: "science"
-    workflows.argoproj.io/title: "basic-runner"
-    workflows.argoproj.io/description: "Very basic workflow with one run step."
+    workflows.argoproj.io/title: "python-hello"
+    workflows.argoproj.io/description: "Basic Python workflow example with generated files."
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 
   labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
     workflows.diamond.ac.uk/category: "science"
-    workflows.diamond.ac.uk/type: "live"
+    workflows.diamond.ac.uk/type: "live" 
 
 spec:
-  entrypoint: run
+  entrypoint: pipeline
+
+  arguments:
+    parameters:
+      - name: visitdir
+        valueFrom:
+          configMapKeyRef:
+            name: sessionspaces
+            key: data_directory
+
+  volumes:
+    - name: tmp
+      emptyDir: {}
+
+    - name: workspace
+      emptyDir: {}
 
   templates:
 
-    - name: run
+    - name: pipeline
+      steps:
+        - - name: generate-files
+            template: generate-files
+
+        - - name: lint
+            template: lint
+
+        - - name: test
+            template: test
+
+        - - name: run
+            template: run-job
+            arguments:
+              parameters:
+                - name: visitdir
+                  value: "{{workflow.parameters.visitdir}}"
+
+    - name: generate-files
       container:
-        image: alpine:3.19
-
+        image: python:3.11-slim
         command: ["sh", "-c"]
-
         args:
           - |
-            set -e
+            echo "Creating fake Python project..."
+            mkdir -p /workspace/tests
 
-            echo "Starting workflow..."
+            cat <<EOF > /workspace/app.py
+            def add(a, b):
+                return a + b
+            EOF
 
-            for i in $(seq 1 20); do
-              echo "[$i/20] Workflow running at $(date)"
-              sleep 3
-            done
+            cat <<EOF > /workspace/tests/test_app.py
+            from app import add
 
-            echo "Workflow complete"
+            def test_add():
+                assert add(2, 3) == 5
+            EOF
+
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: lint
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet ruff
+            export PATH=$PATH:/root/.local/bin
+
+            echo "Running lint..."
+            cd /workspace
+            ruff . --exclude tests || true
+
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: test
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet pytest
+
+            echo "Running tests..."
+            cd /workspace
+            export PYTHONPATH=/workspace
+            pytest -q
+
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: run-job
+      inputs:
+        parameters:
+          - name: visitdir
+      container:
+        image: alpine:3.19
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "Process complete"
+
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
