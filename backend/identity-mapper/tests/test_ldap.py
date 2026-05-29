@@ -1,6 +1,6 @@
 from ldap3 import MOCK_SYNC, Connection, Server
 
-from identity_mapper.__main__ import lookup_identities_in_ldap
+from identity_mapper._lookup_identities_in_ldap import lookup_identities_in_ldap
 
 
 def _mock_ldap_connection() -> Connection:

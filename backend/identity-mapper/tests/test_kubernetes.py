@@ -2,15 +2,13 @@ from unittest.mock import Mock
 
 import kubernetes.client
 
-from identity_mapper.__main__ import (
-    _CRD_GROUP,
-    _CRD_PLURAL,
-    _CRD_VERSION,
+from identity_mapper._identity import IdentityCrd
+from identity_mapper._lookup_identities_in_kubernetes import (
     lookup_identities_in_kubernetes,
 )
 
 
-def test_lookup_identities_in_kubernetes():
+def test_lookup_identities_in_kubernetes() -> None:
     mock_kubectl = Mock(spec=kubernetes.client.CustomObjectsApi)
     mock_kubectl.list_cluster_custom_object.return_value = {
         "items": [
@@ -53,7 +51,7 @@ def test_lookup_identities_in_kubernetes():
 
     # Optional: verify API was called correctly
     mock_kubectl.list_cluster_custom_object.assert_called_once_with(
-        group=_CRD_GROUP,
-        version=_CRD_VERSION,
-        plural=_CRD_PLURAL,
+        group=IdentityCrd.GROUP,
+        version=IdentityCrd.VERSION,
+        plural=IdentityCrd.PLURAL,
     )
