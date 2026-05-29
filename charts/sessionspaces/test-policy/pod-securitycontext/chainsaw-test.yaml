@@ -3,6 +3,7 @@ kind: Test
 metadata:
   name: pod-securitycontext
 spec:
+  concurrent: false
   namespaceTemplate:
     metadata:
       labels:
@@ -87,6 +88,67 @@ spec:
                       runAsUser: 4321
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
+      finally:
+        # explicitly delete to avoid cleanup context deadline exceeded errors in CI
+        - delete:
+            ref:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              name: test-workflow
+        - wait:
+            apiVersion: argoproj.io/v1alpha1
+            kind: Workflow
+            name: test-workflow
+            timeout: 2m
+            for:
+              deletion: {}
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-securitycontext-mpi-jobs
+spec:
+  concurrent: false
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: sessionspaces
+                labels:
+                  app.kubernetes.io/managed-by: sessionspaces
+              data:
+                data_directory: "/allowed/path"
+                gid: "1234"
+        - create:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "4321"
+              spec: {}
+        - command:
+            env:
+              - name: namespace
+                value: ($namespace)
+            entrypoint: kubectl
+            args:
+              - get
+              - workflow
+              - test-workflow
+              - --namespace=$namespace
+              - --output=jsonpath={.metadata.uid}
+            outputs:
+              - name: workflow_uid
+                value: ($stdout)
         - create:
             resource:
               apiVersion: kubeflow.org/v2beta1
@@ -214,3 +276,29 @@ spec:
                       runAsUser: 4321
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
+      finally:
+        # explicitly delete to avoid cleanup context deadline exceeded errors in CI
+        - delete:
+            ref:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              name: test-mpijob
+        - wait:
+            apiVersion: kubeflow.org/v2beta1
+            kind: MPIJob
+            name: test-mpijob
+            timeout: 2m
+            for:
+              deletion: {}
+        - delete:
+            ref:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              name: test-workflow
+        - wait:
+            apiVersion: argoproj.io/v1alpha1
+            kind: Workflow
+            name: test-workflow
+            timeout: 2m
+            for:
+              deletion: {}
