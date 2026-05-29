@@ -2,7 +2,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: mutate-argo-workflow-security-context
+  name: {{ include "common.names.fullname" $ }}-mutate-argo-workflow-security-context
 spec:
   background: false
   rules:
@@ -31,4 +31,50 @@ spec:
               runAsUser: "{{`{{ userProfile.uid }}`}}"
               runAsGroup: "{{`{{ userProfile.gid }}`}}"
               supplementalGroups: "{{`{{ userProfile.supplementalGroups }}`}}"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ include "common.names.fullname" $ }}-pod-security-context
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  background: false
+  validationFailureAction: Enforce
+  schemaValidation: false
+  rules:
+    - name: pod-securitycontext
+      match:
+        resources:
+          kinds:
+            - Pod
+          operations:
+            - CREATE
+          namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/managed-by: sessionspaces
+      mutate:
+        patchStrategicMerge:
+          spec:
+            containers:
+              - (name): "*"
+                securityContext:
+                  runAsGroup: "{{ `{{request.object.spec.securityContext.runAsGroup}}` }}"
+                  runAsUser: "{{ `{{request.object.spec.securityContext.runAsUser}}` }}"
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
+            initContainers:
+              - (name): "*"
+                securityContext:
+                  runAsGroup: "{{ `{{request.object.spec.securityContext.runAsGroup}}` }}"
+                  runAsUser: "{{ `{{request.object.spec.securityContext.runAsUser}}` }}"
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
+            ephemeralContainers:
+              - (name): "*"
+                securityContext:
+                  runAsGroup: "{{ `{{request.object.spec.securityContext.runAsGroup}}` }}"
+                  runAsUser: "{{ `{{request.object.spec.securityContext.runAsUser}}` }}"
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
 {{- end }}
