@@ -51,7 +51,7 @@ jobs:
 
       - name: Install mpi-operator CRDs
         run: |
-          kubectl apply --server-side -f https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.7.0/deploy/v2beta1/mpi-operator.yaml
+          curl -sL https://raw.githubusercontent.com/kubeflow/mpi-operator/v0.7.0/deploy/v2beta1/mpi-operator.yaml | yq e 'select(.kind == "CustomResourceDefinition")' | kubectl apply --server-side -f -
 
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
