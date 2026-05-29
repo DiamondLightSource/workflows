@@ -1,129 +1,81 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
-
 metadata:
-  name: python-hello
-
-  annotations:
-    workflows.diamond.ac.uk/owner: "science"
-    workflows.argoproj.io/title: "python-hello"
-    workflows.argoproj.io/description: "Basic Python workflow example with generated files."
-    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-
+  name: conditional-steps
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
-    workflows.diamond.ac.uk/category: "science"
-    workflows.diamond.ac.uk/type: "live" 
-
+  annotations:
+    workflows.argoproj.io/title: conditional-steps
+    workflows.argoproj.io/description: |
+      Run steps based on conditions from previous outputs.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 spec:
-  entrypoint: pipeline
-
-  arguments:
-    parameters:
-      - name: visitdir
-        valueFrom:
-          configMapKeyRef:
-            name: sessionspaces
-            key: data_directory
-
-  volumes:
-    - name: tmp
-      emptyDir: {}
-
-    - name: workspace
-      emptyDir: {}
+  entrypoint: workflow-entry
 
   templates:
+  - name: pick-a-number
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        import random
+        print(random.randint(1,11))
 
-    - name: pipeline
-      steps:
-        - - name: generate-files
-            template: generate-files
+  - name: greater-than-five
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This runs when the value is greater than 5")
 
-        - - name: lint
-            template: lint
+  - name: less-than-five
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This runs when the value is less than or equal to 5")
 
-        - - name: test
-            template: test
+  - name: even
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This runs when the value is even")
 
-        - - name: run
-            template: run-job
-            arguments:
-              parameters:
-                - name: visitdir
-                  value: "{{workflow.parameters.visitdir}}"
+  - name: complex
+    script:
+      image: python:3.10
+      command: [python]
+      source: |
+        print("This is more complex")
 
-    - name: generate-files
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            echo "Creating fake Python project..."
-            mkdir -p /workspace/tests
+  - name: workflow-entry
+    dag:
+      tasks:
+      - name: pick-a-number
+        template: pick-a-number
 
-            cat <<EOF > /workspace/app.py
-            def add(a, b):
-                return a + b
-            EOF
+      - name: greater-than-5
+        template: greater-than-five
+        dependencies: [pick-a-number]
+        when: "{{tasks.pick-a-number.outputs.result}} > 5"
 
-            cat <<EOF > /workspace/tests/test_app.py
-            from app import add
+      - name: less-than-5
+        template: less-than-five
+        dependencies: [pick-a-number]
+        when: "{{tasks.pick-a-number.outputs.result}} <= 5"
 
-            def test_add():
-                assert add(2, 3) == 5
-            EOF
+      - name: even
+        template: even
+        dependencies: [pick-a-number]
+        when: "{{tasks.pick-a-number.outputs.result}} % 2 == 0"
 
-        volumeMounts:
-          - name: workspace
-            mountPath: /workspace
-
-    - name: lint
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            pip install --quiet ruff
-            export PATH=$PATH:/root/.local/bin
-
-            echo "Running lint..."
-            cd /workspace
-            ruff . --exclude tests || true
-
-        volumeMounts:
-          - name: workspace
-            mountPath: /workspace
-
-    - name: test
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            pip install --quiet pytest
-
-            echo "Running tests..."
-            cd /workspace
-            export PYTHONPATH=/workspace
-            pytest -q
-
-        volumeMounts:
-          - name: workspace
-            mountPath: /workspace
-
-    - name: run-job
-      inputs:
-        parameters:
-          - name: visitdir
-      container:
-        image: alpine:3.19
-        command: ["sh", "-c"]
-        args:
-          - |
-            echo "VisitDir = {{inputs.parameters.visitdir}}"
-            echo "Process complete"
-
-        volumeMounts:
-          - name: workspace
-            mountPath: /workspace
+      - name: complex-condition
+        template: complex
+        dependencies: [pick-a-number]
+        when: >-
+          ( {{tasks.pick-a-number.outputs.result}} < 4 &&
+            {{tasks.pick-a-number.outputs.result}} > 1
+          ) ||
+          ( {{tasks.pick-a-number.outputs.result}} < 9 &&
+            {{tasks.pick-a-number.outputs.result}} > 6 )
