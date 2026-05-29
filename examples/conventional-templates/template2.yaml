@@ -27,24 +27,17 @@ spec:
             key: data_directory
 
   volumes:
-    - name: workspace
+    - name: tmp
       emptyDir: {}
 
-    - name: tmp
+    - name: workspace
       emptyDir: {}
 
   templates:
 
     - name: pipeline
-      steps:
-        - - name: generate-files
-            template: generate-files
-
         - - name: lint
             template: lint
-
-        - - name: test
-            template: test
 
         - - name: run
             template: run-job
@@ -53,97 +46,34 @@ spec:
                 - name: visitdir
                   value: "{{workflow.parameters.visitdir}}"
 
-    # -------------------------
-    # GENERATE FILES
-    # -------------------------
-    - name: generate-files
-      container:
-        image: python:3.11-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            set -e
 
-            echo "Creating project..."
-
-            mkdir -p /workspace/tests
-
-            cat <<EOF > /workspace/app.py
-            def add(a, b):
-                return a + b
-            EOF
-
-            cat <<EOF > /workspace/tests/test_app.py
-            from app import add
-
-            def test_add():
-                assert add(2, 3) == 5
-            EOF
-
-            echo "Generated files:"
-            find /workspace
-
-        volumeMounts:
-          - name: workspace
-            mountPath: /workspace
-          - name: tmp
-            mountPath: /tmp
-
-    # -------------------------
-    # LINT 
-    # -------------------------
     - name: lint
       container:
         image: python:3.11-slim
 
+        env:
+          - name: TMPDIR
+            value: /tmp
+          - name: PIP_TARGET
+            value: /tmp/pip
+          - name: PYTHONPATH
+            value: /tmp/pip
+
         command: ["sh", "-c"]
 
         args:
           - |
             set -e
 
-            echo "Checking workspace before lint..."
-            find /workspace
+            mkdir -p /tmp/pip
 
             echo "Installing ruff..."
-            python -m pip install --no-cache-dir ruff
+            python -m pip install --no-cache-dir -t /tmp/pip ruff
 
-            echo "Running ruff..."
-            if find /workspace -name "*.py" | grep -q .; then
-              python -m ruff check /workspace --exclude tests || true
-            else
-              echo "No Python files found under /workspace"
-            fi
-
-        volumeMounts:
-          - name: workspace
-            mountPath: /workspace
-          - name: tmp
-            mountPath: /tmp
-
-    # -------------------------
-    # TEST 
-    # -------------------------
-    - name: test
-      container:
-        image: python:3.11-slim
-
-        command: ["sh", "-c"]
-
-        args:
-          - |
-            set -e
-
-            echo "Installing pytest..."
-            python -m pip install --no-cache-dir pytest
-
-            echo "Workspace contents:"
-            find /workspace
-
-            echo "Running tests..."
+            echo "Running lint..."
             cd /workspace
 
-            PYTHONPATH=/workspace python -m pytest /workspace/tests -q
+            /tmp/pip/bin/ruff check . --exclude tests || true
 
         volumeMounts:
           - name: workspace
@@ -151,9 +81,7 @@ spec:
           - name: tmp
             mountPath: /tmp
 
-    # -------------------------
-    # LONG RUN STEP
-    # -------------------------
+
     - name: run-job
       inputs:
         parameters:
@@ -167,10 +95,10 @@ spec:
             set -e
 
             echo "VisitDir = {{inputs.parameters.visitdir}}"
-            echo "Starting long-running loop..."
+            echo "Starting long-running test loop..."
 
             for i in $(seq 1 20); do
-              echo "[$i/20] running at $(date)"
+              echo "[$i/20] Workflow still running at $(date)"
               sleep 3
             done
 
