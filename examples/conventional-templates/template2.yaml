@@ -56,9 +56,13 @@ spec:
     - name: generate-files
       container:
         image: python:3.11-slim
+
         command: ["sh", "-c"]
+
         args:
           - |
+            set -e
+
             echo "Creating fake Python project..."
 
             mkdir -p /workspace/tests
@@ -93,14 +97,22 @@ spec:
           - name: TMPDIR
             value: /tmp
 
+          - name: PIP_TARGET
+            value: /tmp/pip
+
+          - name: PYTHONPATH
+            value: /tmp/pip
+
         command: ["sh", "-c"]
 
         args:
           - |
             set -e
 
+            mkdir -p /tmp/pip
+
             echo "Installing ruff..."
-            python -m pip install --no-cache-dir ruff
+            python -m pip install --no-cache-dir -t /tmp/pip ruff
 
             echo "Running lint..."
             cd /workspace
@@ -122,19 +134,27 @@ spec:
           - name: TMPDIR
             value: /tmp
 
+          - name: PIP_TARGET
+            value: /tmp/pip
+
+          - name: PYTHONPATH
+            value: /tmp/pip
+
         command: ["sh", "-c"]
 
         args:
           - |
             set -e
 
+            mkdir -p /tmp/pip
+
             echo "Installing pytest..."
-            python -m pip install --no-cache-dir pytest
+            python -m pip install --no-cache-dir -t /tmp/pip pytest
 
             echo "Running tests..."
             cd /workspace
 
-            export PYTHONPATH=/workspace
+            export PYTHONPATH=/workspace:/tmp/pip
 
             pytest -q
 
@@ -157,7 +177,16 @@ spec:
 
         args:
           - |
+            set -e
+
             echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "Starting long-running test loop..."
+
+            for i in $(seq 1 20); do
+              echo "[$i/20] Workflow still running at $(date)"
+              sleep 3
+            done
+
             echo "Process complete"
 
         volumeMounts:
