@@ -7,32 +7,32 @@ roleRef:
   kind: ClusterRole
   name: kyverno:manage-user-identities
 subjects:
-- kind: ServiceAccount
-  name: kyverno-background-controller
-  namespace: kyverno
-- kind: ServiceAccount
-  name: kyverno-admission-controller
-  namespace: kyverno
-- kind: ServiceAccount
-  name: identity-mapper
-  namespace: identity-mapper
+  - kind: ServiceAccount
+    name: kyverno-background-controller
+    namespace: kyverno
+  - kind: ServiceAccount
+    name: kyverno-admission-controller
+    namespace: kyverno
+  - kind: ServiceAccount
+    name: identity-mapper
+    namespace: identity-mapper
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: kyverno:manage-user-identities
 rules:
-- apiGroups:
-    - "workflows.internal.diamond.ac.uk"
-  resources:
-    - useridentities
-  verbs:
-    - get
-    - list
-    - create
-    - update
-    - patch
-    - delete
+  - apiGroups:
+      - "workflows.internal.diamond.ac.uk"
+    resources:
+      - useridentities
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
 ---
 apiVersion: v1
 kind: ServiceAccount

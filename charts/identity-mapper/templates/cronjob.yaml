@@ -17,4 +17,4 @@ spec:
           containers:
             - name: identity-mapper
               image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}{{- if .Values.image.digest }}@{{ .Values.image.digest }}{{- else }}:{{ .Values.image.tag }}{{- end }}"
-              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              imagePullPolicy: { { .Values.image.pullPolicy } }
