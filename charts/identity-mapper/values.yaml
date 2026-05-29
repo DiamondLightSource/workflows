@@ -5,4 +5,7 @@ image:
   digest: "sha256:a73b61f43cad4e5e45a3aba48458e603dc7fefc16e19a2262ed518a8bfb98311"
 
 policy:
+  # WARNING: this policy sets podSecurityContext following post 2026-05 cloud team policies
+  # Conflicts with the policy in charts/sessionspaces/templates/pod-clusterpolicy.yaml
+  # Do not enable both at the same time
   enable: true
