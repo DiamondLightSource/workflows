@@ -22,5 +22,4 @@ ENV UV_NO_DEV=1
 WORKDIR /app
 RUN uv sync --locked
 
-# Presuming there is a `my_app` command provided by the project
-CMD ["uv", "run", "identity-mapper"]
+CMD ["uv", "run", "--no-sync", "identity-mapper"]
