@@ -13,7 +13,7 @@ metadata:
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
     workflows.diamond.ac.uk/category: "science"
-    workflows.diamond.ac.uk/type: "live" 
+    workflows.diamond.ac.uk/type: "live"
 
 spec:
   entrypoint: pipeline
@@ -56,10 +56,15 @@ spec:
     - name: generate-files
       container:
         image: python:3.11-slim
+
         command: ["sh", "-c"]
+
         args:
           - |
+            set -e
+
             echo "Creating fake Python project..."
+
             mkdir -p /workspace/tests
 
             cat <<EOF > /workspace/app.py
@@ -74,56 +79,119 @@ spec:
                 assert add(2, 3) == 5
             EOF
 
+            echo "Files created:"
+            find /workspace
+
         volumeMounts:
           - name: workspace
             mountPath: /workspace
+
+          - name: tmp
+            mountPath: /tmp
 
     - name: lint
       container:
         image: python:3.11-slim
+
+        env:
+          - name: TMPDIR
+            value: /tmp
+
+          - name: PIP_TARGET
+            value: /tmp/pip
+
+          - name: PYTHONPATH
+            value: /tmp/pip
+
         command: ["sh", "-c"]
+
         args:
           - |
-            pip install --quiet ruff
-            export PATH=$PATH:/root/.local/bin
+            set -e
+
+            mkdir -p /tmp/pip
+
+            echo "Installing ruff..."
+            python -m pip install --no-cache-dir -t /tmp/pip ruff
 
             echo "Running lint..."
             cd /workspace
-            ruff . --exclude tests || true
+
+            python -m ruff check . --exclude tests || true
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
+          - name: tmp
+            mountPath: /tmp
+
     - name: test
       container:
         image: python:3.11-slim
+
+        env:
+          - name: TMPDIR
+            value: /tmp
+
+          - name: PIP_TARGET
+            value: /tmp/pip
+
+          - name: PYTHONPATH
+            value: /tmp/pip
+
         command: ["sh", "-c"]
+
         args:
           - |
-            pip install --quiet pytest
+            set -e
+
+            mkdir -p /tmp/pip
+
+            echo "Installing pytest..."
+            python -m pip install --no-cache-dir -t /tmp/pip pytest
 
             echo "Running tests..."
             cd /workspace
-            export PYTHONPATH=/workspace
+
+            export PYTHONPATH=/workspace:/tmp/pip
+
             pytest -q
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
+          - name: tmp
+            mountPath: /tmp
+
     - name: run-job
       inputs:
         parameters:
           - name: visitdir
+
       container:
         image: alpine:3.19
+
         command: ["sh", "-c"]
+
         args:
           - |
+            set -e
+
             echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "Starting long-running test loop..."
+
+            for i in $(seq 1 20); do
+              echo "[$i/20] Workflow still running at $(date)"
+              sleep 3
+            done
+
             echo "Process complete"
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
+
+          - name: tmp
+            mountPath: /tmp
