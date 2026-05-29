@@ -35,7 +35,7 @@ spec:
         secret:
           secretName: auth-daemon-config
     container:
-      image: ghcr.io/diamondlightsource/workflows-auth-daemon@sha256:b904a82a59a91d4d1ccc86198540ea44ff2112fd8b0f681b539dd8217bd4010b
+      image: ghcr.io/diamondlightsource/workflows-auth-daemon@sha256:389cbdf0c6fc2a15401da52094c041ff065080f36853e58131f068a4e370447e
       readinessProbe:
         httpGet:
           path: /healthz
@@ -47,12 +47,6 @@ spec:
           mountPath: /etc/workflows-auth-daemon
           readOnly: true
       env:
-        - name: ARGO_WORKFLOW_NAME
-          value: "{{workflow.name}}"
-        - name: MY_POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
         - name: WORKFLOWS_AUTH_DAEMON_CONFIG
           value: /etc/workflows-auth-daemon/config.yaml
       args:
