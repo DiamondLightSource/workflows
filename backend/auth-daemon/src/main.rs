@@ -28,6 +28,7 @@ mod state;
 
 use axum_reverse_proxy::ReverseProxy;
 use config::DaemonConfig;
+use k8s_openapi::api::core::v1::Pod;
 use kube::{
     Api, Client,
     api::{ApiResource, DynamicObject},
@@ -39,21 +40,43 @@ type Result<T> = std::result::Result<T, Error>;
 static CRYPTO_PROVIDER: OnceLock<()> = OnceLock::new();
 
 async fn resolve_subject() -> anyhow::Result<SubjectIdentifier> {
-    let workflow_name = std::env::var("ARGO_WORKFLOW_NAME")
-        .map_err(|_| anyhow::anyhow!("ARGO_WORKFLOW_NAME not set"))?;
-    let namespace = std::env::var("MY_POD_NAMESPACE")
-        .map_err(|_| anyhow::anyhow!("MY_POD_NAMESPACE not set"))?;
+    let namespace =
+        std::fs::read_to_string("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+            .context("failed to read namespace from service account token")?;
+    let namespace = namespace.trim();
+    let pod_name = std::fs::read_to_string("/etc/hostname")
+        .context("failed to read pod name from /etc/hostname")?;
+    let pod_name = pod_name.trim();
 
     let client = Client::try_default()
         .await
         .context("failed to create Kubernetes client (check service account token mount)")?;
+
+    let pods: Api<Pod> = Api::namespaced(client.clone(), namespace);
+    let pod = pods
+        .get(pod_name)
+        .await
+        .with_context(|| format!("failed to get pod {}/{}", namespace, pod_name))?;
+    let workflow_name = pod
+        .metadata
+        .labels
+        .as_ref()
+        .and_then(|l| l.get("workflows.argoproj.io/workflow"))
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "label workflows.argoproj.io/workflow missing on pod {}",
+                pod_name
+            )
+        })?
+        .clone();
+
     let gvk = GroupVersionKind::gvk("argoproj.io", "v1alpha1", "Workflow");
-    let api = Api::<DynamicObject>::namespaced_with(
+    let wf_api = Api::<DynamicObject>::namespaced_with(
         client,
-        &namespace,
+        namespace,
         &ApiResource::from_gvk_with_plural(&gvk, "workflows"),
     );
-    let workflow = api
+    let workflow = wf_api
         .get(&workflow_name)
         .await
         .with_context(|| format!("failed to get workflow {}/{}", namespace, workflow_name))?;
