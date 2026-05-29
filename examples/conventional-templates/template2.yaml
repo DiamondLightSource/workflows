@@ -56,9 +56,7 @@ spec:
     - name: generate-files
       container:
         image: python:3.11-slim
-
         command: ["sh", "-c"]
-
         args:
           - |
             set -e
@@ -85,7 +83,6 @@ spec:
         volumeMounts:
           - name: workspace
             mountPath: /workspace
-
           - name: tmp
             mountPath: /tmp
 
@@ -96,10 +93,8 @@ spec:
         env:
           - name: TMPDIR
             value: /tmp
-
           - name: PIP_TARGET
             value: /tmp/pip
-
           - name: PYTHONPATH
             value: /tmp/pip
 
@@ -117,12 +112,11 @@ spec:
             echo "Running lint..."
             cd /workspace
 
-            python -m ruff check . --exclude tests || true
+            /tmp/pip/bin/ruff check . --exclude tests || true
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
-
           - name: tmp
             mountPath: /tmp
 
@@ -133,12 +127,10 @@ spec:
         env:
           - name: TMPDIR
             value: /tmp
-
           - name: PIP_TARGET
             value: /tmp/pip
-
           - name: PYTHONPATH
-            value: /tmp/pip
+            value: /workspace:/tmp/pip
 
         command: ["sh", "-c"]
 
@@ -154,14 +146,11 @@ spec:
             echo "Running tests..."
             cd /workspace
 
-            export PYTHONPATH=/workspace:/tmp/pip
-
-            pytest -q
+            /tmp/pip/bin/pytest -q
 
         volumeMounts:
           - name: workspace
             mountPath: /workspace
-
           - name: tmp
             mountPath: /tmp
 
@@ -192,6 +181,5 @@ spec:
         volumeMounts:
           - name: workspace
             mountPath: /workspace
-
           - name: tmp
             mountPath: /tmp
