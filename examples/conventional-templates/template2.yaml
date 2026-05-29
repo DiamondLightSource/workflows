@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
-  name: conditional-steps
+  name: hz-test
   labels:
     workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
