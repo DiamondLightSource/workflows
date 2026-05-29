@@ -27,10 +27,10 @@ spec:
             key: data_directory
 
   volumes:
-    - name: tmp
+    - name: workspace
       emptyDir: {}
 
-    - name: workspace
+    - name: tmp
       emptyDir: {}
 
   templates:
@@ -53,6 +53,9 @@ spec:
                 - name: visitdir
                   value: "{{workflow.parameters.visitdir}}"
 
+    # -------------------------
+    # GENERATE FILES
+    # -------------------------
     - name: generate-files
       container:
         image: python:3.11-slim
@@ -61,7 +64,7 @@ spec:
           - |
             set -e
 
-            echo "Creating fake Python project..."
+            echo "Creating project..."
 
             mkdir -p /workspace/tests
 
@@ -77,10 +80,7 @@ spec:
                 assert add(2, 3) == 5
             EOF
 
-            # ensure pytest always discovers tests
-            touch /workspace/tests/__init__.py
-
-            echo "Files created:"
+            echo "Generated files:"
             find /workspace
 
         volumeMounts:
@@ -89,17 +89,12 @@ spec:
           - name: tmp
             mountPath: /tmp
 
+    # -------------------------
+    # LINT 
+    # -------------------------
     - name: lint
       container:
         image: python:3.11-slim
-
-        env:
-          - name: TMPDIR
-            value: /tmp
-          - name: PIP_TARGET
-            value: /tmp/pip
-          - name: PYTHONPATH
-            value: /tmp/pip
 
         command: ["sh", "-c"]
 
@@ -107,15 +102,18 @@ spec:
           - |
             set -e
 
-            mkdir -p /tmp/pip
+            echo "Checking workspace before lint..."
+            find /workspace
 
             echo "Installing ruff..."
-            python -m pip install --no-cache-dir -t /tmp/pip ruff
+            python -m pip install --no-cache-dir ruff
 
-            echo "Running lint..."
-            cd /workspace
-
-            /tmp/pip/bin/ruff check . --exclude tests || true
+            echo "Running ruff..."
+            if find /workspace -name "*.py" | grep -q .; then
+              python -m ruff check /workspace --exclude tests || true
+            else
+              echo "No Python files found under /workspace"
+            fi
 
         volumeMounts:
           - name: workspace
@@ -123,13 +121,12 @@ spec:
           - name: tmp
             mountPath: /tmp
 
+    # -------------------------
+    # TEST 
+    # -------------------------
     - name: test
       container:
         image: python:3.11-slim
-
-        env:
-          - name: TMPDIR
-            value: /tmp
 
         command: ["sh", "-c"]
 
@@ -154,6 +151,9 @@ spec:
           - name: tmp
             mountPath: /tmp
 
+    # -------------------------
+    # LONG RUN STEP
+    # -------------------------
     - name: run-job
       inputs:
         parameters:
@@ -167,10 +167,10 @@ spec:
             set -e
 
             echo "VisitDir = {{inputs.parameters.visitdir}}"
-            echo "Starting long-running test loop..."
+            echo "Starting long-running loop..."
 
             for i in $(seq 1 20); do
-              echo "[$i/20] Workflow still running at $(date)"
+              echo "[$i/20] running at $(date)"
               sleep 3
             done
 
