@@ -77,6 +77,9 @@ spec:
                 assert add(2, 3) == 5
             EOF
 
+            # ensure pytest always discovers tests
+            touch /workspace/tests/__init__.py
+
             echo "Files created:"
             find /workspace
 
@@ -127,10 +130,6 @@ spec:
         env:
           - name: TMPDIR
             value: /tmp
-          - name: PIP_TARGET
-            value: /tmp/pip
-          - name: PYTHONPATH
-            value: /workspace:/tmp/pip
 
         command: ["sh", "-c"]
 
@@ -138,15 +137,16 @@ spec:
           - |
             set -e
 
-            mkdir -p /tmp/pip
-
             echo "Installing pytest..."
-            python -m pip install --no-cache-dir -t /tmp/pip pytest
+            python -m pip install --no-cache-dir pytest
+
+            echo "Workspace contents:"
+            find /workspace
 
             echo "Running tests..."
             cd /workspace
 
-            /tmp/pip/bin/pytest -q
+            PYTHONPATH=/workspace python -m pytest /workspace/tests -q
 
         volumeMounts:
           - name: workspace
@@ -161,9 +161,7 @@ spec:
 
       container:
         image: alpine:3.19
-
         command: ["sh", "-c"]
-
         args:
           - |
             set -e
