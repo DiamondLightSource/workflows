@@ -17,12 +17,28 @@ spec:
       context:
         - name: posixUidString
           variable:
-            value: "{{`{{ request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] }}`}}"
+            jmesPath: "request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] || \"\""
+            default: ""
         
         - name: userProfile
           apiCall:
             urlPath: "/apis/workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
             jmesPath: "spec"
+            default: {}
+
+
+      preconditions:
+        all:
+          - key: "{{`{{ posixUidString }}`}}"
+            operator: NotEquals
+            value: ""
+          - key: "{{`{{ userProfile.uid || '' }}`}}"
+            operator: NotEquals
+            value: ""
+          - key: "{{`{{ userProfile.gid || '' }}`}}"
+            operator: NotEquals
+            value: ""
+
             
       mutate:
         patchStrategicMerge:
@@ -43,38 +59,92 @@ spec:
   validationFailureAction: Enforce
   schemaValidation: false
   rules:
-    - name: pod-securitycontext
+    - name: pod-securitycontext-flags
       match:
-        resources:
-          kinds:
-            - Pod
-          operations:
-            - CREATE
-          namespaceSelector:
-            matchLabels:
-              app.kubernetes.io/managed-by: sessionspaces
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              namespaceSelector:
+                matchLabels:
+                  app.kubernetes.io/managed-by: sessionspaces
       mutate:
-        patchStrategicMerge:
-          spec:
-            containers:
-              - (name): "*"
-                securityContext:
-                  runAsGroup: "{{ `{{request.object.spec.securityContext.runAsGroup}}` }}"
-                  runAsUser: "{{ `{{request.object.spec.securityContext.runAsUser}}` }}"
-                  allowPrivilegeEscalation: false
-                  readOnlyRootFilesystem: true
-            initContainers:
-              - (name): "*"
-                securityContext:
-                  runAsGroup: "{{ `{{request.object.spec.securityContext.runAsGroup}}` }}"
-                  runAsUser: "{{ `{{request.object.spec.securityContext.runAsUser}}` }}"
-                  allowPrivilegeEscalation: false
-                  readOnlyRootFilesystem: true
-            ephemeralContainers:
-              - (name): "*"
-                securityContext:
-                  runAsGroup: "{{ `{{request.object.spec.securityContext.runAsGroup}}` }}"
-                  runAsUser: "{{ `{{request.object.spec.securityContext.runAsUser}}` }}"
-                  allowPrivilegeEscalation: false
-                  readOnlyRootFilesystem: true
+        foreach:
+          - list: "request.object.spec.containers || `[]`"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+
+          - list: "request.object.spec.initContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+
+          - list: "request.object.spec.ephemeralContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                ephemeralContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+
+    - name: pod-securitycontext-propagate-uid-and-gid
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              namespaceSelector:
+                matchLabels:
+                  app.kubernetes.io/managed-by: sessionspaces
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.spec.securityContext.runAsUser || '' }}`}}"
+            operator: NotEquals
+            value: ""
+          - key: "{{`{{ request.object.spec.securityContext.runAsGroup || '' }}`}}"
+            operator: NotEquals
+            value: ""
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers || `[]`"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      runAsUser: "{{`{{ request.object.spec.securityContext.runAsUser }}`}}"
+                      runAsGroup: "{{`{{ request.object.spec.securityContext.runAsGroup }}`}}"
+
+          - list: "request.object.spec.initContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      runAsUser: "{{`{{ request.object.spec.securityContext.runAsUser }}`}}"
+                      runAsGroup: "{{`{{ request.object.spec.securityContext.runAsGroup }}`}}"
+
+          - list: "request.object.spec.ephemeralContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                ephemeralContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      runAsUser: "{{`{{ request.object.spec.securityContext.runAsUser }}`}}"
+                      runAsGroup: "{{`{{ request.object.spec.securityContext.runAsGroup }}`}}"
 {{- end }}
