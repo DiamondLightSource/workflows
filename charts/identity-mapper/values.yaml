@@ -2,7 +2,7 @@ image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-identity-mapper
   tag: latest
-  digest: "sha256:a73b61f43cad4e5e45a3aba48458e603dc7fefc16e19a2262ed518a8bfb98311"
+  digest: "sha256:afd5e882dc4c0b2477e2b9d00bd53a155e17985f6dd4d97fdeb0c7f4e8c3c87c"
 
 policy:
   # WARNING: this policy sets podSecurityContext following post 2026-05 cloud team policies
