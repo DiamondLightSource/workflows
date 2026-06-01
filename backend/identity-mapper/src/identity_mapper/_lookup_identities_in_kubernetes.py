@@ -6,7 +6,6 @@ from ._identity import Identity, IdentityCrd
 def lookup_identities_in_kubernetes(
     kubectl: kubernetes.client.CustomObjectsApi,
 ) -> dict[int, Identity]:
-    kubernetes
     current_crds = kubectl.list_cluster_custom_object(
         group=IdentityCrd.GROUP, version=IdentityCrd.VERSION, plural=IdentityCrd.PLURAL
     )

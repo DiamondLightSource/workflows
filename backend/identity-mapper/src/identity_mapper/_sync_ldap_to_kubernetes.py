@@ -28,7 +28,10 @@ def sync_ldap_to_kubernetes(
         _logger.info("Cluster is fully in-sync with LDAP. No changes needed.")
         return
 
-    _logger.info(f"Applying {len(patch.patch)} updates to match desired LDAP state...")
+    _logger.info(
+        "Applying %d updates to match desired LDAP state...",
+        len(patch.patch),
+    )
 
     for operation in patch.patch:
         op_type = operation["op"]  # 'add', 'remove', or 'replace'

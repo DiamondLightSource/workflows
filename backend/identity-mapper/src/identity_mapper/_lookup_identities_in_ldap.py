@@ -55,11 +55,9 @@ def lookup_identities_in_ldap(
 
         gid_to_cn.setdefault(gid, cn)
 
-        members = []
-        try:
-            members = list(getattr(g.memberUid, "values", []) or [])
-        except Exception:
-            members = []
+        member_uid = getattr(g, "memberUid", None)
+        values = getattr(member_uid, "values", None)
+        members = list(values) if values else []
 
         for m in members:
             mu = str(m)
@@ -68,11 +66,11 @@ def lookup_identities_in_ldap(
 
     out = {}
     for uid_num, username, primary_gid in users:
-        supplementary = []
-        for grp in user_to_groups.get(username, []):
-            # exclude "supplementary" group that is actually the user's primary gid
-            if grp["gid"] != primary_gid:
-                supplementary.append(grp["gid"])
+        supplementary = [
+            grp["gid"]
+            for grp in user_to_groups.get(username, [])
+            if grp["gid"] != primary_gid
+        ]
         supplementary.sort()
         out[uid_num] = {
             "uid": uid_num,

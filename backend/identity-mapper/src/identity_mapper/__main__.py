@@ -1,3 +1,5 @@
+"""Synchronize LDAP and Kubernetes user IDs and groups."""
+
 import logging
 
 import kubernetes
@@ -15,8 +17,7 @@ def _get_kubernetes_client() -> kubernetes.client.CustomObjectsApi:
         kubernetes.config.load_incluster_config()
     except kubernetes.config.ConfigException:
         kubernetes.config.load_kube_config()
-    custom_api = kubernetes.client.CustomObjectsApi()
-    return custom_api
+    return kubernetes.client.CustomObjectsApi()
 
 
 def _main() -> None:
