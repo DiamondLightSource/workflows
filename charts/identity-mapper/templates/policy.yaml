@@ -1,0 +1,149 @@
+{{- if .Values.policy.enable }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ include "common.names.fullname" $ }}-mutate-argo-workflow-security-context
+spec:
+  background: false
+  rules:
+    - name: inject-posix-ids
+      match:
+        any:
+          - resources:
+              kinds:
+                - argoproj.io/v1alpha1/Workflow
+              operations:
+                - CREATE
+      context:
+        - name: posixUidString
+          variable:
+            jmesPath: "request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] || \"\""
+            default: ""
+        
+        - name: userProfile
+          apiCall:
+            urlPath: "/apis/workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
+            jmesPath: "spec"
+            default: {}
+
+
+      preconditions:
+        all:
+          - key: "{{`{{ posixUidString }}`}}"
+            operator: NotEquals
+            value: ""
+          - key: "{{`{{ userProfile.uid || '' }}`}}"
+            operator: NotEquals
+            value: ""
+          - key: "{{`{{ userProfile.gid || '' }}`}}"
+            operator: NotEquals
+            value: ""
+
+            
+      mutate:
+        patchStrategicMerge:
+          spec:
+            securityContext:
+              runAsUser: "{{`{{ userProfile.uid }}`}}"
+              runAsGroup: "{{`{{ userProfile.gid }}`}}"
+              supplementalGroups: "{{`{{ userProfile.supplementalGroups }}`}}"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ include "common.names.fullname" $ }}-pod-security-context
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  background: false
+  validationFailureAction: Enforce
+  schemaValidation: false
+  rules:
+    - name: pod-securitycontext-propagate-flags
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              namespaceSelector:
+                matchLabels:
+                  app.kubernetes.io/managed-by: sessionspaces
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers || `[]`"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+
+          - list: "request.object.spec.initContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+
+          - list: "request.object.spec.ephemeralContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                ephemeralContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+    - name: pod-securitycontext-propagate-uid-and-gid
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              namespaceSelector:
+                matchLabels:
+                  app.kubernetes.io/managed-by: sessionspaces
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.spec.securityContext.runAsUser || '' }}`}}"
+            operator: NotEquals
+            value: ""
+          - key: "{{`{{ request.object.spec.securityContext.runAsGroup || '' }}`}}"
+            operator: NotEquals
+            value: ""
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers || `[]`"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      runAsUser: "{{`{{ request.object.spec.securityContext.runAsUser }}`}}"
+                      runAsGroup: "{{`{{ request.object.spec.securityContext.runAsGroup }}`}}"
+
+          - list: "request.object.spec.initContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      runAsUser: "{{`{{ request.object.spec.securityContext.runAsUser }}`}}"
+                      runAsGroup: "{{`{{ request.object.spec.securityContext.runAsGroup }}`}}"
+
+          - list: "request.object.spec.ephemeralContainers || `[]`"
+            patchStrategicMerge:
+              spec:
+                ephemeralContainers:
+                  - (name): "{{`{{ element.name }}`}}"
+                    securityContext:
+                      runAsUser: "{{`{{ request.object.spec.securityContext.runAsUser }}`}}"
+                      runAsGroup: "{{`{{ request.object.spec.securityContext.runAsGroup }}`}}"
+{{- end }}

@@ -5,6 +5,22 @@ on:
   pull_request:
 
 jobs:
+
+  detect_files_changed:
+    runs-on: ubuntu-latest
+    outputs:
+      identity_mapper: ${{ steps.filter.outputs.identity_mapper }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Detect detect files changed
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            identity_mapper:
+              - 'backend/identity-mapper/**'
+
   helm_lint:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
@@ -73,6 +89,14 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: oidc_bff_code
     uses: ./.github/workflows/_oidc_bff_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
+  identity_mapper_container:
+    needs: detect_files_changed
+    if: needs.detect_files_changed.outputs.identity_mapper == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
+    uses: ./.github/workflows/_identity_mapper_container.yaml
     permissions:
       contents: read
       packages: write

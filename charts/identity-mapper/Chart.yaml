@@ -1,0 +1,10 @@
+apiVersion: v2
+name: identity-mapper
+description: Identity Mapper
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+dependencies:
+  - name: common
+    version: 2.23.0
+    repository: oci://docker.io/bitnamicharts
