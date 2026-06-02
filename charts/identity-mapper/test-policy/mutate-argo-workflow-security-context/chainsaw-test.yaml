@@ -72,3 +72,57 @@ spec:
                   runAsUser: 12
                   runAsGroup: 34
                   supplementalGroups: [56, 78]
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-securitycontext-propagation
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+              spec:
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 4321
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+              spec:
+                securityContext:
+                  runAsGroup: 1234
+                  runAsUser: 4321
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsGroup: 1234
+                      runAsUser: 4321
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true

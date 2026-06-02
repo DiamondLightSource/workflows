@@ -59,7 +59,7 @@ spec:
   validationFailureAction: Enforce
   schemaValidation: false
   rules:
-    - name: pod-securitycontext-flags
+    - name: pod-securitycontext-propagate-flags
       match:
         any:
           - resources:
@@ -98,7 +98,6 @@ spec:
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
-
     - name: pod-securitycontext-propagate-uid-and-gid
       match:
         any:
