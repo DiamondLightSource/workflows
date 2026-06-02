@@ -92,3 +92,10 @@ k6Operator:
   extraValueFiles:
     - staging-values.yaml
   valuesObject: {}
+
+identityMapper:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles:
+    - staging-values.yaml
+  valuesObject: {}

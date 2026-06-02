@@ -1,0 +1,11 @@
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-identity-mapper
+  tag: latest
+  digest: "sha256:9a684411681ff584e69318e39e46cfa312c8b256c075e921df959f8cf0269e6d"
+
+policy:
+  # WARNING: this policy sets podSecurityContext following post 2026-05 cloud team policies
+  # Conflicts with the policy in charts/sessionspaces/templates/pod-clusterpolicy.yaml
+  # Do not enable both at the same time
+  enable: false
