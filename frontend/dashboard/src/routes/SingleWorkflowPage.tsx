@@ -4,7 +4,7 @@ import { Suspense, useMemo } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 import SingleWorkflowView from "relay-workflows-lib/lib/views/SingleWorkflowView";
-import { WorkflowsNavbar } from "workflows-lib";
+import { WorkflowsNavbar } from "relay-workflows-lib";
 import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
 import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 

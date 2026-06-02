@@ -7,7 +7,7 @@ import {
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import { MemoryRouter } from "react-router-dom";
 import React, { ReactElement } from "react";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { WorkflowsListViewQuery } from "../../lib/views/WorkflowsListView";
 import { WorkflowsListViewQuery$data } from "../../lib/views/__generated__/WorkflowsListViewQuery.graphql";
 import { WorkflowsContentFragment$key } from "../../lib/components/__generated__/WorkflowsContentFragment.graphql";

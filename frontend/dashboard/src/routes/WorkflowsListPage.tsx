@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Container, Box } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { WorkflowsNavbar } from "workflows-lib";
-import { WorkflowsListView } from "relay-workflows-lib";
+import { WorkflowsListView, WorkflowsNavbar } from "relay-workflows-lib";
 
 const WorkflowsListPage: React.FC = () => {
   const { visitid } = useParams<{ visitid?: string }>();

@@ -6,9 +6,9 @@ import userEvent from "@testing-library/user-event";
 import { WorkflowQueryFilter } from "workflows-lib";
 import { useLazyLoadQuery } from "react-relay";
 import { WorkflowsListViewTemplatesQuery as WorkflowsListViewTemplatesQueryType } from "relay-workflows-lib/lib/views/__generated__/WorkflowsListViewTemplatesQuery.graphql";
-import { server } from "../mocks/browser";
+import { server } from "../mocks/server";
 import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 
 function WorkflowListFilterDrawerWithQuery({
   onApplyFilter,

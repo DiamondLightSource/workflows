@@ -3,11 +3,11 @@ import { screen } from "@testing-library/dom";
 import SubmissionForm from "../../lib/components/SubmissionForm";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { render } from "@testing-library/react";
-import { server } from "../mocks/browser";
+import { server } from "../mocks/server";
 import { TemplateViewQuery } from "../../lib/views/TemplateView";
 import { TemplateViewQuery as TemplateViewQueryType } from "../../lib/views/__generated__/TemplateViewQuery.graphql";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 
 describe("SubmissionForm", () => {
   const SubmissionFormWithQuery = () => {

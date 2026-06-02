@@ -2,7 +2,6 @@ export { default as WorkflowAccordion } from "./components/workflow/WorkflowAcco
 export { default as TasksTable } from "./components/workflow/TasksTable";
 export { default as SubmissionForm } from "./components/template/SubmissionForm";
 export { default as WorkflowsErrorBoundary } from "./components/workflow/WorkflowsErrorBoundary";
-export { default as WorkflowsNavbar } from "./components/workflow/WorkflowsNavbar";
 export { default as PaginationControls } from "./components/common/PaginationControls";
 export { default as FileUploadButton } from "./components/template/controls/FileUploadButton";
 export { default as ScanRangeInput } from "./components/template/controls/ScanRangeInput";

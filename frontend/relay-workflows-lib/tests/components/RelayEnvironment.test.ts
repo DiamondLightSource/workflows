@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
-import { getUser } from "../src/RelayEnvironment";
-import * as utils from "../src/routes/utils";
+import { getUser } from "relay-workflows-lib";
+import * as utils from "../../lib/utils/coreUtils";
 
 describe("getUser", () => {
   it("should return the mock user", async () => {

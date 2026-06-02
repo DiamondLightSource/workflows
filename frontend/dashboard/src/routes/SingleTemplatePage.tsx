@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { WorkflowsNavbar } from "workflows-lib";
+import { WorkflowsNavbar } from "relay-workflows-lib";
 import { parseVisitAndTemplate } from "workflows-lib/lib/utils/commonUtils";
 import TemplateViewRetrigger from "relay-workflows-lib/lib/views/TemplateViewRetrigger";
 import TemplateView from "relay-workflows-lib/lib/views/TemplateView";

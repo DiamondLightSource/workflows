@@ -5,3 +5,5 @@ export { default as SubmittedMessagesList } from "./components/SubmittedMessages
 export { default as WorkflowListFilterDrawer } from "./components/WorkflowListFilterDrawer";
 export { default as WorkflowsListView } from "./views/WorkflowsListView";
 export { default as RepositoryLink } from "./query-components/RepositoryLink";
+export { default as WorkflowsNavbar } from "./components/WorkflowsNavbar";
+export { getRelayEnvironment, getUser } from "./components/RelayEnvironment";

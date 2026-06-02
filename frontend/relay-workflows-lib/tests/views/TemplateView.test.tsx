@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
-import { server } from "relay-workflows-lib/tests/mocks/browser.ts";
+import { server } from "../mocks/server.ts";
 import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { MemoryRouter } from "react-router-dom";
 import TemplateView from "../../lib/views/TemplateView";
 

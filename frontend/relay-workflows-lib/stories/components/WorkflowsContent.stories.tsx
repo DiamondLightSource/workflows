@@ -3,7 +3,7 @@ import { RelayEnvironmentProvider, useQueryLoader } from "react-relay";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import { MemoryRouter } from "react-router-dom";
 import React, { ReactElement } from "react";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import WorkflowsContent from "../../lib/components/WorkflowsContent";
 import { WorkflowsListViewQuery } from "../../lib/views/WorkflowsListView";
 import { WorkflowsListViewQuery as WorkflowsListViewQueryType } from "../../lib/views/__generated__/WorkflowsListViewQuery.graphql";

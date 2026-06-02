@@ -8,6 +8,7 @@ import { Box, Pagination } from "@mui/material";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { visitToText } from "@diamondlightsource/sci-react-ui";
+import mockKeycloak, { mockJwtPayload } from "../../mocks/mockKeycloak";
 
 const localStorageMock = {
   getItem: vi.fn(),
@@ -274,5 +275,11 @@ describe("isFinished returns the correct boolean when", () => {
         } as workflowRelayQuery$data["workflow"],
       }),
     ).toEqual(false);
+  });
+});
+
+describe("parseJwt", () => {
+  it("should decode a JWT", () => {
+    expect(utils.parseJwt(mockKeycloak.token)).toStrictEqual(mockJwtPayload);
   });
 });

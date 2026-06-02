@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react-vite";
-import { worker } from "dashboard/src/mocks/browser";
+import { worker } from "../mocks/browser";
 
 const preview: Preview = {
   async beforeAll() {
