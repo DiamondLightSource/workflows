@@ -128,3 +128,10 @@
 #                       runAsUser: 4321
 #                       allowPrivilegeEscalation: false
 #                       readOnlyRootFilesystem: true
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: noop
+spec:
+  steps:
+    - try:
