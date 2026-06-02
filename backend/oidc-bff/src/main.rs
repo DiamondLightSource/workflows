@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
 
     auth_core::database::migrate_database(&appstate.database_connection).await?;
 
-    auth_core::rustls::crypto::ring::default_provider()
+    auth_core::rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
         .expect("Failed to install rust TLS cryptography");
 
