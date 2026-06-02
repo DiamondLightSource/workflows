@@ -8,4 +8,4 @@ policy:
   # WARNING: this policy sets podSecurityContext following post 2026-05 cloud team policies
   # Conflicts with the policy in charts/sessionspaces/templates/pod-clusterpolicy.yaml
   # Do not enable both at the same time
-  enable: true
+  enable: false
