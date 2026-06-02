@@ -1,5 +1,5 @@
 import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "./RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
 
 async function startMockingIfConfigured() {
   if (import.meta.env.VITE_ENABLE_MOCKING === "true") {
-    const { worker } = await import("./mocks/browser");
+    const { worker } = await import("relay-workflows-lib/mocks/browser");
     return worker.start();
   }
 }

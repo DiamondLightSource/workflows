@@ -1464,7 +1464,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-relay@*", "@types/react-relay@18.2.1", "@types/react-relay@^18.2.1":
+"@types/react-relay@*", "@types/react-relay@^18.2.1":
   version "18.2.1"
   resolved "https://registry.yarnpkg.com/@types/react-relay/-/react-relay-18.2.1.tgz#2c87a622e98ebf3d0162dd2edc9c3ed014df6ca1"
   integrity sha512-KgmFapsxAylhxcFfaAv5GZZJhTHnDvV8IDZVsUm5afpJUvgZC1Y68ssfOGsFfiFY/2EhxHM/YPfpdKbfmF3Ecg==
@@ -4640,7 +4640,7 @@ react-refresh@^0.18.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.18.0.tgz#2dce97f4fe932a4d8142fa1630e475c1729c8062"
   integrity sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==
 
-react-relay@20.1.1, react-relay@^20.1.1:
+react-relay@^20.1.1:
   version "20.1.1"
   resolved "https://registry.yarnpkg.com/react-relay/-/react-relay-20.1.1.tgz#b46ad03a8f67f203cc0134726af090e800b7b350"
   integrity sha512-pwl7wHHXCOx32dOg4TVNkhVojgGVvOBMo9pcMGeM1BIFYvmwGauKTtBB+qr5buXHGooCL8TXjMVg+ZLizIsbeQ==
@@ -4744,7 +4744,7 @@ regexp.prototype.flags@^1.5.3:
     es-errors "^1.3.0"
     set-function-name "^2.0.2"
 
-relay-compiler@20.1.1, relay-compiler@^20.1.1:
+relay-compiler@^20.1.1:
   version "20.1.1"
   resolved "https://registry.yarnpkg.com/relay-compiler/-/relay-compiler-20.1.1.tgz#91914a1f6386f2e20b35c22516a0c6d80dfa630d"
   integrity sha512-J/FFFLS/3vnbDkyQMw8l3Ev7dNHXMgC1RAs0fITz4Q63TFPOw142knKxY1Mm5ZZBABkAs9g2JghXaqM+phwTxw==

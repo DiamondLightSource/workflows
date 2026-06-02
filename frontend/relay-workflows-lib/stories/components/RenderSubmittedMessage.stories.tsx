@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { RenderSubmittedMessage } from "../../lib/components/RenderSubmittedMessage";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import { MemoryRouter } from "react-router-dom";
 import React, { ReactElement } from "react";

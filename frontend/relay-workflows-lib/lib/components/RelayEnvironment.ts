@@ -8,10 +8,10 @@ import {
   GraphQLResponse,
   Observable,
 } from "relay-runtime";
-import { getKeycloak } from "./keycloak";
+import { getKeycloak } from "../utils/keycloak";
 import { createClient } from "graphql-ws";
 import { AuthState } from "@diamondlightsource/sci-react-ui";
-import { parseJwt } from "./routes/utils";
+import { parseJwt } from "../utils/coreUtils";
 import { JSONObject } from "workflows-lib";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;

@@ -8,20 +8,20 @@ import {
 } from "../../lib/utils/workflowRelayUtils";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { SingleWorkflowViewQuery } from "../../lib/views/SingleWorkflowView";
 import { BaseSingleWorkflowViewFragment } from "../../lib/views/BaseSingleWorkflowView";
 import { SingleWorkflowViewQuery$data } from "../../lib/views/__generated__/SingleWorkflowViewQuery.graphql";
-import { singleWorkflowViewQueryResponse } from "dashboard/src/mocks/responses/workflows/SingleWorkflowViewQueryResponse";
+import { singleWorkflowViewQueryResponse } from "../mocks/responses/workflows/SingleWorkflowViewQueryResponse";
 import {
   RelayEnvironmentProvider,
   useFragment,
   useLazyLoadQuery,
 } from "react-relay";
-import { server } from "../mocks/browser";
+import { server } from "../mocks/server";
 import { Suspense } from "react";
 import { SubmissionFormParametersFragment$data } from "../../lib/components/__generated__/SubmissionFormParametersFragment.graphql";
-import e02Mib2xRetriggerResponse from "dashboard/src/mocks/responses/templates/e02Mib2xRetriggerResponse.json";
+import e02Mib2xRetriggerResponse from "../mocks/responses/templates/e02Mib2xRetriggerResponse.json";
 
 beforeAll(() => {
   server.listen();

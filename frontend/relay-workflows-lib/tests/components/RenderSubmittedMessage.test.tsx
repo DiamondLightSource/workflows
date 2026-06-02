@@ -5,7 +5,7 @@ import {
   RenderSubmittedMessagePropsList,
 } from "../../lib/components/RenderSubmittedMessage";
 import { RelayEnvironmentProvider, useFragment } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { PayloadError } from "relay-runtime";

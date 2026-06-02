@@ -2,12 +2,12 @@ import { render, screen } from "@testing-library/react";
 import { useState } from "react";
 import "@testing-library/jest-dom";
 import BaseWorkflowRelay from "relay-workflows-lib/lib/components/BaseWorkflowRelay";
-import { workflowsListViewQueryResponse } from "dashboard/src/mocks/responses/workflows/WorkflowsListViewQueryResponse";
+import { workflowsListViewQueryResponse } from "../mocks/responses/workflows/WorkflowsListViewQueryResponse.ts";
 import { BaseWorkflowRelayFragment$key } from "relay-workflows-lib/lib/components/__generated__/BaseWorkflowRelayFragment.graphql";
 import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { beforeAll } from "vitest";
-import { server } from "relay-workflows-lib/tests/mocks/browser.ts";
+import { server } from "../mocks/server.ts";
 import userEvent from "@testing-library/user-event";
 import { mockReactFlow } from "../mocks/mockReactFlow";
 

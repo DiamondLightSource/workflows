@@ -8,9 +8,9 @@ import {
   User,
   AuthState,
 } from "@diamondlightsource/sci-react-ui";
-import { getUser } from "dashboard/src/RelayEnvironment";
+import { getUser } from "relay-workflows-lib";
 import { useEffect, useState } from "react";
-import { externalRedirect } from "workflows-lib/lib/utils/commonUtils";
+import { externalRedirect } from "../utils/coreUtils";
 
 interface WorkflowsNavbarProps {
   sessionInfo?: string;

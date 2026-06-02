@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { MemoryRouter } from "react-router-dom";
 import { RetriggerWorkflowQuery$data } from "../../lib/query-components/__generated__/RetriggerWorkflowQuery.graphql";
 import { RetriggerWorkflow } from "../../lib/query-components/RetriggerWorkflow";

@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
-import { WorkflowsNavbar } from "workflows-lib";
+import { WorkflowsNavbar } from "relay-workflows-lib";
 
 const cardHeight = 160;
 

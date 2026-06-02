@@ -3,12 +3,12 @@ import "@testing-library/jest-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import { DiamondTheme, AuthState } from "@diamondlightsource/sci-react-ui";
 import { BrowserRouter } from "react-router-dom";
-import { getUser } from "dashboard/src/RelayEnvironment";
+import { getUser } from "relay-workflows-lib";
 import userEvent from "@testing-library/user-event";
-import WorkflowsNavbar from "../../lib/components/workflow/WorkflowsNavbar";
-import * as commonUtils from "../../lib/utils/commonUtils";
+import WorkflowsNavbar from "../../lib/components/WorkflowsNavbar";
+import * as coreUtils from "../../lib/utils/coreUtils";
 
-vi.mock("dashboard/src/RelayEnvironment", () => ({
+vi.mock("relay-workflows-lib", () => ({
   getUser: vi.fn(() => Promise.resolve(null)),
 }));
 
@@ -59,7 +59,7 @@ describe("WorkflowsNavbar", () => {
 
   it("redirects to logout", async () => {
     vi.mocked(getUser).mockReturnValue(Promise.resolve(testUser));
-    const redirectSpy = vi.spyOn(commonUtils, "externalRedirect");
+    const redirectSpy = vi.spyOn(coreUtils, "externalRedirect");
     const url =
       "https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/logout";
     render(

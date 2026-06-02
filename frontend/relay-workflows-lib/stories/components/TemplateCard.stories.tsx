@@ -3,7 +3,7 @@ import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import { MemoryRouter } from "react-router-dom";
 import React, { ReactElement } from "react";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { TemplatesListViewQuery } from "../../lib/views/TemplatesListView";
 import { TemplatesListViewQuery$data } from "../../lib/views/__generated__/TemplatesListViewQuery.graphql";
 import TemplateCard from "../../lib/components/TemplateCard";

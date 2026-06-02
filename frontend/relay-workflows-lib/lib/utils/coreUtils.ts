@@ -6,7 +6,7 @@ import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQ
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { LiveWorkflowRelaySubscription$data } from "../subscription-components/__generated__/LiveWorkflowRelaySubscription.graphql";
 import { LiveSingleWorkflowViewSubscription$data } from "../views/__generated__/LiveSingleWorkflowViewSubscription.graphql";
-import { Task } from "workflows-lib";
+import { JSONObject, Task } from "workflows-lib";
 
 export const useVisitInput = (initialVisitId?: string | null) => {
   const navigate = useNavigate();
@@ -114,4 +114,25 @@ export function isFinished(
     data.workflow.status?.__typename &&
     finishedStatuses.has(data.workflow.status.__typename)
   );
+}
+
+//** An abstraction to allow mocking of window.location.assign in tests */
+export function externalRedirect(url: string) {
+  window.location.assign(url);
+}
+
+export function parseJwt(token: string) {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    window
+      .atob(base64)
+      .split("")
+      .map(function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join(""),
+  );
+
+  return JSON.parse(jsonPayload) as JSONObject;
 }

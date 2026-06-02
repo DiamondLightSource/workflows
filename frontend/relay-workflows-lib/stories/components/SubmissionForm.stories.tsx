@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import React, { ReactElement } from "react";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import SubmissionForm from "../../lib/components/SubmissionForm";
 import { TemplateViewQuery } from "../../lib/views/TemplateView";
 import { TemplateViewQuery$data } from "../../lib/views/__generated__/TemplateViewQuery.graphql";

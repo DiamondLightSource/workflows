@@ -1,13 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import WorkflowsListView from "relay-workflows-lib/lib/views/WorkflowsListView";
-import { server } from "relay-workflows-lib/tests/mocks/browser.ts";
+import { server } from "../mocks/server.ts";
 import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
-import { workflowsListViewTemplatesResponse } from "dashboard/src/mocks/responses/templates/workflowsListViewTemplates";
-import workflowsListResponse from "dashboard/src/mocks/responses/workflows/workflowsListResponse.json";
+import { workflowsListViewTemplatesResponse } from "../mocks/responses/templates/workflowsListViewTemplates.ts";
+import workflowsListResponse from "../mocks/responses/workflows/workflowsListResponse.json";
 import * as WorkflowsContent from "relay-workflows-lib/lib/components/WorkflowsContent";
 
 vi.mock(import("relay-workflows-lib/lib/components/TasksFlow"), () => ({

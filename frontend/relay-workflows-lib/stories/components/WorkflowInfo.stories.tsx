@@ -6,7 +6,7 @@ import {
 } from "react-relay";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import React, { ReactElement } from "react";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import WorkflowInfo from "../../lib/components/WorkflowInfo";
 import { SingleWorkflowViewQuery } from "../../lib/views/SingleWorkflowView";
 import { SingleWorkflowViewQuery$data } from "../../lib/views/__generated__/SingleWorkflowViewQuery.graphql";

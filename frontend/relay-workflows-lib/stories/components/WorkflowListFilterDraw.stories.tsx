@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
 import React, { ReactElement } from "react";
-import { getRelayEnvironment } from "dashboard/src/RelayEnvironment";
+import { getRelayEnvironment } from "relay-workflows-lib";
 import { WorkflowListFilterDrawer } from "../../lib/components/WorkflowListFilterDrawer";
 import { WorkflowsListViewTemplatesQuery } from "../../lib/views/WorkflowsListView";
 import { WorkflowsListViewTemplatesQuery$data } from "../../lib/views/__generated__/WorkflowsListViewTemplatesQuery.graphql";

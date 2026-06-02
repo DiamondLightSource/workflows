@@ -6,8 +6,8 @@ class ResizeObserverMock {
 
 vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 
-vi.mock("workflows-lib", async () => ({
-  ...(await vi.importActual("workflows-lib")),
+vi.mock("relay-workflows-lib", async () => ({
+  ...(await vi.importActual("relay-workflows-lib")),
   WorkflowsNavbar: vi.fn(),
 }));
 

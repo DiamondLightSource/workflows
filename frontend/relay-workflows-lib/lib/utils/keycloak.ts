@@ -5,7 +5,7 @@ export async function getKeycloak() {
 
   if (isMocking) {
     // only import when mocking
-    const mockKeycloak = await import("./mocks/mockKeycloak").then(
+    const mockKeycloak = await import("../../mocks/mockKeycloak").then(
       (mod) => mod.default,
     );
     return mockKeycloak;
