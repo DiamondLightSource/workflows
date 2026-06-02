@@ -39,6 +39,7 @@ jobs:
       - name: Install Workflows CRDs
         run: |
           helm template workflows charts/workflows --namespace workflows --create-namespace | yq e 'select(.kind == "CustomResourceDefinition")' | tee -a /tmp/crds.yaml | kubectl apply -f -
+          kubectl apply -f charts/identity-mapper/crds/useridentity.yaml
 
       - name: Wait for CRDs
         run: |

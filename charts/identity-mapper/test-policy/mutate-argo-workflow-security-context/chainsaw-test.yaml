@@ -1,0 +1,74 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: mutate-argo-workflow-security-context
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - try:
+        - create:
+            resource:
+              apiVersion: workflows.internal.diamond.ac.uk/v1
+              kind: UserIdentity
+              metadata:
+                name: "12"
+              spec:
+                uid: 12
+                gid: 34
+                supplementalGroups:
+                  - 56
+                  - 78
+        - create:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: Role
+              metadata:
+                name: workflow-creator
+                namespace: ($namespace)
+              rules:
+                - apiGroups: ["argoproj.io"]
+                  resources: ["workflows"]
+                  verbs: ["create"]
+        - create:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: workflow-creator
+                namespace: ($namespace)
+              subjects:
+                - kind: User
+                  name: oidc:test-user
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: workflow-creator
+        - command:
+            env:
+              - name: namespace
+                value: ($namespace)
+            entrypoint: sh
+            args:
+              - -c
+              - |
+                cat <<'EOF' | kubectl create --namespace="$namespace" --as=oidc:test-user --as-user-extra=workflows.diamond.ac.uk/posixuid=12 -f -
+                apiVersion: argoproj.io/v1alpha1
+                kind: Workflow
+                metadata:
+                  name: test-workflow
+                spec: {}
+                EOF
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+              spec:
+                 securityContext:
+                  runAsUser: 12
+                  runAsGroup: 34
+                  supplementalGroups: [56, 78]
