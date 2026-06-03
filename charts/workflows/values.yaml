@@ -273,3 +273,5 @@ bitnamisecret:
 
 s3mock:
   enabled: false
+
+allowMachineUid: false
