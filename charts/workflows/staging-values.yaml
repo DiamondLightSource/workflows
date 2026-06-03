@@ -38,3 +38,5 @@ postgresql-ha:
     size: 10Gi
   postgresql:
     podAntiAffinityPreset: soft
+
+allowMachineUid: true
