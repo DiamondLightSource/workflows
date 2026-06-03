@@ -46,9 +46,7 @@ class Controller(BaseHTTPRequestHandler):
     dependencies = []
     sourceTriggers: dict[str, dict] = related.get("Trigger.workflows.diamond.ac.uk/v1alpha1", {})
     eventSourceName: str | None = parent.get("metadata", {}).get("name")
-    labels: dict = parent.get("metadata", {}).get("labels", {})
-    beamline: str | None = labels.get("workflows.diamond.ac.uk/beamline")
-    uid: str | None = labels.get("workflows.diamond.ac.uk/machine-uid")
+    beamline: str | None = parent.get("metadata", {}).get("labels", {}).get("workflows.diamond.ac.uk/beamline")
 
     for dlsTrigger in sourceTriggers.values():
       spec: dict = dlsTrigger.get("spec", {})
@@ -96,9 +94,6 @@ class Controller(BaseHTTPRequestHandler):
                 "kind": "Workflow",
                 "metadata": {
                   "generateName": f"{template}-event-",
-                  "labels": {
-                      "workflows.diamond.ac.uk/machine-uid": uid,
-                    }
                 },
                 "spec": {
                   "serviceAccountName": "argo-workflow",
@@ -109,6 +104,11 @@ class Controller(BaseHTTPRequestHandler):
                   "arguments": {
                     "parameters": templateArgs
                   },
+                  # "workflowMetadata": {
+                  #   "labels": {
+                  #     "workflows.diamond.ac.uk/creator-posix-uid": "36055"
+                  #   }
+                  # }     
                 },
               }
             }
@@ -120,7 +120,7 @@ class Controller(BaseHTTPRequestHandler):
       "apiVersion": "argoproj.io/v1alpha1",
       "kind": "Sensor",
       "metadata": {
-        "name": f"{beamline}-{eventSourceName}"
+        "name": f"{beamline}-{eventSourceName}-sensor"
       },
       "spec": {
         "template":
