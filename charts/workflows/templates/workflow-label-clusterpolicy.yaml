@@ -13,6 +13,11 @@ spec:
             - argoproj.io/*/Workflow
           operations:
             - CREATE
+      context:
+        - name: machineuid
+          variable:
+            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/machine-uid"
+            default: ""
       mutate:
         patchStrategicMerge:
           metadata:
@@ -20,5 +25,5 @@ spec:
               {{- with .Values.uid }}
               workflows.diamond.ac.uk/creator-posix-uid: '{{ . }}'
               {{- else }}
-              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra | "workflows.diamond.ac.uk/posixuid" | [0] }}` }}'
+              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || machineuid }}` }}'
               {{- end }}
