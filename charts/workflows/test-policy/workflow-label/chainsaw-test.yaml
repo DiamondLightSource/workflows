@@ -1,0 +1,48 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: workflow-label
+spec:
+  steps:
+    - try:
+      - apply:
+          requests:
+              userInfo:
+                extra:
+                  workflows.diamond.ac.uk/posixuid:
+                    - "12345"
+          resource:
+            apiVersion: argoproj.io/v1alpha1
+            kind: Workflow
+            metadata:
+              name: valid-posixuid
+            spec: {}
+      - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: valid-posixuid
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"
+              spec: {}
+    - try:
+      - apply:
+          resource:
+            apiVersion: argoproj.io/v1alpha1
+            kind: Workflow
+            metadata:
+              name: valid-machine-uid
+              labels:
+                workflows.diamond.ac.uk/machineuid: "12345"
+            spec: {}
+      - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: valid-machine-uid
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"
+              spec: {}
+        
