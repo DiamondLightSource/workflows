@@ -10,8 +10,18 @@ spec:
     try:
       - command:
           args:
+            - create
+            - clusterrolebinding
+            - impersonator
+            - --clusterrole=allow-impersonation
+            - --user=$(kubectl config view --minify -o jsonpath='{.users[0].name}') 
+          entrypoint: kubectl
+      - command:
+          args:
           - create
           - --filename=workflow.yaml
+          - --as=$(kubectl config view --minify -o jsonpath='{.users[0].name}')
+          - --as-group=$(kubectl config view --minify -o jsonpath='{.users[0].name}') 
           - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
           entrypoint: kubectl
       - assert:
