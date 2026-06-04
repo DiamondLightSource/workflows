@@ -11,7 +11,7 @@ spec:
       - command:
           args:
           - create
-          - --from-file=workflow.yaml
+          - --filename=workflow.yaml
           - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
           entrypoint: kubectl
       - assert:
