@@ -1,6 +1,7 @@
 mod auth_session_data;
 mod callback;
 mod config;
+mod device;
 mod login;
 mod state;
 
@@ -85,6 +86,8 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
         .route("/auth/login", get(login::login))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
+        .route("/auth/device/start", post(device::device_start))
+        .route("/auth/device/poll", post(device::device_poll))
         .route("/healthcheck", get(auth_core::healthcheck::healthcheck))
         .layer(session_layer)
         .with_state(state)

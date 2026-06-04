@@ -43,14 +43,33 @@ impl RouterState {
         let public_key = decode_public_key(&config.common.encryption_public_key)?;
         let private_key = decode_secret_key(&config.encryption_private_key)?;
         let database_connection = database_connection.into();
-        let stored = auth_core::database::read_token_from_database(
-            &database_connection,
-            subject,
-            None,
-            &public_key,
-            &private_key,
-        )
-        .await?;
+        let stored = {
+            const MAX_ATTEMPTS: u32 = 3;
+            const RETRY_DELAY: Duration = Duration::from_secs(2);
+            let mut attempt = 1;
+            loop {
+                match auth_core::database::read_token_from_database(
+                    &database_connection,
+                    subject,
+                    None,
+                    &public_key,
+                    &private_key,
+                )
+                .await
+                {
+                    Ok(stored) => break stored,
+                    Err(error) if attempt < MAX_ATTEMPTS => {
+                        tracing::warn!(
+                            subject = subject.as_str(),
+                            "Failed to read token (attempt {attempt}/{MAX_ATTEMPTS}), retrying: {error:?}"
+                        );
+                        tokio::time::sleep(RETRY_DELAY).await;
+                        attempt += 1;
+                    }
+                    Err(error) => return Err(error),
+                }
+            }
+        };
         let token = TokenData::new(
             IssuerUrl::new(stored.issuer)?,
             SubjectIdentifier::new(stored.subject),

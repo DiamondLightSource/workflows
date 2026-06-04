@@ -10,6 +10,8 @@ WORKFLOWS_AUTH_DAEMON_CONFIG=config.yaml cargo run -- serve
 
 The daemon resolves the subject (the user whose stored refresh token to load) at startup by inspecting its own pod: it reads its namespace from the service-account mount and its pod name from `/etc/hostname`, looks up that pod's `workflows.argoproj.io/workflow` label to find the owning workflow, then reads that workflow's `workflows.argoproj.io/creator` label — all via the Kubernetes API. No auth-specific environment variables are required. Its service account needs `get` access to `pods` and `workflows.argoproj.io` in its namespace.
 
+The subject may be a human user or a machine account; both store an offline refresh token in the same `oidc_tokens` table (machine accounts are bootstrapped via oidc-bff's `/auth/device/*` endpoints, which run before the daemon). The token is expected to be present at startup; the daemon retries the database read a few times to ride out a transient DB hiccup, then exits with an error if it still fails.
+
 ## Endpoints
 
 | Path | Method | Description |

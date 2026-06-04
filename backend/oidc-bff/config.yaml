@@ -1,5 +1,7 @@
 client_id: "workflows-ui-dev"
 client_secret: ""
+machine_client_id: "machine-worker"
+machine_client_secret: ""
 oidc_provider_url: "https://identity.diamond.ac.uk/realms/dls"
 port: 5173
 postgres_user: "postgres"

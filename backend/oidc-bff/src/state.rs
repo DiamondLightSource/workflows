@@ -9,14 +9,19 @@ use crate::config::GatewayConfig;
 use auth_core::database::{self, RefreshTokenInfo};
 use auth_core::middleware::traits::{RetryPolicy, TokenInspector, TokenStore};
 use auth_core::oidc::{
-    DbConnection, HttpClient, OidcClient, SodiumPublicKey, create_db_connection,
-    create_oidc_client, decode_public_key, exchange_refresh_token,
+    DbConnection, DeviceOidcClient, HttpClient, OidcClient, SodiumPublicKey, create_db_connection,
+    create_device_oidc_client, create_oidc_client, decode_public_key, exchange_refresh_token,
 };
 
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub http_client: HttpClient,
     pub oidc_client: OidcClient,
+    /// Device-grant client for the shared machine-account client (see `device.rs`).
+    pub device_oidc_client: DeviceOidcClient,
+    /// Credentials of the shared machine-account client, needed to poll the token endpoint.
+    pub machine_client_id: String,
+    pub machine_client_secret: String,
     pub database_connection: DbConnection,
     pub public_key: SodiumPublicKey,
 }
@@ -24,11 +29,20 @@ pub struct AppState {
 impl AppState {
     pub async fn new(config: GatewayConfig) -> Result<Self> {
         let (oidc_client, http_client) = create_oidc_client(&config.common).await?;
+        let (device_oidc_client, _) = create_device_oidc_client(
+            &config.common.oidc_provider_url,
+            &config.machine_client_id,
+            &config.machine_client_secret,
+        )
+        .await?;
         let database_connection = create_db_connection(&config.common).await?;
         let public_key = decode_public_key(&config.common.encryption_public_key)?;
         Ok(AppState {
             http_client,
             oidc_client,
+            device_oidc_client,
+            machine_client_id: config.machine_client_id,
+            machine_client_secret: config.machine_client_secret,
             database_connection,
             public_key,
         })
