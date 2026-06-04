@@ -27,5 +27,3 @@ spec:
               {{- else }}
               workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || machineuid }}` }}'
               {{- end }}
-            annotations:
-              debug-userinfo: '{{ `{{ request.userInfo | to_string(@) }}` }}'
