@@ -225,7 +225,7 @@ async fn setup_router(
             .with_state(RouterState {
                 schema: schema.clone(),
                 metrics_state: metrics_state.clone(),
-                token_validator,
+                token_validator:token_validator.clone() ,
             }),
         )
         .route_service(
@@ -233,6 +233,7 @@ async fn setup_router(
             get_service(GraphQLSubscription::new(
                 schema.clone(),
                 metrics_state.clone(),
+                Arc::new(token_validator),
             )),
         )
         .with_state(schema.clone())

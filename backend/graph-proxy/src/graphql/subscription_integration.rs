@@ -80,6 +80,7 @@ where
 pub struct GraphQLSubscription<E> {
     executor: E,
     metrics_state: MetricsState,
+    token_validator: Arc<TokenValidator>
 }
 
 impl<E> Clone for GraphQLSubscription<E>
@@ -90,6 +91,7 @@ where
         Self {
             executor: self.executor.clone(),
             metrics_state: self.metrics_state.clone(),
+            token_validator: self.token_validator.clone(),
         }
     }
 }
@@ -99,10 +101,11 @@ where
     E: Executor,
 {
     /// Create a GraphQL subscription service.
-    pub fn new(executor: E, metrics_state: MetricsState) -> Self {
+    pub fn new(executor: E, metrics_state: MetricsState, token_validator: Arc<TokenValidator>) -> Self {
         Self {
             executor,
             metrics_state,
+            token_validator,
         }
     }
 }
@@ -123,9 +126,11 @@ where
     fn call(&mut self, req: Request<B>) -> Self::Future {
         let executor = self.executor.clone();
         let metrics = self.metrics_state.clone();
+        let token_validator = self.token_validator.clone();
 
         Box::pin(async move {
             let metrics = metrics;
+            let token_validator = token_validator.clone();
             let (mut parts, _body) = req.into_parts();
 
             let protocol = match GraphQLProtocol::from_request_parts(&mut parts, &()).await {
@@ -153,7 +158,7 @@ where
                 .protocols(ALL_WEBSOCKET_PROTOCOLS)
                 .on_upgrade(move |stream| {
                     let websocket = GraphQLWebSocket::new(stream, executor, protocol)
-                        .on_connection_init(|value: serde_json::Value| async move {
+                        .on_connection_init(move |value: serde_json::Value| async move {
                             let conn_init_auth_header = value
                                 .get("Authorization")
                                 .and_then(|value| value.as_str())
@@ -173,7 +178,8 @@ where
                             match auth_header {
                                 Ok(header) => {
                                     let mut data = Data::default();
-                                    data.insert(Some(header));
+                                    let validated_token = token_validator.validate_token(Some(header), ValidationMethod::Jwt).await;
+                                    data.insert(Some(validated_token));
                                     Ok(data)
                                 }
                                 Err(_e) => {
@@ -375,10 +381,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{metrics::noop::NoopMeterProvider, metrics::Metrics};
+    use crate::{metrics::{Metrics, noop::NoopMeterProvider}, validate_token::ValidatedAuthToken};
     use async_graphql::{Context, EmptyMutation, Object, Schema, Subscription};
     use axum::{routing::get_service, Router};
-    use axum_extra::headers::{authorization::Bearer, Authorization};
     use futures_util::Stream;
     use graphql_ws_client::graphql::StreamingOperation;
     use serde::{Deserialize, Serialize};
@@ -405,8 +410,10 @@ mod tests {
         /// Token Data provided by async_graphql::Context
         async fn token(&self, ctx: &Context<'_>) -> impl Stream<Item = String> + '_ {
             let token_str = ctx
-                .data_opt::<Option<Authorization<Bearer>>>()
+                .data_opt::<Option<ValidatedAuthToken<>>>()
                 .and_then(|opt| opt.as_ref())
+                .map(|auth| auth.as_token())
+                .flatten()
                 .map(|auth| auth.token().to_string())
                 .unwrap_or_else(|| "No token".to_string());
 
@@ -442,6 +449,7 @@ mod tests {
                 get_service(GraphQLSubscription::new(
                     schema.clone(),
                     MetricsState::new(Metrics::new(&NoopMeterProvider::new())),
+                    token_validator
                 )),
             )
             .with_state(schema.clone());
