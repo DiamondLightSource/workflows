@@ -48,6 +48,7 @@ spec:
             - get
             - workflows
             - -A
+            - -oyaml
 
       - assert:
           resource:
