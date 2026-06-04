@@ -11,8 +11,16 @@ spec:
       - command:
           entrypoint: kubectl
           args:
+            - auth
+            - whoami
+      - command:
+          entrypoint: kubectl
+          args:
             - apply
             - --filename=rbac.yaml
+          check:
+            ($error == null): true
+
       - command:
           args:
             - create
@@ -21,6 +29,9 @@ spec:
             - --clusterrole=allow-impersonation
             - --user=tester
           entrypoint: kubectl
+          check:
+            ($error == null): true
+
       - command:
           args:
           - create
@@ -29,6 +40,9 @@ spec:
           - --as-group=tester
           - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
           entrypoint: kubectl
+          check:
+            ($error == null): true
+
       - assert:
           resource:
             apiVersion: argoproj.io/v1alpha1
