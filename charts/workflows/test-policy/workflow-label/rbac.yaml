@@ -10,3 +10,7 @@ rules:
 - apiGroups: ["authentication.k8s.io"]
   resources: ["userextras/scopes", "uids"]
   verbs: ["impersonate"]
+- apiGroups: ["argoproj.io"]
+  resources: ["workflows"]
+  verbs: ["create", "get", "list", "update", "watch"]
+
