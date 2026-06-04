@@ -42,6 +42,12 @@ spec:
           entrypoint: kubectl
           check:
             ($error == null): true
+      - command:
+          entrypoint: kubectl
+          args:
+            - get
+            - workflows
+            - -A
 
       - assert:
           resource:
