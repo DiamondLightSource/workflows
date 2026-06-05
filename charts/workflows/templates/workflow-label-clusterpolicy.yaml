@@ -27,9 +27,4 @@ spec:
               {{- else }}
               workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || machineuid }}` }}'
               {{- end }}
-      mutate:
-        patchStrategicMerge:
-          metadata:
-            labels:
-              workflows.diamond.ac.uk/policy-applied: "true"
 
