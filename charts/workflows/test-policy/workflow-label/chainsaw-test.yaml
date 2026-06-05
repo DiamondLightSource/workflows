@@ -9,24 +9,39 @@ spec:
   - name: valid-posix
     try:
 
-      - command:
-          args:
-            - create
-            - clusterrolebinding
-            - workflow-runner
-            - --clusterrole=allow-impersonation
-            - --user=workflow-runner
-          entrypoint: kubectl
-
+      - create:
+          resource:
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: Role
+            metadata:
+              name: workflow-creator
+              namespace: ($namespace)
+            rules:
+              - apiGroups: ["argoproj.io"]
+                resources: ["workflows"]
+                verbs: ["create"]
+      
+      - create:
+          resource:
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: RoleBinding
+            metadata:
+              name: create-workflows
+              namespace: ($namespace)
+            subjects:
+              - kind: User
+                name: test-user
+            roleRef:
+              apiGroup: rbac.authorization.k8s.io
+              kind: Role
+              name: workflow-creator
       - command:
           args:
           - create
           - --filename=workflow.yaml
-          - --as=workflow-runner
+          - --as=workflow-creator
           - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
           entrypoint: kubectl
-          check:
-            ($error == null): true
       - command:
           entrypoint: kubectl
           args:
