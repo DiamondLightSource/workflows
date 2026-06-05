@@ -36,14 +36,20 @@ spec:
               kind: Role
               name: workflow-creator
       - command:
+          env:
+            - name: namespace
+              value: ($namespace)
+          entrypoint: sh
           args:
-          - create
-          - --filename=workflow.yaml
-          - --namespace
-          - ($namespace)
-          - --as=test-user
-          - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
-          entrypoint: kubectl
+            - -c
+            - |
+              cat <<'EOF' | kubectl create --namespace="$namespace" --as=test-user --as-user-extra=workflows.diamond.ac.uk/posixuid=12345 -f -
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-workflow
+              spec: {}
+              EOF
       - command:
           entrypoint: kubectl
           args:
