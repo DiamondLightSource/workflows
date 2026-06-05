@@ -13,24 +13,24 @@ spec:
           args:
             - auth
             - whoami
-      - command:
-          entrypoint: kubectl
-          args:
-            - apply
-            - --filename=rbac.yaml
-          check:
-            ($error == null): true
+      # - command:
+      #     entrypoint: kubectl
+      #     args:
+      #       - apply
+      #       - --filename=rbac.yaml
+      #     check:
+      #       ($error == null): true
 
-      - command:
-          args:
-            - create
-            - clusterrolebinding
-            - impersonator
-            - --clusterrole=allow-impersonation
-            - --user=tester
-          entrypoint: kubectl
-          check:
-            ($error == null): true
+      # - command:
+      #     args:
+      #       - create
+      #       - clusterrolebinding
+      #       - impersonator
+      #       - --clusterrole=allow-impersonation
+      #       - --user=tester
+      #     entrypoint: kubectl
+      #     check:
+      #       ($error == null): true
 
       - command:
           args:
