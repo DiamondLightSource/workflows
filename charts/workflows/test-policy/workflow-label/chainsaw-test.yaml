@@ -39,7 +39,7 @@ spec:
           args:
           - create
           - --filename=workflow.yaml
-          - --as=workflow-creator
+          - --as=test-user
           - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
           entrypoint: kubectl
       - command:
