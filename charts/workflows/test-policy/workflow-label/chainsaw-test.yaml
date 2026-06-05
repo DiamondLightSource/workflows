@@ -32,11 +32,11 @@ spec:
           check:
             ($error == null): true
       
-      - command:
-          args:
-            - get
-            - cpol
-          entrypoint: kubectl
+      # - command:
+      #     args:
+      #       - get
+      #       - cpol
+      #     entrypoint: kubectl
 
       - command:
           args:
