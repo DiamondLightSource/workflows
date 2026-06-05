@@ -36,8 +36,6 @@ spec:
           args:
             - get
             - cpol
-            - workflows-posix-uid-label
-            - -oyaml
           entrypoint: kubectl
 
       - command:
