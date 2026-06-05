@@ -251,16 +251,8 @@ type ProviderMetadataWithInstrospectionEndpoint = ProviderMetadata<
 #[cfg(test)]
 mod tests {
 
-    use std::time::Duration;
-
-    use anyhow::Context;
     use axum::http::Uri;
-    use axum_extra::headers::Authorization;
     use rstest::rstest;
-    use testcontainers::core::wait::HttpWaitStrategy;
-    use testcontainers::core::WaitFor;
-    use testcontainers::runners::AsyncRunner;
-    use testcontainers::{GenericImage, ImageExt};
 
     use super::{TokenValidator, ValidatedAuthToken, ValidationMethod};
 
@@ -269,49 +261,19 @@ mod tests {
     #[case(ValidationMethod::Introspection)]
     #[case(ValidationMethod::Jwt)]
     async fn test_token_validator(#[case] method: ValidationMethod) -> anyhow::Result<()> {
+        use crate::test_oidc_server::TestOidcServer;
+
         if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
             eprintln!("Skipping test: test containers don't work inside VSCode dev container");
             return Ok(());
         }
 
-        let wait_strategy = HttpWaitStrategy::new("default/.well-known/openid-configuration")
-            .with_expected_status_code(200u16);
-        let oidc_container = GenericImage::new("ghcr.io/navikt/mock-oauth2-server", "3.0.1")
-            .with_wait_for(WaitFor::http(wait_strategy))
-            .with_env_var("SERVER_PORT", "8080")
-            .with_startup_timeout(Duration::from_secs(60))
-            .start()
-            .await
-            .expect("failed to start mock OIDC server");
-        let port = oidc_container.get_host_port_ipv4(8080).await?;
-        let host = oidc_container.get_host().await?;
-        let mock_admin_url = format!("http://{}:{}/default/token", host, port);
-        let params = [
-            ("grant_type", "client_credentials"),
-            ("scope", "openid"),
-            ("subject", "test-subject"),
-            ("client_id", "test-client"),
-            ("client_secret", "test-secret"),
-        ];
+        let oidc_server = TestOidcServer::new().await?;
 
-        let response: serde_json::Value = reqwest::Client::new()
-            .post(mock_admin_url)
-            .timeout(Duration::from_secs(10))
-            .form(&params)
-            .send()
-            .await?
-            .json()
-            .await?;
-        let access_token = response
-            .get("access_token")
-            .context("no access token")?
-            .as_str()
-            .context("invalid access token")?;
-        let access_token = Authorization::bearer(access_token)?;
-        let issuer_url = format!("http://{}:{}/default", host, port).parse::<Uri>()?;
-
+        let access_token = oidc_server.access_token().await?;
+        
         let token_validator = TokenValidator::new(
-            &issuer_url,
+            &oidc_server.issuer_url.parse::<Uri>()?,
             "test-client",
             Some("test-secret".to_string()),
             vec!["workflows-cluster"],
@@ -324,7 +286,6 @@ mod tests {
 
         assert_eq!(ValidatedAuthToken::Valid(access_token), authenticated_token);
 
-        oidc_container.stop_with_timeout(Some(60)).await?;
         Ok(())
     }
 }

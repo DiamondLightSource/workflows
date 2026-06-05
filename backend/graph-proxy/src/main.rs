@@ -14,6 +14,9 @@ mod metrics;
 /// Validate Bearer tokens
 mod validate_token;
 
+#[cfg(test)]
+mod test_oidc_server;
+
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
     metrics::{Metrics, MetricsState},
