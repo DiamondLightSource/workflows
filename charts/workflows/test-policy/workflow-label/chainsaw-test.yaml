@@ -31,6 +31,14 @@ spec:
           entrypoint: kubectl
           check:
             ($error == null): true
+      
+      - command:
+          args:
+            - get
+            - cpol
+            - workflows-posix-uid-label
+            - -oyaml
+          entrypoint: kubectl
 
       - command:
           args:
