@@ -8,42 +8,21 @@ spec:
   steps:
   - name: valid-posix
     try:
-      - command:
-          entrypoint: kubectl
-          args:
-            - auth
-            - whoami
-      - command:
-          entrypoint: kubectl
-          args:
-            - apply
-            - --filename=rbac.yaml
-          check:
-            ($error == null): true
 
       - command:
           args:
             - create
             - clusterrolebinding
-            - impersonator
+            - workflow-runner
             - --clusterrole=allow-impersonation
-            - --user=tester
+            - --user=workflow-runner
           entrypoint: kubectl
-          check:
-            ($error == null): true
-      
-      # - command:
-      #     args:
-      #       - get
-      #       - cpol
-      #     entrypoint: kubectl
 
       - command:
           args:
           - create
           - --filename=workflow.yaml
-          - --as=tester
-          - --as-group=tester
+          - --as=workflow-runner
           - --as-user-extra=workflows.diamond.ac.uk/posixuid=12345
           entrypoint: kubectl
           check:
