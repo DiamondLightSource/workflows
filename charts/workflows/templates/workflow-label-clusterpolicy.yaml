@@ -26,5 +26,5 @@ spec:
               workflows.diamond.ac.uk/creator-posix-uid: '{{ . }}'
               {{- else }}
               workflows.diamond.ac.uk/policy-applied: "true"
-              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || machineuid }}` }}'
+              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || machineuid || "12345"}}` }}'
               {{- end }}
