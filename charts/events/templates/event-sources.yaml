@@ -38,4 +38,24 @@ spec:
         host: i15-1-rabbitmq-daq.diamond.ac.uk
         port: 61613
         destination: /queue/public.worker.event.workflows
+---
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: visr-generic
+  labels:
+    workflows.diamond.ac.uk/beamline: b01-1
+    workflows.diamond.ac.uk/machine-uid: "36055"
+spec:
+  generic:
+    visr-example:
+      insecure: true
+      jsonBody: true
+      url: "stomp-service.events.svc:80"
+      config: |
+        user: guest
+        password: guest
+        host: b01-1-rabbitmq-daq.diamond.ac.uk
+        port: 61613
+        destination: /topic/public.worker.event
 {{- end }}
