@@ -1,7 +1,7 @@
+use crate::graphql::AuthGuard;
 use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowWatchEvent;
 use async_graphql::{Context, SimpleObject, Subscription};
 use async_stream::stream;
-use axum_extra::headers::{authorization::Bearer, Authorization};
 use eventsource_stream::Eventsource;
 use futures_util::{Stream, StreamExt};
 use serde::Deserialize;
@@ -12,6 +12,7 @@ use crate::{
         workflows::{Workflow, WorkflowParsingError},
         VisitInput,
     },
+    validate_token::ValidatedAuthToken,
     ArgoServerUrl,
 };
 
@@ -56,13 +57,14 @@ struct WatchEvent {
 
 /// Get authentication token
 fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
-    ctx.data_unchecked::<Option<Authorization<Bearer>>>()
+    let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+    auth_token
         .as_ref()
         .map(|auth| auth.token().to_string())
         .ok_or_else(|| WorkflowParsingError::MissingAuthToken.into())
 }
 
-#[Subscription]
+#[Subscription(guard = "AuthGuard")]
 impl WorkflowsSubscription {
     /// Processing to subscribe to logs for a single pod of a workflow
     async fn logs(
@@ -212,4 +214,176 @@ struct StreamError {
     message: String,
 }
 
-// TODO! Write tests for this
+#[cfg(test)]
+mod tests {
+
+    use std::{env, fs, path::PathBuf};
+
+    use async_graphql::Request;
+    use axum_extra::headers::Authorization;
+    use futures_util::StreamExt;
+    use mockito::Matcher;
+    use rstest::rstest;
+    use serde_json::{json, Value};
+    use url::Url;
+
+    use crate::graphql::Visit;
+    use crate::ArgoServerUrl;
+
+    use crate::graphql::root_schema_builder;
+    use crate::validate_token::ValidatedAuthToken;
+
+    fn test_token() -> ValidatedAuthToken {
+        let token = Authorization::bearer("test-token").expect("token always valid");
+        ValidatedAuthToken::Valid(token)
+    }
+
+    #[tokio::test]
+    async fn single_workflow_subscription_returns_first_event() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut workflow_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        workflow_file_path.push("test-assets");
+        workflow_file_path.push("get-workflow-wdkwj.json");
+
+        let workflow_json =
+            fs::read_to_string(&workflow_file_path).expect("failed to read workflow test asset");
+
+        let workflow_value: Value =
+            serde_json::from_str(&workflow_json).expect("workflow fixture is not valid JSON");
+
+        let event_payload = json!({
+            "result": {
+                "object": workflow_value
+            },
+            "error": null
+        });
+
+        let sse_body = format!(
+            "data: {}\n\n",
+            serde_json::to_string(&event_payload).expect("failed to serialize SSE payload")
+        );
+
+        let mut server = mockito::Server::new_async().await;
+        let path = format!("/api/v1/workflow-events/{visit}");
+        let workflow_events_endpoint = server
+            .mock("GET", path.as_str())
+            .match_query(Matcher::UrlEncoded(
+                "listOptions.fieldSelector".into(),
+                format!("metadata.name={workflow_name},metadata.namespace={visit}"),
+            ))
+            .with_status(200)
+            .with_header("content-type", "text/event-stream")
+            .with_body(sse_body)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(test_token())
+            .finish();
+
+        let request = Request::new(format!(
+            r#"
+        subscription {{
+            workflow(
+                name: "{}",
+                visit: {{ proposalCode: "{}", proposalNumber: {}, number: {} }}
+            ) {{
+                name
+            }}
+        }}
+        "#,
+            workflow_name, visit.proposal_code, visit.proposal_number, visit.number
+        ));
+
+        let mut response_stream = schema.execute_stream(request);
+
+        let first_response = response_stream
+            .next()
+            .await
+            .expect("subscription stream ended before first response");
+
+        assert!(
+            first_response.errors.is_empty(),
+            "unexpected GraphQL errors: {:?}",
+            first_response.errors
+        );
+
+        let expected_data = json!({
+            "workflow": {
+                "name": workflow_name
+            }
+        });
+
+        assert_eq!(
+            first_response
+                .data
+                .into_json()
+                .expect("invalid response json"),
+            expected_data
+        );
+
+        workflow_events_endpoint.assert_async().await;
+    }
+
+    #[tokio::test]
+    #[rstest]
+    #[case(ValidatedAuthToken::Missing)]
+    #[case(ValidatedAuthToken::Invalid)]
+    #[case(ValidatedAuthToken::Failed("reason".to_string()))]
+    async fn unauthenticated_subscription_returns_null(#[case] auth_token: ValidatedAuthToken) {
+        use crate::graphql::auth_guard::AuthErrorCode;
+
+        let schema = root_schema_builder().data(auth_token).finish();
+
+        let request = Request::new(
+            r#"
+        subscription {
+            workflow(
+                name: "workflowName",
+                visit: { proposalCode: "xy", proposalNumber: 1234, number: 5678 }
+            ) {
+                name
+            }
+        }
+    "#,
+        );
+
+        let mut response_stream = schema.execute_stream(request);
+
+        let first_response = response_stream
+            .next()
+            .await
+            .expect("subscription stream ended before first response");
+
+        let expected_data = json!(null);
+        assert_eq!(
+            first_response
+                .data
+                .into_json()
+                .expect("invalid response json"),
+            expected_data
+        );
+
+        let error_code = first_response.errors[0]
+            .extensions
+            .as_ref()
+            .expect("missing extensions")
+            .get("code")
+            .expect("missing code")
+            .clone()
+            .into_json()
+            .expect("invalid json");
+
+        let expected_value = json!(AuthErrorCode::Unauthenticated.to_string());
+        assert_eq!(error_code, expected_value);
+    }
+}
