@@ -20,7 +20,7 @@ pub fn lint_from_helm(target: &Path, all: bool) -> Result<Vec<LintResult>, Strin
     let mut results = lint_from_manifest(&path_buf, true)?;
 
     // Filter out tmp files
-    results.retain(|r| !r.template_name.starts_with("/tmp/argo-lint"));
+    results.retain(|r| !r.name.starts_with("/tmp/argo-lint"));
 
     Ok(results)
 }
