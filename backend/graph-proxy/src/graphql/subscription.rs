@@ -339,8 +339,6 @@ async fn unauthenticated_subscription_returns_null(#[case] auth_token: Validated
 
     let schema = root_schema_builder()
         .data(auth_token)
-        // a dummy URL, it should never be called
-        .data(ArgoServerUrl(Url::parse("http://localhost").unwrap()))
         .finish();
 
     let request = Request::new(r#"
