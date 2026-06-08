@@ -47,7 +47,10 @@ use futures_util::{
 use opentelemetry::KeyValue;
 use tower_service::Service;
 
-use crate::{metrics::MetricsState, validate_token::{TokenValidator, ValidationMethod}};
+use crate::{
+    metrics::MetricsState,
+    validate_token::{TokenValidator, ValidationMethod},
+};
 
 /// A GraphQL protocol extractor.
 ///
@@ -80,7 +83,7 @@ where
 pub struct GraphQLSubscription<E> {
     executor: E,
     metrics_state: MetricsState,
-    token_validator: Arc<TokenValidator>
+    token_validator: Arc<TokenValidator>,
 }
 
 impl<E> Clone for GraphQLSubscription<E>
@@ -101,7 +104,11 @@ where
     E: Executor,
 {
     /// Create a GraphQL subscription service.
-    pub fn new(executor: E, metrics_state: MetricsState, token_validator: Arc<TokenValidator>) -> Self {
+    pub fn new(
+        executor: E,
+        metrics_state: MetricsState,
+        token_validator: Arc<TokenValidator>,
+    ) -> Self {
         Self {
             executor,
             metrics_state,
@@ -178,7 +185,9 @@ where
                             match auth_header {
                                 Ok(header) => {
                                     let mut data = Data::default();
-                                    let validated_token = token_validator.validate_token(Some(header), ValidationMethod::Jwt).await;
+                                    let validated_token = token_validator
+                                        .validate_token(Some(header), ValidationMethod::Jwt)
+                                        .await;
                                     data.insert(Some(validated_token));
                                     Ok(data)
                                 }
@@ -381,11 +390,15 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{metrics::{Metrics, noop::NoopMeterProvider}, test_oidc_server::TestOidcServer, validate_token::ValidatedAuthToken};
+    use crate::{
+        metrics::{noop::NoopMeterProvider, Metrics},
+        test_oidc_server::TestOidcServer,
+        validate_token::ValidatedAuthToken,
+    };
     use async_graphql::{Context, EmptyMutation, Object, Schema, Subscription};
-    use axum::{Router, http::Uri, routing::get_service};
+    use axum::{http::Uri, routing::get_service, Router};
     use axum_extra::headers::HeaderMapExt;
-use futures_util::Stream;
+    use futures_util::Stream;
     use graphql_ws_client::graphql::StreamingOperation;
     use serde::{Deserialize, Serialize};
     use serde_json::json;
@@ -411,7 +424,7 @@ use futures_util::Stream;
         /// Token Data provided by async_graphql::Context
         async fn token(&self, ctx: &Context<'_>) -> impl Stream<Item = String> + '_ {
             let token_str = ctx
-                .data_opt::<Option<ValidatedAuthToken<>>>()
+                .data_opt::<Option<ValidatedAuthToken>>()
                 .and_then(|opt| opt.as_ref())
                 .map(|auth| auth.as_token())
                 .flatten()
@@ -441,8 +454,8 @@ use futures_util::Stream;
         }
     }
 
-    async fn start_echo_token_server() -> anyhow::Result<(String, tokio::task::JoinSet<()>, TestOidcServer)> {
-
+    async fn start_echo_token_server(
+    ) -> anyhow::Result<(String, tokio::task::JoinSet<()>, TestOidcServer)> {
         let oidc_server = TestOidcServer::new().await?;
 
         let token_validator = TokenValidator::new(
@@ -461,7 +474,7 @@ use futures_util::Stream;
                 get_service(GraphQLSubscription::new(
                     schema.clone(),
                     MetricsState::new(Metrics::new(&NoopMeterProvider::new())),
-                    Arc::new(token_validator)
+                    Arc::new(token_validator),
                 )),
             )
             .with_state(schema.clone());
@@ -482,12 +495,11 @@ use futures_util::Stream;
 
     #[tokio::test]
     async fn subscription_token_is_read_from_http_header() -> anyhow::Result<()> {
-
         if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
             eprintln!("Skipping test: test containers don't work inside VSCode dev container");
             return Ok(());
         }
-        
+
         let (server_address, _server_guard, oidc_server) = start_echo_token_server().await?;
 
         let access_token = oidc_server.access_token().await?;
@@ -523,7 +535,6 @@ use futures_util::Stream;
 
     #[tokio::test]
     async fn subscription_token_is_read_from_connection_init_payload() -> anyhow::Result<()> {
-
         if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
             eprintln!("Skipping test: test containers don't work inside VSCode dev container");
             return Ok(());
@@ -534,7 +545,6 @@ use futures_util::Stream;
         let access_token = oidc_server.access_token().await?;
 
         let expected_token = access_token.token().to_string();
-
 
         let mut req = server_address.into_client_request()?;
         req.headers_mut().insert(
@@ -564,7 +574,6 @@ use futures_util::Stream;
 
     #[tokio::test]
     async fn subscription_returns_error_if_no_token() -> anyhow::Result<()> {
-
         if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
             eprintln!("Skipping test: test containers don't work inside VSCode dev container");
             return Ok(());

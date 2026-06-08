@@ -228,7 +228,7 @@ async fn setup_router(
             .with_state(RouterState {
                 schema: schema.clone(),
                 metrics_state: metrics_state.clone(),
-                token_validator:token_validator.clone() ,
+                token_validator: token_validator.clone(),
             }),
         )
         .route_service(

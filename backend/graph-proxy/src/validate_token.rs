@@ -263,7 +263,6 @@ mod tests {
     #[case(ValidationMethod::Introspection)]
     #[case(ValidationMethod::Jwt)]
     async fn test_token_validator(#[case] method: ValidationMethod) -> anyhow::Result<()> {
-
         if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
             eprintln!("Skipping test: test containers don't work inside VSCode dev container");
             return Ok(());
@@ -272,7 +271,7 @@ mod tests {
         let oidc_server = TestOidcServer::new().await?;
 
         let access_token = oidc_server.access_token().await?;
-        
+
         let token_validator = TokenValidator::new(
             &oidc_server.issuer_url.parse::<Uri>()?,
             "test-client",
