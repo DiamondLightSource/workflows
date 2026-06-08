@@ -188,7 +188,7 @@ where
                                     let validated_token = token_validator
                                         .validate_token(Some(header), ValidationMethod::Jwt)
                                         .await;
-                                    data.insert(Some(validated_token));
+                                    data.insert(validated_token);
                                     Ok(data)
                                 }
                                 Err(_e) => {
@@ -424,8 +424,7 @@ mod tests {
         /// Token Data provided by async_graphql::Context
         async fn token(&self, ctx: &Context<'_>) -> impl Stream<Item = String> + '_ {
             let token_str = ctx
-                .data_opt::<Option<ValidatedAuthToken>>()
-                .and_then(|opt| opt.as_ref())
+                .data_opt::<ValidatedAuthToken>()
                 .map(|auth| auth.as_token())
                 .flatten()
                 .map(|auth| auth.token().to_string())
