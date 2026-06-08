@@ -24,10 +24,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Version from Tag
-        id: tags
-        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT
-
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5.10.0
@@ -36,6 +32,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=raw,value=latest,enable={{is_default_branch}}
+            type=match,pattern=identity-mapper@(.+),group=1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.0.0
