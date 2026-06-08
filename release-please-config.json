@@ -24,6 +24,16 @@
         }
       ]       
     },
+    "backend/identity-mapper": {
+      "release-type": "python",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/identity-mapper/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ]
+    },
     "backend/oidc-bff": {
       "release-type": "rust",
       "extra-files": [
