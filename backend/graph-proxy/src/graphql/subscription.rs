@@ -6,6 +6,7 @@ use eventsource_stream::Eventsource;
 use futures_util::{Stream, StreamExt};
 use serde::Deserialize;
 use std::ops::Deref;
+use crate::graphql::AuthGuard;
 
 use crate::{
     ArgoServerUrl, graphql::{
@@ -61,7 +62,7 @@ fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
         .ok_or_else(|| WorkflowParsingError::MissingAuthToken.into())
 }
 
-#[Subscription]
+#[Subscription(guard = "AuthGuard")]
 impl WorkflowsSubscription {
     /// Processing to subscribe to logs for a single pod of a workflow
     async fn logs(
@@ -220,6 +221,7 @@ use async_graphql::Request;
 use axum_extra::headers::Authorization;
 use futures_util::StreamExt;
 use mockito::Matcher;
+use rstest::rstest;
 use serde_json::{Value, json};
 use url::Url;
 
@@ -325,6 +327,58 @@ async fn single_workflow_subscription_returns_first_event() {
     );
 
     workflow_events_endpoint.assert_async().await;
+}
+
+#[tokio::test]
+#[rstest]
+#[case(ValidatedAuthToken::Missing)]
+#[case(ValidatedAuthToken::Invalid)]
+#[case(ValidatedAuthToken::Failed("reason".to_string()))]
+async fn unauthenticated_subscription_returns_null(#[case] auth_token: ValidatedAuthToken) {
+    use crate::graphql::auth_guard::AuthErrorCode;
+
+    let schema = root_schema_builder()
+        .data(auth_token)
+        // a dummy URL, it should never be called
+        .data(ArgoServerUrl(Url::parse("http://localhost").unwrap()))
+        .finish();
+
+    let request = Request::new(r#"
+        subscription {
+            workflow(
+                name: "workflowName",
+                visit: { proposalCode: "xy", proposalNumber: 1234, number: 5678 }
+            ) {
+                name
+            }
+        }
+    "#);
+
+    let mut response_stream = schema.execute_stream(request);
+
+    let first_response = response_stream
+        .next()
+        .await
+        .expect("subscription stream ended before first response");
+
+    let expected_data = json!(null);
+    assert_eq!(
+        first_response.data.into_json().expect("invalid response json"),
+        expected_data
+    );
+
+    let error_code = first_response.errors[0]
+        .extensions
+        .as_ref()
+        .expect("missing extensions")
+        .get("code")
+        .expect("missing code")
+        .clone()
+        .into_json()
+        .expect("invalid json");
+
+    let expected_value = json!(AuthErrorCode::Unauthenticated.to_string());
+    assert_eq!(error_code, expected_value);
 }
 
 }

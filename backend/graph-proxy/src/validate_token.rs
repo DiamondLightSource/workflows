@@ -256,12 +256,13 @@ mod tests {
 
     use super::{TokenValidator, ValidatedAuthToken, ValidationMethod};
 
+    use crate::test_oidc_server::TestOidcServer;
+
     #[tokio::test]
     #[rstest]
     #[case(ValidationMethod::Introspection)]
     #[case(ValidationMethod::Jwt)]
     async fn test_token_validator(#[case] method: ValidationMethod) -> anyhow::Result<()> {
-        use crate::test_oidc_server::TestOidcServer;
 
         if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
             eprintln!("Skipping test: test containers don't work inside VSCode dev container");

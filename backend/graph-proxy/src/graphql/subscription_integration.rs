@@ -445,8 +445,6 @@ use futures_util::Stream;
 
         let oidc_server = TestOidcServer::new().await?;
 
-        let access_token = oidc_server.access_token().await?;
-        
         let token_validator = TokenValidator::new(
             &oidc_server.issuer_url.parse::<Uri>()?,
             "test-client",
@@ -484,6 +482,11 @@ use futures_util::Stream;
 
     #[tokio::test]
     async fn subscription_token_is_read_from_http_header() -> anyhow::Result<()> {
+
+        if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
+            eprintln!("Skipping test: test containers don't work inside VSCode dev container");
+            return Ok(());
+        }
         
         let (server_address, _server_guard, oidc_server) = start_echo_token_server().await?;
 
@@ -520,6 +523,12 @@ use futures_util::Stream;
 
     #[tokio::test]
     async fn subscription_token_is_read_from_connection_init_payload() -> anyhow::Result<()> {
+
+        if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
+            eprintln!("Skipping test: test containers don't work inside VSCode dev container");
+            return Ok(());
+        }
+
         let (server_address, _server_guard, oidc_server) = start_echo_token_server().await?;
 
         let access_token = oidc_server.access_token().await?;
@@ -555,6 +564,12 @@ use futures_util::Stream;
 
     #[tokio::test]
     async fn subscription_returns_error_if_no_token() -> anyhow::Result<()> {
+
+        if std::env::var("WORKFLOWS_DEV_CONTAINER").is_ok() {
+            eprintln!("Skipping test: test containers don't work inside VSCode dev container");
+            return Ok(());
+        }
+
         let (server_address, _server_guard, _oidc_server) = start_echo_token_server().await?;
 
         let mut req = server_address.into_client_request()?;
