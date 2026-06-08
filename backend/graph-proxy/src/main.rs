@@ -14,6 +14,9 @@ mod metrics;
 /// Validate Bearer tokens
 mod validate_token;
 
+#[cfg(test)]
+mod test_oidc_server;
+
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
     metrics::{Metrics, MetricsState},
@@ -225,7 +228,7 @@ async fn setup_router(
             .with_state(RouterState {
                 schema: schema.clone(),
                 metrics_state: metrics_state.clone(),
-                token_validator,
+                token_validator: token_validator.clone(),
             }),
         )
         .route_service(
@@ -233,6 +236,7 @@ async fn setup_router(
             get_service(GraphQLSubscription::new(
                 schema.clone(),
                 metrics_state.clone(),
+                Arc::new(token_validator),
             )),
         )
         .with_state(schema.clone())
