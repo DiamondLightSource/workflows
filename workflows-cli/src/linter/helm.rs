@@ -17,7 +17,12 @@ pub fn lint_from_helm(target: &Path, all: bool) -> Result<Vec<LintResult>, Strin
         .map_err(|_e| "Couldn't create temporary file for helm templates.")?;
 
     let path_buf = tmp_dir.to_path_buf();
-    lint_from_manifest(&path_buf, true)
+    let mut results = lint_from_manifest(&path_buf, true)?;
+
+    // Filter out tmp files
+    results.retain(|r| !r.template_name.starts_with("/tmp/argo-lint"));
+
+    Ok(results)
 }
 
 pub fn write_to_clean_folder(path: &Path, contents: Vec<String>) -> std::io::Result<()> {
