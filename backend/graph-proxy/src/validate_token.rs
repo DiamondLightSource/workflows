@@ -274,7 +274,7 @@ mod tests {
 
         let token_validator = TokenValidator::new(
             &oidc_server.issuer_url.parse::<Uri>()?,
-            "test-client",
+            &oidc_server.client_id,
             Some("test-secret".to_string()),
             vec!["workflows-cluster"],
         )
@@ -285,6 +285,8 @@ mod tests {
             .await;
 
         assert_eq!(ValidatedAuthToken::Valid(access_token), authenticated_token);
+
+        oidc_server.stop().await?;
 
         Ok(())
     }

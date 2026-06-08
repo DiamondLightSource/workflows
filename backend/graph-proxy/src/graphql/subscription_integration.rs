@@ -529,7 +529,7 @@ mod tests {
             serde_json::json!({"token": expected_token}),
             "http header token is used for auth"
         );
-
+        oidc_server.stop().await?;
         Ok(())
     }
 
@@ -568,7 +568,7 @@ mod tests {
             serde_json::json!({"token": expected_token}),
             "connection_init token is used for auth"
         );
-
+        oidc_server.stop().await?;
         Ok(())
     }
 
@@ -579,7 +579,7 @@ mod tests {
             return Ok(());
         }
 
-        let (server_address, _server_guard, _oidc_server) = start_echo_token_server().await?;
+        let (server_address, _server_guard, oidc_server) = start_echo_token_server().await?;
 
         let mut req = server_address.into_client_request()?;
         req.headers_mut().insert(
@@ -601,7 +601,7 @@ mod tests {
             ),
             "subscriptions require an auth token in either http header or connection_init frame"
         );
-
+        oidc_server.stop().await?;
         Ok(())
     }
 }

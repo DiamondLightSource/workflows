@@ -2,7 +2,6 @@ use crate::graphql::AuthGuard;
 use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowWatchEvent;
 use async_graphql::{Context, SimpleObject, Subscription};
 use async_stream::stream;
-use axum_extra::headers::{authorization::Bearer, Authorization};
 use eventsource_stream::Eventsource;
 use futures_util::{Stream, StreamExt};
 use serde::Deserialize;

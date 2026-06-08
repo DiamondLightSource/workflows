@@ -30,13 +30,6 @@ impl TestOidcServer {
             .expect("failed to start mock OIDC server");
         let port = oidc_container.get_host_port_ipv4(8080).await?;
         let host = oidc_container.get_host().await?.to_string();
-        let params = [
-            ("grant_type", "client_credentials"),
-            ("scope", "openid"),
-            ("subject", "test-subject"),
-            ("client_id", "test-client"),
-            ("client_secret", "test-secret"),
-        ];
         let issuer_url = format!("http://{}:{}/default", host, port);
         let server = TestOidcServer {
             container: oidc_container,
@@ -56,8 +49,8 @@ impl TestOidcServer {
             ("grant_type", "client_credentials"),
             ("scope", "openid"),
             ("subject", "test-subject"),
-            ("client_id", "test-client"),
-            ("client_secret", "test-secret"),
+            ("client_id", &self.client_id),
+            ("client_secret", &self.client_secret),
         ];
         let mock_admin_url = format!("http://{}:{}/default/token", self.host, self.port);
         let response: serde_json::Value = reqwest::Client::new()
