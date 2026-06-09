@@ -7,6 +7,7 @@ use std::path::Path;
 
 use crate::helm_integration::helm_to_manifest;
 use crate::linter::LintResult;
+
 use crate::linter::base_linting::lint_from_manifest;
 
 pub fn lint_from_helm(target: &Path, all: bool) -> Result<Vec<LintResult>, String> {
