@@ -1,3 +1,4 @@
+{{- if index .Values "argo-events" "enabled" }}
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
@@ -17,3 +18,37 @@ spec:
         image: alpine:latest
         command: ["sh", "-c"]
         args: ['echo "Received message: {{`{{inputs.parameters.message}}`}}"']
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: access-visit-dir
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: access-visit-dir
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+spec:
+  entrypoint: test-permissions
+  arguments:
+    parameters:
+      - name: visitdir
+        value: "/tmp"
+  templates:
+    - name: test-permissions
+      inputs:
+      container:
+        image: busybox
+        volumeMounts:
+          - name: visitdir
+            mountPath: /data
+        command: [/bin/sh, "-c"]
+        workingDir: /data
+        args: ["id && pwd && ls"]
+
+      volumes:
+        - name: visitdir
+          hostPath:
+            path: "{{`{{ workflow.parameters.visitdir }}`}}"
+            type: Directory
+{{- end }}
