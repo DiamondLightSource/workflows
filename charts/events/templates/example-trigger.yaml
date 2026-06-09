@@ -34,6 +34,23 @@ spec:
   enabled: true
   eventName: waffle-example
   workflow:
+    template: access-visit-dir
+    parameters:
+      - name: visitdir
+        messagePath: body.doc.data_session_directory
+    
+---
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: Trigger
+metadata:
+  name: visr-trigger
+  labels:
+    workflows.diamond.ac.uk/source: generic
+    workflows.diamond.ac.uk/beamline: b01-1
+spec:
+  enabled: true
+  eventName: visr-example
+  workflow:
     template: echo-workflow-template
     parameters:
       - name: message

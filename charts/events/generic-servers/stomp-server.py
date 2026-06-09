@@ -24,8 +24,8 @@ class EventSourceConfig(BaseModel):
 
 def parse_config(config: bytes) -> EventSourceConfig | None:
     try:
-        decoded_confid = config.decode()
-        config_entries = decoded_confid.strip().split("\n")
+        decoded_config = config.decode()
+        config_entries = decoded_config.strip().split("\n")
         config_dict = dict(entry.split(": ") for entry in config_entries)
         return EventSourceConfig.model_validate(config_dict)
     except:
@@ -35,6 +35,38 @@ def parse_config(config: bytes) -> EventSourceConfig | None:
 
 def _build_event(payload: str) -> generic_pb2.Event:
     return generic_pb2.Event(name="workflow-trigger", payload=payload.encode())
+
+
+class ConnectionManager():
+    def __init__(self):
+        self.connection: stomp.Connection
+        self.queue = queue.SimpleQueue()
+
+    def create_connection(self, request: generic_pb2.EventSource) -> None:
+        config = parse_config(request.config)
+
+        if not config:
+            logging.error("No config supplied")
+            return
+        logging.debug("Using config: %s", config)
+        conn = stomp.Connection([(config.host, config.port)], heartbeats=(10000, 10000))
+        conn.set_listener("", _StompListener(self.queue, request.name))
+        conn.connect(
+            login=config.user,
+            passcode=config.password,
+            wait=True,
+            headers={"host": "/"},
+        )
+        conn.subscribe(
+            destination=config.destination, id="workflows-trigger", ack=config.ack
+        )
+        self.connection  = conn
+
+    def get_queue(self) -> queue.SimpleQueue:
+        return self.queue 
+
+    def get_connection(self) -> stomp.Connection:
+        return self.connection
 
 
 class _StompListener(stomp.ConnectionListener):
@@ -57,33 +89,17 @@ class _StompListener(stomp.ConnectionListener):
             if messageJson.get("name") == "start":
                 self.q.put(frame.body)
 
-    def on_heartbeat(self):
+    def on_heartbeat(self) -> None:
         logging.debug("Hearbeat received")
 
 class StompEventServicer(generic_pb2_grpc.EventingServicer):
-    def StartEventSource(self, request, context):
-        event_queue = queue.SimpleQueue()
-        config = parse_config(request.config)
-
-        if not config:
-            logging.error("No config supplied")
-            return
-        logging.debug("Using config: %s", config)
-        conn = stomp.Connection([(config.host, config.port)], heartbeats=(10000, 10000))
-        conn.set_listener("", _StompListener(event_queue))
-        conn.connect(
-            login=config.user,
-            passcode=config.password,
-            wait=True,
-            headers={"host": "/"},
-        )
-        conn.subscribe(
-            destination=config.destination, id="workflows-trigger", ack=config.ack
-        )
-
-        while True:
+    def StartEventSource(self, request: generic_pb2.EventSource, context):
+        conn_manager = ConnectionManager()
+        conn_manager.create_connection(request)
+        msg_queue = conn_manager.get_queue()
+        while msg_queue:
             try:
-                msg = event_queue.get(timeout=1)
+                msg = msg_queue.get(timeout=1)
             except queue.Empty:
                 continue
 
