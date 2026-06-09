@@ -69,3 +69,65 @@ spec:
           - |
             echo "Creating fake Python project..."
             mkdir -p /workspace/tests
+
+            cat <<EOF > /workspace/app.py
+            def add(a, b):
+                return a + b
+            EOF
+
+            cat <<EOF > /workspace/tests/test_app.py
+            from app import add
+
+            def test_add():
+                assert add(2, 3) == 5
+            EOF
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: lint
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet ruff
+            export PATH=$PATH:/root/.local/bin
+
+            echo "Running lint..."
+            cd /workspace
+            ruff . --exclude tests || true
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: test
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet pytest
+
+            echo "Running tests..."
+            cd /workspace
+            export PYTHONPATH=/workspace
+            pytest -q
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: run-job
+      inputs:
+        parameters:
+          - name: visitdir
+      container:
+        image: alpine:3.19
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "Process complete"
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
