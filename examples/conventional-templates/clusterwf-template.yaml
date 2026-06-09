@@ -3,6 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: simple-cluster-template
   labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
     workflows.diamond.ac.uk/type: "live"
   annotations:
     workflows.argoproj.io/title: simple-cluster-template
