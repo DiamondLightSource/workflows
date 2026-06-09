@@ -1,6 +1,5 @@
 import logging
 
-import jsonpatch
 import kubernetes
 
 from ._identity import Identity, IdentityCrd
