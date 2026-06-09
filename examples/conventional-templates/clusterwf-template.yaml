@@ -3,12 +3,12 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: simple-cluster-template
   labels:
-    workflows.diamond.ac.uk/science-group-examples: "true"
     workflows.diamond.ac.uk/type: "live"
+    workflows.diamond.ac.uk/science-group: "examples"
   annotations:
     workflows.argoproj.io/title: simple-cluster-template
     workflows.argoproj.io/description: |
-      Minimal ClusterWorkflowTemplate for testing.
+      Minimal ClusterWorkflowTemplate for testing long-running pod.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 
 spec:
@@ -18,6 +18,12 @@ spec:
     - name: hello
       container:
         image: alpine:3.19
-        command: [sh, -c]
+        command: ["sh", "-c"]
         args:
-          - echo "Hello from ClusterWorkflowTemplate"
+          - |
+            echo "Pod starting..."
+            for i in $(seq 1 180); do
+              echo "Running... $i"
+              sleep 1
+            done
+            echo "Done after ~3 minutes"
