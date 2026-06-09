@@ -30,7 +30,8 @@ def sync_ldap_to_kubernetes(
         return
 
     _logger.info(
-        "Applying %d changes (%d creates, %d deletes, %d updates) to match desired LDAP state...",
+        "Applying %d changes (%d creates, %d deletes, %d updates)"
+        " to match desired LDAP state...",
         total_ops,
         to_create,
         to_delete,
