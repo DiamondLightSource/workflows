@@ -4,7 +4,7 @@ metadata:
   name: simple-cluster-template
   labels:
     workflows.diamond.ac.uk/type: "live"
-    workflows.diamond.ac.uk/science-group: "examples"
+    workflows.diamond.ac.uk/science-group-examples: "true"
   annotations:
     workflows.argoproj.io/title: simple-cluster-template
     workflows.argoproj.io/description: |
