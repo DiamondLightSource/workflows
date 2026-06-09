@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.19](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.18...graph-proxy@v0.1.19) (2026-06-09)
+
+
+### Bug Fixes
+
+* **backend:** docstrings for graph-proxy and auth-core ([300d147](https://github.com/DiamondLightSource/workflows/commit/300d147a789aef3614261e1327e6ef82ab9e3f1c))
+* **backend:** remove duplicates in toml files ([1386df6](https://github.com/DiamondLightSource/workflows/commit/1386df69ad8bf62854e7a8bab30f03fa0e87024c))
+* **backend:** updated backend dependencies ([e124b23](https://github.com/DiamondLightSource/workflows/commit/e124b23ef1fe9322dce880d8efa3d9bb3b212437))
+* **graph-proxy:** subscriptions enforces authentication with AuthGuard ([a17a16f](https://github.com/DiamondLightSource/workflows/commit/a17a16f894b53fce6392c39d7d68c34cae4cc5c3))
+
 ## [0.1.18](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.17...graph-proxy@v0.1.18) (2026-04-28)
 
 
