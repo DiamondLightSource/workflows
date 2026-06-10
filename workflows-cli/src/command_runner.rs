@@ -116,7 +116,7 @@ impl MockCommand {
         let entry = self
             .mappings
             .iter()
-            .find(|entry| entry.command == full_command)
+            .find(|entry| full_command.starts_with(&entry.command))
             .unwrap();
         (entry.response.clone(), entry.code)
     }
