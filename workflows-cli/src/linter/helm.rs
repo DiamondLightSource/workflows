@@ -17,6 +17,7 @@ pub fn lint_from_helm(target: &Path, all: bool) -> Result<Vec<LintResult>, Strin
     write_to_clean_folder(tmp_dir, manifests)
         .map_err(|_e| "Couldn't create temporary file for helm templates.")?;
 
+
     let path_buf = tmp_dir.to_path_buf();
     lint_from_manifest(&path_buf, true)
 }
