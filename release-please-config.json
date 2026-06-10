@@ -26,6 +26,7 @@
     },
     "backend/identity-mapper": {
       "release-type": "python",
+      "package-name": "identity-mapper",
       "extra-files": [
         {
           "type": "yaml",
