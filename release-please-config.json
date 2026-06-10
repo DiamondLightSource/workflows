@@ -32,6 +32,11 @@
           "type": "yaml",
           "path": "/charts/identity-mapper/Chart.yaml",
           "jsonpath": "$.appVersion"
+        },
+        {
+          "type": "toml",
+          "path": "/backend/identity-mapper/uv.lock",
+          "jsonpath": "$.package[?(@.name.value=='identity-mapper')].version"
         }
       ]
     },
