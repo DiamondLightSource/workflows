@@ -4,10 +4,11 @@ metadata:
   name: simple-cluster-template
 
   labels:
+    #workflows.diamond.ac.uk/type: "live"
     workflows.diamond.ac.uk/science-group-examples: "true"
 
   annotations:
-    workflows.diamond.ac.uk/type: "live"
+   # workflows.diamond.ac.uk/type: "live"
     workflows.argoproj.io/title: simple-cluster-template
     workflows.argoproj.io/description: |
       Minimal ClusterWorkflowTemplate for testing long-running pod.
@@ -16,13 +17,19 @@ metadata:
 spec:
   entrypoint: hello
 
-  #This is what actually controls scheduling (Kueue)
-  podMetadata:
-    labels:
-      kueue.x-k8s.io/queue-name: live-queue
-      kueue.x-k8s.io/priority-class: high
-      workflows.diamond.ac.uk/type: "live"
+  # # This ensures workflow itself is marked correctly
+  # workflowMetadata:
+  #   labels:
+  #     workflows.diamond.ac.uk/type: "live"
 
+  #This is what actually controls scheduling (Kueue)
+  # podMetadata:
+  #   labels:
+  #     kueue.x-k8s.io/queue-name: live-queue
+  #     kueue.x-k8s.io/priority-class: high
+  #     workflows.diamond.ac.uk/type: "live"
+  annotations:
+    workflows.diamond.ac.uk/type: "live"
   templates:
   - name: hello
     container:
@@ -31,7 +38,7 @@ spec:
       args:
         - |
           echo "Pod starting..."
-          for i in $(seq 1 180); do
+          for i in $(seq 1 320); do
             echo "Running... $i"
             sleep 1
           done
