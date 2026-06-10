@@ -1,6 +1,6 @@
 [project]
 name = "identity-mapper"
-version = "0.1.0"
+version = "0.1.1"
 description = "Determines pod security context for Diamond Workflows"
 readme = "README.md"
 authors = [
