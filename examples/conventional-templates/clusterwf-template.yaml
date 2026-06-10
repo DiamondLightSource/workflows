@@ -1,43 +1,133 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
-  name: simple-cluster-template
-
+  name: cluster-templates
   labels:
-    workflows.diamond.ac.uk/type: "live"
     workflows.diamond.ac.uk/science-group-examples: "true"
-
+    workflows.diamond.ac.uk/type: "live"
   annotations:
-    workflows.argoproj.io/title: simple-cluster-template
+    workflows.argoproj.io/title: cluster-templates
     workflows.argoproj.io/description: |
-      Minimal ClusterWorkflowTemplate for testing long-running pod.
+      A simple ClusterWorkflowTemplate with a full pipeline (generate → lint → test → run).
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-
 spec:
-  entrypoint: hello
+  entrypoint: pipeline
+  arguments:
+    parameters:
+      - name: visitdir
+        valueFrom:
+          configMapKeyRef:
+            name: sessionspaces
+            key: data_directory
+      - name: size
+        value: "2000"
+      - name: memory
+        value: "20Gi"
 
-  # This ensures workflow itself is marked correctly
-  workflowMetadata:
-    labels:
-      workflows.diamond.ac.uk/type: "live"
-
-  #This is what actually controls scheduling (Kueue)
-  podMetadata:
-    labels:
-      kueue.x-k8s.io/queue-name: live-queue
-      kueue.x-k8s.io/priority-class: high
-      workflows.diamond.ac.uk/type: "live"
+  volumeClaimTemplates:
+    - metadata:
+        name: workspace
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: netapp
 
   templates:
-  - name: hello
-    container:
-      image: alpine:3.19
-      command: ["sh", "-c"]
-      args:
-        - |
-          echo "Pod starting..."
-          for i in $(seq 1 180); do
-            echo "Running... $i"
-            sleep 1
-          done
-          echo "Done after ~3 minutes"
+    - name: pipeline
+      dag:
+        tasks:
+          - name: generate-files
+            template: generate-files
+
+          - name: lint
+            template: lint
+            dependencies:
+              - generate-files
+
+          - name: test
+            template: test
+            dependencies:
+              - lint
+
+          - name: run
+            template: run-job
+            dependencies:
+              - test
+            arguments:
+              parameters:
+                - name: visitdir
+                  value: "{{workflow.parameters.visitdir}}"
+
+    - name: generate-files
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "Creating fake Python project..."
+            mkdir -p /workspace/tests
+
+            cat <<EOF > /workspace/app.py
+            def add(a, b):
+                return a + b
+            EOF
+
+            cat <<EOF > /workspace/tests/test_app.py
+            from app import add
+
+            def test_add():
+                assert add(2, 3) == 5
+            EOF
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: lint
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet ruff
+            export PATH=$PATH:/root/.local/bin
+
+            echo "Running lint..."
+            cd /workspace
+            ruff . --exclude tests || true
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: test
+      container:
+        image: python:3.11-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install --quiet pytest
+
+            echo "Running tests..."
+            cd /workspace
+            export PYTHONPATH=/workspace
+            pytest -q
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
+
+    - name: run-job
+      inputs:
+        parameters:
+          - name: visitdir
+      container:
+        image: alpine:3.19
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "VisitDir = {{inputs.parameters.visitdir}}"
+            echo "Process complete"
+        volumeMounts:
+          - name: workspace
+            mountPath: /workspace
