@@ -12,14 +12,11 @@ use crate::linter::base_linting::lint_from_manifest;
 
 pub fn lint_from_helm(target: &Path, all: bool) -> Result<Vec<LintResult>, String> {
     // FIXME: does not respect $TMPDIR and potential race condition / permissions issue on multi-user systems
-    let tmp_dir = Path::new("/tmp/argo-lint");
+    let tmp_dir = tempfile::tempdir().map_err(|e| e.to_string())?;
     let manifests = helm_to_manifest(target, all)?;
-    write_to_clean_folder(tmp_dir, manifests)
-    .map_err(|e| format!("Couldn't create temporary file for helm templates: {e}"))?;
-
-
-    let path_buf = tmp_dir.to_path_buf();
-    lint_from_manifest(&path_buf, true)
+    write_to_clean_folder(tmp_dir.path(), manifests)
+        .map_err(|e| format!("Couldn't create temporary file for helm templates: {e}"))?;
+    lint_from_manifest(tmp_dir.path(), true)
 }
 
 pub fn write_to_clean_folder(path: &Path, contents: Vec<String>) -> std::io::Result<()> {
