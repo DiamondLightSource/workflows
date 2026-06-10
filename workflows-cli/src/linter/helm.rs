@@ -15,7 +15,7 @@ pub fn lint_from_helm(target: &Path, all: bool) -> Result<Vec<LintResult>, Strin
     let tmp_dir = Path::new("/tmp/argo-lint");
     let manifests = helm_to_manifest(target, all)?;
     write_to_clean_folder(tmp_dir, manifests)
-        .map_err(|_e| "Couldn't create temporary file for helm templates.")?;
+    .map_err(|e| format!("Couldn't create temporary file for helm templates: {e}"))?;
 
 
     let path_buf = tmp_dir.to_path_buf();
