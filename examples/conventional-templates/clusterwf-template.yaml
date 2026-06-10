@@ -8,7 +8,7 @@ metadata:
     workflows.diamond.ac.uk/science-group-examples: "true"
 
   annotations:
-   # workflows.diamond.ac.uk/type: "live"
+    workflows.diamond.ac.uk/type: "live"
     workflows.argoproj.io/title: simple-cluster-template
     workflows.argoproj.io/description: |
       Minimal ClusterWorkflowTemplate for testing long-running pod.
@@ -28,8 +28,7 @@ spec:
   #     kueue.x-k8s.io/queue-name: live-queue
   #     kueue.x-k8s.io/priority-class: high
   #     workflows.diamond.ac.uk/type: "live"
-  annotations:
-    workflows.diamond.ac.uk/type: "live"
+  
   templates:
   - name: hello
     container:
