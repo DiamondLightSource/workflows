@@ -8,18 +8,16 @@ metadata:
   annotations:
     workflows.argoproj.io/title: cluster-templates
     workflows.argoproj.io/description: |
-      A simple ClusterWorkflowTemplate with a full pipeline (generate → lint → test → run).
+      Simple CI-safe ClusterWorkflowTemplate (generate → lint → test → run)
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 
 spec:
   entrypoint: pipeline
+
   arguments:
     parameters:
       - name: visitdir
-        valueFrom:
-          configMapKeyRef:
-            name: sessionspaces
-            key: data_directory
+        value: "/workspace/data"
       - name: size
         value: "2000"
       - name: memory
@@ -62,13 +60,16 @@ spec:
                 - name: visitdir
                   value: "{{workflow.parameters.visitdir}}"
 
+    # -------------------------
+    # GENERATE STEP
+    # -------------------------
     - name: generate-files
       container:
         image: python:3.11-slim
         command: ["sh", "-c"]
         args:
           - |
-            echo "Creating fake Python project..."
+            echo "Creating project..."
             mkdir -p /workspace/tests
 
             cat <<EOF > /workspace/app.py
@@ -82,10 +83,16 @@ spec:
             def test_add():
                 assert add(2, 3) == 5
             EOF
+
+            echo "Files created:"
+            ls -R /workspace
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
+    
+    # LINT 
+    
     - name: lint
       container:
         image: python:3.11-slim
@@ -93,15 +100,17 @@ spec:
         args:
           - |
             pip install --quiet ruff
-            export PATH=$PATH:/root/.local/bin
+            cd /workspace
 
             echo "Running lint..."
-            cd /workspace
             ruff . --exclude tests || true
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
+    
+    # TEST STEP
+    
     - name: test
       container:
         image: python:3.11-slim
@@ -109,15 +118,18 @@ spec:
         args:
           - |
             pip install --quiet pytest
+            cd /workspace
 
             echo "Running tests..."
-            cd /workspace
             export PYTHONPATH=/workspace
             pytest -q
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
+    
+    # RUN STEP
+    
     - name: run-job
       inputs:
         parameters:
@@ -128,7 +140,7 @@ spec:
         args:
           - |
             echo "VisitDir = {{inputs.parameters.visitdir}}"
-            echo "Process complete"
+            echo "Pipeline complete"
         volumeMounts:
           - name: workspace
             mountPath: /workspace
