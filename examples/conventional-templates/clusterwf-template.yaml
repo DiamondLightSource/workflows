@@ -10,6 +10,7 @@ metadata:
     workflows.argoproj.io/description: |
       A simple ClusterWorkflowTemplate with a full pipeline (generate → lint → test → run).
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+
 spec:
   entrypoint: pipeline
   arguments:
