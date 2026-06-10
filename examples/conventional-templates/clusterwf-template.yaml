@@ -8,16 +8,22 @@ metadata:
   annotations:
     workflows.argoproj.io/title: cluster-templates
     workflows.argoproj.io/description: |
-      Simple CI-safe ClusterWorkflowTemplate (generate → lint → test → run)
+      Working ClusterWorkflowTemplate (generate → lint → test → run)
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
 
 spec:
   entrypoint: pipeline
 
+  # FIX: required so pods actually start
+  serviceAccountName: default
+
   arguments:
     parameters:
       - name: visitdir
-        value: "/workspace/data"
+        valueFrom:
+          configMapKeyRef:
+            name: sessionspaces
+            key: data_directory
       - name: size
         value: "2000"
       - name: memory
@@ -35,6 +41,8 @@ spec:
         storageClassName: netapp
 
   templates:
+
+    # ---------------- PIPELINE ----------------
     - name: pipeline
       dag:
         tasks:
@@ -60,16 +68,14 @@ spec:
                 - name: visitdir
                   value: "{{workflow.parameters.visitdir}}"
 
-    # -------------------------
-    # GENERATE STEP
-    # -------------------------
+    # --------------- GENERATE ----------------
     - name: generate-files
       container:
         image: python:3.11-slim
         command: ["sh", "-c"]
         args:
           - |
-            echo "Creating project..."
+            echo "Generating files..."
             mkdir -p /workspace/tests
 
             cat <<EOF > /workspace/app.py
@@ -84,15 +90,12 @@ spec:
                 assert add(2, 3) == 5
             EOF
 
-            echo "Files created:"
             ls -R /workspace
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
-    
-    # LINT 
-    
+    # --------------- LINT ----------------
     - name: lint
       container:
         image: python:3.11-slim
@@ -101,16 +104,13 @@ spec:
           - |
             pip install --quiet ruff
             cd /workspace
-
             echo "Running lint..."
             ruff . --exclude tests || true
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
-    
-    # TEST STEP
-    
+    # --------------- TEST ----------------
     - name: test
       container:
         image: python:3.11-slim
@@ -119,17 +119,14 @@ spec:
           - |
             pip install --quiet pytest
             cd /workspace
-
-            echo "Running tests..."
             export PYTHONPATH=/workspace
+            echo "Running tests..."
             pytest -q
         volumeMounts:
           - name: workspace
             mountPath: /workspace
 
-    
-    # RUN STEP
-    
+    # --------------- FINAL STEP ----------------
     - name: run-job
       inputs:
         parameters:
@@ -140,7 +137,7 @@ spec:
         args:
           - |
             echo "VisitDir = {{inputs.parameters.visitdir}}"
-            echo "Pipeline complete"
+            echo "Workflow completed successfully"
         volumeMounts:
           - name: workspace
             mountPath: /workspace
