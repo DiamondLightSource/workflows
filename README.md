@@ -6,28 +6,38 @@ Refer to <https://diamondlightsource.github.io/workflows/docs> for more explanat
 
 ## Deployment
 
-The workflow engine can be deployed using Helm:
+The workflow engine can be deployed using Helm. Load the correct module to access the production / staging cluster and run the correct command based off which environment you are installing to.
+
+### Deployment to Prodcution Environment
 
 ```sh
-helm install workflows-cluster charts/workflows-cluster
+helm install --upgrade workflows-cluster charts/workflows-cluster -n workflows
 ```
 
 This will install a virtual cluster together with [Argo CD](https://argo-cd.workflows.diamond.ac.uk), which then installs all other services
 inside the vcluster including the workflow engine itself.
 
-To connect to the virtual cluster and run a command inside the vcluster, use
+### Deployment to Staging Environment
 
 ```sh
-vcluster connect workflows-cluster --silent -- <COMMAND>
+helm install --upgrade workflows-cluster charts/workflows-cluster -n workflows -f charts/workflows-cluster/staging-values.yaml
 ```
 
-## Deployment in developer mode
+### Deployment in Developer Mode
 
 ```sh
 helm install workflows-cluster charts/workflows-cluster -f charts/workflows-cluster/dev-values.yaml
 ```
 
 If you wish to run workflows, you should override the `uid` in the workflows app with your own uid.
+
+## Interfacing with the vCluster
+
+To connect to the virtual cluster and run a command inside the vcluster, use
+
+```sh
+vcluster connect workflows-cluster -n workflows --silent -- <COMMAND>
+```
 
 ## Serve Docs
 
