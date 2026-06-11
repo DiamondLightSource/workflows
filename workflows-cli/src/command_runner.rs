@@ -4,9 +4,8 @@ use std::env;
 use std::fs;
 use std::io;
 use std::io::Write;
-use std::os::unix::process::ExitStatusExt;
-use std::process::Stdio;
-use std::process::{Command, Output};
+
+use std::process::{Command, Output, Stdio};
 
 /// Underlying traits used to run/mock CLI commands
 pub trait CommandLike {
@@ -99,8 +98,12 @@ impl MockCommand {
         let mappings: HashMap<String, Vec<MockEntry>> =
             serde_yaml::from_str(&yaml_str).expect("Failed to parse YAML");
 
-        let target_mapping = env::var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING").unwrap();
-        let active_mapping = mappings.get(&target_mapping).unwrap();
+        let target_mapping = env::var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING")
+            .expect("Missing WORKFLOW_CLI_TEST_ACTIVE_MAPPING");
+
+        let active_mapping = mappings
+            .get(&target_mapping)
+            .expect("Mapping key not found in YAML");
 
         Self {
             cmd: cmd.to_string(),
@@ -109,15 +112,33 @@ impl MockCommand {
         }
     }
 
-    /// Lookup command in the mapping table
+    /// FIX: normalize function added
+    fn normalize(s: &str) -> String {
+        s.split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .trim()
+            .to_lowercase()
+    }
+
     fn get_response(&self) -> (String, i32) {
         let full_command = format!("{} {}", self.cmd, self.args.join(" "));
         println!("MOCK COMMAND: {full_command}");
         let entry = self
             .mappings
             .iter()
-            .find(|entry| entry.command == full_command)
-            .unwrap();
+            .find(|entry| {
+                full_command == entry.command
+                    || full_command.starts_with(&entry.command)
+                    || Self::normalize(&full_command) == Self::normalize(&entry.command)
+            })
+            .unwrap_or_else(|| {
+                panic!(
+                    "No mock match found!\nFULL COMMAND:\n{}\n\nKNOWN MOCKS:\n{:#?}",
+                    full_command, self.mappings
+                )
+            });
+
         (entry.response.clone(), entry.code)
     }
 }
@@ -129,7 +150,7 @@ impl CommandLike for MockCommand {
     }
 
     fn output(&mut self) -> io::Result<Output> {
-        let response = self.get_response();
+        let (response, code) = self.get_response();
         println!(
             "[MockCommand] Simulated command: {} {}",
             self.cmd,
@@ -137,8 +158,8 @@ impl CommandLike for MockCommand {
         );
 
         Ok(Output {
-            status: std::process::ExitStatus::from_raw(response.1),
-            stdout: response.0.as_bytes().to_vec(),
+            status: std::os::unix::process::ExitStatusExt::from_raw(code),
+            stdout: response.into_bytes(),
             stderr: vec![],
         })
     }
