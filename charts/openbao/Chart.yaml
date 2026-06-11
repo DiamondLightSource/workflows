@@ -1,0 +1,9 @@
+apiVersion: v2
+name: openbao
+description: Openbao Deployment for Secret Management
+version: 0.0.1
+appVersion: "0.0.1"
+dependencies:
+  - name: openbao
+    repository: https://openbao.github.io/openbao-helm
+    version: 0.28.3
