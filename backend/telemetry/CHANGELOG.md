@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/telemetry@v0.1.2...telemetry@v0.1.3) (2026-06-12)
+
+
+### Features
+
+* **auth-daemon:** router and CLI configuration ([73d0a78](https://github.com/DiamondLightSource/workflows/commit/73d0a78efbcea8f1054e5969f8c8a01341334a9b))
+
+
+### Bug Fixes
+
+* modified backend toml files ([b7113d8](https://github.com/DiamondLightSource/workflows/commit/b7113d8016c130e765b95e712210c11445fec4dc))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/telemetry@v0.1.1...telemetry@v0.1.2) (2025-04-14)
 
 
