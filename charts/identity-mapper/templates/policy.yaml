@@ -15,10 +15,15 @@ spec:
               operations:
                 - CREATE
       context:
+        - name: machineUid
+          variable:
+            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/machine-uid" || ""
+            default: ""
+
         - name: posixUidString
           variable:
             jmesPath: "request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] || \"\""
-            default: ""
+            default: "{{`{{ machineUid }}`}}"
         
         - name: userProfile
           apiCall:
