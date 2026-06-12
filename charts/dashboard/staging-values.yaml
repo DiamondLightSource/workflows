@@ -2,11 +2,10 @@ configuration:
   keycloakUrl: https://identity-test.diamond.ac.uk
   keycloakRealm: dls
   keycloakClient: workflows-ui-dev
-  keycloakScope: "openid profile posix-uid email"
+  keycloakScope: openid profile posix-uid email
   graphUrl: https://staging.workflows.diamond.ac.uk/graphql
   graphWsUrl: wss://staging.workflows.diamond.ac.uk/graphql/ws
-  sourceDir: "/usr/share/nginx/html"
-
+  sourceDir: /usr/share/nginx/html
 ingress:
   hosts:
     - host: staging.workflows.diamond.ac.uk
@@ -26,18 +25,16 @@ ingress:
           service:
             name: oidc-bff
             port: 80
-
   tls: true
   secretName: dashboard-tls-cert
   host: staging.workflows.diamond.ac.uk
-
 oidcBff:
   enabled: true
   image:
     registry: ghcr.io
     repository: diamondlightsource/workflows-oidc-bff
-    tag: "tbt"
-    digest: "sha256:568b03a69ed9dda9df5bd96470ebba46d0460b7703c71b8ae3333c723a615d89"
+    tag: 0.1.0
+    digest: sha256:568b03a69ed9dda9df5bd96470ebba46d0460b7703c71b8ae3333c723a615d89
     pullPolicy: IfNotPresent
     pullSecrets: []
   configuration:
