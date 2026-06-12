@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.13...dashboard@v0.1.14) (2026-06-12)
+
+
+### Reverts
+
+* bump the minor group across 1 directory with 23 updates ([6236a65](https://github.com/DiamondLightSource/workflows/commit/6236a6525b9661df22d2baf80fae154ad51aec31))
+
 ## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.12...dashboard@v0.1.13) (2026-05-21)
 
 
