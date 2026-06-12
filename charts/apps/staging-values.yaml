@@ -99,3 +99,10 @@ identityMapper:
   extraValueFiles:
     - staging-values.yaml
   valuesObject: {}
+
+openbao:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles:
+    - staging-values.yaml
+  valuesObject: {}

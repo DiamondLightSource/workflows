@@ -166,3 +166,9 @@ k6Operator:
 identityMapper:
   enabled: true
   targetRevision: HEAD
+
+openbao:
+  enabled: false
+  targetRevision: HEAD
+  extraValueFiles: []
+  valuesObject: {}
