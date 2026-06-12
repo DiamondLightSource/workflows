@@ -10,15 +10,10 @@ spec:
   enabled: true
   eventName: example
   workflow:
-    template: example-template
+    template: access-visit-dir
     parameters:
-      - name: tif
-        path: parameters.tif
-      - name: tiff
-        path: parameters.tiff
-      - name: png
-        path: parameters.png
-        default: "true"
+      - name: visitdir
+        messagePath: body.parameters.data_session_directory
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: Trigger
