@@ -25,7 +25,6 @@ spec:
       valuesObject:
         {{- .Values.identityMapper.valuesObject | toYaml | nindent 8 }}
       {{- end }}
-      includeCRDs: true
   syncPolicy:
     automated:
       prune: true
