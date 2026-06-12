@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/auth-daemon@v0.1.0...auth-daemon@v0.1.1) (2026-06-12)
+
+
+### Features
+
+* **backend:** auth-core scaffolding ([0328460](https://github.com/DiamondLightSource/workflows/commit/03284609a11b628aea2b9e47380b906df055058c))
+* **backend:** modified functionality to get creator from running workflow ([bdb4b88](https://github.com/DiamondLightSource/workflows/commit/bdb4b88535f6f4ea9edf814234b2dff4b3259893))
+* proof-of-concept authentication in workflows with authorization code flow with pkce  method ([32b9566](https://github.com/DiamondLightSource/workflows/commit/32b95668825f357beeb9031f6446a2685a684f70))
+
+
+### Bug Fixes
+
+* added better error messages to auth-daemon ([9dac3ba](https://github.com/DiamondLightSource/workflows/commit/9dac3babebe1f6c34c587454c5bd3d742713cad0))
+* **backend:** add logic to hide workflow_name and namespace ([b52074b](https://github.com/DiamondLightSource/workflows/commit/b52074baa09e052020a770d073814b62688a6ca9))
+* **backend:** modify auth-daemon to use auth-core logic ([c90b309](https://github.com/DiamondLightSource/workflows/commit/c90b3092c0ec3f1aac073f00565d1489cb23d288))
+* **backend:** remove duplicates in toml files ([1386df6](https://github.com/DiamondLightSource/workflows/commit/1386df69ad8bf62854e7a8bab30f03fa0e87024c))
+* **backend:** removed duplicate code ([581a1ca](https://github.com/DiamondLightSource/workflows/commit/581a1cacdb8555251680792dfe2cbe04107c1e02))
+* **backend:** updated backend dependencies ([e124b23](https://github.com/DiamondLightSource/workflows/commit/e124b23ef1fe9322dce880d8efa3d9bb3b212437))
+
 ## 0.1.0 (2025-09-25)
 
 
