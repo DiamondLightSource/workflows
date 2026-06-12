@@ -164,5 +164,5 @@ k6Operator:
   valuesObject: {}
 
 identityMapper:
-  enabled: false
+  enabled: true
   targetRevision: HEAD
