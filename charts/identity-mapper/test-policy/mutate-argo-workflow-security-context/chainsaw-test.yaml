@@ -128,6 +128,74 @@
 #                       runAsUser: 4321
 #                       allowPrivilegeEscalation: false
 #                       readOnlyRootFilesystem: true
+# ---
+# apiVersion: chainsaw.kyverno.io/v1alpha1
+# kind: Test
+# metadata:
+#   name: mutate-machine-workflow-security-context
+# spec:
+#   namespaceTemplate:
+#     metadata:
+#       labels:
+#         app.kubernetes.io/managed-by: sessionspaces
+#   steps:
+#     - try:
+#         - create:
+#             resource:
+#               apiVersion: workflows.internal.diamond.ac.uk/v1
+#               kind: UserIdentity
+#               metadata:
+#                 name: "54321"
+#               spec:
+#                 uid: 54321
+#                 gid: 54321
+#                 supplementalGroups: []
+#         - create:
+#             resource:
+#               apiVersion: rbac.authorization.k8s.io/v1
+#               kind: Role
+#               metadata:
+#                 name: workflow-creator
+#                 namespace: ($namespace)
+#               rules:
+#                 - apiGroups: ["argoproj.io"]
+#                   resources: ["workflows"]
+#                   verbs: ["create"]
+#         - create:
+#             resource:
+#               apiVersion: rbac.authorization.k8s.io/v1
+#               kind: RoleBinding
+#               metadata:
+#                 name: workflow-creator
+#                 namespace: ($namespace)
+#               subjects:
+#                 - kind: User
+#                   name: oidc:test-user
+#               roleRef:
+#                 apiGroup: rbac.authorization.k8s.io
+#                 kind: Role
+#                 name: workflow-creator
+#         - create:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: test-workflow
+#                 namespace: ($namespace)
+#                 labels:
+#                   workflows.diamond.ac.uk/machine-uid: "54321"
+#               spec: {}
+#         - assert:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: test-workflow
+#               spec:
+#                  securityContext:
+#                   runAsUser: 54321
+#                   runAsGroup: 54321
+#                   supplementalGroups: []
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
