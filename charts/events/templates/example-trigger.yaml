@@ -12,16 +12,13 @@ spec:
   workflow:
     template: example-template
     parameters:
-      - name: jpg
-        messagePath: body.parameters.jpg
-      - name: jpeg
-        messagePath: body.parameters.jpeg
       - name: tif
-        messagePath: body.parameters.tif
+        path: parameters.tif
       - name: tiff
-        messagePath: body.parameters.tiff
+        path: parameters.tiff
       - name: png
-        messagePath: body.parameters.png
+        path: parameters.png
+        default: "true"
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: Trigger
@@ -37,7 +34,7 @@ spec:
     template: access-visit-dir
     parameters:
       - name: visitdir
-        messagePath: body.doc.data_session_directory
+        path: doc.data_session_directory
     
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
@@ -54,5 +51,5 @@ spec:
     template: echo-workflow-template
     parameters:
       - name: message
-        messagePath: body.name
+        path: name
 {{- end }}

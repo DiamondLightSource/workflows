@@ -74,15 +74,27 @@ class Controller(BaseHTTPRequestHandler):
       templateArgs = []
 
       for userParam in userParameters:
+        param_name: str = userParam.get("name", "")
+        path: str = userParam.get("path", "")
+        default: str = userParam.get("default", "")
+
+        if not param_name:
+          continue
+
+        src = {
+              "dependencyName": name,
+              "dataKey": "body." + path
+            }
+
+        if default:
+          src.update({"value": default})
+
         sensorParams.append({
-          "src": {
-            "dependencyName": name,
-            "dataKey": userParam.get("messagePath", "")
-          },
-          "dest": f"spec.arguments.parameters.{userParameters.index(userParam)}.value"
+          "src": src,
+          "dest": f"spec.arguments.parameters.#(name==\"{param_name}\").value"
         })
 
-        templateArgs.append({"name": userParam.get("name")})
+        templateArgs.append({"name": param_name, "value": ""})
 
       triggers.append({
         "template": {
