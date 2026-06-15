@@ -1,7 +1,7 @@
 dependencies:
 - name: argo-workflows
   repository: https://argoproj.github.io/argo-helm
-  version: 0.45.21
+  version: 1.0.15
 - name: postgresql-ha
   repository: https://charts.bitnami.com/bitnami
   version: 14.3.9
@@ -11,5 +11,5 @@ dependencies:
 - name: s3mock
   repository: file://./charts/s3mock/
   version: 0.1.0
-digest: sha256:54a6e2b7b5a2fdbb08478f19775fea59730ac796555004e53339db035c577dc8
-generated: "2025-08-07T14:31:54.367575738+01:00"
+digest: sha256:66fa055044667f7a47891a89bcbaa73d1e18ac3f846b3b32d1d77493dd427462
+generated: "2026-06-15T15:42:05.653119252+01:00"
