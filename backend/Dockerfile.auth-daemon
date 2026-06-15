@@ -43,7 +43,7 @@ COPY . .
 RUN touch auth-daemon/src/main.rs \
   && cargo auditable build --release --package auth-daemon
 
-FROM gcr.io/distroless/cc-debian12@sha256:329e54034ce498f9c6b345044e8f530c6691f99e94a92446f68c0adf9baa8464 AS deploy
+FROM gcr.io/distroless/cc-debian12@sha256:d703b626ba455c4e6c6fbe5f36e6f427c85d51445598d564652a2f334179f96e AS deploy
 
 COPY --from=build /app/target/release/auth-daemon /auth-daemon
 
