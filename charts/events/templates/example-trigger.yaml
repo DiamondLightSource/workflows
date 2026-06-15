@@ -11,14 +11,7 @@ spec:
   eventName: example
   workflow:
     template: example-template
-    parameters:
-      - name: tif
-        path: body.parameters.tif
-      - name: tiff
-        path: body.parameters.tiff
-      - name: png
-        path: body.parameters.png
-        default: "false"
+    parameters: []
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: Trigger
