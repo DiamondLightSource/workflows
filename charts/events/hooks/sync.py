@@ -94,7 +94,7 @@ class Controller(BaseHTTPRequestHandler):
           "dest": f"spec.arguments.parameters.#(name==\"{param_name}\").value"
         })
 
-        templateArgs.append({"name": param_name})
+        templateArgs.append({"name": param_name, "value": ""})
 
       triggers.append({
         "template": {
