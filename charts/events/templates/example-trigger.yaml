@@ -11,7 +11,11 @@ spec:
   eventName: example
   workflow:
     template: example-template
-    parameters: []
+    parameters:
+      - name: tif
+        path: body.parameters.tif
+      - name: tiff
+        path: body.parameters.tiff
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: Trigger
