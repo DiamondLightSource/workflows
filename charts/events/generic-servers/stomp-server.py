@@ -50,7 +50,7 @@ class ConnectionManager():
             return
         logging.debug("Using config: %s", config)
         conn = stomp.Connection([(config.host, config.port)], heartbeats=(10000, 10000))
-        conn.set_listener("", _StompListener(self.queue, request.name))
+        conn.set_listener("", _StompListener(self.queue))
         conn.connect(
             login=config.user,
             passcode=config.password,
