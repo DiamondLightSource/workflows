@@ -16,6 +16,9 @@ spec:
         path: body.parameters.tif
       - name: tiff
         path: body.parameters.tiff
+      - name: png
+        path: body.parameters.png
+        default: "true"
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: Trigger
