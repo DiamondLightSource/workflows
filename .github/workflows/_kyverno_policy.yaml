@@ -39,7 +39,7 @@ jobs:
 
       - name: Install Workflows CRDs
         run: |
-          helm template workflows charts/workflows --namespace workflows --create-namespace | yq e 'select(.kind == "CustomResourceDefinition")' | tee -a /tmp/crds.yaml | kubectl apply -f -
+          kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=v4.0.6"
           kubectl apply -f charts/identity-mapper/crds/useridentity.yaml
 
       - name: Wait for CRDs
