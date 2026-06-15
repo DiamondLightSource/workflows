@@ -39,8 +39,11 @@ spec:
                       properties:
                         name: 
                           type: string
-                        messagePath:
+                        path:
                           type: string
+                        default:
+                          x-kubernetes-int-or-string: true
+                      required: [name]
             required:
               - workflow
               - eventName
