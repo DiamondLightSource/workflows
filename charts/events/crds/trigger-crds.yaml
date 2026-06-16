@@ -47,10 +47,10 @@ spec:
                             default:
                               x-kubernetes-int-or-string: true
                           required: [name]
-                stomp: *generic_message
                 required:
                   - workflow
                   - eventName
+              stomp: *generic_message
             oneOf:
               - required: [webhook]
               - required: [stomp]
