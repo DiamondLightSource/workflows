@@ -11,7 +11,7 @@ spec:
   webhook:
     eventName: example
     workflow:
-      workflowTemplate: example-template
+      template: example-template
       parameters:
         - name: tif
           path: body.parameters.tif
