@@ -4,13 +4,13 @@ kind: Trigger
 metadata:
   name: example-trigger
   labels:
-    workflows.diamond.ac.uk/source: webhook
+    # workflows.diamond.ac.uk/source: webhook
     workflows.diamond.ac.uk/beamline: test-beamline
 spec:
   enabled: true
-  eventName: example
-  workflow:
-    template: example-template
+  webhook:
+    eventName: example
+    workflowTemplate: example-template
     parameters:
       - name: tif
         path: body.parameters.tif
@@ -19,37 +19,37 @@ spec:
       - name: png
         path: body.parameters.png
         default: "true"
----
-apiVersion: workflows.diamond.ac.uk/v1alpha1
-kind: Trigger
-metadata:
-  name: waffle-trigger
-  labels:
-    workflows.diamond.ac.uk/source: generic
-    workflows.diamond.ac.uk/beamline: i15-1
-spec:
-  enabled: true
-  eventName: waffle-example
-  workflow:
-    template: access-visit-dir
-    parameters:
-      - name: visitdir
-        path: body.doc.data_session_directory
+# ---
+# apiVersion: workflows.diamond.ac.uk/v1alpha1
+# kind: Trigger
+# metadata:
+#   name: waffle-trigger
+#   labels:
+#     workflows.diamond.ac.uk/source: generic
+#     workflows.diamond.ac.uk/beamline: i15-1
+# spec:
+#   enabled: true
+#   eventName: waffle-example
+#   workflow:
+#     template: access-visit-dir
+#     parameters:
+#       - name: visitdir
+#         path: body.doc.data_session_directory
     
----
-apiVersion: workflows.diamond.ac.uk/v1alpha1
-kind: Trigger
-metadata:
-  name: visr-trigger
-  labels:
-    workflows.diamond.ac.uk/source: generic
-    workflows.diamond.ac.uk/beamline: b01-1
-spec:
-  enabled: true
-  eventName: visr-example
-  workflow:
-    template: echo-workflow-template
-    parameters:
-      - name: message
-        path: body.name
+# ---
+# apiVersion: workflows.diamond.ac.uk/v1alpha1
+# kind: Trigger
+# metadata:
+#   name: visr-trigger
+#   labels:
+#     workflows.diamond.ac.uk/source: generic
+#     workflows.diamond.ac.uk/beamline: b01-1
+# spec:
+#   enabled: true
+#   eventName: visr-example
+#   workflow:
+#     template: echo-workflow-template
+#     parameters:
+#       - name: message
+#         path: body.name
 {{- end }}

@@ -23,30 +23,37 @@ spec:
               enabled:
                 type: boolean
                 default: true
-              eventName: 
-                type: string
-              workflow:
+              webhook: &generic_message
                 type: object
-                required: [template]
                 properties:
-                  template:
+                  eventName: 
                     type: string
-                  parameters:
-                    type: array
-                    default: []
-                    items:
-                      type: object
-                      properties:
-                        name: 
-                          type: string
-                        path:
-                          type: string
-                        default:
-                          x-kubernetes-int-or-string: true
-                      required: [name]
-            required:
-              - workflow
-              - eventName
+                  workflow:
+                    type: object
+                    required: [template]
+                    properties:
+                      template:
+                        type: string
+                      parameters:
+                        type: array
+                        default: []
+                        items:
+                          type: object
+                          properties:
+                            name: 
+                              type: string
+                            path:
+                              type: string
+                            default:
+                              x-kubernetes-int-or-string: true
+                          required: [name]
+                stomp: *generic_message
+                required:
+                  - workflow
+                  - eventName
+            oneOf:
+              - required: [webhook]
+              - required: [stomp]
         required:
           - spec
     subresources:
