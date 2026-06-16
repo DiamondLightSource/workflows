@@ -10,15 +10,16 @@ spec:
   enabled: true
   webhook:
     eventName: example
-    workflowTemplate: example-template
-    parameters:
-      - name: tif
-        path: body.parameters.tif
-      - name: tiff
-        path: body.parameters.tiff
-      - name: png
-        path: body.parameters.png
-        default: "true"
+    workflow:
+      workflowTemplate: example-template
+      parameters:
+        - name: tif
+          path: body.parameters.tif
+        - name: tiff
+          path: body.parameters.tiff
+        - name: png
+          path: body.parameters.png
+          default: "true"
 # ---
 # apiVersion: workflows.diamond.ac.uk/v1alpha1
 # kind: Trigger
