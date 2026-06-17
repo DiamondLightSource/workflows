@@ -58,4 +58,24 @@ spec:
         host: b01-1-rabbitmq-daq.diamond.ac.uk
         port: 61613
         destination: /topic/public.worker.event
+---
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: start-stop
+  labels:
+    workflows.diamond.ac.uk/beamline: test-beamline
+    workflows.diamond.ac.uk/machine-uid: "36055"
+spec:
+  generic:
+    start-stop-test:
+      insecure: true
+      jsonBody: true
+      url: "stomp-service.events.svc:80"
+      config: |
+        user: user
+        password: password
+        host: rabbitmq-demo
+        port: 61613
+        destination: /queue/test
 {{- end }}
