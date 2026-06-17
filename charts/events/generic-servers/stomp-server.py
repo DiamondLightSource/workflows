@@ -22,6 +22,7 @@ class EventSourceConfig(BaseModel):
     destination: str
     ack: Literal["auto", "client", "client-individual"] = "auto"
 
+
 def parse_config(config: bytes) -> EventSourceConfig | None:
     try:
         decoded_config = config.decode()
@@ -37,7 +38,7 @@ def _build_event(payload: str) -> generic_pb2.Event:
     return generic_pb2.Event(name="workflow-trigger", payload=payload.encode())
 
 
-class ConnectionManager():
+class ConnectionManager:
     def __init__(self):
         self.connection: stomp.Connection
         self.queue = queue.SimpleQueue()
@@ -61,10 +62,10 @@ class ConnectionManager():
         conn.subscribe(
             destination=config.destination, id="workflows-trigger", ack=config.ack
         )
-        self.connection  = conn
+        self.connection = conn
 
     def get_queue(self) -> queue.SimpleQueue:
-        return self.queue 
+        return self.queue
 
     def get_connection(self) -> stomp.Connection:
         return self.connection
@@ -109,10 +110,12 @@ class _StompListener(stomp.ConnectionListener):
                 if matched_message:
                     self.q.put(json.dumps(matched_message))
 
-            logging.debug(f"Unsupported message type: {message_type}")
+            else:
+                logging.debug(f"Unsupported message type: {message_type}")
 
     def on_heartbeat(self) -> None:
         logging.debug("Hearbeat received")
+
 
 class StompEventServicer(generic_pb2_grpc.EventingServicer):
     def StartEventSource(self, request: generic_pb2.EventSource, context):

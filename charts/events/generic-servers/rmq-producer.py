@@ -15,7 +15,7 @@ START_MSG_JSON = {
         },
         "instrument": "b01-1",
         "user": "bno96490",
-        "instrument_session": "cm44191-1",
+        "instrument_session": "ks10000-1",
         "tiled_access_tags": ['{"proposal": 44191, "visit": 1, "beamline": "b01-1"}'],
         "data_session_directory": "/dls/b01-1/data/2026/cm44191-1/spool",
         "detector_file_template": "{instrument}-{scan_id}-{device_name}",
