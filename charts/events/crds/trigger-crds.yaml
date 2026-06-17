@@ -39,11 +39,13 @@ spec:
                       properties:
                         name: 
                           type: string
-                        path:
+                        jsonPath:
                           type: string
                         default:
                           type: string
-                      required: [name]
+                      anyOf:
+                        - required: [name, jsonPath]
+                        - required: [name, default]
             required:
               - workflow
               - eventName

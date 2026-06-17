@@ -13,11 +13,11 @@ spec:
     template: example-template
     parameters:
       - name: tif
-        path: parameters.tif
+        jsonPath: parameters.tif
       - name: tiff
-        path: parameters.tiff
+        jsonPath: parameters.tiff
       - name: png
-        path: parameters.png
+        jsonPath: parameters.png
         default: "true"
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
@@ -34,7 +34,7 @@ spec:
     template: access-visit-dir
     parameters:
       - name: visitdir
-        path: doc.data_session_directory
+        jsonPath: doc.data_session_directory
     
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
@@ -51,5 +51,5 @@ spec:
     template: echo-workflow-template
     parameters:
       - name: message
-        path: name
+        jsonPath: name
 {{- end }}
