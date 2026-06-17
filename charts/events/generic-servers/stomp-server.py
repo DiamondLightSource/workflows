@@ -41,6 +41,7 @@ class ConnectionManager():
     def __init__(self):
         self.connection: stomp.Connection
         self.queue = queue.SimpleQueue()
+        self.start_messages: dict[str, dict] = {}
 
     def create_connection(self, request: generic_pb2.EventSource) -> None:
         config = parse_config(request.config)
@@ -50,7 +51,7 @@ class ConnectionManager():
             return
         logging.debug("Using config: %s", config)
         conn = stomp.Connection([(config.host, config.port)], heartbeats=(10000, 10000))
-        conn.set_listener("", _StompListener(self.queue))
+        conn.set_listener("", _StompListener(self.queue, self.start_messages))
         conn.connect(
             login=config.user,
             passcode=config.password,
@@ -70,8 +71,21 @@ class ConnectionManager():
 
 
 class _StompListener(stomp.ConnectionListener):
-    def __init__(self, q):
-        self.q = q
+    def __init__(self, q, start_messages):
+        self.q: queue.SimpleQueue = q
+        self.start_messages: dict[str, dict] = start_messages
+
+    def _add_start_message(self, message: dict):
+        uid: str | None = message.get("doc", {}).get("uid")
+        if uid:
+            self.start_messages.update({uid: message})
+
+    def _match_stop_with_start(self, stop_message: dict):
+        uid: str | None = stop_message.get("doc", {}).get("run_start")
+        if uid:
+            start_message = self.start_messages.pop(uid, {})
+            return stop_message | start_message
+        logging.error(f"Unable to find start message with uid {uid}")
 
     def on_connected(self, frame: stomp.utils.Frame) -> None:
         logging.info("Connected to STOMP broker")
@@ -86,8 +100,16 @@ class _StompListener(stomp.ConnectionListener):
         logging.debug("Message received: %s", frame.body)
         if isinstance(frame.body, str):
             messageJson = json.loads(frame.body)
-            if messageJson.get("name") == "start":
+            message_type = messageJson.get("name")
+            if message_type == "start":
+                self._add_start_message(messageJson)
                 self.q.put(frame.body)
+            elif message_type == "stop":
+                matched_message = self._match_stop_with_start(messageJson)
+                if matched_message:
+                    self.q.put(json.dumps(matched_message))
+
+            logging.debug(f"Unsupported message type: {message_type}")
 
     def on_heartbeat(self) -> None:
         logging.debug("Hearbeat received")
