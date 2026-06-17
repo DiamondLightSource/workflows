@@ -75,16 +75,16 @@ class Controller(BaseHTTPRequestHandler):
 
       for userParam in userParameters:
         param_name: str = userParam.get("name", "")
-        path: str = userParam.get("path", "")
+        path: str = userParam.get("jsonPath", "")
         default: str = userParam.get("default", "")
 
         if not param_name:
           continue
 
-        src = {
-              "dependencyName": name,
-              "dataKey": "body." + path
-            }
+        src = {"dependencyName": name}
+
+        if path:
+          src.update({"dataKey": "body." + path})
 
         if default:
           src.update({"value": default})
