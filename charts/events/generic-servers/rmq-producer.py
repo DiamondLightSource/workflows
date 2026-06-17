@@ -1,4 +1,5 @@
 import stomp
+import json
 from time import sleep
 
 START_MSG_JSON = {
@@ -78,7 +79,9 @@ STOP_MSG_JSON = {
 
 def produce_messages(conn: stomp.Connection):
     while True:
-        conn.send("/queue/test", "test message")
+        conn.send("/queue/test", json.dumps(START_MSG_JSON))
+        sleep(30)
+        conn.send("/queue/test", json.dumps(STOP_MSG_JSON))
         sleep(30)
 
 
