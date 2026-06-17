@@ -102,7 +102,7 @@ def connect(
 
 if __name__ == "__main__":
     conn = connect(
-        host="127.0.0.1",
+        host="rabbitmq-demo",
         port=61613,
         destination="/queue/test",
         user="user",
