@@ -98,7 +98,7 @@ def connect(
         heartbeats=(10000, 10000),
     )
 
-    conn.set_listener("", stomp.PrintingListener())
+    # conn.set_listener("", stomp.PrintingListener())
     conn.connect(login=user, passcode=password, wait=True)
     return conn
 

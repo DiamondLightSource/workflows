@@ -62,7 +62,7 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
 metadata:
-  name: start-stop
+  name: start-stop-test
   labels:
     workflows.diamond.ac.uk/beamline: test-beamline
     workflows.diamond.ac.uk/machine-uid: "36055"
