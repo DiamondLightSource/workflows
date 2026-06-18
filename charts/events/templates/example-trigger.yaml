@@ -53,5 +53,22 @@ spec:
     triggerOnMessageType: start
     parameters:
       - name: message
+        path: body.name
+---
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: Trigger
+metadata:
+  name: start-stop-trigger
+  labels:
+    workflows.diamond.ac.uk/source: generic
+    workflows.diamond.ac.uk/beamline: test-beamline
+spec:
+  enabled: true
+  eventName: start-stop-test
+  workflow:
+    triggerOnMessageType: stop
+    template: echo-workflow-template
+    parameters:
+      - name: message
         path: name
 {{- end }}
