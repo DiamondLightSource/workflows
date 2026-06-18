@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
-from typing import TypedDict, NotRequired
+from typing import TypedDict, NotRequired, Literal
+from pydantic import BaseModel, ValidationError
 
 '''
 The body of the POST request to /sync
@@ -39,6 +40,37 @@ class ResourceRule(TypedDict):
   namespace: NotRequired[str]
   names: NotRequired[list[str]]
 
+
+class WorkflowParameter(BaseModel):
+  name: str
+  path: str | None = None
+  default: str | None = None
+
+
+class TriggerWorkflow(BaseModel):
+  template: str
+  triggerOnMessageType: Literal["start", "stop"] | None = None
+  parameters: list[WorkflowParameter]
+
+
+class TriggerSpec(BaseModel):
+  enabled: bool
+  eventName: str
+  workflow: TriggerWorkflow
+
+
+class TriggerMetadata(BaseModel):
+  name: str
+  labels: dict[str, str]
+
+
+class Trigger(BaseModel):
+  apiVersion: str
+  kind: str
+  metadata: TriggerMetadata
+  spec: TriggerSpec
+
+
 class Controller(BaseHTTPRequestHandler):
   def sync(self, parent: dict, related: dict) -> SyncResponse:
 
@@ -50,20 +82,38 @@ class Controller(BaseHTTPRequestHandler):
     beamline: str | None = labels.get("workflows.diamond.ac.uk/beamline")
     uid: str | None = labels.get("workflows.diamond.ac.uk/machine-uid")
 
+    errored_triggers = []
     for dlsTrigger in sourceTriggers.values():
-      spec: dict = dlsTrigger.get("spec", {})
-      name: str | None = dlsTrigger.get("metadata", {}).get("name")
-      workflow: dict = spec.get("workflow", {})
-      template: str | None = workflow.get("template")
-      eventName: str | None = spec.get("eventName")
-      userParameters: list[dict] = workflow.get("parameters", [])
+      trigger = {}
+      try:
+        trigger = Trigger(**dlsTrigger)
+      except ValidationError:
+        errored_triggers.append(trigger)
+        continue
 
-      dependencies.append({
+      name: str | None = trigger.metadata.name
+      source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
+      workflow = trigger.spec.workflow
+      template = workflow.template
+      eventName = trigger.spec.eventName
+
+      dependency = {
         "name": name,
         "eventSourceName": eventSourceName,
-        "eventName": eventName
-      })
+        "eventName": eventName,
+      }
 
+      if workflow.triggerOnMessageType and source_type == "generic":
+        filter = {
+          "data": [{
+            "path": "body.name",
+            "type": "string",
+            "value": [workflow.triggerOnMessageType],
+          }]
+        }
+        dependency.update({"filters": filter})
+      
+      dependencies.append(dependency)
       sensorParams = [{
           "src": {
             "dependencyName": name, 
@@ -72,23 +122,13 @@ class Controller(BaseHTTPRequestHandler):
           "dest": "metadata.namespace"
         }]
       templateArgs = []
-
-      for userParam in userParameters:
-        param_name: str = userParam.get("name", "")
-        path: str = userParam.get("path", "")
-        default: str = userParam.get("default", "")
-
-        if not param_name:
-          continue
-
+      for userParam in workflow.parameters:
+        param_name: str = userParam.name
         src = {"dependencyName": name}
-
-        if path:
-          src.update({"dataKey": "body." + path})
-
-        if default:
-          src.update({"value": default})
-
+        if userParam.path:
+          src.update({"dataKey": "body." + userParam.path})
+        if userParam.default:
+          src.update({"value": userParam.default})
         sensorParams.append({
           "src": src,
           "dest": f"spec.arguments.parameters.#(name==\"{param_name}\").value"
@@ -127,6 +167,10 @@ class Controller(BaseHTTPRequestHandler):
           }
         }
       })
+
+    if errored_triggers:
+      print(f"ERROR: Unable to parse {len(errored_triggers)} trigger(s)")
+      return {"status": {"error": 500}, "children": []}
 
     sensor = {
       "apiVersion": "argoproj.io/v1alpha1",

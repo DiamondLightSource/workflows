@@ -22,15 +22,27 @@ spec:
     spec:
       containers:
       - name: controller
-        image: python:3
-        command: ["python3", "/hooks/sync.py"]
+        image: python:3.12-slim
+        command: ["/bin/sh", "-c"]
+        workingDir: /sync
+        args: 
+          - |
+            pip install pydantic
+            python3 /hooks/sync.py
         volumeMounts:
         - name: hooks
           mountPath: /hooks
+        - name: working-dir
+          mountPath: /sync
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
       volumes:
       - name: hooks
         configMap:
           name: trigger-controller-hooks
+      - name: working-dir
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
