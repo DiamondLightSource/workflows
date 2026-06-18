@@ -3,7 +3,7 @@ name: events
 description: Data Analysis event triggering
 type: application
 
-version: 0.2.9
+version: 0.2.10
 
 dependencies:
   - name: argo-events
@@ -12,5 +12,6 @@ dependencies:
     condition: argo-events.enabled
 
   - name: metacontroller-helm
+    alias: metacontroller
     version: 4.15.0
     repository: oci://ghcr.io/metacontroller

@@ -31,6 +31,9 @@ spec:
                 properties:
                   template:
                     type: string
+                  triggerOnMessageType:
+                    type: string
+                    pattern: "^(start|stop)$"
                   parameters:
                     type: array
                     default: []
