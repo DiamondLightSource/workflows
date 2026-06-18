@@ -5,7 +5,9 @@ metadata:
   labels:
     workflows.diamond.ac.uk/science-group-crystallography: "true"
   annotations:
-    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/crystallography-workflows"
+    workflows.argoproj.io/title: Duplicate i15-1-notebook-test
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+
 spec:
   entrypoint: notebook
   arguments:
