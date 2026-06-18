@@ -10,31 +10,6 @@ metadata:
     workflows.argoproj.io/description: |
       This is an example template to use during testing and developement.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-    workflows.diamond.ac.uk/parameter-schema.png: |
-      {
-        "type": "boolean",
-        "default": "true"
-      }
-    workflows.diamond.ac.uk/parameter-schema.jpg: |
-      {
-        "type": "boolean",
-        "default": "true"
-      }
-    workflows.diamond.ac.uk/parameter-schema.jpeg: |
-      {
-        "type": "boolean",
-        "default": "true"
-      }
-    workflows.diamond.ac.uk/parameter-schema.tif: |
-      {
-        "type": "boolean",
-        "default": "true"
-      }
-    workflows.diamond.ac.uk/parameter-schema.tiff: |
-      {
-        "type": "boolean",
-        "default": "true"
-      }
 
 spec:
   entrypoint: workflow-entry
@@ -216,13 +191,6 @@ spec:
           from PIL import Image
           print("creating hdf5 file")
           paths = (json.loads(path) for path in {{inputs.parameters.image-paths}})
-          with h5py.File("tmp/images.hdf5", "w") as f:
-              for i, path in enumerate(paths):
-                  print(f"Got {path}")
-                  with Image.open(path) as image:
-                      arr = np.array(image)
-                      f.create_dataset(f"image_{i}", data=arr, dtype=arr.dtype)
-          print("done")
       outputs:
         artifacts:
           - name: "hdf5-file"
