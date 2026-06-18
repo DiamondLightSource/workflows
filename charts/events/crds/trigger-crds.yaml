@@ -44,7 +44,7 @@ spec:
                         default:
                           type: string
                       anyOf:
-                        - required: [name, jsonPath]
+                        - required: [name, path]
                         - required: [name, default]
             required:
               - workflow
