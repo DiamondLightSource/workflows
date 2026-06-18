@@ -32,6 +32,7 @@ spec:
   eventName: waffle-example
   workflow:
     template: access-visit-dir
+    triggerOnMessageType: stop
     parameters:
       - name: visitdir
         path: doc.data_session_directory
@@ -49,6 +50,7 @@ spec:
   eventName: visr-example
   workflow:
     template: echo-workflow-template
+    triggerOnMessageType: start
     parameters:
       - name: message
         path: name

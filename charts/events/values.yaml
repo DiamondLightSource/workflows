@@ -44,3 +44,4 @@ genericServers:
 
 metacontroller:
   enabled: true
+  commandArgs: ["--zap-log-level=2"]
