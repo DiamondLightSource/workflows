@@ -13,7 +13,7 @@ spec:
     template: access-visit-dir
     parameters:
       - name: visitdir
-        messagePath: body.parameters.data_session_directory
+        path: parameters.data_session_directory
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: Trigger
