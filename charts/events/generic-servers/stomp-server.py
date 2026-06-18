@@ -10,6 +10,7 @@ import os
 from concurrent import futures
 from pydantic import BaseModel, ConfigDict
 from typing import Literal
+from deepmerge import conservative_merger
 
 
 class EventSourceConfig(BaseModel):
@@ -85,7 +86,7 @@ class _StompListener(stomp.ConnectionListener):
         uid: str | None = stop_message.get("doc", {}).get("run_start")
         if uid:
             start_message = self.start_messages.pop(uid, {})
-            return stop_message | start_message
+            return conservative_merger.merge(stop_message, start_message)
         logging.error(f"Unable to find start message with uid {uid}")
 
     def on_connected(self, frame: stomp.utils.Frame) -> None:
