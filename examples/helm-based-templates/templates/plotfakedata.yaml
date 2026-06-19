@@ -48,10 +48,12 @@ spec:
         volumeMounts:
           - name: tmp
             mountPath: /tmp
-        outputs:
-          artifacts:
-            - name: results
-              path: /tmp/fakedata.png
+      outputs:
+        artifacts:
+          - name: results
+            path: /tmp/fakedata.png
+            archive:
+              none: {}
     - name: overall-dag
       dag:
         tasks:
@@ -59,7 +61,7 @@ spec:
             template: find-dependencies
           - name: files
             template: find-files
-          - plot:
+          - name: plot
             dependencies: 
               - dependencies
               - files
