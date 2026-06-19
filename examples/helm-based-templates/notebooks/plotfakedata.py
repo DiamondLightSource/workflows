@@ -2,7 +2,7 @@ import csv
 import matplotlib.pyplot as plt
 x=[]
 y=[]
-with open("fakedata.csv","r") as d:
+with open("/tmp/fakedata.csv","r") as d:
     plottable=csv.reader(d,delimiter=",")
     for row in plottable:
         x.append(int(row[0]))
