@@ -20,7 +20,7 @@ spec:
         value: 3
   volumeClaimTemplates:
   - metadata:
-    name: output_dir
+      name: output_dir
     spec:
       accessModes: [ReadWriteOnce]
       resources:
