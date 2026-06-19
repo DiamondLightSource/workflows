@@ -32,7 +32,6 @@ spec:
       inputs:
         parameters:
           - name: numinput
-          - name: numdivisor
       script:
         image: python:3.12
         volumeMounts:
