@@ -29,9 +29,6 @@ spec:
       storageClassName: netapp
   templates:
     - name: division
-      inputs:
-        parameters:
-          - name: numinput
       script:
         image: python:3.12
         volumeMounts:
