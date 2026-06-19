@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: fakedata
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+spec:
+  entrypoint: overall-dag
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: netapp
+  templates:
+    - name: find-dependencies
+      script:
+        image: python:3.12
+        command: [bash]
+        source: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install matplotlib
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+    - name: find-files
+      script:
+        image: python:3.12
+        command: [bash]
+        source: |
+          echo '{{ .Files.Get "notebooks/fakedata.csv" | b64enc }}' | base64 -d > /tmp/fakedata.csv
+          echo '{{ .Files.Get "notebooks/plotfakedata.py" | b64enc }}' | base64 -d > /tmp/plotfakedata.py
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+    - name: run-plot
+      script:
+        image: python:3.12
+        command: [bash]
+        source: |
+          /tmp/venv/bin/python /tmp/plotfakedata.py
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+        outputs:
+          artifacts:
+            - name: results
+              path: /tmp/fakedata.png
+    - name: overall-dag
+      dag:
+        tasks:
+          - name: dependencies
+            template: find-dependencies
+          - name: files
+            template: find-files
+          - plot:
+            dependencies: 
+              - dependencies
+              - files
+            template: run-plot
