@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: division
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: Division test
+    workflows.argoproj.io/description: |
+      Takes a numerical input and returns the remainder, output float, and output string
+      to a json file
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+spec:
+  entrypoint: division
+  arguments:
+    parameters:
+      - name: numinput
+        value: 200
+      - name: numdivisor
+        value: 3
+  volumeClaimTemplates:
+  - metadata:
+    name: output_dir
+  spec:
+    accessModes: [WriteOnce]
+    resources:
+      requests:
+        storage: 1Mb
+      storageClassName: netapp
+  templates:
+    - name: division
+      inputs:
+        parameters:
+          - name: numinput
+          - name: numdivisor
+      script:
+        image: python:3.12.13
+        volumeMounts:
+        - name: output_dir
+          mountPath: /tmp
+        command: ["python"]
+        source: |
+          x = int(inputs.parameters.numinput)
+          y = int(inputs.parameters.numdivisor)
+          div=x/y
+          intdiv=x//y
+          remain=x%y
+          dictionary_of_results={"divide":div,"integer divisor":intdiv,"remainder":remain}
+          with open("output_dir/output.json","w") as otpt:
+            otpt.write(str(dictionary_of_results))
+
