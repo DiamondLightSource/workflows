@@ -42,7 +42,7 @@ spec:
         source: |
           import json
           x = int("{{workflow.parameters.numinput}}")
-          y = int("{{workflow.parameters.numdivisor"}})
+          y = int("{{workflow.parameters.numdivisor}}")
           div=x/y
           intdiv=x//y
           remain=x%y
