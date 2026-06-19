@@ -20,7 +20,7 @@ spec:
         value: "3"
   volumeClaimTemplates:
   - metadata:
-      name: output_dir
+      name: output-dir
     spec:
       accessModes: [ReadWriteOnce]
       resources:
@@ -36,8 +36,8 @@ spec:
       script:
         image: python:3.12
         volumeMounts:
-        - name: output_dir
-          mountPath: /output_dir
+        - name: output-dir
+          mountPath: /output-dir
         command: ["python"]
         source: |
           import json
@@ -47,10 +47,10 @@ spec:
           intdiv=x//y
           remain=x%y
           dictionary_of_results={"divide":div,"integer divisor":intdiv,"remainder":remain}
-          with open("/output_dir/output.json","w") as otpt:
+          with open("/output-dir/output.json","w") as otpt:
             json.dump(dictionary_of_results,otpt)
       outputs:
         artifacts:
           - name: results
-            path: /output_dir/output.json
+            path: /output-dir/output.json
 
