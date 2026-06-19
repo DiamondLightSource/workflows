@@ -15,9 +15,9 @@ spec:
   arguments:
     parameters:
       - name: numinput
-        value: 200
+        value: "200"
       - name: numdivisor
-        value: 3
+        value: "3"
   volumeClaimTemplates:
   - metadata:
       name: output_dir
