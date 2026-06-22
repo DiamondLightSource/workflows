@@ -35,6 +35,7 @@ use axum_extra::{
 use lazy_static::lazy_static;
 use opentelemetry::KeyValue;
 use std::fmt::Display;
+use std::str::FromStr;
 use workflow_templates::WorkflowTemplatesMutation;
 /// Ensure valid authn on GraphQL fields
 mod auth_guard;
@@ -64,39 +65,12 @@ pub struct NodeQuery;
 #[Object(guard = "AuthGuard")]
 impl NodeQuery {
     async fn node(&self, ctx: &Context<'_>, id: ID) -> Option<NodeValue> {
-        let id_str = id.to_string();
-        let parts: Vec<&str> = id_str.split(':').collect();
-        if parts.len() != 2 {
-            return None;
-        }
-        let visit_display = parts[0];
-        let workflow_name = parts[1];
-
-        let visit_input = match parse_visit_display(visit_display) {
-            Some(v) => v,
-            None => return None,
-        };
-
         let workflows_query = WorkflowsQuery;
-        match workflows_query
-            .workflow(ctx, visit_input, workflow_name.to_string())
-            .await
-        {
-            Ok(workflow) => Some(NodeValue::Workflow(workflow)),
-            Err(_) => None,
+        match workflows_query.workflow_by_id(ctx, id).await {
+            Ok(Some(workflow)) => Some(NodeValue::Workflow(workflow)),
+            _ => None,
         }
     }
-}
-
-/// Helper to parse VisitInput Display back into VisitInput
-fn parse_visit_display(display: &str) -> Option<VisitInput> {
-    let re = regex::Regex::new(r"^([A-Za-z]+)(\d+)-(\d+)$").ok()?;
-    let caps = re.captures(display)?;
-    Some(VisitInput {
-        proposal_code: caps[1].to_string(),
-        proposal_number: caps[2].parse().ok()?,
-        number: caps[3].parse().ok()?,
-    })
 }
 
 /// The root mutation of the service
@@ -258,5 +232,29 @@ impl Display for VisitInput {
             "{}{}-{}",
             self.proposal_code, self.proposal_number, self.number
         )
+    }
+}
+
+lazy_static! {
+    static ref VISIT_REGEX: regex::Regex =
+        regex::Regex::new(r"^([A-Za-z]+)(\d+)-(\d+)$").expect("invalid RegEx");
+}
+
+impl FromStr for VisitInput {
+    type Err = anyhow::Error;
+
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
+        let caps = VISIT_REGEX
+            .captures(string)
+            .ok_or_else(|| anyhow::anyhow!("Invalid visit format"))?;
+        Ok(VisitInput {
+            proposal_code: caps[1].to_string(),
+            proposal_number: caps[2]
+                .parse()
+                .map_err(|err| anyhow::anyhow!("Invalid proposal number: {err}"))?,
+            number: caps[3]
+                .parse()
+                .map_err(|err| anyhow::anyhow!("Invalid visit number: {err}"))?,
+        })
     }
 }

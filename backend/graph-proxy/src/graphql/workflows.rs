@@ -64,20 +64,28 @@ pub(super) struct Workflow {
 impl Workflow {
     /// Create [`Workflow`] from [`IoArgoprojWorkflowV1alpha1Workflow`] and [`Visit`]
     pub fn new(manifest: IoArgoprojWorkflowV1alpha1Workflow, visit: Visit) -> Workflow {
-        let name = manifest.metadata.name.clone().unwrap();
+        let name = manifest
+            .metadata
+            .name
+            .clone()
+            .expect("Workflow missing name");
+        let uid = manifest.metadata.uid.clone().expect("Workflow missing uid");
         Workflow {
             manifest,
-            metadata: Metadata { name, visit },
+            metadata: Metadata { name, visit, uid },
         }
     }
 }
 
 #[Object]
 impl Workflow {
-    /// The unique ID derived from the visit and name
+    /// The unique ID derived from the visit, name and uid
     async fn id(&self) -> ID {
         let visit_display = self.metadata.visit.to_string();
-        let unique_id = format!("{}:{}", visit_display, self.metadata.name);
+        let unique_id = format!(
+            "{}:{}:{}",
+            visit_display, self.metadata.name, self.metadata.uid
+        );
         ID::from(unique_id)
     }
 
@@ -129,10 +137,12 @@ impl Workflow {
 /// Metadata of a workflow
 #[derive(Debug)]
 pub(super) struct Metadata {
-    /// The name given to the workflow, unique within a given visit
+    /// The name given to the workflow
     name: String,
     /// The visit the Workflow was run against
     visit: Visit,
+    /// Unique ID identifying a workflow
+    uid: String,
 }
 
 /// The status of a workflow
@@ -552,37 +562,38 @@ pub struct WorkflowsQuery;
 
 #[Object(guard = "AuthGuard")]
 impl WorkflowsQuery {
-    /// Get a single [`Workflow`] by proposal, visit, and name
+    /// Get a single [`Workflow`] by proposal, visit, and name.
+    ///
+    /// In case of two workflows with the same name, returns the most recent.
     #[instrument(name = "graph_proxy_workflow", skip(self, ctx))]
+    #[graphql(deprecation = "Use workflowById instead")]
     pub async fn workflow(
         &self,
         ctx: &Context<'_>,
         visit: VisitInput,
         name: String,
-    ) -> anyhow::Result<Workflow> {
-        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
-        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
-        let mut url = server_url.clone();
-        url.path_segments_mut().unwrap().extend([
-            "api",
-            "v1",
-            "workflows",
-            &visit.to_string(),
-            &name,
-        ]);
-        debug!("Retrieving workflow from {url}");
-        let request = if let Some(auth_token) = auth_token {
-            CLIENT.get(url).bearer_auth(auth_token.token())
-        } else {
-            CLIENT.get(url)
-        };
-        let workflow = request
-            .send()
-            .await?
-            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
-            .await?
-            .into_result()?;
-        Ok(Workflow::new(workflow, visit.into()))
+    ) -> anyhow::Result<Option<Workflow>> {
+        get_workflow_from_argo_api(ctx, visit, &name, None).await
+    }
+
+    /// Get a single [`Workflow`] by unique ID.
+    pub async fn workflow_by_id(
+        &self,
+        ctx: &Context<'_>,
+        id: ID,
+    ) -> anyhow::Result<Option<Workflow>> {
+        let id_str = id.to_string();
+        let parts: Vec<&str> = id_str.split(':').collect();
+        if parts.len() != 3 {
+            return Err(anyhow::anyhow!("Invalid Workflow ID"));
+        }
+        let visit_display = parts[0];
+        let workflow_name = parts[1];
+        let workflow_uid = parts[2];
+
+        let visit_input: VisitInput = visit_display.parse()?;
+
+        get_workflow_from_argo_api(ctx, visit_input, workflow_name, Some(workflow_uid)).await
     }
 
     /// Find all workflows available for a given visit
@@ -656,6 +667,38 @@ impl WorkflowsQuery {
             }));
         Ok(connection)
     }
+}
+
+/// Get single workflow from Argo Workflows REST API
+async fn get_workflow_from_argo_api(
+    ctx: &Context<'_>,
+    visit: VisitInput,
+    name: &str,
+    uid: Option<&str>,
+) -> anyhow::Result<Option<Workflow>> {
+    let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+    let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+    let mut url = server_url.clone();
+    url.path_segments_mut()
+        .unwrap()
+        .extend(["api", "v1", "workflows", &visit.to_string(), name]);
+    debug!("Retrieving workflow from {url}");
+    let mut request = CLIENT.get(url);
+    if let Some(uid) = uid {
+        request = request.query(&[("uid", uid)]);
+    }
+    if let Some(auth_token) = auth_token {
+        request = request.bearer_auth(auth_token.token());
+    };
+    let response = request.send().await?;
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+    let workflow = response
+        .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+        .await?
+        .into_result()?;
+    Ok(Some(Workflow::new(workflow, visit.into())))
 }
 
 /// Information about the creator of a workflow.
@@ -747,6 +790,64 @@ mod tests {
         let expected_data = json!({
             "workflow": {
                 "name": workflow_name
+            }
+        });
+        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+    }
+
+    #[tokio::test]
+    async fn single_workflow_query_with_uid() {
+        let workflow_name = "numpy-benchmark-wdkwj";
+        let workflow_uid = "bed157b2-ecf2-4423-9945-8ecfa767a151";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-wdkwj.json");
+        let workflow_endpoint = server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .match_query(mockito::Matcher::UrlEncoded(
+                "uid".into(),
+                workflow_uid.into(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(test_token())
+            .finish();
+        let expected_id = format!("{visit}:{workflow_name}:{workflow_uid}");
+        let query = format!(
+            r#"
+            query {{
+                workflowById(id: "{}") {{
+                    name
+                    id
+                }}
+            }}
+        "#,
+            expected_id
+        );
+        let resp = schema.execute(query).await.into_result().unwrap();
+
+        workflow_endpoint.assert_async().await;
+        let expected_data = json!({
+            "workflowById": {
+                "name": workflow_name,
+                "id": expected_id,
             }
         });
         assert_eq!(resp.data.into_json().unwrap(), expected_data);

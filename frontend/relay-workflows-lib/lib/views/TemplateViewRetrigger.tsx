@@ -36,7 +36,7 @@ export default function TemplateViewWithRetrigger({
     <TemplateView
       templateName={templateName}
       visit={visit}
-      prepopulatedParameters={retriggerData.workflow}
+      prepopulatedParameters={retriggerData.workflow ?? undefined}
       workflowName={workflowName}
     />
   );

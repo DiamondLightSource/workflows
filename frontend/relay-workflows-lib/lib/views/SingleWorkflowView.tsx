@@ -34,7 +34,7 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
     },
   );
   const finished =
-    queryData.workflow.status?.__typename &&
+    queryData.workflow?.status?.__typename &&
     finishedStatuses.has(queryData.workflow.status.__typename);
   const [isNull, setIsNull] = useState<boolean>(false);
   const onNullSubscriptionData = () => {
@@ -43,7 +43,7 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
 
   return finished || isNull ? (
     <BaseSingleWorkflowView
-      fragmentRef={queryData.workflow}
+      fragmentRef={queryData.workflow ?? null}
       taskIds={props.taskIds}
     />
   ) : (

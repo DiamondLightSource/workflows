@@ -110,7 +110,7 @@ export function isFinished(
     | LiveWorkflowRelaySubscription$data,
 ) {
   return (
-    data.workflow.status?.__typename &&
+    data.workflow?.status?.__typename &&
     finishedStatuses.has(data.workflow.status.__typename)
   );
 }
