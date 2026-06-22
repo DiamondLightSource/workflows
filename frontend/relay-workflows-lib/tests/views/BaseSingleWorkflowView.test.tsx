@@ -36,7 +36,10 @@ const QueryWrappedBaseSingleWorkflowView = () => {
     },
   );
   return (
-    <BaseSingleWorkflowView fragmentRef={data.workflow} taskIds={taskIds} />
+    <BaseSingleWorkflowView
+      fragmentRef={data.workflow ?? null}
+      taskIds={taskIds}
+    />
   );
 };
 
