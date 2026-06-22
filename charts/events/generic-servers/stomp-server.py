@@ -11,6 +11,7 @@ from concurrent import futures
 from pydantic import BaseModel, ConfigDict
 from typing import Literal
 from deepmerge import conservative_merger
+from expiringdict import ExpiringDict
 
 
 class EventSourceConfig(BaseModel):
@@ -43,7 +44,6 @@ class ConnectionManager:
     def __init__(self):
         self.connection: stomp.Connection
         self.queue = queue.SimpleQueue()
-        self.start_messages: dict[str, dict] = {}
 
     def create_connection(self, request: generic_pb2.EventSource) -> None:
         config = parse_config(request.config)
@@ -53,7 +53,7 @@ class ConnectionManager:
             return
         logging.debug("Using config: %s", config)
         conn = stomp.Connection([(config.host, config.port)], heartbeats=(10000, 10000))
-        conn.set_listener("", _StompListener(self.queue, self.start_messages))
+        conn.set_listener("", _StompListener(self.queue))
         conn.connect(
             login=config.user,
             passcode=config.password,
@@ -73,21 +73,27 @@ class ConnectionManager:
 
 
 class _StompListener(stomp.ConnectionListener):
-    def __init__(self, q, start_messages):
+    def __init__(self, q):
         self.q: queue.SimpleQueue = q
-        self.start_messages: dict[str, dict] = start_messages
+        self.start_messages = ExpiringDict(100, 60^2 * 24) # One day expiry
 
-    def _add_start_message(self, message: dict):
+    def _add_start_message(self, message: dict) -> None:
         uid: str | None = message.get("doc", {}).get("uid")
         if uid:
-            self.start_messages.update({uid: message})
+            self.start_messages[uid] = message
+        else:
+            logging.warning("The uid field is missing from this 'start' message")
 
-    def _merge_stop_with_start(self, stop_message: dict):
+    def _merge_stop_with_start(self, stop_message: dict) -> dict:
         uid: str | None = stop_message.get("doc", {}).get("run_start")
         if uid:
-            start_message = self.start_messages.pop(uid, {})
-            return conservative_merger.merge(stop_message, start_message)
-        logging.error(f"Unable to find start message with uid {uid}")
+            start_message = self.start_messages.pop(uid, None)
+            if not start_message:
+                logging.error(f"Unable to find start message with uid {uid}")
+            else:
+                return conservative_merger.merge(stop_message, start_message)
+        logging.error(f"The run_start field is missing from the 'stop' message")
+        return stop_message
 
     def on_connected(self, frame: stomp.utils.Frame) -> None:
         logging.info("Connected to STOMP broker")
