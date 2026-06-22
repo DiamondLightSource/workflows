@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: python:3.12-slim
+          image: python:3.14-slim
           ports:
             - name: stomp-server
               containerPort: 50051
@@ -74,7 +74,7 @@ spec:
           args:
             - |
               cp /scripts/stomp-server.py .
-              pip install deepmerge stomp.py pydantic grpcio-tools --disable-pip-version-check --root-user-action=ignore
+              pip install expiringdict deepmerge stomp.py pydantic grpcio-tools --disable-pip-version-check --root-user-action=ignore
               python -m grpc_tools.protoc -I /protos --python_out=. --pyi_out=. --grpc_python_out=. /protos/generic.proto && 
               python stomp-server.py
           env:
