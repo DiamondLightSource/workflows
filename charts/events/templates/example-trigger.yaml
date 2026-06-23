@@ -64,7 +64,6 @@ metadata:
     workflows.diamond.ac.uk/beamline: test-beamline
 spec:
   enabled: true
-  eventName: start-stop-test
   workflow:
     triggerOnMessageType: stop
     template: echo-workflow-template
