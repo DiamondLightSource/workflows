@@ -82,13 +82,14 @@ class Controller(BaseHTTPRequestHandler):
     beamline: str | None = labels.get("workflows.diamond.ac.uk/beamline")
     uid: str | None = labels.get("workflows.diamond.ac.uk/machine-uid")
 
+    errored_triggers = []
     for dlsTrigger in sourceTriggers.values():
       trigger = {}
       try:
         trigger = Trigger(**dlsTrigger)
       except ValidationError:
-        print("ERR: Unable to parse trigger:\n", dlsTrigger)
-        return {"status": {"error": True}, "children": []}
+        errored_triggers.append(trigger)
+        continue
 
       name: str | None = trigger.metadata.name
       source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
@@ -166,6 +167,10 @@ class Controller(BaseHTTPRequestHandler):
           }
         }
       })
+
+    if errored_triggers:
+      print(f"ERROR: Unable to parse {len(errored_triggers)} trigger(s)")
+      return {"status": {"error": 500}, "children": []}
 
     sensor = {
       "apiVersion": "argoproj.io/v1alpha1",
