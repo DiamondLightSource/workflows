@@ -4,8 +4,9 @@ import SingleTemplatePage from "../src/routes/SingleTemplatePage";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 
-vi.mock("relay-workflows-lib/lib/views/TemplateView", () => ({
-  default: ({
+vi.mock("relay-workflows-lib", async () => ({
+  ...(await vi.importActual("relay-workflows-lib")),
+  TemplateView: ({
     templateName,
     visit,
   }: {
@@ -17,10 +18,7 @@ vi.mock("relay-workflows-lib/lib/views/TemplateView", () => ({
       {visit.proposalNumber}-{visit.number}
     </p>
   ),
-}));
-
-vi.mock("relay-workflows-lib/lib/views/TemplateViewRetrigger", () => ({
-  default: ({
+  TemplateViewRetrigger: ({
     templateName,
     workflowName,
     visit,
@@ -34,6 +32,7 @@ vi.mock("relay-workflows-lib/lib/views/TemplateViewRetrigger", () => ({
       {visit.proposalNumber}-{visit.number} using workflow {workflowName}
     </p>
   ),
+  WorkflowsNavbar: vi.fn(),
 }));
 
 describe("SingleTemplatePage", () => {

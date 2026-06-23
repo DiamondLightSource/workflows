@@ -49,7 +49,7 @@ const router = createBrowserRouter([
 
 async function startMockingIfConfigured() {
   if (import.meta.env.VITE_ENABLE_MOCKING === "true") {
-    const { worker } = await import("relay-workflows-lib/mocks/browser");
+    const { worker } = await import("../tests/browser");
     return worker.start();
   }
 }

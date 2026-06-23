@@ -9,4 +9,7 @@ export { default as JsonFormsFileUploadRenderer } from "./components/template/js
 export { default as JsonFormsScanRangeRenderer } from "./components/template/jsonforms/JsonFormsScanRangeRenderer";
 export { default as ScienceGroupSelector } from "./components/template/ScienceGroupSelector";
 export { default as RepositoryLinkBase } from "./components/common/RepositoryLinkBase";
+export { default as WorkflowErrorBoundaryWithRetry } from "./components/workflow/WorkflowErrorBoundaryWithRetry"
+export { default as WorkflowErrorBoundary } from "./components/workflow/WorkflowsErrorBoundary"
 export * from "./types";
+export * from "./utils/commonUtils";

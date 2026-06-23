@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Container, Box, Typography } from "@mui/material";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { WorkflowTemplatesFilter } from "workflows-lib";
-import { WorkflowsNavbar } from "relay-workflows-lib";
-import TemplatesListView from "relay-workflows-lib/lib/views/TemplatesListView";
-import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
+import {
+  WorkflowTemplatesFilter,
+  WorkflowErrorBoundaryWithRetry,
+} from "workflows-lib";
+import { WorkflowsNavbar, TemplatesListView } from "relay-workflows-lib";
 import { getFilterFromParams } from "./utils";
 
 const TemplatesListPage: React.FC = () => {
