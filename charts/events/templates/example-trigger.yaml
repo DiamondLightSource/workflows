@@ -26,11 +26,11 @@ spec:
   enabled: true
   eventName: waffle-example
   workflow:
-    template: access-visit-dir
+    template: echo-workflow-template
     triggerOnMessageType: stop
     parameters:
-      - name: visitdir
-        path: doc.data_session_directory
+      - name: message
+        path: name
     
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1

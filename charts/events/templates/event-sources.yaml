@@ -25,7 +25,7 @@ metadata:
   name: waffle-generic
   labels:
     workflows.diamond.ac.uk/beamline: i15-1
-    workflows.diamond.ac.uk/machine-uid: "36055"
+    workflows.diamond.ac.uk/machine-uid: "36242"
 spec:
   generic:
     waffle-example:
