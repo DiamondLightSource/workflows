@@ -4,8 +4,8 @@ import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import {
   visitTextToVisit,
   convertStringToScienceGroup,
-} from "workflows-lib/lib/utils/commonUtils";
-import { WorkflowTemplatesFilter } from "workflows-lib";
+  WorkflowTemplatesFilter,
+} from "workflows-lib";
 
 export const useVisitInput = (initialVisitId?: string | null) => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { wsClient } from "relay-workflows-lib/lib/components/RelayEnvironment";
+import { wsClient } from "relay-workflows-lib";
 import { Typography } from "@mui/material";
 
 export function WebSocketDebugger() {
