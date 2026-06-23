@@ -1,5 +1,5 @@
 secrets:
-  enabled: false
+  enabled: true
   cluster: dev
 
 backup:
@@ -28,11 +28,11 @@ vcluster:
           statefulSet:
             resources:
               limits:
-                cpu: 1200m
-                memory: 5Gi
+                cpu: 1000m
+                memory: 4000Mi
               requests:
-                cpu: 1
-                memory: 5Gi
+                cpu: 100m
+                memory: 400Mi
             highAvailability:
               replicas: 1
             persistence:
@@ -56,11 +56,11 @@ vcluster:
         replicas: 1
       resources:
         limits:
-          cpu: 2500m
+          cpu: 2000Mi
           ephemeral-storage: 2Gi
           memory: 1Gi
         requests:
-          cpu: 2500m
+          cpu: 1
           memory: 500Mi
   experimental:
     deploy:
