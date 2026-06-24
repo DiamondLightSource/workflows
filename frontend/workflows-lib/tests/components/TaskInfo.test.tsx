@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { TaskInfo } from "../../lib/components/workflow/TaskInfo";
+import TaskInfo from "../../lib/components/workflow/TaskInfo";
 import type { Artifact } from "workflows-lib";
 import "@testing-library/jest-dom";
 import { mockArtifacts } from "./data";

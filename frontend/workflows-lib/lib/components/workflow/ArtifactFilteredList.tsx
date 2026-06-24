@@ -10,8 +10,7 @@ import {
   TableContainer,
   Paper,
 } from "@mui/material";
-import type { Artifact } from "workflows-lib";
-import type { ArtifactSortType } from "workflows-lib/lib/types";
+import type { Artifact, ArtifactSortType } from "workflows-lib";
 import ImportExportIcon from "@mui/icons-material/ImportExport";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";

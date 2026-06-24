@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Box from "@mui/material/Box";
 import userEvent from "@testing-library/user-event";
-import { TaskInfo } from "../../lib/components/workflow/TaskInfo";
+import TaskInfo from "../../lib/components/workflow/TaskInfo";
 import type { Artifact } from "workflows-lib";
 import { mockArtifacts } from "./data";
 

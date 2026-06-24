@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
-import { visitTextToVisit } from "workflows-lib/lib/utils/commonUtils";
 import { workflowRelayQuery$data } from "../graphql/__generated__/workflowRelayQuery.graphql";
 import { workflowRelaySubscription$data } from "../graphql/__generated__/workflowRelaySubscription.graphql";
 import { LiveWorkflowRelaySubscription$data } from "../subscription-components/__generated__/LiveWorkflowRelaySubscription.graphql";
 import { LiveSingleWorkflowViewSubscription$data } from "../views/__generated__/LiveSingleWorkflowViewSubscription.graphql";
-import { JSONObject, Task } from "workflows-lib";
+import { JSONObject, Task, visitTextToVisit } from "workflows-lib";
 
 export const useVisitInput = (initialVisitId?: string | null) => {
   const navigate = useNavigate();

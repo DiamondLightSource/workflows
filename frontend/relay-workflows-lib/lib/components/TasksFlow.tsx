@@ -15,19 +15,18 @@ import {
 } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import TaskFlowNode, {
-  TaskFlowNodeData,
-} from "workflows-lib/lib/components/workflow/TasksFlowNode";
-import TasksTable from "workflows-lib/lib/components/workflow/TasksTable";
 import {
+  TaskFlowNode,
+  TaskFlowNodeData,
+  TasksTable,
   addHighlightsAndFills,
   applyDagreLayout,
   buildTaskTree,
   generateNodesAndEdges,
   usePersistentViewport,
-} from "workflows-lib/lib/utils/tasksFlowUtils";
+} from "workflows-lib";
 import { useFetchedTasks } from "relay-workflows-lib/lib/utils/workflowRelayUtils";
-import { WorkflowTasksFragment$key } from "relay-workflows-lib/lib/graphql/__generated__/WorkflowTasksFragment.graphql";
+import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTasksFragment.graphql";
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 

@@ -1,7 +1,7 @@
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import { RepositoryLinkQuery as RepositoryLinkQueryType } from "./__generated__/RepositoryLinkQuery.graphql";
-import { default as RepositoryLinkBase } from "workflows-lib/lib/components/common/RepositoryLinkBase";
+import { RepositoryLinkBase } from "workflows-lib";
 
 const RepositoryLinkQuery = graphql`
   query RepositoryLinkQuery($name: String!) {

@@ -6,19 +6,25 @@ import {
   buildTaskTree,
   generateNodesAndEdges,
   usePersistentViewport,
-} from "workflows-lib/lib/utils/tasksFlowUtils";
+  mockTasks,
+} from "workflows-lib";
 import { ReactFlow } from "@xyflow/react";
-import { mockTasks } from "workflows-lib/tests/components/data";
 
 describe("TasksFlow Component", () => {
   beforeEach(() => {
-    vi.mock(
-      "../../lib/components/workflow/TasksFlowNode",
-      async (importOriginal) => ({
-        ...(await importOriginal()),
-        TaskFlowNode: vi.fn().mockReturnValue(<div>CustomNode Mock</div>),
+    vi.mock("workflows-lib", async () => ({
+      ...(await vi.importActual("workflows-lib")),
+      TaskFlowNode: vi.fn().mockReturnValue(<div>CustomNode Mock</div>),
+      buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
+      generateNodesAndEdges: vi.fn().mockReturnValue({
+        nodes: mockNodes,
+        edges: mockEdges,
       }),
-    );
+      applyDagreLayout: vi.fn().mockReturnValue({
+        nodes: mockLayoutedNodes,
+        edges: mockLayoutedEdges,
+      }),
+    }));
   });
 
   const mockTaskTree = vi.hoisted(() => ({}));
@@ -38,24 +44,6 @@ describe("TasksFlow Component", () => {
   vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
     useFetchedTasks: vi.fn(() => mockTasks),
   }));
-
-  beforeEach(() => {
-    vi.mock(
-      "workflows-lib/lib/utils/tasksFlowUtils",
-      async (importOriginal) => ({
-        ...(await importOriginal()),
-        buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
-        generateNodesAndEdges: vi.fn().mockReturnValue({
-          nodes: mockNodes,
-          edges: mockEdges,
-        }),
-        applyDagreLayout: vi.fn().mockReturnValue({
-          nodes: mockLayoutedNodes,
-          edges: mockLayoutedEdges,
-        }),
-      }),
-    );
-  });
 
   beforeEach(() => {
     vi.mock("@xyflow/react", async (importOriginal) => ({

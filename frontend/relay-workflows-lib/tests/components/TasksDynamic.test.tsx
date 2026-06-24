@@ -1,11 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import TasksFlow from "relay-workflows-lib/lib/components/TasksFlow";
+import TasksFlow from "../../lib/components/TasksFlow";
 import { ReactFlowInstance } from "@xyflow/react";
 import { Node, Edge } from "@xyflow/react";
-import { Task } from "workflows-lib/lib/types";
+import { Task, mockTasks } from "workflows-lib";
 import "react-resizable/css/styles.css";
-import { mockTasks } from "workflows-lib/tests/components/data";
 
 vi.mock("@xyflow/react", () => ({
   ReactFlow: ({
@@ -22,22 +21,16 @@ vi.mock("@xyflow/react", () => ({
   getNodesBounds: () => ({ width: 100, height: 100 }),
 }));
 
-vi.mock("workflows-lib/lib/components/workflow/TasksTable", () => ({
-  __esModule: true,
-  default: () => <div data-testid="taskstable-mock" />,
+vi.mock("workflows-lib", async () => ({
+  ...(await vi.importActual("workflows-lib")),
+  TasksTable: () => <div data-testid="taskstable-mock" />,
+  applyDagreLayout: (nodes: Node, edges: Edge) => ({ nodes, edges }),
+  buildTaskTree: (tasks: Task[]) => tasks,
+  generateNodesAndEdges: () => ({
+    nodes: [],
+    edges: [],
+  }),
 }));
-
-vi.mock("workflows-lib/lib/utils/tasksFlowUtils", async () => {
-  return {
-    ...(await vi.importActual("workflows-lib/lib/utils/tasksFlowUtils")),
-    applyDagreLayout: (nodes: Node, edges: Edge) => ({ nodes, edges }),
-    buildTaskTree: (tasks: Task[]) => tasks,
-    generateNodesAndEdges: () => ({
-      nodes: [],
-      edges: [],
-    }),
-  };
-});
 
 vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
   useFetchedTasks: vi.fn(() => mockTasks),

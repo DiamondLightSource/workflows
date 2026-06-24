@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { RepositoryLink } from "../../lib/main";
-import { RepositoryLinkBaseProps } from "workflows-lib/lib/components/common/RepositoryLinkBase";
+import { RepositoryLinkBaseProps, templateSourceToLink } from "workflows-lib";
 import { getRelayEnvironment } from "relay-workflows-lib";
 import { RelayEnvironmentProvider } from "react-relay";
-import { templateSourceToLink } from "workflows-lib/lib/utils/commonUtils";
 import { server } from "../mocks/server.ts";
 
-vi.mock("workflows-lib/lib/components/common/RepositoryLinkBase", () => ({
-  default: ({ repository, variant }: RepositoryLinkBaseProps) => (
+vi.mock("workflows-lib", async () => ({
+  ...(await vi.importActual("workflows-lib")),
+  RepositoryLinkBase: ({ repository, variant }: RepositoryLinkBaseProps) => (
     <p>
       {" "}
       Repo: {templateSourceToLink(repository)}, Var: {variant}{" "}

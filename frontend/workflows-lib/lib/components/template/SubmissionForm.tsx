@@ -14,7 +14,7 @@ import { ErrorObject } from "ajv";
 import { JSONObject, Visit } from "../../types";
 import { VisitInput } from "@diamondlightsource/sci-react-ui";
 import { rendererSet } from "../../utils/renderers";
-import RepositoryLinkBase from "workflows-lib/lib/components/common/RepositoryLinkBase";
+import { RepositoryLinkBase } from "workflows-lib";
 
 interface TemplateSubmissionFormProps {
   title: string;

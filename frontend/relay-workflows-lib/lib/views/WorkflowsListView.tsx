@@ -1,16 +1,18 @@
 import { Suspense, useEffect, useRef, useState, useCallback } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import { VisitInput, visitToText } from "@diamondlightsource/sci-react-ui";
-import WorkflowListFilterDrawer from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
-import { WorkflowQueryFilter } from "workflows-lib";
-import WorkflowErrorBoundaryWithRetry from "workflows-lib/lib/components/workflow/WorkflowErrorBoundaryWithRetry";
-import { WorkflowListFilterDisplay } from "relay-workflows-lib/lib/components/WorkflowListFilterDrawer";
+import WorkflowListFilterDrawer from "../components/WorkflowListFilterDrawer";
+import {
+  WorkflowErrorBoundaryWithRetry,
+  WorkflowQueryFilter,
+} from "workflows-lib";
+import { WorkflowListFilterDisplay } from "../components/WorkflowListFilterDrawer";
 import { useVisitInput, ScrollRestorer } from "../utils/coreUtils";
 import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
 import { WorkflowsListViewQuery as WorkflowsListViewQueryType } from "./__generated__/WorkflowsListViewQuery.graphql";
 import { useServerSidePagination } from "../utils/useServerSidePagination";
 import { WorkflowsListViewTemplatesQuery as WorkflowsListViewTemplatesQueryType } from "./__generated__/WorkflowsListViewTemplatesQuery.graphql";
-import WorkflowsContent from "relay-workflows-lib/lib/components/WorkflowsContent";
+import WorkflowsContent from "../components/WorkflowsContent";
 
 export const WorkflowsListViewQuery = graphql`
   query WorkflowsListViewQuery(

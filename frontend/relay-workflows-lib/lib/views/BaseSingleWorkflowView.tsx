@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, ToggleButton } from "@mui/material";
-import { TaskInfo } from "workflows-lib/lib/components/workflow/TaskInfo";
-import { buildTaskTree } from "workflows-lib/lib/utils/tasksFlowUtils";
-import { Artifact, Task, TaskNode } from "workflows-lib/lib/types";
+import {
+  Artifact,
+  Task,
+  TaskNode,
+  TaskInfo,
+  buildTaskTree,
+} from "workflows-lib";
 import {
   useFetchedTasks,
   useSelectedTaskIds,
 } from "../utils/workflowRelayUtils";
 import WorkflowInfo from "../components/WorkflowInfo";
-import { useFragment } from "react-relay";
-import { graphql } from "react-relay";
+import { graphql, useFragment } from "react-relay";
 import { BaseSingleWorkflowViewFragment$key } from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
 import BaseWorkflowRelay from "../components/BaseWorkflowRelay";
 

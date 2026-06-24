@@ -19,7 +19,7 @@ interface TaskInfoProps {
   onArtifactHover?: (artifactName: Artifact | null) => void;
 }
 
-export const TaskInfo: React.FC<TaskInfoProps> = ({
+const TaskInfo: React.FC<TaskInfoProps> = ({
   artifactList,
   onArtifactHover,
 }) => {
@@ -130,3 +130,5 @@ export const TaskInfo: React.FC<TaskInfoProps> = ({
     </Accordion>
   );
 };
+
+export default TaskInfo;

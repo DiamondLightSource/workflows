@@ -8,7 +8,7 @@ import { getRelayEnvironment } from "relay-workflows-lib";
 import { MemoryRouter, useSearchParams } from "react-router-dom";
 import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "relay-workflows-lib/lib/views/__generated__/SingleWorkflowViewQuery.graphql";
 import userEvent from "@testing-library/user-event";
-import * as tasksFlowUtils from "workflows-lib/lib/utils/tasksFlowUtils";
+import * as workflowsLib from "workflows-lib";
 import { useMemo } from "react";
 
 const QueryWrappedBaseSingleWorkflowView = () => {
@@ -42,7 +42,7 @@ const QueryWrappedBaseSingleWorkflowView = () => {
 
 describe("BaseSingleWorkflowView", () => {
   const user = userEvent.setup();
-  const highlightSpy = vi.spyOn(tasksFlowUtils, "addHighlightsAndFills");
+  const highlightSpy = vi.spyOn(workflowsLib, "addHighlightsAndFills");
 
   beforeAll(() => {
     server.listen();

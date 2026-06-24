@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
-import TemplateSearchField from "workflows-lib/lib/components/template/TemplateSearchField";
+import { TemplateSearchField } from "workflows-lib";
 import { MemoryRouter } from "react-router-dom";
 
 describe("TemplateSearchField", () => {
