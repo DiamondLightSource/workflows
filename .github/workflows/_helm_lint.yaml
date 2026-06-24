@@ -28,6 +28,7 @@ jobs:
           helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
           helm repo add opentelemetry https://open-telemetry.github.io/opentelemetry-helm-charts
           helm repo add localstack https://localstack.github.io/helm-charts
+          helm repo add openbao https://openbao.github.io/openbao-helm
 
       - name: Lint
         run: >
