@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 import React, { Component, ReactNode } from "react";
-import { formatErrorMessage } from "workflows-lib/lib/utils/commonUtils";
+import { formatErrorMessage } from "workflows-lib";
 
 interface ErrorBoundaryProps {
   children: (props: { fetchKey: number }) => ReactNode;

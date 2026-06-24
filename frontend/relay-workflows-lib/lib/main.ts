@@ -18,4 +18,6 @@ export {
   getUser,
   wsClient,
 } from "./components/RelayEnvironment";
+export { RenderSubmittedMessage } from "./components/RenderSubmittedMessage";
+export { SubscribeAndRender } from "./subscription-components/SubscribeAndRender";
 export { handlers } from "../tests/mocks/handlers";

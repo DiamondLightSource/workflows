@@ -1,9 +1,11 @@
 import React from "react";
 
 import { Box, Divider, Paper, Typography } from "@mui/material";
-import { SubmissionData } from "workflows-lib/lib/types";
-import { RenderSubmittedMessage } from "relay-workflows-lib/lib/components/RenderSubmittedMessage";
-import { SubscribeAndRender } from "relay-workflows-lib/lib/subscription-components/SubscribeAndRender";
+import { SubmissionData } from "workflows-lib";
+import {
+  RenderSubmittedMessage,
+  SubscribeAndRender,
+} from "relay-workflows-lib";
 
 interface SubmittedMessagesListProps {
   submittedData: SubmissionData[];

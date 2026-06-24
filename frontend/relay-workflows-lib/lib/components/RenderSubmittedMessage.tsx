@@ -8,12 +8,12 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Link } from "react-router-dom";
 import {
+  getWorkflowStatusIcon,
   SubmissionGraphQLErrorMessage,
   SubmissionNetworkErrorMessage,
   SubmissionSuccessMessage,
   WorkflowStatus,
-} from "workflows-lib/lib/types";
-import { getWorkflowStatusIcon } from "workflows-lib/lib/components/common/StatusIcons";
+} from "workflows-lib";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { RenderSubmittedMessageFragment$key } from "./__generated__/RenderSubmittedMessageFragment.graphql";

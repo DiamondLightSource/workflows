@@ -1,8 +1,7 @@
 import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
-import { WorkflowAccordion } from "workflows-lib";
-import { TaskStatus, WorkflowStatus } from "workflows-lib/lib/types";
+import { TaskStatus, WorkflowAccordion, WorkflowStatus } from "workflows-lib";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { vi } from "vitest";
 

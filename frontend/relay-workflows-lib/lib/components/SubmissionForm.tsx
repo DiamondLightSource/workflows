@@ -1,5 +1,9 @@
 import { useFragment } from "react-relay";
-import { SubmissionForm as SubmissionFormBase, Visit } from "workflows-lib";
+import {
+  SubmissionForm as SubmissionFormBase,
+  templateSourceToLink,
+  Visit,
+} from "workflows-lib";
 import { JsonSchema, UISchemaElement } from "@jsonforms/core";
 import { graphql } from "react-relay";
 import { SubmissionFormFragment$key } from "./__generated__/SubmissionFormFragment.graphql";
@@ -9,7 +13,6 @@ import { mergeParameters } from "../utils/workflowRelayUtils";
 import { Stack, Typography, useTheme } from "@mui/material";
 import { Info } from "@mui/icons-material";
 import { visitToText } from "@diamondlightsource/sci-react-ui";
-import { templateSourceToLink } from "workflows-lib/lib/utils/commonUtils";
 
 export const SubmissionFormFragment = graphql`
   fragment SubmissionFormFragment on WorkflowTemplate {

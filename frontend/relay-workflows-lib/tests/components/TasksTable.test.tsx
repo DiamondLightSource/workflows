@@ -1,8 +1,7 @@
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import TasksTable from "../../lib/components/TasksFlow";
-import { getTaskStatusIcon } from "workflows-lib/lib/components/common/StatusIcons";
-import { mockTasks } from "workflows-lib/tests/components/data";
+import { getTaskStatusIcon, mockTasks } from "workflows-lib";
 
 describe("TaskTable Component", () => {
   vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({

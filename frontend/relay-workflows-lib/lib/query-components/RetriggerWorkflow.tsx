@@ -6,7 +6,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { NavLink } from "react-router-dom";
 import { RetriggerWorkflowQuery as RetriggerWorkflowQueryType } from "./__generated__/RetriggerWorkflowQuery.graphql";
 import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
-import WorkflowsErrorBoundary from "workflows-lib/lib/components/workflow/WorkflowsErrorBoundary";
+import { WorkflowsErrorBoundary } from "workflows-lib";
 
 const retriggerWorkflowQuery = graphql`
   query RetriggerWorkflowQuery($visit: VisitInput!, $workflowname: String!) {

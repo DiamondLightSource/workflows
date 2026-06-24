@@ -5,7 +5,7 @@ import {
   SubmissionGraphQLErrorMessage,
   SubmissionNetworkErrorMessage,
   SubmissionSuccessMessage,
-} from "workflows-lib/lib/types";
+} from "workflows-lib";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { RenderSubmittedMessage } from "../components/RenderSubmittedMessage";
 import { graphql, GraphQLTaggedNode } from "react-relay";
