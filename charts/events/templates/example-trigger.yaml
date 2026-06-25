@@ -1,6 +1,6 @@
 {{- if .Values.metacontroller.enabled -}}
 apiVersion: workflows.diamond.ac.uk/v1alpha1
-kind: Trigger
+kind: ClusterTriggerTemplate
 metadata:
   name: example-trigger
   labels:
@@ -21,7 +21,7 @@ spec:
         default: "true"
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
-kind: Trigger
+kind: ClusterTriggerTemplate
 metadata:
   name: waffle-trigger
   labels:
@@ -39,7 +39,7 @@ spec:
     
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
-kind: Trigger
+kind: ClusterTriggerTemplate
 metadata:
   name: visr-trigger
   labels:
