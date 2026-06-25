@@ -1,0 +1,64 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: populate-trigger-from-template
+
+spec:
+  rules:
+    - name: populate-trigger-from-template
+      skipBackgroundRequests: true
+
+      match:
+        resources:
+          kinds:
+            - workflows.diamond.ac.uk/v1alpha1/Trigger
+          operations:
+            - CREATE
+
+      context:
+        - name: templateRef
+          variable:
+            jmesPath: request.object.spec.templateRef || ""
+            default: ""
+
+        - name: templateObject
+          apiCall:
+            urlPath: "/apis/workflows.diamond.ac.uk/v1alpha1/clustertriggertemplates/{{`{{templateRef}}`}}"
+            method: GET
+
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              workflows.diamond.ac.uk/beamline: '{{`{{templateObject.metadata.labels."workflows.diamond.ac.uk/beamline"}}`}}'
+              workflows.diamond.ac.uk/source: '{{`{{templateObject.metadata.labels."workflows.diamond.ac.uk/source"}}`}}'
+          spec: "{{`{{templateObject.spec}}`}}"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:populate-trigger-from-template
+rules:
+  - apiGroups: ["workflows.diamond.ac.uk"]
+    resources: ["triggers"]
+    verbs: ["get", "watch", "patch"]
+  - apiGroups: ["workflows.diamond.ac.uk"]
+    resources: ["clustertriggertemplates"]
+    verbs: ["get", "watch", "patch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno:populate-trigger-from-template
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno:populate-trigger-from-template
+subjects:
+  - kind: ServiceAccount
+    name: kyverno-background-controller
+    namespace: kyverno
+  - kind: ServiceAccount
+    name: kyverno-admission-controller
+    namespace: kyverno
