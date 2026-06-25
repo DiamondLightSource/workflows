@@ -61,7 +61,7 @@ spec:
       - name: numpy
         templateRef:
           name: numpy-benchmark
-          template: numpy-test
+          template: workflow-entry
           clusterScope: true
         arguments:
           parameters:
