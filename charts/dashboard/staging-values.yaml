@@ -19,19 +19,19 @@ ingress:
         - path: /api
           pathType: Prefix
           service:
-            name: oidc-bff
+            name: auth-gateway
             port: 80
         - path: /auth
           pathType: Prefix
           service:
-            name: oidc-bff
+            name: auth-gateway
             port: 80
 
   tls: true
   secretName: dashboard-tls-cert
   host: staging.workflows.diamond.ac.uk
 
-oidcBff:
+authGateway:
   enabled: true
   image:
     registry: ghcr.io
@@ -41,4 +41,4 @@ oidcBff:
     pullPolicy: IfNotPresent
     pullSecrets: []
   configuration:
-    secretName: oidc-bff-config
+    secretName: auth-gateway-config

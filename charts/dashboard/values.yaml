@@ -50,12 +50,12 @@ ingress:
         - path: /api
           pathType: Prefix
           service:
-            name: oidc-bff
+            name: auth-gateway
             port: 80
         - path: /auth
           pathType: Prefix
           service:
-            name: oidc-bff
+            name: auth-gateway
             port: 80
   tls: false
   annotations:
@@ -69,5 +69,5 @@ serviceAccount:
   name: ""
   annotations: []
 
-oidcBff:
+authGateway:
   enabled: false

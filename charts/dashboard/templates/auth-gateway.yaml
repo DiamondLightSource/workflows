@@ -1,15 +1,15 @@
-{{- if $.Values.oidcBff.enabled }}
+{{- if $.Values.authGateway.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: oidc-bff
+  name: auth-gateway
   namespace: {{ .Release.Namespace }}
 spec:
   type: ClusterIP
   selector:
-    app: oidc-bff
+    app: auth-gateway
   ports:
-    - name: oidc-bff
+    - name: auth-gateway
       port: 80
       targetPort: 80
       protocol: TCP
@@ -17,22 +17,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: oidc-bff
+  name: auth-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: oidc-bff
+      app: auth-gateway
   template:
     metadata:
       labels:
-        app: oidc-bff
+        app: auth-gateway
     spec:
-      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.oidcBff.image) "context" $ ) }}
+      imagePullSecrets: {{ include "common.images.renderPullSecrets" (dict "images" (list $.Values.authGateway.image) "context" $ ) }}
       containers:
-        - name: oidc-bff
-          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.oidcBff.image "global" $.Values.global "chart" $.Chart ) }}
-          imagePullPolicy: {{ $.Values.oidcBff.image.pullPolicy }}
+        - name: auth-gateway
+          image: {{ include "common.images.image" ( dict "imageRoot" $.Values.authGateway.image "global" $.Values.global "chart" $.Chart ) }}
+          imagePullPolicy: {{ $.Values.authGateway.image.pullPolicy }}
           ports:
             - containerPort: 80
           livenessProbe:
@@ -54,18 +54,20 @@ spec:
             failureThreshold: 3
             periodSeconds: 5
           env:
-            - name: WORKFLOWS_OIDC_BFF_CONFIG
-              value: "/etc/oidc-bff/config.yaml"
+            - name: WORKFLOWS_AUTH_GATEWAY_CONFIG
+              value: "/etc/auth-gateway/config.yaml"
+            - name: GRAPH_URL
+              value: "https://staging.workflows.diamond.ac.uk/graphql"
             - name: RUST_BACKTRACE
               value: "1"
           volumeMounts:
-            - name: oidc-bff-config
-              mountPath: /etc/oidc-bff
+            - name: auth-gateway-config
+              mountPath: /etc/auth-gateway
               readOnly: true
       volumes:
-        - name: oidc-bff-config
+        - name: auth-gateway-config
           secret:
-            secretName: {{ .Values.oidcBff.configuration.secretName | default "oidc-bff-config" }}
+            secretName: {{ .Values.authGateway.configuration.secretName | default "auth-gateway-config" }}
             items:
               - key: config.yaml
                 path: config.yaml
