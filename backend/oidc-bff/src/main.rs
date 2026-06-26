@@ -37,13 +37,12 @@ struct Args {
     #[arg(
         short,
         long,
-        env = "WORKFLOWS_OIDC_BFF_CONFIG",
+        env = "WORKFLOWS_AUTH_GATEWAY_CONFIG",
         default_value = "config.yaml"
     )]
     config: String,
     #[arg(
         env = "GRAPH_URL",
-        default_value = "https://staging.workflows.diamond.ac.uk/graphql"
     )]
     graph_url: String,
 }

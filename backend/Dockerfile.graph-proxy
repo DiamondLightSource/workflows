@@ -15,7 +15,7 @@ COPY auth-core/Cargo.toml auth-core/
 COPY auth-core/src/lib.rs auth-core/src/lib.rs
 COPY auth-core/migration/Cargo.toml auth-core/migration/
 COPY auth-daemon/Cargo.toml auth-daemon/
-COPY oidc-bff/Cargo.toml oidc-bff/
+COPY auth-gateway/Cargo.toml auth-gateway/
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY telemetry/build.rs telemetry/Cargo.toml telemetry/
 COPY Cargo.toml Cargo.lock ./
@@ -24,8 +24,8 @@ RUN mkdir -p graph-proxy/src \
     && echo "fn main() {}" > graph-proxy/src/main.rs \
     && mkdir -p sessionspaces/src \
     && echo "fn main() {}" > sessionspaces/src/main.rs \
-    && mkdir -p oidc-bff/src \
-    && echo "fn main() {}" > oidc-bff/src/main.rs \
+    && mkdir -p auth-gateway/src \
+    && echo "fn main() {}" > auth-gateway/src/main.rs \
     && mkdir -p auth-core/src \
     && touch auth-core/src/lib.rs \
     && echo "fn main() {}" > auth-core/src/main.rs \

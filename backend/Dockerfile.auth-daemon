@@ -7,7 +7,7 @@ RUN cargo install cargo-auditable
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
-COPY oidc-bff/Cargo.toml oidc-bff/
+COPY auth-gateway/Cargo.toml auth-gateway/
 COPY auth-core/Cargo.toml auth-core/
 COPY auth-core/migration/Cargo.toml auth-core/migration/
 COPY auth-daemon/Cargo.toml auth-daemon/
@@ -21,8 +21,8 @@ RUN mkdir -p argo-workflows-openapi/src \
   && echo "fn main() {}" > graph-proxy/src/main.rs \
   && mkdir -p sessionspaces/src \
   && echo "fn main() {}" > sessionspaces/src/main.rs \
-  && mkdir -p oidc-bff/src \
-  && echo "fn main() {}" > oidc-bff/src/main.rs \
+  && mkdir -p auth-gateway/src \
+  && echo "fn main() {}" > auth-gateway/src/main.rs \
   && mkdir -p auth-daemon/src \
   && echo "fn main() {}" > auth-daemon/src/main.rs \
   && mkdir -p auth-core/src \

@@ -1,8 +1,8 @@
 [package]
-name = "oidc-bff"
+name = "auth-gateway"
 version = "0.1.0"
 edition = "2024"
-default-run = "oidc-bff"
+default-run = "auth-gateway"
 license-file = "../../LICENSE"
 
 [[bin]]
@@ -11,7 +11,7 @@ path = "src/bin/keygen.rs"
 publish = false
 
 [dependencies]
-async-trait = {workspace = true } 
+async-trait = {workspace = true }
 auth-core = { path = "../auth-core" }
 anyhow = { workspace = true, features = ["backtrace"] }
 axum = { workspace = true, features = ["macros"] }

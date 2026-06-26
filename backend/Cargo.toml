@@ -4,8 +4,8 @@ members = [
     "auth-core",
     "auth-core/migration",
     "auth-daemon",
-    "graph-proxy", 
-    "oidc-bff",
+    "graph-proxy",
+    "auth-gateway",
     "sessionspaces",
     "telemetry",
 ]
