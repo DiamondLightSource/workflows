@@ -19,17 +19,17 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.9.1
         with:
-          shared-key: backend/oidc-bff
+          shared-key: backend/auth-gateway
           workspaces: backend
 
       - name: Check Formatting
-        working-directory: backend/oidc-bff
+        working-directory: backend/auth-gateway
         run: >
           cargo fmt
           --check
 
       - name: Lint with Clippy
-        working-directory: backend/oidc-bff
+        working-directory: backend/auth-gateway
         run: >
           cargo clippy
           --all-targets
@@ -59,11 +59,11 @@ jobs:
       - name: Cache Rust Build
         uses: Swatinem/rust-cache@v2.9.1
         with:
-          shared-key: backend/oidc-bff
+          shared-key: backend/auth-gateway
           workspaces: backend
 
       - name: Run Tests
-        working-directory: backend/oidc-bff
+        working-directory: backend/auth-gateway
         run: >
           cargo test
           --all-targets

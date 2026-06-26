@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Generate Image Name
-        run: echo IMAGE_REPOSITORY=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '[_]' '[\-]')-oidc-bff >> $GITHUB_ENV
+        run: echo IMAGE_REPOSITORY=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '[_]' '[\-]')-auth-gateway >> $GITHUB_ENV
 
       - name: Log in to GitHub Docker Registry
         if: github.event_name != 'pull_request'
@@ -25,7 +25,7 @@ jobs:
 
       - name: Extract Version from Tag
         id: tags
-        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT 
+        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT
 
       - name: Docker Metadata
         id: meta
@@ -43,10 +43,10 @@ jobs:
         uses: docker/build-push-action@v6.18.0
         with:
           context: backend
-          file: backend/Dockerfile.oidc-bff
+          file: backend/Dockerfile.auth-gateway
           target: deploy
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/oidc-bff@') }}
-          load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/oidc-bff@')) }}
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/auth-gateway@') }}
+          load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/auth-gateway@')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
