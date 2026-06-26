@@ -13,7 +13,7 @@ use crate::request::{clone_request, prepare_headers};
 /// Injects a token into the request, refreshing it if expired, and retries on auth failure.
 /// Use this when the store cannot be expressed as a single `Arc<S>` in axum `State` — for
 /// example, when it must be assembled per-request from multiple sources such as shared app
-/// state and a per-request session (as in oidc-bff's `GatewayTokenContext`).
+/// state and a per-request session (as in auth-gateway's `GatewayTokenContext`).
 pub async fn inject_token_with<S>(
     store: &S,
     req: Request,

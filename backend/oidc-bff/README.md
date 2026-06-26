@@ -1,11 +1,11 @@
-# oidc-bff
+# Auth-Gateway
 
-Backend-For-Frontend (BFF) authentication gateway for the Workflows UI. Handles OIDC login via Diamond Keycloak, manages browser session cookies, stores encrypted tokens, and proxies authenticated requests to the GraphQL backend.
+Authentication gateway for the Workflows UI. Handles OIDC login via Diamond Keycloak, manages browser session cookies, stores encrypted tokens, and proxies authenticated requests to the GraphQL backend.
 
 ## Usage
 
 ```sh
-WORKFLOWS_OIDC_BFF_CONFIG=config.yaml cargo run
+WORKFLOWS_AUTH_GATEWAY_CONFIG=config.yaml cargo run
 ```
 
 Serves on port `5173` by default (configurable in `config.yaml`).

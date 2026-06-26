@@ -1,6 +1,6 @@
 # auth-core
 
-Shared Rust library providing OIDC authentication primitives for the Workflows auth services. Not deployed independently — consumed by `auth-daemon` and `oidc-bff` as a Cargo dependency.
+Shared Rust library providing OIDC authentication primitives for the Workflows auth services. Not deployed independently — consumed by `auth-daemon` and `auth-gateway` as a Cargo dependency.
 
 ## What it provides
 
