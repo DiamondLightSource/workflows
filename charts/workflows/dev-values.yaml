@@ -98,3 +98,6 @@ postgresql-ha:
 
 oauth2-proxy:
   enabled: false
+
+authenticatedWorkflows:
+  enabled: false

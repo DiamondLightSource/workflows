@@ -1,0 +1,167 @@
+# TODO: Tests disabled until charts/workflows/values.yaml authenticatedWorkflows.enabled: true
+# apiVersion: chainsaw.kyverno.io/v1alpha1
+# kind: Test
+# metadata:
+#   name: authdaemon-policy-does-not-apply-to-workflow-without-label
+# spec:
+#   steps:
+#     - try:
+#         - apply:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: no-auth-workflow
+#               spec:
+#                 entrypoint: main
+#                 templates:
+#                   - name: main
+#                     steps:
+#                       - - name: run
+#                           template: run-step
+
+#                   - name: run-step
+
+#         - sleep:
+#             duration: 5s
+
+#         - assert:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: no-auth-workflow
+#               spec:
+#                 entrypoint: main
+#                 templates:
+#                   - name: main
+#                     steps:
+#                       - - name: run
+#                           template: run-step
+
+#                   - name: run-step
+# ---
+# apiVersion: chainsaw.kyverno.io/v1alpha1
+# kind: Test
+# metadata:
+#   name: authdaemon-policy-applies-auth-to-steps-based-workflow-with-label
+# spec:
+#   steps:
+#     - try:
+#         - apply:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: authenticated-dag-workflow
+#                 annotations:
+#                   workflows.diamond.ac.uk/authenticated: "true"
+#               spec:
+#                 entrypoint: main
+#                 templates:
+#                   - name: main
+#                     dag:
+#                       tasks:
+#                         - name: run
+#                           template: run-step
+
+#                   - name: run-step
+
+#         - assert:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: authenticated-dag-workflow
+#                 annotations:
+#                   workflows.diamond.ac.uk/authenticated: "true"
+#               spec:
+#                 entrypoint: main
+#                 templates:
+#                   - name: main
+#                     dag:
+#                       tasks:
+#                         - name: run
+#                           template: run-step
+
+#                   - name: run-step
+#                 templateDefaults:
+#                   volumes:
+#                     - name: auth-daemon-config
+#                       secret:
+#                         secretName: auth-daemon-config
+
+#                   initContainers:
+#                     - name: authentication
+
+#                   container:
+#                     env:
+#                       - name: GRAPH_URL
+
+#                   script:
+#                     env:
+#                       - name: GRAPH_URL
+# ---
+# apiVersion: chainsaw.kyverno.io/v1alpha1
+# kind: Test
+# metadata:
+#   name: authdaemon-policy-applies-auth-to-dag-based-workflow-with-label
+# spec:
+#   steps:
+#     - try:
+#         - apply:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: authenticated-workflow
+#                 annotations:
+#                   workflows.diamond.ac.uk/authenticated: "true"
+#               spec:
+#                 entrypoint: main
+#                 templates:
+#                   - name: main
+#                     steps:
+#                       - - name: run
+#                           template: run-step
+
+#                   - name: run-step
+
+#         - assert:
+#             resource:
+#               apiVersion: argoproj.io/v1alpha1
+#               kind: Workflow
+#               metadata:
+#                 name: authenticated-workflow
+#               spec:
+#                 entrypoint: main
+#                 templates:
+#                   - name: main
+#                     steps:
+#                       - - name: run
+#                           template: run-step
+
+#                   - name: run-step
+#                 templateDefaults:
+#                   volumes:
+#                     - name: auth-daemon-config
+#                       secret:
+#                         secretName: auth-daemon-config
+
+#                   initContainers:
+#                     - name: authentication
+
+#                   container:
+#                     env:
+#                       - name: GRAPH_URL
+
+#                   script:
+#                     env:
+#                       - name: GRAPH_URL
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: noop
+spec:
+  steps:
+    - try:

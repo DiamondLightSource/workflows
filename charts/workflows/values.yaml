@@ -275,3 +275,8 @@ s3mock:
   enabled: false
 
 allowMachineUid: false
+
+authenticatedWorkflows:
+  # TODO: switch on these chainsaw tests when switching this to true
+  # charts/workflows/test-policy/authdaemon/chainsaw-test.yaml
+  enabled: false
