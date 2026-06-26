@@ -7,63 +7,25 @@ metadata:
   annotations:
     workflows.argoproj.io/title: Workflow Of Workflows
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+    workflows.diamond.ac.uk/authenticated: "true"
 spec:
   entrypoint: entry
   templates:
-  - name: entry
-    steps:
-    - - name: auth-daemon
-        template: auth
+    - name: entry
+      steps:
+        - - name: run-workflow
+            template: curl
+            arguments:
+              parameters:
+                - name: cmd
+                  value: |
+                    curl -v --request POST ${GRAPH_PROXY_URL} -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"ks\", proposalNumber: 10000, number: 1}, parameters: {}){     name   } }" }'
 
-    - - name: wait
-        template: wait
-
-    - - name: run-workflow
-        template: curl
-        arguments:
-          parameters:
+    - name: curl
+      inputs:
+        parameters:
           - name: cmd
-            value: |
-              curl -v --request POST http://{{steps.auth-daemon.ip}}:6000 -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"ks\", proposalNumber: 10000, number: 1}, parameters: {}){     name   } }" }'
-
-  - name: auth
-    daemon: true
-    retryStrategy:
-      limit: 10
-    volumes:
-      - name: auth-daemon-config
-        secret:
-          secretName: auth-daemon-config
-    container:
-      image: ghcr.io/diamondlightsource/workflows-auth-daemon@sha256:389cbdf0c6fc2a15401da52094c041ff065080f36853e58131f068a4e370447e
-      readinessProbe:
-        httpGet:
-          path: /healthz
-          port: 6000
-        initialDelaySeconds: 5
-        periodSeconds: 1
-      volumeMounts:
-        - name: auth-daemon-config
-          mountPath: /etc/workflows-auth-daemon
-          readOnly: true
-      env:
-        - name: WORKFLOWS_AUTH_DAEMON_CONFIG
-          value: /etc/workflows-auth-daemon/config.yaml
-      args:
-        - serve
-
-  - name: wait
-    container:
-      image: busybox
-      command: [sleep]
-      args: ["60"]
-
-  - name: curl
-    inputs:
-      parameters:
-      - name: cmd
-    container:
-      image: curlimages/curl:8.15.0
-      command: ["/bin/sh", "-c"]
-      args: ["{{inputs.parameters.cmd}}"]
-
+      container:
+        image: curlimages/curl:8.15.0
+        command: ["/bin/sh", "-c"]
+        args: ["{{inputs.parameters.cmd}}"]

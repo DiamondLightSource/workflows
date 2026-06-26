@@ -1,0 +1,70 @@
+{{- if .Values.authenticatedWorkflows.enabled }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ .Release.Name }}-inject-auth-daemon-container
+spec:
+  validationFailureAction: Enforce
+  background: false
+
+  rules:
+    - name: inject-auth-daemon-container
+      match:
+        any:
+          - resources:
+              kinds:
+                - argoproj.io/v1alpha1/Workflow
+              operations:
+                - CREATE
+
+      preconditions:
+        all:
+          # only apply to Workflows with expected annotation
+          - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/authenticated\" || '' }}` }}"
+            operator: Equals
+            value: "true"
+
+          # do not apply if the Workflow already defines its own authentication container
+          - key: '{{ "{{ (request.object.spec.templateDefaults.initContainer || `[]`)[?name == ''authentication''] | length(@) }}" }}'
+            operator: Equals
+            value: 0
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            templateDefaults:
+              volumes:
+                - name: auth-daemon-config
+                  secret:
+                    secretName: auth-daemon-config
+
+              initContainers:
+                - name: authentication
+                  image: ghcr.io/diamondlightsource/workflows-auth-daemon@sha256:389cbdf0c6fc2a15401da52094c041ff065080f36853e58131f068a4e370447e
+                  args:
+                    - serve
+                  restartPolicy: Always
+                  startupProbe:
+                    httpGet:
+                      path: /healthz
+                      port: 6000
+                    initialDelaySeconds: 5
+                    periodSeconds: 1
+                  volumeMounts:
+                    - name: auth-daemon-config
+                      mountPath: /etc/workflows-auth-daemon
+                      readOnly: true
+                  env:
+                    - name: WORKFLOWS_AUTH_DAEMON_CONFIG
+                      value: /etc/workflows-auth-daemon/config.yaml
+
+              container:
+                env:
+                  - name: GRAPH_PROXY_URL
+                    value: http://127.0.0.1:6000
+
+              script:
+                env:
+                  - name: GRAPH_PROXY_URL
+                    value: http://127.0.0.1:6000
+{{- end }}

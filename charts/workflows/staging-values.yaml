@@ -31,7 +31,6 @@ oauth2-proxy:
         hosts:
           - argo-workflows.staging.workflows.diamond.ac.uk
 
-
 postgresql-ha:
   persistence:
     storageClass: netapp
@@ -40,3 +39,6 @@ postgresql-ha:
     podAntiAffinityPreset: soft
 
 allowMachineUid: true
+
+authenticatedWorkflows:
+  enabled: true
