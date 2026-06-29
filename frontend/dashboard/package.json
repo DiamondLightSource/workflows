@@ -11,9 +11,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "keycloak-js": "^26.2.1",
-    "msw": "^2.12.1",
-    "react-router-dom": "^7.12.0",
+    "keycloak-js": "^26.2.4",
+    "msw": "^2.14.6",
+    "react-router-dom": "^7.18.0",
     "relay-workflows-lib": "*",
     "workflows-lib": "*"
   },
