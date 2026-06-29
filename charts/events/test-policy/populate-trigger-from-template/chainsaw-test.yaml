@@ -1,0 +1,56 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: populate-trigger-from-template
+spec:
+  steps:
+    - try:
+      - create:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: ClusterTriggerTemplate
+            metadata:
+              name: test-template
+              labels:
+                argocd.argoproj.io/instance: test
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+                parameters:
+                  - name: param1
+                    path: parameters.param1
+                  - name: param2
+                    default: "true"
+      - create:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: trigger-from-template
+            spec:
+              templateRef: test-template
+      - assert:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: trigger-from-template
+              labels:
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              templateRef: test-template
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+                parameters:
+                  - name: param1
+                    path: parameters.param1
+                  - name: param2
+                    default: "true"
+          

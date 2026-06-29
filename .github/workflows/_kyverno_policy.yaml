@@ -31,6 +31,7 @@ jobs:
           helm dep build charts/sessionspaces
           helm dep build charts/sessionspaces/charts/database
           helm dep build charts/identity-mapper
+          helm dep build charts/events
 
       - name: Install Kyverno
         run: |
@@ -41,6 +42,7 @@ jobs:
         run: |
           kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=v4.0.6"
           kubectl apply -f charts/identity-mapper/crds/useridentity.yaml
+          kubectl apply -f charts/events/crds/trigger-crds.yaml
 
       - name: Wait for CRDs
         run: |
@@ -63,6 +65,7 @@ jobs:
           # of a POSIX uid label as part of request.userInfo.extra
           helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding") | select(.metadata.name != "workflows-posix-uid-label")' | tee -a /tmp/policies.yaml | kubectl apply -f -
           helm template identity-mapper charts/identity-mapper | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
+          helm template events charts/events | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
           cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy")' | kubectl wait --for=condition=Ready --timeout=120s -f -
 
       - name: Wait for Kyverno
