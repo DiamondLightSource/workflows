@@ -25,7 +25,7 @@ metadata:
   name: waffle-generic
   labels:
     workflows.diamond.ac.uk/beamline: i15-1
-    workflows.diamond.ac.uk/machine-uid: "36055"
+    workflows.diamond.ac.uk/machine-uid: "36242"
 spec:
   generic:
     waffle-example:
@@ -37,7 +37,7 @@ spec:
         password: guest
         host: i15-1-rabbitmq-daq.diamond.ac.uk
         port: 61613
-        destination: /queue/public.worker.event.workflows
+        destination: /queue/public.worker.event
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
