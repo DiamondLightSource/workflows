@@ -1,0 +1,32 @@
+{
+    "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+    "kind": "Trigger",
+    "metadata": {
+        "creationTimestamp": "2026-07-01T13:20:59Z",
+        "generateName": "test-trigger-",
+        "generation": 1,
+        "labels": {
+            "workflows.diamond.ac.uk/beamline": "b01-1",
+            "workflows.diamond.ac.uk/source": "generic"
+        },
+        "name": "custom-name",
+        "namespace": "events",
+        "resourceVersion": "35319052",
+        "uid": "e4eb1a59-935d-445b-b859-91a7cb555126"
+    },
+    "spec": {
+        "enabled": true,
+        "eventName": "test-example",
+        "templateRef": "test-trigger",
+        "workflow": {
+            "parameters": [
+                {
+                    "name": "message",
+                    "path": "name"
+                }
+            ],
+            "template": "echo-workflow-template",
+            "triggerOnMessageType": "start"
+        }
+    }
+}
