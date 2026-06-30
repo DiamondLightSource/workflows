@@ -41,9 +41,7 @@ struct Args {
         default_value = "config.yaml"
     )]
     config: String,
-    #[arg(
-        env = "GRAPH_URL",
-    )]
+    #[arg(env = "GRAPH_URL")]
     graph_url: String,
 }
 
