@@ -54,4 +54,12 @@ spec:
     parameters:
       - name: message
         path: name
+---
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: Trigger
+metadata:
+  name: trigger-from-template
+spec:
+  templateRef: waffle-trigger
+
 {{- end }}
