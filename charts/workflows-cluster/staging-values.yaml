@@ -89,6 +89,7 @@ vcluster:
             "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
             "/postgres-auth-service-password": "workflows/postgres-auth-service-password"
             "/openbao-secret": "openbao/openbao-secret"
+            "/workflows-cluster-client": "workflows/workflows-cluster-client"
 
 ingress:
   secretName: letsencrypt-kubernetes-staging-workflows-diamond-ac-uk
