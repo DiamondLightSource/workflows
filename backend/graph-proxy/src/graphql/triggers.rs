@@ -1,7 +1,8 @@
-use async_graphql::{Object, SimpleObject};
+use crate::validate_token::ValidatedAuthToken;
+use async_graphql::{Context, Error, ErrorExtensions, Object, SimpleObject};
 use kube::{
     api::{ObjectMeta, PostParams},
-    Api, Client, CustomResource,
+    Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -37,7 +38,19 @@ pub struct TriggerMutation;
 #[Object]
 impl TriggerMutation {
     // #[instrument(name = "graph_proxy_create_trigger", skip(self))]
-    async fn create_trigger(&self, template_ref: String) -> anyhow::Result<TriggerGQL> {
+    async fn create_trigger(
+        &self,
+        ctx: &Context<'_>,
+        template_ref: String,
+    ) -> anyhow::Result<TriggerGQL> {
+        let mut config = Config::infer().await?;
+        let auth = ctx.data::<ValidatedAuthToken>().map_err(|_| {
+            Error::new("Authentication context missing")
+                .extend_with(|_, e| e.set("code", "UNAUTHENTICATED"))
+        });
+
+        // get token out of auth
+
         println!("Started creating trigger");
         let client = Client::try_default().await?;
         println!("Client created");
