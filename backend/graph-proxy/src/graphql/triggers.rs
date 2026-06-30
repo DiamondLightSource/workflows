@@ -1,4 +1,4 @@
-use async_graphql::Object;
+use async_graphql::{Object, SimpleObject};
 use kube::{
     api::{ObjectMeta, PostParams},
     Api, Client, CustomResource,
@@ -16,6 +16,20 @@ use serde::{Deserialize, Serialize};
 struct TriggerSpec {
     template_ref: String,
 }
+#[derive(SimpleObject)]
+struct TriggerGQL {
+    name: Option<String>,
+    template_ref: String,
+}
+
+impl From<Trigger> for TriggerGQL {
+    fn from(t: Trigger) -> Self {
+        Self {
+            name: t.metadata.name,
+            template_ref: t.spec.template_ref,
+        }
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct TriggerMutation;
@@ -23,10 +37,12 @@ pub struct TriggerMutation;
 #[Object]
 impl TriggerMutation {
     // #[instrument(name = "graph_proxy_create_trigger", skip(self))]
-    async fn create_trigger(&self, template_ref: String) -> anyhow::Result<Trigger> {
+    async fn create_trigger(&self, template_ref: String) -> anyhow::Result<TriggerGQL> {
+        println!("Started creating trigger");
         let client = Client::try_default().await?;
+        println!("Client created");
         let api: Api<Trigger> = Api::namespaced(client.clone(), "events");
-
+        println!("Api created");
         let trigger = Trigger {
             metadata: ObjectMeta {
                 generate_name: Some(format!("{}-trigger-", template_ref)),
@@ -35,7 +51,9 @@ impl TriggerMutation {
             },
             spec: TriggerSpec { template_ref },
         };
-        let o: Trigger = api.create(&PostParams::default(), &trigger).await?;
-        Ok(o)
+        println!("Trigger created");
+        let creation: Trigger = api.create(&PostParams::default(), &trigger).await?;
+        println!("Creation finished");
+        Ok(creation.into())
     }
 }
