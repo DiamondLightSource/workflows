@@ -1,5 +1,13 @@
+/// Workflow/Template filters
+mod filters;
 /// Workflow Template Paramer Schema
 mod parameter_schema;
+/// GraphQL operations requiring subscriptions
+mod subscription;
+/// Axum-specific websocket handling to support subscriptions
+pub mod subscription_integration;
+/// GraphQL operations related to Triggers
+mod triggers;
 /// Workflow Template JSON Forms UI Schema
 mod ui_schema;
 /// GraphQL operations related to workflow templates
@@ -7,18 +15,12 @@ mod workflow_templates;
 /// GraphQL operations related to workflows
 mod workflows;
 
-/// Workflow/Template filters
-mod filters;
-/// GraphQL operations requiring subscriptions
-mod subscription;
-/// Axum-specific websocket handling to support subscriptions
-pub mod subscription_integration;
-
 use crate::RouterState;
 use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidationMethod};
 
 use self::{
     subscription::WorkflowsSubscription,
+    triggers::TriggerMutation,
     workflow_templates::WorkflowTemplatesQuery,
     workflows::{Workflow, WorkflowsQuery},
 };
@@ -75,7 +77,7 @@ impl NodeQuery {
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Mutation(WorkflowTemplatesMutation);
+pub struct Mutation(WorkflowTemplatesMutation, TriggerMutation);
 
 /// Represents Relay Node types
 #[derive(Union)]
