@@ -82,7 +82,7 @@ vcluster:
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
             "/s3-artifact": "workflows/artifact-s3"
-            "/oidc-bff-config": "workflows/oidc-bff-config"
+            "/auth-gateway-config": "workflows/auth-gateway-config"
             "/auth-daemon-config": "workflows/auth-daemon-config"
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
