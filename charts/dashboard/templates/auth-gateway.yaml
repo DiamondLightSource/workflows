@@ -57,7 +57,7 @@ spec:
             - name: WORKFLOWS_AUTH_GATEWAY_CONFIG
               value: "/etc/auth-gateway/config.yaml"
             - name: GRAPH_URL
-              value: "https://staging.workflows.diamond.ac.uk/graphql"
+              value: {{ .Values.authGateway.graphUrl }}
             - name: RUST_BACKTRACE
               value: "1"
           volumeMounts:
