@@ -1,7 +1,7 @@
 use crate::CreateArgs;
 use std::io;
 use std::os::unix::fs as fs_sym;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::{fs, process};
 
 pub fn create(args: CreateArgs) {
@@ -19,38 +19,66 @@ pub fn create(args: CreateArgs) {
 }
 
 fn generate_template_repo(args: &CreateArgs, prompt_fn: fn(&str) -> bool) -> Result<(), String> {
+    //  Reject workflow files
+    if args.name.ends_with(".yaml") || args.name.ends_with(".yml") {
+        return Err(format!(
+            "Invalid name '{}': create expects a directory name, not a workflow file",
+            args.name
+        ));
+    }
+
     let root_path = Path::new(&args.name);
-    println!("Generating Template Repo: {:?}", args.name);
-    let new_dir = fs::create_dir(root_path);
-    match new_dir {
-        Ok(_) => println!("Created directory: {}", args.name),
-        Err(e) => {
-            let err = format!("Failed to create directory {}: {}", args.name, e);
-            return Err(err);
-        }
+    println!("Generating Template Repo: {}", root_path.display());
+
+    fs::create_dir(root_path)
+        .map_err(|e| format!("Failed to create directory {}: {}", root_path.display(), e))?;
+
+    println!("Created directory: {}", root_path.display());
+
+    let workflows_home = Path::new(&args.workflows_home);
+
+    let conventional_src = workflows_home.join("template-boilerplate/conventional-templates");
+    let helm_src = workflows_home.join("template-boilerplate/helm-based-templates");
+
+    //  Validate sources BEFORE asking user anything
+    if !conventional_src.exists() {
+        return Err(format!(
+            "Missing conventional template source directory: {}",
+            conventional_src.display()
+        ));
+    }
+    if !helm_src.exists() {
+        return Err(format!(
+            "Missing helm template source directory: {}",
+            helm_src.display()
+        ));
     }
 
     let conventional_dest = root_path.join("conventional-templates");
     let helm_dest = root_path.join("helm-based-templates");
-    let workflow_home_path = Path::new(&args.workflows_home);
-    let conventional_src = workflow_home_path.join("template-boilerplate/conventional-templates");
-    let helm_src = workflow_home_path.join("template-boilerplate/helm-based-templates");
 
-    if !args.manifest {
-        if prompt_fn("Would you like to store conventional WorkflowTemplate manifests? (y/n)") {
-            copy_directory(&conventional_src, &conventional_dest);
-        }
+    let include_conventional = if args.manifest {
+        true
     } else {
-        copy_directory(&conventional_src, &conventional_dest);
+        prompt_fn("Would you like to store conventional WorkflowTemplate manifests? (y/n)")
+    };
+
+    if include_conventional {
+        copy_directory(&conventional_src, &conventional_dest)?;
+        println!("Copied conventional templates");
     }
 
-    if !args.helm {
-        if prompt_fn("Would you like to store helm-based WorkflowTemplates? (y/n)") {
-            copy_directory(&helm_src, &helm_dest);
-        }
+    let include_helm = if args.helm {
+        true
     } else {
-        copy_directory(&helm_src, &helm_dest);
+        prompt_fn("Would you like to store helm-based WorkflowTemplates? (y/n)")
+    };
+
+    if include_helm {
+        copy_directory(&helm_src, &helm_dest)?;
+        println!("Copied helm templates");
     }
+
     Ok(())
 }
 
@@ -59,61 +87,69 @@ fn prompt(message: &str) -> bool {
     let mut selection = String::new();
 
     loop {
+        selection.clear();
+
         io::stdin()
             .read_line(&mut selection)
             .expect("Failed to read line");
-        if selection.to_lowercase().trim() == "y" {
-            return true;
-        } else if selection.to_lowercase().trim() == "n" {
-            return false;
-        } else {
-            println!("Invalid input. Please enter 'y' or 'n'.");
+
+        match selection.trim().to_lowercase().as_str() {
+            "y" => return true,
+            "n" => return false,
+            _ => println!("Invalid input. Please enter 'y' or 'n'."),
         }
     }
 }
 
-fn copy_directory(src: &PathBuf, dest: &PathBuf) {
-    if let Err(e) = fs::create_dir_all(dest) {
-        eprintln!(
+/// Recursively copy directory contents
+fn copy_directory(src: &Path, dest: &Path) -> Result<(), String> {
+    fs::create_dir_all(dest).map_err(|e| {
+        format!(
             "Failed to create destination directory {}: {}",
             dest.display(),
             e
-        );
-        return;
-    }
-    if let Ok(entries) = fs::read_dir(src) {
-        for entry in entries.flatten() {
-            let src_path = entry.path();
-            let dest_path = dest.join(entry.file_name());
+        )
+    })?;
 
-            if src_path.is_symlink() {
-                if let Ok(link_target) = fs::read_link(&src_path) {
-                    #[cfg(unix)]
-                    if let Err(e) = fs_sym::symlink(&link_target, &dest_path) {
-                        eprintln!("Failed to create symlink {}: {}", dest_path.display(), e);
-                    }
-                }
-            } else if src_path.is_dir() {
-                if let Err(e) = fs::create_dir_all(&dest_path) {
-                    eprintln!("Failed to create directory {}: {}", dest_path.display(), e);
-                    continue;
-                }
-                copy_directory(&src_path, &dest_path);
-            } else if src_path.is_file()
-                && let Err(e) = fs::copy(&src_path, &dest_path)
-            {
-                eprintln!("Failed to copy {}: {}", src_path.display(), e);
-            }
+    for entry in fs::read_dir(src)
+        .map_err(|e| format!("Failed to read source folder {}: {}", src.display(), e))?
+    {
+        let entry = entry.map_err(|e| e.to_string())?;
+
+        let src_path = entry.path();
+        let dest_path = dest.join(entry.file_name());
+
+        let metadata = fs::symlink_metadata(&src_path)
+            .map_err(|e| format!("Failed to read metadata for {}: {}", src_path.display(), e))?;
+
+        // SYMLINK
+        if metadata.file_type().is_symlink() {
+            let target = fs::read_link(&src_path)
+                .map_err(|e| format!("Failed to read symlink {}: {}", src_path.display(), e))?;
+
+            fs_sym::symlink(&target, &dest_path)
+                .map_err(|e| format!("Failed to create symlink {}: {}", dest_path.display(), e))?;
+        } else if metadata.is_dir() {
+            copy_directory(&src_path, &dest_path)?;
+        } else if metadata.is_file() {
+            fs::copy(&src_path, &dest_path).map_err(|e| {
+                format!(
+                    "Failed to copy file {} -> {}: {}",
+                    src_path.display(),
+                    dest_path.display(),
+                    e
+                )
+            })?;
         }
-    } else {
-        eprintln!("Failed to read source folder: {}", src.display());
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::serial_test::serial;
+    use serial_test::serial;
     struct TestCleanup {
         directory: String,
     }
