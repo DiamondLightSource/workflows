@@ -15,13 +15,14 @@ use serde::{Deserialize, Serialize};
     namespaced
 )]
 struct TriggerSpec {
+    #[serde(rename = "templateRef")]
     template_ref: String,
 }
 #[derive(Debug, Serialize, Deserialize, SimpleObject)]
 #[graphql(name = "Trigger")]
 struct TriggerGQL {
     name: Option<String>,
-    #[serde(rename(deserialize = "templateRef"))]
+    #[graphql(name = "templateRef")]
     template_ref: String,
 }
 
@@ -54,7 +55,11 @@ impl TriggerMutation {
             },
             spec: TriggerSpec { template_ref },
         };
-        println!("Trigger created");
+        println!("Trigger created:");
+        println!(
+            "Trigger JSON:\n{}",
+            serde_json::to_string_pretty(&trigger).unwrap()
+        );
         let creation: Trigger = api.create(&PostParams::default(), &trigger).await?;
         println!("Creation finished");
         Ok(creation.into())
