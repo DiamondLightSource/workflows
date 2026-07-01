@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.20](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.19...graph-proxy@v0.1.20) (2026-07-01)
+
+
+### Features
+
+* **graph-proxy:** add workflowById field ([e761aea](https://github.com/DiamondLightSource/workflows/commit/e761aea32e03041c180d9a6ee5a2adcc835364b7))
+
 ## [0.1.19](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.18...graph-proxy@v0.1.19) (2026-06-09)
 
 
