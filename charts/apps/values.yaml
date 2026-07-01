@@ -137,7 +137,7 @@ dashboard:
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
-  namespace: dashboard
+  namespace: workflows
 
 otel:
   enabled: true

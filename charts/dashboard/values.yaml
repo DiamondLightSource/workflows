@@ -70,4 +70,13 @@ serviceAccount:
   annotations: []
 
 authGateway:
-  enabled: false
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: diamondlightsource/workflows-auth-gateway
+    tag: "latest"
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  graphUrl: https://workflows.diamond.ac.uk/graphql
+  configuration:
+    secretName: auth-gateway-config
