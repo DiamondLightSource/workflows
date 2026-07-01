@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.6...sessionspaces@v0.1.7) (2026-07-01)
+
+
+### Features
+
+* added data directory feature for static sessions ([69fc41b](https://github.com/DiamondLightSource/workflows/commit/69fc41becf10ae06279b5609cab919190e236d0d))
+
 ## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.5...sessionspaces@v0.1.6) (2026-05-19)
 
 
