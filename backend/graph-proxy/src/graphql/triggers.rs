@@ -17,9 +17,11 @@ use serde::{Deserialize, Serialize};
 struct TriggerSpec {
     template_ref: String,
 }
-#[derive(SimpleObject)]
+#[derive(Debug, Serialize, Deserialize, SimpleObject)]
+#[graphql(name = "Trigger")]
 struct TriggerGQL {
     name: Option<String>,
+    #[serde(rename(deserialize = "templateRef"))]
     template_ref: String,
 }
 
