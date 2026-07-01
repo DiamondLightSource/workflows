@@ -11,4 +11,14 @@ rules:
     verbs:
       - get
       - list
+  - apiGroups:
+      - workflows.diamond.ac.uk
+    resources:
+      - triggers
+    verbs:
+      - get
+      - list
+      - patch
+      - create
+      - delete
 {{- end }}
