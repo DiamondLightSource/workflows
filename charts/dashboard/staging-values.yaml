@@ -35,9 +35,9 @@ authGateway:
   enabled: true
   image:
     registry: ghcr.io
-    repository: diamondlightsource/workflows-oidc-bff
-    tag: "tbt"
-    digest: "sha256:568b03a69ed9dda9df5bd96470ebba46d0460b7703c71b8ae3333c723a615d89"
+    repository: diamondlightsource/workflows-auth-gateway
+    tag: "latest"
+    digest: "sha256:b4dd2991fc67bb13b432e48821351aefa6487c4f3417c74f2d86cb19634b7760"
     pullPolicy: IfNotPresent
     pullSecrets: []
   configuration:
