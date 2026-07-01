@@ -1,36 +1,75 @@
 #![allow(clippy::missing_docs_in_private_items)]
+
 use serde_yaml::Value;
+use std::fs::{read_dir, read_to_string};
+use std::path::{Path, PathBuf};
 
 use crate::linter::linter_argocli::ArgoCLI;
 use crate::linter::linter_labels::LabelChecker;
 
 use super::LintResult;
-use std::fs::{read_dir, read_to_string};
-use std::path::{Path, PathBuf};
 
+/// Lint manifests from a file or directory.
+///
+/// IMPORTANT:
+/// When linting Helm charts, manifests are first rendered and written
+/// as temporary files (e.g. /tmp/argo-lint/workflow_0.yaml).
+///
+/// These files are *generated artifacts* and MUST NOT be reported as
+/// user-authored templates. We therefore explicitly filter them out here.
 pub fn lint_from_manifest(target: &Path, all: bool) -> Result<Vec<LintResult>, String> {
     let paths: Vec<PathBuf> = if all {
         match read_dir(target) {
             Ok(entries) => entries
                 .filter_map(Result::ok)
                 .map(|entry| entry.path())
+                // FILTER: skip Helm-generated temp files
+                .filter(|path| !is_generated_helm_file(path))
                 .collect(),
             Err(e) => {
-                let msg = format!("Error reading directory {}: {}", target.display(), e);
-                return Err(msg);
+                return Err(format!(
+                    "Error reading directory {}: {}",
+                    target.display(),
+                    e
+                ));
             }
         }
     } else {
-        vec![target.to_path_buf()]
+        let path = target.to_path_buf();
+
+        // FILTER: skip Helm-generated temp files
+        if is_generated_helm_file(&path) {
+            return Ok(vec![]);
+        }
+
+        vec![path]
     };
 
     Ok(paths
         .iter()
         .map(|path| match lint_path(path) {
             Ok(result) => result,
-            Err(error) => LintResult::new(path.to_str().unwrap().to_string(), vec![error]),
+            Err(error) => {
+                LintResult::new(path.to_str().unwrap_or_default().to_string(), vec![error])
+            }
         })
         .collect())
+}
+
+/// Detect Helm-generated temporary workflow files.
+///
+/// Helm-rendered manifests are written as:
+///   /tmp/argo-lint/workflow_<n>.yaml
+///
+/// These are intermediate artifacts and should never appear
+/// in user-facing lint reports.
+fn is_generated_helm_file(path: &Path) -> bool {
+    path.to_string_lossy().contains("/tmp/argo-lint/")
+        && path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .map(|name| name.starts_with("workflow_"))
+            .unwrap_or(false)
 }
 
 fn lint_path(target: &Path) -> Result<LintResult, String> {
@@ -43,8 +82,8 @@ pub fn get_manifest(target: &Path) -> Result<Value, String> {
     let yaml = read_to_string(target)
         .map_err(|err| format!("Couldn't read file {}: {}", target.display(), err))?;
 
-    let doc: Value = serde_yaml::from_str(&yaml)
-        .map_err(|e| format!("Could not parse manifest to string: {e}"))?;
+    let doc: Value =
+        serde_yaml::from_str(&yaml).map_err(|e| format!("Could not parse manifest: {e}"))?;
 
     Ok(doc)
 }
@@ -57,6 +96,7 @@ fn get_template_name(path: &Path) -> Result<String, String> {
         .or_else(|| yaml["metadata"]["generateName"].as_str())
         .ok_or("Template has no name")?
         .to_string();
+
     Ok(name)
 }
 
@@ -68,10 +108,10 @@ fn lint_template(target: &Path) -> Result<Vec<String>, String> {
 }
 
 pub trait Linter {
-    // The lint function takes path, rather than manifest. This is not ideal as it requires a tmp file
-    // to be opened in every linter, and then linted - rather than opened once and shared.
-    // The argo CLI has a bug where it cannot lint from stdin in '--offline' mode so we must lint from a file.
-    // Once this is fixed, we should refactor the lint function to take a reference to the yaml.
-    // https://github.com/argoproj/argo-workflows/issues/12819
+    /// Run linting rules against a manifest file.
+    ///
+    /// NOTE:
+    /// This operates on files rather than parsed YAML because
+    /// the Argo CLI cannot lint from stdin in offline mode.
     fn lint(target: &Path) -> Result<Vec<String>, String>;
 }
