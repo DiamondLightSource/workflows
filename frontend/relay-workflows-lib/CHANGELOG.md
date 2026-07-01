@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.7...relay-workflows-lib@v0.1.8) (2026-07-01)
+
+
+### Features
+
+* **graph-proxy:** add workflowById field ([e761aea](https://github.com/DiamondLightSource/workflows/commit/e761aea32e03041c180d9a6ee5a2adcc835364b7))
+
+
+### Bug Fixes
+
+* **frontend:** move SubmittedMessagesList to relay-workflows-lib ([9ee038b](https://github.com/DiamondLightSource/workflows/commit/9ee038b7c87c3d6f9b4a55f779a452e09468e588))
+
+
+### Reverts
+
+* bump the minor group across 1 directory with 23 updates ([6236a65](https://github.com/DiamondLightSource/workflows/commit/6236a6525b9661df22d2baf80fae154ad51aec31))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.6...relay-workflows-lib@v0.1.7) (2026-05-20)
 
 
