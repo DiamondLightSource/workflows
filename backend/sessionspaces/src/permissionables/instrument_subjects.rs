@@ -73,6 +73,8 @@ enum InstrumentGroup {
     I14Staff,
     #[strum(serialize = "i15_staff")]
     I15Staff,
+    #[strum(serialize = "i15-1detector")]
+    I15_1Detector,
     #[strum(serialize = "i16_staff")]
     I16Staff,
     #[strum(serialize = "i18_staff")]
@@ -182,6 +184,7 @@ impl InstrumentGroup {
             Self::I13Staff => BTreeSet::from([Instrument::I13, Instrument::I13_1]),
             Self::I14Staff => BTreeSet::from([Instrument::I14]),
             Self::I15Staff => BTreeSet::from([Instrument::I15, Instrument::I15_1]),
+            Self::I15_1Detector => BTreeSet::from([Instrument::I15_1]),
             Self::I16Staff => BTreeSet::from([Instrument::I16]),
             Self::I18Staff => BTreeSet::from([Instrument::I18]),
             Self::I19Staff => {
