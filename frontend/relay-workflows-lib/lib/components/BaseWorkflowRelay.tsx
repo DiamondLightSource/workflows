@@ -1,15 +1,13 @@
 import React from "react";
-import { ResizableBox } from "react-resizable";
 import { Box } from "@mui/material";
-import { visitToText } from "@diamondlightsource/sci-react-ui";
 import { WorkflowAccordion, type WorkflowStatus } from "workflows-lib";
-import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
+import { visitToText } from "@diamondlightsource/sci-react-ui";
 import { useSelectedTaskIds } from "../utils/workflowRelayUtils";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
-import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
 import TasksFlow from "./TasksFlow";
+import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
 
 export const BaseWorkflowRelayFragment = graphql`
   fragment BaseWorkflowRelayFragment on Workflow {
@@ -29,65 +27,37 @@ export const BaseWorkflowRelayFragment = graphql`
   }
 `;
 
-interface BaseWorkflowRelayProps {
-  workflowLink?: boolean;
-  filledTaskId?: string | null;
-  expanded?: boolean;
-  onChange?: () => void;
-  fragmentRef: BaseWorkflowRelayFragment$key;
-}
-
 export default function BaseWorkflowRelay({
-  workflowLink,
-  filledTaskId,
-  expanded,
-  onChange,
   fragmentRef,
-}: BaseWorkflowRelayProps) {
-  const { workflowName: workflowNameURL } = useParams<{
-    workflowName: string;
-  }>();
-  const navigate = useNavigate();
+  workflowLink,
+  expanded,
+  filledTaskId,
+  onSelectTask,
+  onChange,
+}: any) {
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
-  const statusText = data.status?.__typename ?? "Unknown";
+
+  const navigate = useNavigate();
+  const { workflowName: urlName } = useParams<{ workflowName: string }>();
+
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
+  const statusText = data.status?.__typename ?? "Unknown";
+
   const onNavigate = React.useCallback(
-    (taskId: string, event?: React.MouseEvent) => {
-      const isCtrl = event?.ctrlKey || event?.metaKey;
+    (taskId: string) => {
+      setSelectedTaskIds([taskId]);
+      onSelectTask?.(taskId);
 
-      let updatedTaskIds: string[];
-
-      if (isCtrl) {
-        updatedTaskIds = selectedTaskIds.includes(taskId)
-          ? selectedTaskIds.filter((id) => id !== taskId)
-          : [...selectedTaskIds, taskId];
-      } else {
-        updatedTaskIds = [taskId];
-      }
-      if (workflowNameURL !== data.name) {
+      if (urlName !== data.name) {
         void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
       }
-      setSelectedTaskIds(updatedTaskIds);
     },
-    [navigate, selectedTaskIds, setSelectedTaskIds, workflowNameURL, data],
+    [data, navigate, urlName, setSelectedTaskIds, onSelectTask]
   );
 
   return (
-    <Box
-      sx={{
-        width: {
-          xl: "100%",
-          lg: "100%",
-          md: "90%",
-          sm: "80%",
-          xs: "70%",
-        },
-        maxWidth: "1200px",
-        height: "100%",
-        mx: "auto",
-      }}
-    >
+    <Box>
       <WorkflowAccordion
         workflow={{
           name: data.name,
@@ -100,30 +70,14 @@ export default function BaseWorkflowRelay({
         onChange={onChange}
         retriggerComponent={RetriggerWorkflow}
       >
-        <ResizableBox
-          width={Infinity}
-          height={200}
-          resizeHandles={["se"]}
-          style={{
-            width: "100%",
-            maxWidth: "1150px",
-            minWidth: "300px",
-            padding: "10px",
-            overflow: "auto",
-            border: "2px dashed #ccc",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <TasksFlow
-            workflowName={data.name}
-            tasksRef={data}
-            onNavigate={onNavigate}
-            highlightedTaskIds={selectedTaskIds}
-            filledTaskId={filledTaskId}
-          />
-        </ResizableBox>
+        <TasksFlow
+          workflowName={data.name}
+          tasksRef={data}
+          onNavigate={onNavigate}
+          highlightedTaskIds={selectedTaskIds}
+          filledTaskId={filledTaskId}
+          onSelectTask={onSelectTask}
+        />
       </WorkflowAccordion>
     </Box>
   );
