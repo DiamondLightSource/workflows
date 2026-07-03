@@ -630,6 +630,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "auth-gateway"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "auth-core",
+ "axum",
+ "axum-reverse-proxy",
+ "bytes",
+ "chrono",
+ "clap",
+ "dotenvy",
+ "hyper 1.9.0",
+ "moka",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower-sessions",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4391,28 +4413,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "auth-gateway"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "auth-core",
- "axum",
- "axum-reverse-proxy",
- "bytes",
- "chrono",
- "clap",
- "dotenvy",
- "hyper 1.9.0",
- "moka",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "tower-sessions",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6287,7 +6287,7 @@ dependencies = [
 
 [[package]]
 name = "sessionspaces"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "anyhow",
  "clap",
