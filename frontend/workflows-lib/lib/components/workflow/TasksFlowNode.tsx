@@ -19,12 +19,20 @@ export interface TaskFlowNodeData {
 interface TaskFlowNodeProps {
   data: TaskFlowNodeData;
   onNavigate: (id: string, e?: React.MouseEvent) => void;
+  onSelectTask?: (taskId: string) => void;
 }
 
-const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
+  const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({
+    data,
+    onNavigate,
+    onSelectTask,
+  }) => {
+
   const theme = useTheme();
   const handleOpenTaskPage = (e: React.MouseEvent) => {
+    onSelectTask?.(data.taskId);
     onNavigate(data.taskId, e);
+
   };
 
   return (
