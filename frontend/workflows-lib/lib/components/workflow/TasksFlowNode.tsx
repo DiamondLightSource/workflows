@@ -16,6 +16,8 @@ export interface TaskFlowNodeData {
   filled: boolean;
 }
 
+console.log("TASK FLOW NODE RENDER");
+
 interface TaskFlowNodeProps {
   data: TaskFlowNodeData;
   onNavigate: (id: string, label?: string, e?: React.MouseEvent) => void;
@@ -30,6 +32,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({
   const theme = useTheme();
 
   const handleOpenTaskPage = (e: React.MouseEvent) => {
+    console.log("NODE CLICK", data.taskId);
     
     onSelectTask?.(data.taskId, data.label);
     onNavigate(data.taskId, data.label, e);

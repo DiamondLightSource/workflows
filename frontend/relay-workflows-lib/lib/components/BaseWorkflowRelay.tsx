@@ -27,6 +27,18 @@ export const BaseWorkflowRelayFragment = graphql`
   }
 `;
 
+interface Props {
+  fragmentRef: any;
+  workflowLink?: boolean;
+  expanded?: boolean;
+  filledTaskId?: string | null;
+  onSelectTask?: (
+    taskId: string,
+    taskLabel?: string,
+  ) => void;
+  onChange?: any;
+}
+
 export default function BaseWorkflowRelay({
   fragmentRef,
   workflowLink,
@@ -34,22 +46,47 @@ export default function BaseWorkflowRelay({
   filledTaskId,
   onSelectTask,
   onChange,
-}: any) {
-  const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
+}: Props) {
+  const data = useFragment(
+    BaseWorkflowRelayFragment,
+    fragmentRef,
+  );
 
   const navigate = useNavigate();
-  const { workflowName: urlName } = useParams<{ workflowName: string }>();
 
-  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
+  const { workflowName: urlName } =
+    useParams<{ workflowName: string }>();
 
-  const statusText = data.status?.__typename ?? "Unknown";
+  const [
+    selectedTaskIds,
+    setSelectedTaskIds,
+  ] = useSelectedTaskIds();
+
 
   const onNavigate = React.useCallback(
-    (taskId: string, taskLabel?: string) => {
+    (
+      taskId: string,
+      taskLabel?: string,
+    ) => {
+
+      console.log(
+        "[BaseWorkflowRelay] task selected:",
+        taskId,
+        taskLabel,
+      );
+
       setSelectedTaskIds([taskId]);
 
-      // IMPORTANT: forward label
-      onSelectTask?.(taskId, taskLabel);
+      /*
+       * Important:
+       * forward task id + label to BaseSingleWorkflowView
+       * so WorkflowLogsAccordion knows what to display
+       */
+      onSelectTask?.(
+        taskId,
+        taskLabel,
+      );
+
 
       if (urlName !== data.name) {
         void navigate(
@@ -57,8 +94,15 @@ export default function BaseWorkflowRelay({
         );
       }
     },
-    [data, navigate, urlName, setSelectedTaskIds, onSelectTask],
+    [
+      data,
+      navigate,
+      urlName,
+      setSelectedTaskIds,
+      onSelectTask,
+    ],
   );
+
 
   return (
     <Box>
@@ -66,22 +110,34 @@ export default function BaseWorkflowRelay({
         workflow={{
           name: data.name,
           instrumentSession: data.visit,
-          status: statusText as WorkflowStatus,
-          creator: data.creator.creatorId,
+          status:
+            data.status?.__typename as WorkflowStatus,
+          creator:
+            data.creator.creatorId,
         }}
         workflowLink={workflowLink}
         expanded={expanded}
         onChange={onChange}
-        retriggerComponent={RetriggerWorkflow}
+        retriggerComponent={
+          RetriggerWorkflow
+        }
       >
+
         <TasksFlow
           workflowName={data.name}
           tasksRef={data}
           onNavigate={onNavigate}
-          highlightedTaskIds={selectedTaskIds}
-          filledTaskId={filledTaskId}
-          onSelectTask={onSelectTask}
+          highlightedTaskIds={
+            selectedTaskIds
+          }
+          filledTaskId={
+            filledTaskId
+          }
+          onSelectTask={
+            onSelectTask
+          }
         />
+
       </WorkflowAccordion>
     </Box>
   );

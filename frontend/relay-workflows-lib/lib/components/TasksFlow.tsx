@@ -1,9 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { AspectRatio } from "@mui/icons-material";
-import { ReactFlow, ReactFlowInstance, Node } from "@xyflow/react";
+
+import {
+  ReactFlow,
+  ReactFlowInstance,
+  Node,
+} from "@xyflow/react";
+
 import "@xyflow/react/dist/style.css";
-import type { TaskFlowNodeData } from "workflows-lib";
+
+import type {
+  TaskFlowNodeData,
+} from "workflows-lib";
 
 import {
   TaskFlowNode,
@@ -14,33 +30,57 @@ import {
 } from "workflows-lib";
 
 import { useFetchedTasks } from "../utils/workflowRelayUtils";
-import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTasksFragment.graphql";
+
+import {
+  WorkflowTasksFragment$key,
+} from "../graphql/__generated__/WorkflowTasksFragment.graphql";
+
 
 interface TasksFlowProps {
   workflowName: string;
   tasksRef?: WorkflowTasksFragment$key | null;
-  onNavigate: (taskId: string, taskLabel?: string, e?: React.MouseEvent) => void;
+  onNavigate: (
+    taskId: string,
+    taskLabel?: string,
+    e?: React.MouseEvent,
+  ) => void;
   highlightedTaskIds?: string[];
   filledTaskId?: string | null;
-  onSelectTask?: (taskId: string) => void;
-  onTaskLabelsChange?: (labels: Record<string, string>) => void;
+  onSelectTask?: (
+    taskId: string,
+    taskLabel?: string,
+  ) => void;
+  onTaskLabelsChange?: (
+    labels: Record<string,string>,
+  ) => void;
 }
 
-const TasksFlow: React.FC<TasksFlowProps> = ({
+
+const TasksFlow = ({
   tasksRef,
   onNavigate,
   highlightedTaskIds,
   filledTaskId,
   onSelectTask,
   onTaskLabelsChange,
-}) => {
-  const tasks = useFetchedTasks(tasksRef ?? null);
+}: TasksFlowProps) => {
 
-  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+  const tasks = useFetchedTasks(
+    tasksRef ?? null,
+  );
+
+
+  const reactFlowInstance =
+    useRef<ReactFlowInstance | null>(null);
+
 
   const nodeTypes = useMemo(
     () => ({
-      custom: (props: { data: TaskFlowNodeData }) => (
+      custom: (
+        props: {
+          data: TaskFlowNodeData;
+        },
+      ) => (
         <TaskFlowNode
           {...props}
           onNavigate={onNavigate}
@@ -48,63 +88,160 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         />
       ),
     }),
-    [onNavigate, onSelectTask],
+    [
+      onNavigate,
+      onSelectTask,
+    ],
   );
 
-  const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
 
-  const { nodes, edges } = useMemo(
-    () => generateNodesAndEdges(taskTree),
-    [taskTree]
+  const taskTree = useMemo(
+    () => buildTaskTree(tasks),
+    [tasks],
   );
 
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
-    () => applyDagreLayout(nodes, edges),
-    [nodes, edges]
+
+  const {
+    nodes,
+    edges,
+  } = useMemo(
+    () =>
+      generateNodesAndEdges(taskTree),
+    [taskTree],
   );
 
-  const [nodesWithHighlights, setNodesWithHighlights] = useState<Node[]>(layoutedNodes);
 
-  useEffect(() => {
-    setNodesWithHighlights(
-      addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId)
+  const {
+    nodes: layoutedNodes,
+    edges: layoutedEdges,
+  } =
+    useMemo(
+      () =>
+        applyDagreLayout(
+          nodes,
+          edges,
+        ),
+      [
+        nodes,
+        edges,
+      ],
     );
-  }, [layoutedNodes, highlightedTaskIds, filledTaskId]);
 
-  // export labels
+
+  const [
+    nodesWithHighlights,
+    setNodesWithHighlights,
+  ] = useState<Node[]>(
+    layoutedNodes,
+  );
+
+
   useEffect(() => {
-    if (!onTaskLabelsChange) return;
 
-    const map: Record<string, string> = {};
-    layoutedNodes.forEach((n) => {
-      map[n.id] = (n.data as any)?.label ?? n.id;
+    setNodesWithHighlights(
+      addHighlightsAndFills(
+        layoutedNodes,
+        highlightedTaskIds,
+        filledTaskId,
+      ),
+    );
+
+  }, [
+    layoutedNodes,
+    highlightedTaskIds,
+    filledTaskId,
+  ]);
+
+
+
+  useEffect(() => {
+
+    if (!onTaskLabelsChange) {
+      return;
+    }
+
+
+    const labels: Record<string,string> = {};
+
+
+    layoutedNodes.forEach((node) => {
+
+      labels[node.id] =
+        (node.data as any)?.label ??
+        node.id;
+
     });
 
-    onTaskLabelsChange(map);
-  }, [layoutedNodes, onTaskLabelsChange]);
 
-  const onInit = useCallback((instance: ReactFlowInstance) => {
-    reactFlowInstance.current = instance;
-    instance.fitView();
-  }, []);
+    onTaskLabelsChange(labels);
+
+  }, [
+    layoutedNodes,
+    onTaskLabelsChange,
+  ]);
+
+
+
+  const onInit = useCallback(
+    (
+      instance: ReactFlowInstance,
+    ) => {
+
+      reactFlowInstance.current =
+        instance;
+
+      instance.fitView();
+
+    },
+    [],
+  );
+
+
 
   return (
-    <Box width="100%" height="100%">
+
+    <Box
+      width="100%"
+      height="100%"
+    >
+
       <Tooltip title="Reset View">
-        <IconButton onClick={() => reactFlowInstance.current?.fitView()}>
+
+        <IconButton
+          onClick={() =>
+            reactFlowInstance
+              .current
+              ?.fitView()
+          }
+        >
+
           <AspectRatio />
+
         </IconButton>
+
       </Tooltip>
 
+
+
       <ReactFlow
+
         nodes={nodesWithHighlights}
+
         edges={layoutedEdges}
+
         onInit={onInit}
+
         nodeTypes={nodeTypes}
+
         fitView
+
       />
+
     </Box>
+
   );
+
 };
+
 
 export default TasksFlow;
