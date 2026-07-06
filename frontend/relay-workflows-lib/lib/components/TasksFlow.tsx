@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { AspectRatio } from "@mui/icons-material";
-import {
-  ReactFlow,
-  ReactFlowInstance,
-  Node,
-} from "@xyflow/react";
+import { ReactFlow, ReactFlowInstance, Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { TaskFlowNodeData } from "workflows-lib";
 
@@ -40,40 +42,52 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
 
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
+  // Keep the latest callbacks in refs.
+  const onNavigateRef = useRef(onNavigate);
+  const onSelectTaskRef = useRef(onSelectTask);
+
+  useEffect(() => {
+    onNavigateRef.current = onNavigate;
+  }, [onNavigate]);
+
+  useEffect(() => {
+    onSelectTaskRef.current = onSelectTask;
+  }, [onSelectTask]);
+
+  // Stable nodeTypes object.
   const nodeTypes = useMemo(
     () => ({
       custom: (props: { data: TaskFlowNodeData }) => (
-      <TaskFlowNode
-        {...props}
-        onNavigate={onNavigate}
-        onSelectTask={onSelectTask}
-      />
-    ),
-  }),
-  [onNavigate, onSelectTask],
-);
-
+        <TaskFlowNode
+          {...props}
+          onNavigate={(...args) => onNavigateRef.current(...args)}
+          onSelectTask={(id) => onSelectTaskRef.current?.(id)}
+        />
+      ),
+    }),
+    [],
+  );
 
   const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
 
   const { nodes, edges } = useMemo(
     () => generateNodesAndEdges(taskTree),
-    [taskTree]
+    [taskTree],
   );
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () => applyDagreLayout(nodes, edges),
-    [nodes, edges]
+    [nodes, edges],
   );
 
-  const [nodesWithHighlights, setNodesWithHighlights] = useState<Node[]>(layoutedNodes);
+  const [nodesWithHighlights, setNodesWithHighlights] =
+    useState<Node[]>(layoutedNodes);
 
   useEffect(() => {
     setNodesWithHighlights(
-      addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId)
+      addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId),
     );
   }, [layoutedNodes, highlightedTaskIds, filledTaskId]);
-
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstance.current = instance;
