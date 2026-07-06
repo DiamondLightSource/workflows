@@ -1,9 +1,9 @@
 import { Box, Paper, Typography, useTheme, Tooltip } from "@mui/material";
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Visit } from "@diamondlightsource/sci-react-ui";
 import { getTaskStatusIcon } from "../common/StatusIcons";
 import { Artifact, TaskStatus } from "../../types";
+import { Visit } from "@diamondlightsource/sci-react-ui";
 
 export interface TaskFlowNodeData {
   label: string;
@@ -18,21 +18,21 @@ export interface TaskFlowNodeData {
 
 interface TaskFlowNodeProps {
   data: TaskFlowNodeData;
-  onNavigate: (id: string, e?: React.MouseEvent) => void;
-  onSelectTask?: (taskId: string) => void;
+  onNavigate: (id: string, label?: string, e?: React.MouseEvent) => void;
+  onSelectTask?: (taskId: string, label?: string) => void;
 }
 
-  const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({
-    data,
-    onNavigate,
-    onSelectTask,
-  }) => {
-
+const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({
+  data,
+  onNavigate,
+  onSelectTask,
+}) => {
   const theme = useTheme();
-  const handleOpenTaskPage = (e: React.MouseEvent) => {
-    onSelectTask?.(data.taskId);
-    onNavigate(data.taskId, e);
 
+  const handleOpenTaskPage = (e: React.MouseEvent) => {
+    
+    onSelectTask?.(data.taskId, data.label);
+    onNavigate(data.taskId, data.label, e);
   };
 
   return (
@@ -49,47 +49,26 @@ interface TaskFlowNodeProps {
         boxShadow: data.highlighted ? "0 0 10px #ff9c1a" : theme.shadows[3],
         transition: "all 0.3s ease-in-out",
         backgroundColor: data.filled ? "rgba(62, 218, 0, 1)" : undefined,
+        cursor: "pointer",
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ background: theme.palette.grey[700] }}
-        data-testid="handle-target"
-      />
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        minWidth={100}
-        maxWidth={140}
-        height="100%"
-        width="100%"
-        maxHeight={60}
-      >
+      <Handle type="target" position={Position.Left} />
+
+      <Box display="flex" justifyContent="space-between" alignItems="center">
         <Tooltip title={data.label}>
           <Typography
-            component="h3"
             noWrap
-            sx={{
-              fontWeight: 500,
-              minWidth: 80,
-              maxWidth: 160,
-            }}
             onClick={handleOpenTaskPage}
+            sx={{ fontWeight: 500 }}
           >
             {data.label}
           </Typography>
         </Tooltip>
+
         {getTaskStatusIcon(data.status)}
       </Box>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={{ background: theme.palette.grey[700] }}
-        data-testid="handle-source"
-      />
+      <Handle type="source" position={Position.Right} />
     </Paper>
   );
 };

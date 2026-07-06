@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { Box } from "@mui/material";
 
 import BaseWorkflowRelay from "../components/BaseWorkflowRelay";
-import { useArgoLogs } from "../hooks/useArgoLogs";
+import WorkflowLogsAccordion from "../components/WorkflowLogsAccordion";
 
 import { graphql, useFragment } from "react-relay";
 import { BaseSingleWorkflowViewFragment$key } from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
@@ -34,56 +34,75 @@ export default function BaseSingleWorkflowView({
   const data = useFragment(BaseSingleWorkflowViewFragment, fragmentRef);
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [openedTaskIds, setOpenedTaskIds] = useState<string[]>([]);
+  const [taskLabels, setTaskLabels] = useState<Record<string, string>>({});
 
   if (!data) return null;
 
   const visit = data.visit;
   const workflowName = data.name;
 
-  const { logs, error } = useArgoLogs({
-    visit,
-    workflowName,
-    taskId: selectedTaskId,
-    enabled: !!selectedTaskId,
-  });
-  
+  // merge external taskIds (DO NOT overwrite)
   useEffect(() => {
-    // no-op safe (kept only if external control exists)
+    if (!taskIds?.length) return;
+
+    setOpenedTaskIds((prev) =>
+      Array.from(new Set([...prev, ...taskIds])),
+    );
   }, [taskIds]);
 
-  if (!data) return null;
+  // open clicked task accordion
+  useEffect(() => {
+    if (!selectedTaskId) return;
+
+    setOpenedTaskIds((prev) =>
+      prev.includes(selectedTaskId)
+        ? prev
+        : [...prev, selectedTaskId],
+    );
+  }, [selectedTaskId]);
 
   return (
-    <>
-      <Box sx={{ width: "100%", height: "100%" }}>
-        <Button onClick={() => setSelectedTaskId(null)}>CLEAR</Button>
-
+    <Box sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* GRAPH */}
+      <Box sx={{ flex: 1, minHeight: 0 }}>
         <BaseWorkflowRelay
           fragmentRef={data}
           expanded
           filledTaskId={null}
-          onSelectTask={setSelectedTaskId}
+          onSelectTask={(taskId: string, taskLabel?: string) => {
+            setSelectedTaskId(taskId);
+
+            // store label immediately
+            if (taskLabel) {
+              setTaskLabels((prev) => ({
+                ...prev,
+                [taskId]: taskLabel,
+              }));
+            }
+          }}
         />
       </Box>
 
-      <Dialog
-        open={!!selectedTaskId}
-        onClose={() => setSelectedTaskId(null)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>Logs: {selectedTaskId}</DialogTitle>
-
-        <DialogContent>
-          {error && <div style={{ color: "red" }}>{error}</div>}
-
-          <pre style={{ whiteSpace: "pre-wrap" }}>
-            {logs.map((l, i) => (
-              <div key={i}>{l.content}</div>
-            ))}
-          </pre>
-        </DialogContent>
-      </Dialog>
-    </>
+      {/* LOGS */}
+      {openedTaskIds.length > 0 && (
+        <Box
+          sx={{
+            mt: 2,
+            borderTop: "1px solid rgba(0,0,0,0.1)",
+            pt: 1,
+            maxHeight: "40vh",
+            overflowY: "auto",
+          }}
+        >
+          <WorkflowLogsAccordion
+            visit={visit}
+            workflowName={workflowName}
+            taskIds={openedTaskIds}
+            taskLabels={taskLabels}
+          />
+        </Box>
+      )}
+    </Box>
   );
 }

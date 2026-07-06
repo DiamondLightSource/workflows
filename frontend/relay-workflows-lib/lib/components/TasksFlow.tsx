@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { AspectRatio } from "@mui/icons-material";
 import { ReactFlow, ReactFlowInstance, Node } from "@xyflow/react";
@@ -25,10 +19,11 @@ import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTask
 interface TasksFlowProps {
   workflowName: string;
   tasksRef?: WorkflowTasksFragment$key | null;
-  onNavigate: (path: string, e?: React.MouseEvent) => void;
+  onNavigate: (taskId: string, taskLabel?: string, e?: React.MouseEvent) => void;
   highlightedTaskIds?: string[];
   filledTaskId?: string | null;
   onSelectTask?: (taskId: string) => void;
+  onTaskLabelsChange?: (labels: Record<string, string>) => void;
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
@@ -37,57 +32,56 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   highlightedTaskIds,
   filledTaskId,
   onSelectTask,
+  onTaskLabelsChange,
 }) => {
   const tasks = useFetchedTasks(tasksRef ?? null);
 
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
-  // Keep the latest callbacks in refs.
-  const onNavigateRef = useRef(onNavigate);
-  const onSelectTaskRef = useRef(onSelectTask);
-
-  useEffect(() => {
-    onNavigateRef.current = onNavigate;
-  }, [onNavigate]);
-
-  useEffect(() => {
-    onSelectTaskRef.current = onSelectTask;
-  }, [onSelectTask]);
-
-  // Stable nodeTypes object.
   const nodeTypes = useMemo(
     () => ({
       custom: (props: { data: TaskFlowNodeData }) => (
         <TaskFlowNode
           {...props}
-          onNavigate={(...args) => onNavigateRef.current(...args)}
-          onSelectTask={(id) => onSelectTaskRef.current?.(id)}
+          onNavigate={onNavigate}
+          onSelectTask={onSelectTask}
         />
       ),
     }),
-    [],
+    [onNavigate, onSelectTask],
   );
 
   const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
 
   const { nodes, edges } = useMemo(
     () => generateNodesAndEdges(taskTree),
-    [taskTree],
+    [taskTree]
   );
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () => applyDagreLayout(nodes, edges),
-    [nodes, edges],
+    [nodes, edges]
   );
 
-  const [nodesWithHighlights, setNodesWithHighlights] =
-    useState<Node[]>(layoutedNodes);
+  const [nodesWithHighlights, setNodesWithHighlights] = useState<Node[]>(layoutedNodes);
 
   useEffect(() => {
     setNodesWithHighlights(
-      addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId),
+      addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId)
     );
   }, [layoutedNodes, highlightedTaskIds, filledTaskId]);
+
+  // export labels
+  useEffect(() => {
+    if (!onTaskLabelsChange) return;
+
+    const map: Record<string, string> = {};
+    layoutedNodes.forEach((n) => {
+      map[n.id] = (n.data as any)?.label ?? n.id;
+    });
+
+    onTaskLabelsChange(map);
+  }, [layoutedNodes, onTaskLabelsChange]);
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstance.current = instance;

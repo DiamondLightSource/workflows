@@ -45,15 +45,19 @@ export default function BaseWorkflowRelay({
   const statusText = data.status?.__typename ?? "Unknown";
 
   const onNavigate = React.useCallback(
-    (taskId: string) => {
+    (taskId: string, taskLabel?: string) => {
       setSelectedTaskIds([taskId]);
-      onSelectTask?.(taskId);
+
+      // IMPORTANT: forward label
+      onSelectTask?.(taskId, taskLabel);
 
       if (urlName !== data.name) {
-        void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
+        void navigate(
+          `/workflows/${visitToText(data.visit)}/${data.name}`,
+        );
       }
     },
-    [data, navigate, urlName, setSelectedTaskIds, onSelectTask]
+    [data, navigate, urlName, setSelectedTaskIds, onSelectTask],
   );
 
   return (
