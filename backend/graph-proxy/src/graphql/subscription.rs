@@ -56,7 +56,7 @@ struct WatchEvent {
 }
 
 /// Get authentication token
-fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
+pub fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
     let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
     auth_token
         .as_ref()

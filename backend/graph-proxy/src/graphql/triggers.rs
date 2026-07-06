@@ -1,16 +1,30 @@
-use std::ops::Deref;
+use std::{collections::BTreeMap, ops::Deref};
 
 use crate::{
-    graphql::{auth_guard::AuthGuard, VisitInput},
+    graphql::{auth_guard::AuthGuard, subscription::get_auth_token, VisitInput},
     KubernetesApiUrl,
 };
 use async_graphql::{Context, Object, SimpleObject};
+use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
     api::{ObjectMeta, PostParams},
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+/// An error relating to a workflow Trigger
+#[derive(Debug, thiserror::Error)]
+#[allow(clippy::missing_docs_in_private_items)]
+enum TriggerError {
+    #[error(r#"Unable to decode JWT"#)]
+    TokenDecodeError,
+    #[error(r#"Posix UID missing from token claims"#)]
+    MissingPosixUid,
+    #[error(r#"Token not found"#)]
+    MissingToken,
+}
 
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
 #[derive(CustomResource, Clone, Debug, Deserialize, Serialize, JsonSchema)]
@@ -60,6 +74,13 @@ impl TriggerMutation {
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let kubernetes_api_url = ctx.data_unchecked::<KubernetesApiUrl>();
+        let auth_token: String = get_auth_token(ctx).map_err(|_| TriggerError::MissingToken)?;
+        let claims = insecure_decode::<Value>(auth_token)
+            .map_err(|_| TriggerError::TokenDecodeError)?
+            .claims;
+        let posix_uid = claims["posix_uid"]
+            .as_str()
+            .ok_or(TriggerError::MissingPosixUid)?;
         let mut config = Config::infer().await?;
         config.cluster_url = kubernetes_api_url.deref().clone();
         let client = Client::try_from(config)?;
@@ -69,6 +90,10 @@ impl TriggerMutation {
             metadata: ObjectMeta {
                 generate_name: Some(format!("{}-", &template_ref)),
                 name,
+                labels: Some(BTreeMap::from([(
+                    String::from("workflows.diamond.ac.uk/posixuid"),
+                    String::from(posix_uid),
+                )])),
                 ..Default::default()
             },
             spec: TriggerSpec { template_ref },
@@ -92,9 +117,29 @@ mod tests {
     use axum_extra::headers::Authorization;
     use serde_json::Value;
 
+    use jsonwebtoken::{encode, EncodingKey, Header};
+    use mockito::Matcher;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct TestClaims {
+        posix_uid: String,
+    }
+
     fn test_token() -> ValidatedAuthToken {
-        let token = Authorization::bearer("test-token").expect("token always valid");
-        ValidatedAuthToken::Valid(token)
+        let claims = TestClaims {
+            posix_uid: "7357".to_string(),
+        };
+
+        let token = encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(b"test-secret"),
+        )
+        .expect("failed to create test jwt");
+
+        let auth = Authorization::bearer(&token).expect("token always valid");
+        ValidatedAuthToken::Valid(auth)
     }
 
     async fn trigger_mutation(
@@ -139,6 +184,13 @@ mod tests {
                 &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{namespace}/triggers?")
                     [..],
             )
+            .match_body(Matcher::PartialJson(serde_json::json!({
+                "metadata": {
+                    "labels": {
+                        "workflows.diamond.ac.uk/posixuid": "7357"
+                    }
+                }
+            })))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body_from_file(response_file_path)
