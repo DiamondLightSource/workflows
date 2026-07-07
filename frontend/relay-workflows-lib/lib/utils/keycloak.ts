@@ -1,5 +1,3 @@
-import Keycloak from "keycloak-js";
-
 export async function getKeycloak() {
   const isMocking = import.meta.env.VITE_ENABLE_MOCKING === "true";
 
@@ -11,9 +9,22 @@ export async function getKeycloak() {
     return mockKeycloak;
   }
 
-  return new Keycloak({
-    url: import.meta.env.VITE_KEYCLOAK_URL,
-    realm: import.meta.env.VITE_KEYCLOAK_REALM,
-    clientId: import.meta.env.VITE_KEYCLOAK_CLIENT,
-  });
+  const useAuthGateway = import.meta.env.VITE_USE_AUTH_GATEWAY === "true";
+
+  if (!useAuthGateway) {
+    const { default: Keycloak } = await import("keycloak-js");
+    return new Keycloak({
+      url: import.meta.env.VITE_KEYCLOAK_URL,
+      realm: import.meta.env.VITE_KEYCLOAK_REALM,
+      clientId: import.meta.env.VITE_KEYCLOAK_CLIENT,
+    });
+  }
+
+  return {
+    init: () => Promise.resolve(true),
+    authenticated: true,
+    token: null,
+    updateToken: () => Promise.resolve(true),
+    onTokenExpired: null as (() => void) | null,
+  };
 }
