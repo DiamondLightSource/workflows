@@ -326,6 +326,7 @@ mod tests {
                 postgres_hostname: "database-hostname".into(),
                 postgres_port: 5432,
                 encryption_public_key: "ZpJ703xR7atXbGXI20FkQk3J1qjLxodTP6yk92yPVGM=".into(),
+                cors_allow: None,
             },
             graph_url: graphql_server_url,
             encryption_private_key: "yxjSYB/nvdAzktd83diOtADvp3RX/0Kx5V3FgK7YlXk=".into(),

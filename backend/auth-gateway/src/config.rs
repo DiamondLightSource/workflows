@@ -8,7 +8,9 @@ use std::path::Path;
 pub struct GatewayConfig {
     #[serde(flatten)]
     pub common: CommonConfig,
-    // Can add extra fields in future if necessary
+    pub callback_url: String,
+    pub callback_default_return_to_url: String,
+    pub cors_allow: Option<Vec<String>>,
 }
 
 impl GatewayConfig {

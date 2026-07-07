@@ -29,6 +29,9 @@ use tokio::signal::unix::{Signal, SignalKind, signal};
 
 use crate::auth_session_data::TokenSessionData;
 
+use reqwest::Method;
+use tower_http::cors::{AllowOrigin, CorsLayer};
+
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Args {
@@ -53,7 +56,6 @@ async fn main() -> Result<()> {
     let config = GatewayConfig::from_file(args.config)?;
     let port = config.common.port;
     let appstate = Arc::new(AppState::new(config).await?);
-
     auth_core::database::migrate_database(&appstate.database_connection).await?;
 
     auth_core::rustls::crypto::aws_lc_rs::default_provider()
@@ -70,8 +72,20 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
         .with_secure(false)
         .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
 
-    let proxy: Router<()> = ReverseProxy::new("/", &graph_url).into();
+    let proxy: Router<()> = ReverseProxy::new("/api", &graph_url).into();
     let proxy = proxy;
+
+    let cors_origin = if let Some(cors_allow) = state.cors_allow.clone() {
+        AllowOrigin::predicate(move |origin, _| {
+            origin.to_str().is_ok_and(|origin| {
+                cors_allow
+                    .iter()
+                    .any(|cors_allow| cors_allow.is_match(origin))
+            })
+        })
+    } else {
+        AllowOrigin::default()
+    };
 
     Router::new()
         .fallback_service(proxy)
@@ -84,6 +98,17 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
         .route("/auth/logout", post(logout))
         .route("/healthcheck", get(auth_core::healthcheck::healthcheck))
         .layer(session_layer)
+        .layer(
+            CorsLayer::new()
+                .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+                .allow_headers([
+                    hyper::header::ACCEPT,
+                    hyper::header::CONTENT_TYPE,
+                    hyper::header::AUTHORIZATION,
+                ])
+                .allow_origin(cors_origin)
+                .allow_credentials(true),
+        )
         .with_state(state)
 }
 
