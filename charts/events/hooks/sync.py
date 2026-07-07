@@ -80,7 +80,6 @@ class Controller(BaseHTTPRequestHandler):
     eventSourceName: str | None = parent.get("metadata", {}).get("name")
     labels: dict = parent.get("metadata", {}).get("labels", {})
     beamline: str | None = labels.get("workflows.diamond.ac.uk/beamline")
-    uid: str | None = labels.get("workflows.diamond.ac.uk/machine-uid")
 
     errored_triggers = []
     for dlsTrigger in sourceTriggers.values():
@@ -93,6 +92,7 @@ class Controller(BaseHTTPRequestHandler):
 
       name: str | None = trigger.metadata.name
       source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
+      uid: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/posixuid")
       workflow = trigger.spec.workflow
       template = workflow.template
       eventName = trigger.spec.eventName
@@ -149,7 +149,7 @@ class Controller(BaseHTTPRequestHandler):
                 "metadata": {
                   "generateName": f"{template}-event-",
                   "labels": {
-                      "workflows.diamond.ac.uk/machine-uid": uid,
+                      "workflows.diamond.ac.uk/triggeruid": uid,
                     }
                 },
                 "spec": {

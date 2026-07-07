@@ -274,7 +274,7 @@ bitnamisecret:
 s3mock:
   enabled: false
 
-allowMachineUid: false
+allowTriggerUid: false
 
 authenticatedWorkflows:
   # TODO: switch on these chainsaw tests when switching this to true

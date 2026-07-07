@@ -10,4 +10,4 @@ policy:
   # Conflicts with the policy in charts/sessionspaces/templates/pod-clusterpolicy.yaml
   # Do not enable both at the same time
   enable: true
-  allowMachineUid: false
+  allowTriggerUid: false

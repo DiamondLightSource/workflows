@@ -14,9 +14,9 @@ spec:
           operations:
             - CREATE
       context:
-        - name: machineuid
+        - name: triggeruid
           variable:
-            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/machine-uid" || ""
+            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/triggeruid" || ""
             default: ""
       mutate:
         patchStrategicMerge:
@@ -24,8 +24,8 @@ spec:
             labels:
               {{- if .Values.uid }}
               workflows.diamond.ac.uk/creator-posix-uid: '{{ .Values.uid }}'
-              {{- else if .Values.allowMachineUid }}
-              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || machineuid }}` }}'
+              {{- else if .Values.allowTriggerUid }}
+              workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] || triggeruid }}` }}'
               {{- else }}
               workflows.diamond.ac.uk/creator-posix-uid: '{{ `{{ request.userInfo.extra."workflows.diamond.ac.uk/posixuid"[0] }}` }}'
               {{- end }}

@@ -126,12 +126,12 @@ spec:
                       runAsUser: 4321
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
-# TODO: to be enabled when policy.allowMachineUid is switched on
+# TODO: to be enabled when policy.allowTriggerUid is switched on
 #---
 # apiVersion: chainsaw.kyverno.io/v1alpha1
 # kind: Test
 # metadata:
-#   name: mutate-machine-workflow-security-context
+#   name: mutate-triggered-workflow-security-context
 # spec:
 #   namespaceTemplate:
 #     metadata:
@@ -182,7 +182,7 @@ spec:
 #                 name: test-workflow
 #                 namespace: ($namespace)
 #                 labels:
-#                   workflows.diamond.ac.uk/machine-uid: "54321"
+#                   workflows.diamond.ac.uk/triggeruid: "54321"
 #               spec: {}
 #         - assert:
 #             resource:

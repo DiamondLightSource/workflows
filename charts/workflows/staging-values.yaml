@@ -38,7 +38,7 @@ postgresql-ha:
   postgresql:
     podAntiAffinityPreset: soft
 
-allowMachineUid: true
+allowTriggerUid: true
 
 authenticatedWorkflows:
   enabled: true
