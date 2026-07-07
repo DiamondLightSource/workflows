@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use axum::http::StatusCode;
+use regex::Regex;
 use std::sync::Arc;
 use tower_sessions::Session;
 
@@ -19,6 +20,9 @@ pub struct AppState {
     pub oidc_client: OidcClient,
     pub database_connection: DbConnection,
     pub public_key: SodiumPublicKey,
+    pub callback_url: String,
+    pub callback_default_return_to_url: String,
+    pub cors_allow: Option<Vec<Regex>>,
 }
 
 impl AppState {
@@ -26,11 +30,19 @@ impl AppState {
         let (oidc_client, http_client) = create_oidc_client(&config.common).await?;
         let database_connection = create_db_connection(&config.common).await?;
         let public_key = decode_public_key(&config.common.encryption_public_key)?;
+        let cors_allow: Option<Vec<Regex>> = config.cors_allow.map(|v| {
+            v.into_iter()
+                .map(|it| Regex::new(&it).expect("Invalid regex in config"))
+                .collect()
+        });
         Ok(AppState {
             http_client,
             oidc_client,
             database_connection,
             public_key,
+            callback_url: config.callback_url,
+            callback_default_return_to_url: config.callback_default_return_to_url,
+            cors_allow,
         })
     }
 }

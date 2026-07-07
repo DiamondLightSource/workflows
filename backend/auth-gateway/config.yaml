@@ -1,6 +1,6 @@
 client_id: "workflows-ui-dev"
 client_secret: ""
-oidc_provider_url: "https://identity.diamond.ac.uk/realms/dls"
+oidc_provider_url: "https://identity-test.diamond.ac.uk/realms/dls"
 port: 5173
 postgres_user: "postgres"
 postgres_password: "postgres"
@@ -9,3 +9,8 @@ postgres_hostname: "localhost"
 postgres_port: 5432
 encryption_public_key: "/8MLLEwz7CkTkUv9y1pq6Gcv2Aomlhpq7shhv95Lil0="
 encryption_private_key: "7f3saJVP6ISBaarRJ5KyNF0IFezCFDEmC556ygO3kQk="
+callback_url: "http://localhost:5173/auth/callback"
+callback_default_return_to_url: "http://localhost:5174"
+cors_allow:
+    - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?
+    - ^https?:\/\/localhost(:\d+)?\/?

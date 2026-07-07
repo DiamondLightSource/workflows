@@ -6,6 +6,7 @@ use auth_core::openidconnect::{
 };
 use axum::debug_handler;
 use axum::extract::{Query, State};
+use axum::response::Redirect;
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 
@@ -26,7 +27,7 @@ pub async fn callback(
     State(state): State<Arc<AppState>>,
     Query(params): Query<CallbackQuery>,
     session: Session,
-) -> Result<String> {
+) -> Result<Redirect> {
     // Retrieve data from the users session
     let auth_session_data: LoginSessionData = session
         .remove(LoginSessionData::SESSION_KEY)
@@ -40,10 +41,7 @@ pub async fn callback(
     if auth_session_data.csrf_token != CsrfToken::new(params.state) {
         return Err(anyhow!("invalid state").into());
     }
-    let redirect_url = Cow::Owned(RedirectUrl::new(
-        // "http://localhost:5173/auth/callback".to_string(),
-        "https://staging.workflows.diamond.ac.uk/auth/callback".to_string(),
-    )?);
+    let redirect_url = Cow::Owned(RedirectUrl::new(state.callback_url.to_string())?);
     // Now you can exchange it for an access token and ID token.
     let token_response = state
         .oidc_client
@@ -74,30 +72,6 @@ pub async fn callback(
         }
     }
 
-    // The authenticated user's identity is now available. See the IdTokenClaims struct for a
-    // complete listing of the available claims.
-    let response = format!(
-        "User {} with e-mail address {} has authenticated successfully",
-        claims.subject().as_str(),
-        claims
-            .email()
-            .map(|email| email.as_str())
-            .unwrap_or("<not provided>"),
-    );
-
-    // If available, we can use the user info endpoint to request additional information.
-
-    // // The user_info request uses the AccessToken returned in the token response. To parse custom
-    // // claims, use UserInfoClaims directly (with the desired type parameters) rather than using the
-    // // CoreUserInfoClaims type alias.
-    // let userinfo: CoreUserInfoClaims = client
-    //     .user_info(token_response.access_token().to_owned(), None)?
-    //     .request_async(&http_client)
-    //     .await
-    //     .map_err(|err| anyhow!("Failed requesting user info: {}", err))?;
-
-    // See the OAuth2TokenResponse trait for a listing of other available fields such as
-    // access_token() and refresh_token().
     let token_data = TokenSessionData::from_token_response(
         &token_response,
         claims.issuer().clone(),
@@ -107,5 +81,12 @@ pub async fn callback(
     session
         .insert(TokenSessionData::SESSION_KEY, token_data)
         .await?;
-    Ok(response)
+
+    session.save().await?;
+    let redirect_url = if let Some(return_to_url) = auth_session_data.return_to_url {
+        return_to_url.clone()
+    } else {
+        state.callback_default_return_to_url.clone()
+    };
+    Ok(Redirect::temporary(redirect_url.as_str()))
 }

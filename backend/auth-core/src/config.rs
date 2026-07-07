@@ -15,6 +15,7 @@ pub struct CommonConfig {
     pub postgres_hostname: String,
     pub postgres_port: u16,
     pub encryption_public_key: String,
+    pub cors_allow: Option<Vec<String>>,
 }
 
 /// Generic config loader - works for any struct that immplements Deserialize

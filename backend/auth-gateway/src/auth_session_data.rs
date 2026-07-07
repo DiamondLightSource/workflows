@@ -13,6 +13,7 @@ pub struct LoginSessionData {
     pub csrf_token: CsrfToken,
     pub pcke_verifier: PkceCodeVerifier,
     pub nonce: Nonce,
+    pub return_to_url: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -97,6 +98,7 @@ impl Clone for LoginSessionData {
             csrf_token: self.csrf_token.clone(),
             pcke_verifier: PkceCodeVerifier::new(self.pcke_verifier.secret().clone()),
             nonce: self.nonce.clone(),
+            return_to_url: self.return_to_url.clone(),
         }
     }
 }
@@ -104,11 +106,17 @@ impl Clone for LoginSessionData {
 impl LoginSessionData {
     pub const SESSION_KEY: &str = "auth_session_data";
 
-    pub fn new(csrf_token: CsrfToken, pcke_verifier: PkceCodeVerifier, nonce: Nonce) -> Self {
+    pub fn new(
+        csrf_token: CsrfToken,
+        pcke_verifier: PkceCodeVerifier,
+        nonce: Nonce,
+        return_to_url: Option<String>,
+    ) -> Self {
         Self {
             csrf_token,
             pcke_verifier,
             nonce,
+            return_to_url,
         }
     }
 }

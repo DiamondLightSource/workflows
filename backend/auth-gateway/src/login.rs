@@ -2,22 +2,32 @@ use std::sync::Arc;
 
 use auth_core::openidconnect::core::CoreAuthenticationFlow;
 use auth_core::openidconnect::{CsrfToken, Nonce, PkceCodeChallenge, RedirectUrl, Scope};
-use axum::extract::State;
+use axum::extract::{Query, State};
 use axum::response::Redirect;
+use serde::Deserialize;
 use tower_sessions::Session;
 
 use crate::Result;
 use crate::auth_session_data::LoginSessionData;
 use crate::state::AppState;
 
+#[derive(Debug, Deserialize)]
+pub struct LoginQueryParameters {
+    #[serde(rename = "returnTo")]
+    pub return_to: Option<String>,
+}
+
 #[axum::debug_handler]
-pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Result<Redirect> {
+pub async fn login(
+    State(state): State<Arc<AppState>>,
+    session: Session,
+    Query(query_parameters): Query<LoginQueryParameters>,
+) -> Result<Redirect> {
     // Set the URL the user will be redirected to after the authorization process.
-    // .set_redirect_uri(RedirectUrl::new("https://localhost/callback".to_string())?);
-    let oidc_client = state.oidc_client.clone().set_redirect_uri(RedirectUrl::new(
-        "https://staging.workflows.diamond.ac.uk/auth/callback".to_string(),
-    )?);
-    // .set_redirect_uri(RedirectUrl::new("https://workflows.diamond.ac.uk".to_string())?)
+    let oidc_client = state
+        .oidc_client
+        .clone()
+        .set_redirect_uri(RedirectUrl::new(state.callback_url.to_string())?);
     // Generate a PKCE challenge.
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
@@ -38,10 +48,10 @@ pub async fn login(State(state): State<Arc<AppState>>, session: Session) -> Resu
         .url();
 
     // Store data in the users session
-    let auth_session_data = LoginSessionData::new(csrf_token, pkce_verifier, nonce);
+    let auth_session_data =
+        LoginSessionData::new(csrf_token, pkce_verifier, nonce, query_parameters.return_to);
     session
         .insert(LoginSessionData::SESSION_KEY, auth_session_data)
         .await?;
-
     Ok(Redirect::temporary(auth_url.as_str()))
 }

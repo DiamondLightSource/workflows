@@ -1,7 +1,9 @@
 use axum::{
     body::Body,
     extract::{Request, State},
+    http::StatusCode,
     middleware,
+    response::IntoResponse,
 };
 use http_body_util::BodyExt;
 use std::sync::Arc;
@@ -56,7 +58,7 @@ where
             ))
         }
     } else {
-        Ok(next.run(req).await)
+        Ok(StatusCode::UNAUTHORIZED.into_response())
     }
 }
 
