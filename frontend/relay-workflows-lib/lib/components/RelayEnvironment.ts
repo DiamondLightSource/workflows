@@ -17,6 +17,8 @@ import { JSONObject } from "workflows-lib";
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
 const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
+const USE_AUTH_GATEWAY = import.meta.env.VITE_USE_AUTH_GATEWAY === "true";
+const VITE_AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
 
 const keycloak = await getKeycloak();
 
@@ -38,57 +40,71 @@ function ensureKeycloakInit(): Promise<boolean> {
   return kcinitPromise;
 }
 
-keycloak.onTokenExpired = () => {
-  console.log("JWT expired");
-  keycloak
-    .updateToken(10)
-    .then((refreshed) => {
-      if (refreshed) {
-        console.log("Fetched new JWT");
-      } else {
-        console.warn("Token still valid");
-      }
-    })
-    .catch((err: unknown) => {
-      console.error("Failed to update JWT", err);
-    });
-};
+if (!USE_AUTH_GATEWAY) {
+  keycloak.onTokenExpired = () => {
+    console.log("JWT expired");
+    keycloak
+      .updateToken(10)
+      .then((refreshed) => {
+        if (refreshed) {
+          console.log("Fetched new JWT");
+        } else {
+          console.warn("Token still valid");
+        }
+      })
+      .catch((err: unknown) => {
+        console.error("Failed to update JWT", err);
+      });
+  };
+}
 
 const fetchFn: FetchFunction = async (request, variables) => {
   if (!keycloak.authenticated) {
     await ensureKeycloakInit();
   }
-  if (keycloak.token) {
-    const resp = await fetch(HTTP_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${keycloak.token}`,
-        Accept:
-          "application/graphql-response+json; charset=utf-8, application/json; charset=utf-8",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: request.text, // <-- The GraphQL document composed by Relay
-        variables,
-      }),
-    });
 
-    return await resp.json(); // eslint-disable-line @typescript-eslint/no-unsafe-return
-  } else {
-    console.log("Not authenticated yet");
+  const headers: Record<string, string> = {
+    Accept:
+      "application/graphql-response+json; charset=utf-8, application/json; charset=utf-8",
+    "Content-Type": "application/json",
+  };
+
+  if (!USE_AUTH_GATEWAY && keycloak.token) {
+    headers.Authorization = `Bearer ${keycloak.token}`;
+  }
+
+  const resp = await fetch(HTTP_ENDPOINT, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify({
+      query: request.text, // <-- The GraphQL document composed by Relay
+      variables,
+    }),
+  });
+  if (USE_AUTH_GATEWAY && resp.status === 401) {
+    const returnTo = encodeURIComponent(window.location.href);
+    window.location.assign(
+      `${VITE_AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`,
+    );
     return {};
   }
+
+  return await resp.json(); // eslint-disable-line @typescript-eslint/no-unsafe-return
 };
 
 export const wsClient = createClient({
   url: WS_ENDPOINT,
   connectionParams: async () => {
-    if (!keycloak.authenticated) {
+    if (!USE_AUTH_GATEWAY && !keycloak.authenticated) {
       await ensureKeycloakInit();
     }
-    return {
-      Authorization: `Bearer ${keycloak.token ?? ""}`,
-    };
+    if (!USE_AUTH_GATEWAY) {
+      return {
+        Authorization: `Bearer ${keycloak.token ?? ""}`,
+      };
+    }
+    return {};
   },
 });
 
