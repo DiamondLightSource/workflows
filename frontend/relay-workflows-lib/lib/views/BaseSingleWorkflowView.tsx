@@ -252,9 +252,11 @@ export default function BaseSingleWorkflowView({
       <Box
         sx={{
           position: "relative",
-          display: "inline-flex",
+          display: "flex",
           width: "100%",
           height: "100%",
+          flex: 1,
+          minHeight: 0,
         }}
       >
 
@@ -297,50 +299,45 @@ export default function BaseSingleWorkflowView({
           </Box>
 
 
-
           {fragmentRef && (
-
-            <BaseWorkflowRelay
-              fragmentRef={data}
-              workflowLink
-              filledTaskId={filledTaskId}
-              expanded
-
-              onSelectTask={
-                (
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <BaseWorkflowRelay
+                fragmentRef={data}
+                workflowLink
+                filledTaskId={filledTaskId}
+                expanded
+                onSelectTask={(
                   taskId: string,
                   taskLabel?: string,
                 ) => {
 
-                  setOpenedTaskIds(
-                    previous =>
-                      previous.includes(taskId)
-                        ? previous
-                        : [
-                            ...previous,
-                            taskId,
-                          ],
+                  setOpenedTaskIds((previous) =>
+                    previous.includes(taskId)
+                      ? previous
+                      : [
+                          ...previous,
+                          taskId,
+                        ],
                   );
 
-
                   if (taskLabel) {
-
-                    setTaskLabels(
-                      previous => ({
-                        ...previous,
-                        [taskId]: taskLabel,
-                      }),
-                    );
-
+                    setTaskLabels((previous) => ({
+                      ...previous,
+                      [taskId]: taskLabel,
+                    }));
                   }
 
-                }
-              }
-
-            />
-
+                }}
+              />
+            </Box>
           )}
-
         </Box>
 
       </Box>
@@ -349,16 +346,19 @@ export default function BaseSingleWorkflowView({
 
       {/* S3 / ARTIFACT OUTPUT */}
 
-      {taskIds && (
+      {/* {taskIds && (   // this section is commented out because it is not currently used, but can be re-enabled if needed in the future
 
         <TaskInfo
           artifactList={artifactList}
           onArtifactHover={onArtifactHover}
         />
 
-      )}
+      )} */}
 
-
+        <TaskInfo
+          artifactList={artifactList}
+          onArtifactHover={onArtifactHover}
+        />
 
       {/* WORKFLOW DETAILS */}
 
