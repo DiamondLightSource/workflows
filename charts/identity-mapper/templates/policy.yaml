@@ -15,16 +15,16 @@ spec:
               operations:
                 - CREATE
       context:
-        - name: machineUid
+        - name: triggerUid
           variable:
-            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/machine-uid" || ""
+            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/triggeruid" || ""
             default: ""
 
         - name: posixUidString
           variable:
             jmesPath: "request.userInfo.extra.\"workflows.diamond.ac.uk/posixuid\"[0] || \"\""
-            {{- if .Values.policy.allowMachineUid }}
-            default: "{{`{{ machineUid }}`}}"
+            {{- if .Values.policy.allowTriggerUid }}
+            default: "{{`{{ triggerUid }}`}}"
             {{- else }}
             default: ""
             {{- end }}
