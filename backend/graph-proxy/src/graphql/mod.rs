@@ -20,7 +20,7 @@ use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidationMethod};
 
 use self::{
     subscription::WorkflowsSubscription,
-    triggers::TriggerMutation,
+    triggers::{TriggerMutation, TriggerQuery},
     workflow_templates::WorkflowTemplatesQuery,
     workflows::{Workflow, WorkflowsQuery},
 };
@@ -58,7 +58,12 @@ pub fn root_schema_builder() -> SchemaBuilder<Query, Mutation, Subscription> {
 
 /// The root query of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Query(NodeQuery, WorkflowsQuery, WorkflowTemplatesQuery);
+pub struct Query(
+    NodeQuery,
+    WorkflowsQuery,
+    WorkflowTemplatesQuery,
+    TriggerQuery,
+);
 
 /// Provides Relay node resolver for fetching any Node by ID.
 #[derive(Debug, Clone, Default)]
