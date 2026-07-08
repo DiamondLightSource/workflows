@@ -64,4 +64,3 @@ tower = "0.5.3"
 moka = { version = "0.12.11", features = ["future"] }
 env_logger = "0.11.8"
 axum-test = "18.4.1"
-serde_yaml = "0.9.34"
