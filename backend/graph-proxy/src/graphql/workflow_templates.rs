@@ -320,6 +320,63 @@ impl WorkflowTemplatesMutation {
             .into_result()?;
         Ok(Workflow::new(workflow, visit.into()))
     }
+
+    /// Submit a manifest (YAML) as a one-off Workflow within a visit's namespace.
+    ///
+    /// The input is typically a `WorkflowTemplate` (the manifest developers author and
+    /// store in their repository). It is submitted via the Argo Server API so the graph
+    /// remains the single source of truth for submissions. To match the behaviour of the
+    /// workflows CLI, the manifest is coerced into a one-off Workflow: `kind` is set to
+    /// `Workflow`, and a fixed `metadata.name` is rewritten to a `metadata.generateName`
+    /// (suffixed with `-`) so repeated submissions yield fresh, uniquely named Workflows.
+    #[instrument(name = "graph_proxy_submit_workflow", skip(self, ctx, manifest))]
+    async fn submit_workflow(
+        &self,
+        ctx: &Context<'_>,
+        visit: VisitInput,
+        manifest: String,
+    ) -> anyhow::Result<Workflow> {
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+
+        let mut workflow: argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow =
+            serde_yaml::from_str(&manifest)
+                .map_err(|err| anyhow!("Could not parse workflow manifest: {err}"))?;
+
+        // Match the CLI: a fixed `name` is turned into a `generateName` so that
+        // resubmitting the same manifest yields a fresh, uniquely named Workflow.
+        if let Some(name) = workflow.metadata.name.take() {
+            workflow.metadata.generate_name = Some(format!("{name}-"));
+        }
+
+        let namespace = visit.to_string();
+        let mut url = server_url.clone();
+        url.path_segments_mut()
+            .unwrap()
+            .extend(["api", "v1", "workflows", &namespace]);
+        debug!("Submitting workflow manifest at {url}");
+
+        let request = if let Some(auth_token) = auth_token {
+            CLIENT.post(url).bearer_auth(auth_token.token())
+        } else {
+            CLIENT.post(url)
+        }
+        .json(
+            &argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowCreateRequest {
+                namespace: Some(namespace.clone()),
+                workflow: Some(workflow),
+                ..Default::default()
+            },
+        );
+
+        let workflow = request
+            .send()
+            .await?
+            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+            .await?
+            .into_result()?;
+        Ok(Workflow::new(workflow, visit.into()))
+    }
 }
 
 /// Convert a paramter into the format expected by the Argo Workflows API

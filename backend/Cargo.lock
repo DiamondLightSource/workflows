@@ -2876,6 +2876,7 @@ dependencies = [
  "secrecy",
  "serde",
  "serde_json",
+ "serde_yaml",
  "telemetry",
  "tempfile",
  "testcontainers",
