@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.20](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.19...graph-proxy@v0.1.20) (2026-07-09)
+
+
+### Features
+
+* **auth-gateway:** enable auth-gateway support for dashboard ([f227b36](https://github.com/DiamondLightSource/workflows/commit/f227b366bfee45eb77949ad104c43df26fc49144))
+* **graph-proxy:** add mutation to create Triggers ([2326c49](https://github.com/DiamondLightSource/workflows/commit/2326c4911315b3c6b60a538f6c1fd51412db487c))
+* **graph-proxy:** add workflowById field ([e761aea](https://github.com/DiamondLightSource/workflows/commit/e761aea32e03041c180d9a6ee5a2adcc835364b7))
+* **graph-proxy:** attach creator posixuid to trigger ([3a29c88](https://github.com/DiamondLightSource/workflows/commit/3a29c88ad18af72d396149b2b5279e673d6f3c04))
+
 ## [0.1.19](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.18...graph-proxy@v0.1.19) (2026-06-09)
 
 
