@@ -15,5 +15,6 @@
   "workflows-cli": "0.1.1",
   "+8": "0.0.0",
   "backend/auth-daemon": "0.1.0",
-  "backend/identity-mapper": "0.1.1"
+  "backend/identity-mapper": "0.1.1",
+  "backend/auth-gateway": "0.1.0"
 }
