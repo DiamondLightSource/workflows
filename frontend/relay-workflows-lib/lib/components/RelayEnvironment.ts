@@ -18,7 +18,7 @@ const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
 const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
 const USE_AUTH_GATEWAY = import.meta.env.VITE_USE_AUTH_GATEWAY === "true";
-const VITE_AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
+const AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
 
 const keycloak = await getKeycloak();
 
@@ -84,9 +84,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   });
   if (USE_AUTH_GATEWAY && resp.status === 401) {
     const returnTo = encodeURIComponent(window.location.href);
-    window.location.assign(
-      `${VITE_AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`,
-    );
+    window.location.assign(`${AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`);
     return {};
   }
 
