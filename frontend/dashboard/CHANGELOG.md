@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.13...dashboard@v0.1.14) (2026-07-10)
+
+
+### Features
+
+* **frontend:** add feature flag for dashboard to connect via auth-gateway ([79cfa5d](https://github.com/DiamondLightSource/workflows/commit/79cfa5d81be71932c5e36b23bc7c1ac48b63b74f))
+
+
+### Reverts
+
+* bump the minor group across 1 directory with 23 updates ([6236a65](https://github.com/DiamondLightSource/workflows/commit/6236a6525b9661df22d2baf80fae154ad51aec31))
+
 ## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.12...dashboard@v0.1.13) (2026-05-21)
 
 
