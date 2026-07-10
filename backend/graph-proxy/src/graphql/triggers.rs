@@ -88,7 +88,7 @@ impl TriggerMutation {
         let api: Api<Trigger> = Api::namespaced(client.clone(), &namespace);
         let trigger = Trigger {
             metadata: ObjectMeta {
-                generate_name: Some(format!("{}-", &template_ref)),
+                generate_name: Some(format!("{}-", template_ref)),
                 name,
                 labels: Some(BTreeMap::from([(
                     String::from("workflows.diamond.ac.uk/posixuid"),
