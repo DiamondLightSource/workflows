@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.6...workflows-lib@v0.1.7) (2026-07-09)
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.6...workflows-lib@v0.1.7) (2026-07-10)
 
 
 ### Features
