@@ -12,7 +12,7 @@ configuration:
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-dashboard
-  tag: ""
+  tag: "drh"
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
