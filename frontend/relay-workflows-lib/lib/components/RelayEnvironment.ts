@@ -17,7 +17,11 @@ import { JSONObject } from "workflows-lib";
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
 const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
-const USE_AUTH_GATEWAY = import.meta.env.VITE_USE_AUTH_GATEWAY === "true";
+// Reflect.get is neccessary to prevent dead code elimination
+// removing at build time one of the branches
+// The ensures that the value can be set in the container at runtime
+// via configure.sh
+const USE_AUTH_GATEWAY = Reflect.get(import.meta.env, "VITE_USE_AUTH_GATEWAY") === "true";
 const AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
 
 const keycloak = await getKeycloak();
