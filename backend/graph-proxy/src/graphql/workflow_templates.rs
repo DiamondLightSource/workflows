@@ -343,8 +343,9 @@ impl WorkflowTemplatesMutation {
             serde_yaml::from_str(&manifest)
                 .map_err(|err| anyhow!("Could not parse workflow manifest: {err}"))?;
 
-        // Match the CLI: a fixed `name` is turned into a `generateName` so that
-        // resubmitting the same manifest yields a fresh, uniquely named Workflow.
+        // Match the CLI: submit templates as one-off Workflows. Force the kind, and turn
+        // a fixed `name` into a `generateName` so resubmission yields a fresh Workflow.
+        workflow.kind = Some("Workflow".to_string());
         if let Some(name) = workflow.metadata.name.take() {
             workflow.metadata.generate_name = Some(format!("{name}-"));
         }
@@ -634,6 +635,84 @@ mod tests {
             .expect("invalid json");
         let expected_value = json!(AuthErrorCode::Unauthenticated.to_string());
         assert_eq!(error_code, expected_value);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn submit_workflow_mutation() -> anyhow::Result<()> {
+        use super::WorkflowTemplatesMutation;
+        use async_graphql::{Request, Variables};
+        use mockito::Matcher;
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("submit-workflow.json");
+
+        // The input is a WorkflowTemplate manifest; assert it is coerced into a one-off
+        // Workflow (kind overridden, `name` -> `generateName`) and that the request lands
+        // on the visit's namespaced workflow-create endpoint.
+        let submit_endpoint = server
+            .mock("POST", "/api/v1/workflows/mg36964-1")
+            .match_body(Matcher::PartialJson(json!({
+                "namespace": "mg36964-1",
+                "workflow": {
+                    "kind": "Workflow",
+                    "metadata": {
+                        "generateName": "test-workflow-"
+                    }
+                }
+            })))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let manifest = concat!(
+            "apiVersion: argoproj.io/v1alpha1\n",
+            "kind: WorkflowTemplate\n",
+            "metadata:\n",
+            "  name: test-workflow\n",
+            "spec:\n",
+            "  entrypoint: main\n",
+        );
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(
+            WorkflowTemplatesQuery,
+            WorkflowTemplatesMutation,
+            EmptySubscription,
+        )
+        .data(crate::ArgoServerUrl(argo_server_url))
+        .data(test_token())
+        .finish();
+
+        let query = r#"
+            mutation ($manifest: String!) {
+                submitWorkflow(
+                    visit: { proposalCode: "mg", proposalNumber: 36964, number: 1 },
+                    manifest: $manifest
+                ) {
+                    name
+                }
+            }
+        "#;
+        let request =
+            Request::new(query).variables(Variables::from_json(json!({ "manifest": manifest })));
+        let response = schema.execute(request).await;
+
+        println!("Errors: {:#?}", response.errors);
+        submit_endpoint.assert_async().await;
+        let response = response.into_result().expect("Invalid response");
+
+        let actual = response.data.into_json().unwrap();
+        let expected = json!({
+            "submitWorkflow": {
+                "name": "test-workflow-abcde"
+            }
+        });
+        assert_eq!(expected, actual);
         Ok(())
     }
 }
