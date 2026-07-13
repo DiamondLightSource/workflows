@@ -67,7 +67,7 @@ spec:
             - name: SOURCE_DIR
               value: {{ .Values.configuration.sourceDir }}
             - name: USE_AUTH_GATEWAY
-              value: {{ .Values.configuration.useAuthGateway }}
+              value: {{ .Values.configuration.useAuthGateway | toString | quote }}
             - name: AUTH_GATEWAY_LOGIN_URL
               value: {{ .Values.configuration.authGatewayLoginUrl }}
           livenessProbe:

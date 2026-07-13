@@ -19,12 +19,17 @@ replace_placeholder() {
     grep -rl "$placeholder" "$SOURCE_DIR" | xargs -r sed -i "$sed_cmd"
 }
 
-
+# WARNING: this mechanism of setting run-time parameters
+# is susceptible to deadcode elimination bugs.
+# See the workarounds for USE_AUTH_GATEWAY as an example
+# TODO: replace with a more robust DCE safe solution
 replace_placeholder KEYCLOAK_URL
 replace_placeholder KEYCLOAK_REALM
 replace_placeholder KEYCLOAK_CLIENT
 replace_placeholder KEYCLOAK_SCOPE
 replace_placeholder GRAPH_URL
 replace_placeholder GRAPH_WS_URL
+replace_placeholder AUTH_GATEWAY_LOGIN_URL
+replace_placeholder USE_AUTH_GATEWAY
 
 nginx -g 'daemon off;'
