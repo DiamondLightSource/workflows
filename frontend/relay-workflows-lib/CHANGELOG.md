@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.8...relay-workflows-lib@v0.1.9) (2026-07-13)
+
+
+### Bug Fixes
+
+* **dashboard:** fix dead-code elimination bug breaking USE_AUTH_GATEWAY flag ([8df18af](https://github.com/DiamondLightSource/workflows/commit/8df18af9292e8cc6afc763f425d7e3e3fcdd1b36))
+
 ## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.7...relay-workflows-lib@v0.1.8) (2026-07-09)
 
 
