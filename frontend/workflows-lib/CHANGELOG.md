@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.6...workflows-lib@v0.1.7) (2026-07-13)
+
+
+### Features
+
+* **frontend:** add logout button ([d07e285](https://github.com/DiamondLightSource/workflows/commit/d07e2857db89caaeb5ce84f641e2b9fe38d791fb))
+* **frontend:** add repository link components ([c317cd0](https://github.com/DiamondLightSource/workflows/commit/c317cd0acf820020963b1393dc98069d8c2e2399))
+* **frontend:** display message on unauthorized query ([90f4827](https://github.com/DiamondLightSource/workflows/commit/90f4827171996cf40a00a215a90bd35dbaac4985))
+* **frontend:** preserve template filter settings ([daef9f9](https://github.com/DiamondLightSource/workflows/commit/daef9f944e85c31fd80f9bb905113d7d6205ba01))
+
+
+### Bug Fixes
+
+* **frontend:** display auth error message only for auth errors ([4378fcb](https://github.com/DiamondLightSource/workflows/commit/4378fcb5da0c1a5b530532dcc116bcdfed66cd1d))
+
+
+### Reverts
+
+* bump the minor group across 1 directory with 23 updates ([6236a65](https://github.com/DiamondLightSource/workflows/commit/6236a6525b9661df22d2baf80fae154ad51aec31))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.6...workflows-lib@v0.1.7) (2026-07-09)
 
 
