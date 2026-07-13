@@ -13,7 +13,7 @@ image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-dashboard
   tag: "drh"
-  digest: "sha256:714b4ba495ebb2320cbe420ec1f522ca52da35775400b5dafb5101f77441ad93"
+  digest: "sha256:5cf5836a8efc4208c42b51ea407959b535fba5a4bb8b6fbcbd4d60adcfc9ca98"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
