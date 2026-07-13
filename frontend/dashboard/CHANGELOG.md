@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.14...dashboard@v0.1.15) (2026-07-13)
+
+
+### Bug Fixes
+
+* **dashboard:** fix dead-code elimination bug breaking USE_AUTH_GATEWAY flag ([8df18af](https://github.com/DiamondLightSource/workflows/commit/8df18af9292e8cc6afc763f425d7e3e3fcdd1b36))
+
 ## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.13...dashboard@v0.1.14) (2026-07-10)
 
 
