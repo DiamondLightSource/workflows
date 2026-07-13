@@ -19,7 +19,10 @@ replace_placeholder() {
     grep -rl "$placeholder" "$SOURCE_DIR" | xargs -r sed -i "$sed_cmd"
 }
 
-
+# WARNING: this mechanism of setting run-time parameters is susceptible to 
+# deadcode elimination bugs USE_AUTH_GATEWAY as an example
+# See the workarounds for 
+# TODO: replace with a more robust DCE safe solution
 replace_placeholder KEYCLOAK_URL
 replace_placeholder KEYCLOAK_REALM
 replace_placeholder KEYCLOAK_CLIENT
