@@ -3,9 +3,12 @@ configuration:
   keycloakRealm: dls
   keycloakClient: workflows-ui-dev
   keycloakScope: openid profile posix-uid email
-  graphUrl: https://staging.workflows.diamond.ac.uk/graphql
-  graphWsUrl: wss://staging.workflows.diamond.ac.uk/graphql/ws
+  graphUrl: https://staging.workflows.diamond.ac.uk/api
+  graphWsUrl: wss://staging.workflows.diamond.ac.uk/api/ws
   sourceDir: /usr/share/nginx/html
+  useAuthGateway: "true"
+  authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth/login
+
 ingress:
   hosts:
     - host: staging.workflows.diamond.ac.uk
@@ -34,7 +37,7 @@ authGateway:
     registry: ghcr.io
     repository: diamondlightsource/workflows-auth-gateway
     tag: 0.1.0
-    digest: sha256:b4dd2991fc67bb13b432e48821351aefa6487c4f3417c74f2d86cb19634b7760
+    digest: sha256:61fbf15f304ac13a5e8f1a24a65c1f53adae60d20142ff8d88da4510b5a4e9cf
     pullPolicy: IfNotPresent
     pullSecrets: []
   graphUrl: https://staging.workflows.diamond.ac.uk/graphql
