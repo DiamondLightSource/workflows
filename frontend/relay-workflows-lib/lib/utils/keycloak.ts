@@ -1,3 +1,5 @@
+import { getUseAuthGateway } from "./useAuthGateway";
+
 export async function getKeycloak() {
   const isMocking = import.meta.env.VITE_ENABLE_MOCKING === "true";
 
@@ -9,9 +11,7 @@ export async function getKeycloak() {
     return mockKeycloak;
   }
 
-  const useAuthGateway = import.meta.env.VITE_USE_AUTH_GATEWAY === "true";
-
-  if (!useAuthGateway) {
+  if (!getUseAuthGateway()) {
     const { default: Keycloak } = await import("keycloak-js");
     return new Keycloak({
       url: import.meta.env.VITE_KEYCLOAK_URL,
