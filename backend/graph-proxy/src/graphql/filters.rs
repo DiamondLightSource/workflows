@@ -95,7 +95,8 @@ impl GraphFilter for Vec<ScienceGroup> {
 }
 
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug)]
-pub enum LabelSelectorOperator {
+#[graphql(name = "WorkflowLabelSelectorOperator")]
+pub enum WorkflowLabelSelectorOperator {
     Eq,
     Ne,
     In,
@@ -107,7 +108,7 @@ pub enum LabelSelectorOperator {
 #[derive(Debug, Clone, InputObject)]
 pub struct LabelSelector {
     key: String,
-    operator: LabelSelectorOperator,
+    operator: WorkflowLabelSelectorOperator,
     values: Option<Vec<String>>,
 }
 
@@ -119,7 +120,7 @@ pub struct WorkflowFilter {
     workflow_status_filter: Option<WorkflowStatusFilter>,
     creator: Option<Creator>,
     template: Option<Template>,
-    #[graphql(name = "labelSelector")]
+    #[graphql(name = "labelSelectors")]
     labels: Option<Vec<LabelSelector>>,
 }
 
@@ -128,11 +129,11 @@ impl WorkflowFilter {
     pub fn generate_filters(&self, url: &mut Url) {
         let labels = &self.create_label_selection();
         url.query_pairs_mut()
-            .append_pair("listOptions.labelSelector", labels);
+            .append_pair("listOptions.labelSelectors", labels);
     }
 
     /// Creates a string of all the reqested filters that belong to the
-    /// `labelSelector` query key in the Workflow API
+    /// `labelSelectors` query key in the Workflow API
     fn create_label_selection(&self) -> String {
         let mut label_selectors = Vec::new();
 
@@ -267,7 +268,7 @@ impl GraphFilter for Vec<LabelSelector> {
 impl LabelSelector {
     fn to_label_selector(&self) -> String {
         match self.operator {
-            LabelSelectorOperator::Eq => {
+            WorkflowLabelSelectorOperator::Eq => {
                 format!(
                     "{}={}",
                     self.key,
@@ -275,7 +276,7 @@ impl LabelSelector {
                 )
             }
 
-            LabelSelectorOperator::Ne => {
+            WorkflowLabelSelectorOperator::Ne => {
                 format!(
                     "{}!={}",
                     self.key,
@@ -283,7 +284,7 @@ impl LabelSelector {
                 )
             }
 
-            LabelSelectorOperator::In => {
+            WorkflowLabelSelectorOperator::In => {
                 format!(
                     "{} in ({})",
                     self.key,
@@ -291,7 +292,7 @@ impl LabelSelector {
                 )
             }
 
-            LabelSelectorOperator::NotIn => {
+            WorkflowLabelSelectorOperator::NotIn => {
                 format!(
                     "{} notin ({})",
                     self.key,
@@ -302,9 +303,9 @@ impl LabelSelector {
                 )
             }
 
-            LabelSelectorOperator::Exists => self.key.clone(),
+            WorkflowLabelSelectorOperator::Exists => self.key.clone(),
 
-            LabelSelectorOperator::DoesNotExist => {
+            WorkflowLabelSelectorOperator::DoesNotExist => {
                 format!("!{}", self.key)
             }
         }
@@ -314,7 +315,7 @@ impl LabelSelector {
 #[cfg(test)]
 mod tests {
     use crate::graphql::filters::{
-        Creator, LabelSelector, LabelSelectorOperator, ScienceGroup, Template, WorkflowFilter,
+        Creator, LabelSelector, WorkflowLabelSelectorOperator, ScienceGroup, Template, WorkflowFilter,
         WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
 
@@ -378,7 +379,7 @@ mod tests {
             workflow_status_filter: None,
             labels: Some(vec![LabelSelector {
                 key: "beamline".to_string(),
-                operator: LabelSelectorOperator::Eq,
+                operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
             }]),
         };
@@ -396,7 +397,7 @@ mod tests {
             workflow_status_filter: None,
             labels: Some(vec![LabelSelector {
                 key: "beamline".to_string(),
-                operator: LabelSelectorOperator::Eq,
+                operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
             }]),
         };
@@ -415,7 +416,7 @@ mod tests {
             workflow_status_filter: None,
             labels: Some(vec![LabelSelector {
                 key: "beamline".to_string(),
-                operator: LabelSelectorOperator::Eq,
+                operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
             }]),
         };
