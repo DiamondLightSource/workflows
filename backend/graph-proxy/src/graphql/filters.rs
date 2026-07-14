@@ -94,17 +94,33 @@ impl GraphFilter for Vec<ScienceGroup> {
     }
 }
 
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug)]
+pub enum LabelSelectorOperator {
+    Eq,
+    Ne,
+    In,
+    NotIn,
+    Exists,
+    DoesNotExist,
+}
+
+#[derive(Debug, Clone, InputObject)]
+pub struct LabelSelector {
+    key: String,
+    operator: LabelSelectorOperator,
+    values: Option<Vec<String>>,
+}
+
 // Workflows--------------------------------------------
 
 /// All the supported Workflows filters
 #[derive(Debug, Default, Clone, InputObject)]
 pub struct WorkflowFilter {
-    /// The status field for a workflow
     workflow_status_filter: Option<WorkflowStatusFilter>,
-    /// The fedid of the user who created the workflow
     creator: Option<Creator>,
-    /// The name of the workflow template
     template: Option<Template>,
+    #[graphql(name = "labelSelector")]
+    labels: Option<Vec<LabelSelector>>,
 }
 
 impl WorkflowFilter {
@@ -122,9 +138,12 @@ impl WorkflowFilter {
 
         self.workflow_status_filter
             .generate_labels(&mut label_selectors);
+
         self.creator.generate_labels(&mut label_selectors);
+
         self.template.generate_labels(&mut label_selectors);
 
+        self.labels.generate_labels(&mut label_selectors);
         label_selectors.join(",")
     }
 }
@@ -237,11 +256,66 @@ impl GraphFilter for Template {
     }
 }
 
+impl GraphFilter for Vec<LabelSelector> {
+    fn generate_labels(&self, labels: &mut Vec<String>) {
+        for selector in self {
+            labels.push(selector.to_label_selector());
+        }
+    }
+}
+
+impl LabelSelector {
+    fn to_label_selector(&self) -> String {
+        match self.operator {
+            LabelSelectorOperator::Eq => {
+                format!(
+                    "{}={}",
+                    self.key,
+                    self.values.as_ref().expect("EQ requires value")[0]
+                )
+            }
+
+            LabelSelectorOperator::Ne => {
+                format!(
+                    "{}!={}",
+                    self.key,
+                    self.values.as_ref().expect("NE requires value")[0]
+                )
+            }
+
+            LabelSelectorOperator::In => {
+                format!(
+                    "{} in ({})",
+                    self.key,
+                    self.values.as_ref().expect("IN requires values").join(", ")
+                )
+            }
+
+            LabelSelectorOperator::NotIn => {
+                format!(
+                    "{} notin ({})",
+                    self.key,
+                    self.values
+                        .as_ref()
+                        .expect("NOT_IN requires values")
+                        .join(", ")
+                )
+            }
+
+            LabelSelectorOperator::Exists => self.key.clone(),
+
+            LabelSelectorOperator::DoesNotExist => {
+                format!("!{}", self.key)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::graphql::filters::{
-        Creator, ScienceGroup, Template, WorkflowFilter, WorkflowStatusFilter,
-        WorkflowTemplatesFilter,
+        Creator, LabelSelector, LabelSelectorOperator, ScienceGroup, Template, WorkflowFilter,
+        WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
 
     // TEMPLATES--------------------------------------------
@@ -296,6 +370,59 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn label_eq_filter() {
+        let filters = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: Some(vec![LabelSelector {
+                key: "beamline".to_string(),
+                operator: LabelSelectorOperator::Eq,
+                values: Some(vec!["i14".to_string()]),
+            }]),
+        };
+
+        assert_eq!(filters.create_label_selection(), "beamline=i14");
+    }
+
+    #[tokio::test]
+    async fn label_combined_with_existing_filters() {
+        let creator = Creator("test".to_string());
+
+        let filters = WorkflowFilter {
+            creator: Some(creator),
+            template: None,
+            workflow_status_filter: None,
+            labels: Some(vec![LabelSelector {
+                key: "beamline".to_string(),
+                operator: LabelSelectorOperator::Eq,
+                values: Some(vec!["i14".to_string()]),
+            }]),
+        };
+
+        assert_eq!(
+            filters.create_label_selection(),
+            "workflows.argoproj.io/creator-preferred-username=test,beamline=i14"
+        );
+    }
+
+    #[tokio::test]
+    async fn label_filter() {
+        let filters = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: Some(vec![LabelSelector {
+                key: "beamline".to_string(),
+                operator: LabelSelectorOperator::Eq,
+                values: Some(vec!["i14".to_string()]),
+            }]),
+        };
+
+        assert_eq!(filters.create_label_selection(), "beamline=i14");
+    }
+
     // Workflows--------------------------------------------
     #[tokio::test]
     async fn creator() {
@@ -304,6 +431,7 @@ mod tests {
             creator: Some(creator),
             template: None,
             workflow_status_filter: None,
+            labels: None,
         };
 
         let labels = filters.create_label_selection();
@@ -327,6 +455,7 @@ mod tests {
             creator: Some(creator),
             template: None,
             workflow_status_filter: Some(phases),
+            labels: None,
         };
 
         let labels = filters.create_label_selection();
@@ -347,6 +476,7 @@ mod tests {
             creator: Some(creator),
             template: None,
             workflow_status_filter: Some(phases),
+            labels: None,
         };
 
         let labels = filters.create_label_selection();
@@ -369,6 +499,7 @@ mod tests {
             creator: Some(creator),
             template: Some(template),
             workflow_status_filter: Some(phases),
+            labels: None,
         };
 
         let labels = filters.create_label_selection();
