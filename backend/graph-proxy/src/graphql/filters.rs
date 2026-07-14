@@ -146,7 +146,7 @@ impl WorkflowFilter {
     pub fn generate_filters(&self, url: &mut Url) {
         let labels = &self.create_label_selection();
         url.query_pairs_mut()
-            .append_pair("listOptions.labelSelectors", labels);
+            .append_pair("listOptions.labelSelector", labels);
     }
 
     /// Creates a string of all the reqested filters that belong to the
@@ -333,10 +333,9 @@ impl LabelSelector {
 #[cfg(test)]
 mod tests {
     use crate::graphql::filters::{
-        Creator, LabelSelector, WorkflowLabelSelectorOperator, ScienceGroup, Template, WorkflowFilter,
-        WorkflowStatusFilter, WorkflowTemplatesFilter,
+        Creator, LabelSelector, ScienceGroup, Template, WorkflowFilter,
+        WorkflowLabelSelectorOperator, WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
-
     // TEMPLATES--------------------------------------------
     #[tokio::test]
     async fn science_group_filter() {
