@@ -1,6 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Accordion, AccordionSummary, AccordionDetails, Typography, Box } from "@mui/material";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  Box,
+} from "@mui/material";
+
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 import { LogEntry } from "../hooks/useArgoLogs";
 import { wsClient } from "../components/RelayEnvironment";
 
@@ -19,101 +32,333 @@ export default function TaskLogsPanel({
   workflowName,
   taskIds,
 }: Props) {
-  const [logsByTask, setLogsByTask] = useState<Record<string, LogEntry[]>>({});
-  const [expanded, setExpanded] = useState<string | null>(null);
 
-  const subscriptionsRef = useRef<Record<string, () => void>>({});
+  const storageKey =
+    `workflow-logs-${workflowName}`;
 
+  const [logsByTask, setLogsByTask] =
+    useState<Record<string, LogEntry[]>>(
+      () => {
+        const stored =
+          sessionStorage.getItem(
+            storageKey,
+          );
+
+        return stored
+          ? JSON.parse(stored)
+          : {};
+      },
+    );
+
+  const [
+    expanded,
+    setExpanded,
+  ] = useState<string | null>(
+    null,
+  );
+
+  const subscriptionsRef =
+    useRef<
+      Record<
+        string,
+        () => void
+      >
+    >({});
+
+  /*
+   * Debug mount/unmount
+   */
   useEffect(() => {
-    // subscribe to each taskId
-    taskIds.forEach((taskId) => {
-      if (subscriptionsRef.current[taskId]) return;
-
-      setLogsByTask((prev) => ({
-        ...prev,
-        [taskId]: prev[taskId] ?? [],
-      }));
-
-      const dispose = wsClient.subscribe(
-        {
-          query: `
-            subscription Logs($visit: VisitInput!, $workflowName: String!, $taskId: String!) {
-              logs(visit: $visit, workflowName: $workflowName, taskId: $taskId) {
-                content
-                podName
-              }
-            }
-          `,
-          variables: {
-            visit,
-            workflowName,
-            taskId,
-          },
-        },
-        {
-          next: (res: any) => {
-            const log = res?.data?.logs;
-            if (!log) return;
-
-            setLogsByTask((prev) => ({
-              ...prev,
-              [taskId]: [...(prev[taskId] ?? []), log],
-            }));
-          },
-          error: (err: any) => {
-            console.error("[TaskLogsPanel] error:", err);
-          },
-          complete: () => {
-            // no-op: required sink callback
-          },
-        },
-      );
-
-      subscriptionsRef.current[taskId] = dispose;
-
-      // auto-expand newest task
-      setExpanded(taskId);
-    });
+    console.log(
+      "[TaskLogsPanel] mounted",
+    );
 
     return () => {
-      Object.values(subscriptionsRef.current).forEach((dispose) => dispose());
-      subscriptionsRef.current = {};
+      console.log(
+        "[TaskLogsPanel] unmounted",
+      );
     };
-  }, [taskIds, visit, workflowName]);
+  }, []);
+
+  /*
+   * Persist logs across refreshes/remounts
+   */
+  useEffect(() => {
+    sessionStorage.setItem(
+      storageKey,
+      JSON.stringify(
+        logsByTask,
+      ),
+    );
+  }, [
+    logsByTask,
+    storageKey,
+  ]);
+
+  /*
+   * Subscribe once per task
+   */
+  useEffect(() => {
+
+    console.log(
+      "[TaskLogsPanel] taskIds:",
+      taskIds,
+    );
+
+    taskIds.forEach(
+      (taskId) => {
+
+        if (
+          subscriptionsRef.current[
+            taskId
+          ]
+        ) {
+          return;
+        }
+
+        setLogsByTask(
+          (prev) => ({
+            ...prev,
+            [taskId]:
+              prev[
+                taskId
+              ] ?? [],
+          }),
+        );
+
+        console.log(
+          "[TaskLogsPanel] subscribing:",
+          taskId,
+        );
+
+        const dispose =
+          wsClient.subscribe(
+            {
+              query: `
+                subscription Logs(
+                  $visit: VisitInput!
+                  $workflowName: String!
+                  $taskId: String!
+                ) {
+                  logs(
+                    visit: $visit
+                    workflowName: $workflowName
+                    taskId: $taskId
+                  ) {
+                    content
+                    podName
+                  }
+                }
+              `,
+              variables: {
+                visit,
+                workflowName,
+                taskId,
+              },
+            },
+            {
+              next: (
+                res: any,
+              ) => {
+
+                const log =
+                  res?.data
+                    ?.logs;
+
+                if (
+                  !log
+                ) {
+                  return;
+                }
+
+                setLogsByTask(
+                  (
+                    prev,
+                  ) => {
+
+                    const existing =
+                      prev[
+                        taskId
+                      ] ??
+                      [];
+
+                    const last =
+                      existing[
+                        existing.length -
+                          1
+                      ];
+
+                    /*
+                     * Prevent duplicates after reconnects
+                     */
+                    if (
+                      last &&
+                      last.content ===
+                        log.content &&
+                      last.podName ===
+                        log.podName
+                    ) {
+                      return prev;
+                    }
+
+                    return {
+                      ...prev,
+                      [taskId]:
+                        [
+                          ...existing,
+                          log,
+                        ],
+                    };
+                  },
+                );
+              },
+
+              error: (
+                err: any,
+              ) => {
+                console.error(
+                  "[TaskLogsPanel] error:",
+                  err,
+                );
+              },
+
+              complete:
+                () => {
+                  console.log(
+                    "[TaskLogsPanel] subscription completed:",
+                    taskId,
+                  );
+                },
+            },
+          );
+
+        subscriptionsRef.current[
+          taskId
+        ] = dispose;
+
+        setExpanded(
+          taskId,
+        );
+      },
+    );
+
+    return () => {
+      console.log(
+        "[TaskLogsPanel] cleaning subscriptions",
+      );
+
+      Object.values(
+        subscriptionsRef.current,
+      ).forEach(
+        (
+          dispose,
+        ) =>
+          dispose(),
+      );
+
+      subscriptionsRef.current =
+        {};
+    };
+
+  }, [
+    taskIds,
+    visit.proposalCode,
+    visit.proposalNumber,
+    visit.number,
+    workflowName,
+  ]);
 
   return (
     <Box mt={2}>
-      {taskIds.map((taskId) => (
-        <Accordion
-          key={taskId}
-          expanded={expanded === taskId}
-          onChange={() =>
-            setExpanded(expanded === taskId ? null : taskId)
-          }
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight={600}>
-              Task Logs: {taskId}
-            </Typography>
-          </AccordionSummary>
-
-          <AccordionDetails>
-            <Box
-              sx={{
-                fontFamily: "monospace",
-                fontSize: 12,
-                whiteSpace: "pre-wrap",
-                maxHeight: 300,
-                overflowY: "auto",
-              }}
+      {taskIds.map(
+        (
+          taskId,
+        ) => (
+          <Accordion
+            key={
+              taskId
+            }
+            expanded={
+              expanded ===
+              taskId
+            }
+            onChange={() =>
+              setExpanded(
+                expanded ===
+                  taskId
+                  ? null
+                  : taskId,
+              )
+            }
+          >
+            <AccordionSummary
+              expandIcon={
+                <ExpandMoreIcon />
+              }
             >
-              {(logsByTask[taskId] ?? []).map((l, i) => (
-                <div key={i}>{l.content}</div>
-              ))}
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+              <Typography
+                fontWeight={
+                  600
+                }
+              >
+                Task Logs:
+                {" "}
+                {taskId}
+                {" "}
+                (
+                {
+                  (
+                    logsByTask[
+                      taskId
+                    ] ??
+                    []
+                  )
+                    .length
+                }
+                {" "}
+                lines)
+              </Typography>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <Box
+                sx={{
+                  fontFamily:
+                    "monospace",
+                  fontSize: 12,
+                  whiteSpace:
+                    "pre-wrap",
+                  maxHeight: 300,
+                  overflowY:
+                    "auto",
+                }}
+              >
+                {(
+                  logsByTask[
+                    taskId
+                  ] ??
+                  []
+                ).map(
+                  (
+                    l,
+                    i,
+                  ) => (
+                    <div
+                      key={
+                        i
+                      }
+                    >
+                      {
+                        l.content
+                      }
+                    </div>
+                  ),
+                )}
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        ),
+      )}
     </Box>
   );
 }

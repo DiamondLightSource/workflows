@@ -38,6 +38,35 @@ export default function WorkflowLogsAccordion({
 }: Props) {
   const [state, setState] = useState<Record<string, TaskState>>({});
 
+  // DEBUG
+  useEffect(() => {
+    console.log(
+      "[WorkflowLogsAccordion] mounted",
+    );
+
+    return () => {
+      console.log(
+        "[WorkflowLogsAccordion] unmounted",
+      );
+    };
+  }, []);
+
+  // DEBUG
+  useEffect(() => {
+    console.log(
+      "[WorkflowLogsAccordion] taskIds:",
+      taskIds,
+    );
+  }, [taskIds]);
+
+  // DEBUG
+  useEffect(() => {
+    console.log(
+      "[WorkflowLogsAccordion] state keys:",
+      Object.keys(state),
+    );
+  }, [state]);
+
   // ensure task buckets exist
   useEffect(() => {
     setState((prev) => {
@@ -65,7 +94,10 @@ export default function WorkflowLogsAccordion({
           visit={visit}
           workflowName={workflowName}
           taskId={taskId}
-          taskLabel={taskLabels?.[taskId] ?? "Loading..."}
+          taskLabel={
+            taskLabels?.[taskId] ??
+            "Loading..."
+          }
           state={state[taskId]}
           onToggleOpen={() => {
             setState((prev) => ({
@@ -81,23 +113,28 @@ export default function WorkflowLogsAccordion({
               ...prev,
               [taskId]: {
                 ...prev[taskId],
-                pinned: !prev[taskId]?.pinned,
+                pinned:
+                  !prev[taskId]?.pinned,
               },
             }));
           }}
           onAppendLog={(log: LogEntry) => {
             setState((prev) => {
-              const curr = prev[taskId] ?? {
-                open: true,
-                pinned: false,
-                logs: [],
-              };
+              const curr =
+                prev[taskId] ?? {
+                  open: true,
+                  pinned: false,
+                  logs: [],
+                };
 
               return {
                 ...prev,
                 [taskId]: {
                   ...curr,
-                  logs: [...curr.logs, log],
+                  logs: [
+                    ...curr.logs,
+                    log,
+                  ],
                 },
               };
             });
@@ -125,9 +162,14 @@ function TaskLogPanel({
   state?: TaskState;
   onToggleOpen: () => void;
   onTogglePin: () => void;
-  onAppendLog: (log: LogEntry) => void;
+  onAppendLog: (
+    log: LogEntry,
+  ) => void;
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    );
 
   const { logs } = useArgoLogs({
     visit,
@@ -136,41 +178,113 @@ function TaskLogPanel({
     enabled: true,
   });
 
-  const isOpen = state?.open ?? true;
-  const isPinned = state?.pinned ?? false;
-  const storedLogs = state?.logs ?? [];
+  const isOpen =
+    state?.open ?? true;
 
-  const lastIndex = useRef(0);
+  const isPinned =
+    state?.pinned ?? false;
+
+  const storedLogs =
+    state?.logs ?? [];
+
+  const lastIndex =
+    useRef(0);
+
+  // DEBUG
+  useEffect(() => {
+    console.log(
+      `[TaskLogPanel] mounted ${taskId}`,
+    );
+
+    return () => {
+      console.log(
+        `[TaskLogPanel] unmounted ${taskId}`,
+      );
+    };
+  }, []);
+
+  // DEBUG
+  useEffect(() => {
+    console.log(
+      `[TaskLogPanel] ${taskId} stored logs:`,
+      storedLogs.length,
+    );
+  }, [storedLogs, taskId]);
 
   // append only new logs
   useEffect(() => {
-    for (let i = lastIndex.current; i < logs.length; i++) {
-      const log: LogEntry = logs[i]; // ✅ FIXED TYPE
+    for (
+      let i =
+        lastIndex.current;
+      i < logs.length;
+      i++
+    ) {
+      const log: LogEntry =
+        logs[i];
+
       onAppendLog(log);
     }
-    lastIndex.current = logs.length;
-  }, [logs, onAppendLog]);
+
+    lastIndex.current =
+      logs.length;
+  }, [
+    logs,
+    onAppendLog,
+  ]);
 
   // auto scroll
   useEffect(() => {
-    if (!isOpen || isPinned) return;
+    if (
+      !isOpen ||
+      isPinned
+    ) {
+      return;
+    }
 
-    const el = containerRef.current;
-    if (!el) return;
+    const el =
+      containerRef.current;
+
+    if (!el) {
+      return;
+    }
 
     const distance =
-      el.scrollHeight - el.scrollTop - el.clientHeight;
+      el.scrollHeight -
+      el.scrollTop -
+      el.clientHeight;
 
-    if (distance < 80) {
-      el.scrollTop = el.scrollHeight;
+    if (
+      distance < 80
+    ) {
+      el.scrollTop =
+        el.scrollHeight;
     }
-  }, [storedLogs, isOpen, isPinned]);
+  }, [
+    storedLogs,
+    isOpen,
+    isPinned,
+  ]);
 
   return (
-    <Accordion expanded={isOpen} onChange={onToggleOpen}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography sx={{ flex: 1 }}>
-          Task Logs: {taskLabel}
+    <Accordion
+      expanded={isOpen}
+      onChange={
+        onToggleOpen
+      }
+    >
+      <AccordionSummary
+        expandIcon={
+          <ExpandMoreIcon />
+        }
+      >
+        <Typography
+          sx={{
+            flex: 1,
+          }}
+        >
+          Task Logs:
+          {" "}
+          {taskLabel}
         </Typography>
 
         <IconButton
@@ -179,23 +293,40 @@ function TaskLogPanel({
             onTogglePin();
           }}
         >
-          {isPinned ? <PushPinIcon /> : <PushPinOutlinedIcon />}
+          {isPinned ? (
+            <PushPinIcon />
+          ) : (
+            <PushPinOutlinedIcon />
+          )}
         </IconButton>
       </AccordionSummary>
 
       <AccordionDetails>
         <Box
-          ref={containerRef}
+          ref={
+            containerRef
+          }
           sx={{
-            fontFamily: "monospace",
+            fontFamily:
+              "monospace",
             fontSize: 12,
             maxHeight: 300,
-            overflowY: "auto",
+            overflowY:
+              "auto",
           }}
         >
-          {storedLogs.map((l: LogEntry, i: number) => (
-            <div key={i}>{l.content}</div>
-          ))}
+          {storedLogs.map(
+            (
+              l: LogEntry,
+              i: number,
+            ) => (
+              <div key={i}>
+                {
+                  l.content
+                }
+              </div>
+            ),
+          )}
         </Box>
       </AccordionDetails>
     </Accordion>

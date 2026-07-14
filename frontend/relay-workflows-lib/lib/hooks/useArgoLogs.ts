@@ -31,11 +31,15 @@ export function useArgoLogs({
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!enabled || !taskId) return;
+    if (!enabled || !taskId) {
+      return;
+    }
 
     console.log("[useArgoLogs] subscribing to task:", taskId);
 
-    setLogs([]);
+    // DO NOT clear logs here.
+    // If Relay refreshes or websocket reconnects we want
+    // previously received logs to remain visible.
     setError(null);
 
     let cancelled = false;
@@ -43,20 +47,20 @@ export function useArgoLogs({
     const dispose = wsClient.subscribe(
       {
         query: `
-            subscription Logs(
+          subscription Logs(
             $visit: VisitInput!
             $workflowName: String!
             $taskId: String!
-            ) {
+          ) {
             logs(
-                visit: $visit
-                workflowName: $workflowName
-                taskId: $taskId
+              visit: $visit
+              workflowName: $workflowName
+              taskId: $taskId
             ) {
-                content
-                podName
+              content
+              podName
             }
-            }
+          }
         `,
         variables: {
           visit,
@@ -66,18 +70,37 @@ export function useArgoLogs({
       },
       {
         next: (res: any) => {
-          if (cancelled) return;
+          if (cancelled) {
+            return;
+          }
 
           console.log("[useArgoLogs] WS message:", res);
 
           const log = res?.data?.logs;
-          if (!log) return;
 
-          setLogs((prev) => [...prev, log]);
+          if (!log) {
+            return;
+          }
+
+          setLogs((prev) => {
+            const last = prev[prev.length - 1];
+
+            // avoid duplicate messages after reconnect
+            if (
+              last &&
+              last.content === log.content &&
+              last.podName === log.podName
+            ) {
+              return prev;
+            }
+
+            return [...prev, log];
+          });
         },
 
         error: (err: any) => {
           console.error("[useArgoLogs] WS error:", err);
+
           if (!cancelled) {
             setError(
               err instanceof Error
@@ -88,7 +111,9 @@ export function useArgoLogs({
         },
 
         complete: () => {
-          console.log("[useArgoLogs] subscription completed");
+          console.log(
+            "[useArgoLogs] subscription completed",
+          );
         },
       },
     );
@@ -97,16 +122,31 @@ export function useArgoLogs({
       try {
         dispose();
       } catch (e) {
-        console.warn("[useArgoLogs] dispose error", e);
+        console.warn(
+          "[useArgoLogs] dispose error",
+          e,
+        );
       }
     };
 
     return () => {
       cancelled = true;
+
       unsubscribeRef.current?.();
       unsubscribeRef.current = null;
     };
-  }, [visit, workflowName, taskId, container, enabled]);
+  }, [
+    visit.proposalCode,
+    visit.proposalNumber,
+    visit.number,
+    workflowName,
+    taskId,
+    container,
+    enabled,
+  ]);
 
-  return { logs, error };
+  return {
+    logs,
+    error,
+  };
 }

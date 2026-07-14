@@ -96,15 +96,56 @@ export default function BaseSingleWorkflowView({
   const [
     openedTaskIds,
     setOpenedTaskIds,
-  ] = useState<string[]>([]);
+  ] = useState<string[]>(() => {
+    if (!data?.name) {
+      return [];
+    }
 
+    const stored = sessionStorage.getItem(
+      `workflow-opened-${data.name}`,
+    );
+
+    return stored
+      ? JSON.parse(stored)
+      : [];
+  });
+
+    useEffect(() => {
+      if (!data?.name) {
+        return;
+      }
+
+      sessionStorage.setItem(
+        `workflow-opened-${data.name}`,
+        JSON.stringify(openedTaskIds),
+      );
+    }, [
+      openedTaskIds,
+      data?.name,
+    ]);
 
   const [
     taskLabels,
     setTaskLabels,
   ] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (!fetchedTasks.length) {
+      return;
+    }
 
+    setOpenedTaskIds((previous) => {
+      const validTaskIds = new Set(
+        fetchedTasks.map(
+          (task) => task.id,
+        ),
+      );
+
+      return previous.filter(
+        (id) => validTaskIds.has(id),
+      );
+    });
+  }, [fetchedTasks]);
 
   // -------- OUTPUT TASKS --------
 
@@ -241,7 +282,12 @@ export default function BaseSingleWorkflowView({
     return null;
   }
 
-
+  console.log(
+    "[BaseSingleWorkflowView] workflow:",
+    data.name,
+    "openedTaskIds:",
+    openedTaskIds,
+  );
 
   return (
 
