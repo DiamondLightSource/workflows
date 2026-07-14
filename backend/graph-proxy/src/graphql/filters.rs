@@ -96,19 +96,31 @@ impl GraphFilter for Vec<ScienceGroup> {
 
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug)]
 #[graphql(name = "WorkflowLabelSelectorOperator")]
+/// Supported operators for label selection in workflows
 pub enum WorkflowLabelSelectorOperator {
+    /// Match resources with an exact label value.
     Eq,
+    /// Match resources with a label value that is not equal to a specified value.
     Ne,
+    /// Match resources with a label value in a set of values.
     In,
+    /// Match resources with a label value not in a set of values.
     NotIn,
+    /// Match resources that have a specific label key, regardless of its value.
     Exists,
+    /// Match resources that do not have a specific label key.
     DoesNotExist,
 }
 
+/// Represents a label selector for filtering workflows based on labels
 #[derive(Debug, Clone, InputObject)]
+/// Represents a label selector for filtering workflows based on labels
 pub struct LabelSelector {
+    /// The label key to filter on
     key: String,
+    /// The operator to use for the label selection
     operator: WorkflowLabelSelectorOperator,
+    /// The values to match against the label key (if applicable)
     values: Option<Vec<String>>,
 }
 
@@ -117,10 +129,15 @@ pub struct LabelSelector {
 /// All the supported Workflows filters
 #[derive(Debug, Default, Clone, InputObject)]
 pub struct WorkflowFilter {
+    /// The status of the workflow (e.g., pending, running, succeeded, failed, error)
     workflow_status_filter: Option<WorkflowStatusFilter>,
+    /// The fedid of the user who created the workflow
     creator: Option<Creator>,
+    /// The workflow template
     template: Option<Template>,
+    /// Additional label selectors for filtering workflows
     #[graphql(name = "labelSelectors")]
+    /// Additional label selectors for filtering workflows
     labels: Option<Vec<LabelSelector>>,
 }
 
@@ -266,6 +283,7 @@ impl GraphFilter for Vec<LabelSelector> {
 }
 
 impl LabelSelector {
+    /// Converts the LabelSelector into a string representation suitable for use in a label selector query
     fn to_label_selector(&self) -> String {
         match self.operator {
             WorkflowLabelSelectorOperator::Eq => {
