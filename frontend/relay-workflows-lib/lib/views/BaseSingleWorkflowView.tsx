@@ -364,14 +364,19 @@ export default function BaseSingleWorkflowView({
                   taskLabel?: string,
                 ) => {
 
-                  setOpenedTaskIds((previous) =>
-                    previous.includes(taskId)
-                      ? previous
-                      : [
-                          ...previous,
-                          taskId,
-                        ],
-                  );
+                  setOpenedTaskIds((previous) => {
+
+                    if (previous.includes(taskId)) {
+                      return previous.filter(
+                        (id) => id !== taskId,
+                      );
+                    }
+
+                    return [
+                      ...previous,
+                      taskId,
+                    ];
+                  });
 
                   if (taskLabel) {
                     setTaskLabels((previous) => ({
@@ -381,6 +386,7 @@ export default function BaseSingleWorkflowView({
                   }
 
                 }}
+              
               />
             </Box>
           )}

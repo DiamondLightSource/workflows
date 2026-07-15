@@ -224,17 +224,29 @@ const TasksFlow = ({
 
 
       <ReactFlow
-
         nodes={nodesWithHighlights}
-
         edges={layoutedEdges}
-
         onInit={onInit}
-
         nodeTypes={nodeTypes}
-
         fitView
 
+        onNodeClick={(event, node) => {
+          console.log(
+            "[TasksFlow] node clicked:",
+            node.id,
+            node.data,
+          );
+
+          const label =
+            (node.data as any)?.label ??
+            node.id;
+
+          onNavigate(
+            node.id,
+            label,
+            event as any,
+          );
+        }}
       />
 
     </Box>

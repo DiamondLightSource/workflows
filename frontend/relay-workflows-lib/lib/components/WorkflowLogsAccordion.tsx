@@ -7,6 +7,7 @@ import {
   Box,
   IconButton,
 } from "@mui/material";
+
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
@@ -36,38 +37,33 @@ export default function WorkflowLogsAccordion({
   taskIds,
   taskLabels,
 }: Props) {
-  const [state, setState] = useState<Record<string, TaskState>>({});
+  const storageKey =
+    `workflow-logs-${workflowName}`;
 
-  // DEBUG
-  useEffect(() => {
-    console.log(
-      "[WorkflowLogsAccordion] mounted",
+  const [state, setState] =
+    useState<Record<string, TaskState>>(
+      () => {
+
+        const stored =
+          sessionStorage.getItem(
+            storageKey,
+          );
+
+        return stored
+          ? JSON.parse(stored)
+          : {};
+      },
     );
-
-    return () => {
-      console.log(
-        "[WorkflowLogsAccordion] unmounted",
-      );
-    };
-  }, []);
-
-  // DEBUG
   useEffect(() => {
-    console.log(
-      "[WorkflowLogsAccordion] taskIds:",
-      taskIds,
+    sessionStorage.setItem(
+      storageKey,
+      JSON.stringify(state),
     );
-  }, [taskIds]);
+  }, [
+    state,
+    storageKey,
+  ]);  
 
-  // DEBUG
-  useEffect(() => {
-    console.log(
-      "[WorkflowLogsAccordion] state keys:",
-      Object.keys(state),
-    );
-  }, [state]);
-
-  // ensure task buckets exist
   useEffect(() => {
     setState((prev) => {
       const next = { ...prev };
@@ -96,7 +92,7 @@ export default function WorkflowLogsAccordion({
           taskId={taskId}
           taskLabel={
             taskLabels?.[taskId] ??
-            "Loading..."
+            taskId
           }
           state={state[taskId]}
           onToggleOpen={() => {
@@ -120,7 +116,7 @@ export default function WorkflowLogsAccordion({
           }}
           onAppendLog={(log: LogEntry) => {
             setState((prev) => {
-              const curr =
+              const current =
                 prev[taskId] ?? {
                   open: true,
                   pinned: false,
@@ -130,9 +126,9 @@ export default function WorkflowLogsAccordion({
               return {
                 ...prev,
                 [taskId]: {
-                  ...curr,
+                  ...current,
                   logs: [
-                    ...curr.logs,
+                    ...current.logs,
                     log,
                   ],
                 },
@@ -188,28 +184,9 @@ function TaskLogPanel({
     state?.logs ?? [];
 
   const lastIndex =
-    useRef(0);
-
-  // DEBUG
-  useEffect(() => {
-    console.log(
-      `[TaskLogPanel] mounted ${taskId}`,
-    );
-
-    return () => {
-      console.log(
-        `[TaskLogPanel] unmounted ${taskId}`,
-      );
-    };
-  }, []);
-
-  // DEBUG
-  useEffect(() => {
-    console.log(
-      `[TaskLogPanel] ${taskId} stored logs:`,
+    useRef(
       storedLogs.length,
     );
-  }, [storedLogs, taskId]);
 
   // append only new logs
   useEffect(() => {
@@ -219,10 +196,7 @@ function TaskLogPanel({
       i < logs.length;
       i++
     ) {
-      const log: LogEntry =
-        logs[i];
-
-      onAppendLog(log);
+      onAppendLog(logs[i]);
     }
 
     lastIndex.current =
@@ -232,57 +206,63 @@ function TaskLogPanel({
     onAppendLog,
   ]);
 
-  // auto scroll
+  // terminal auto-scroll
   useEffect(() => {
     if (
-      !isOpen ||
+      !containerRef.current ||
       isPinned
     ) {
       return;
     }
 
-    const el =
-      containerRef.current;
-
-    if (!el) {
-      return;
-    }
-
-    const distance =
-      el.scrollHeight -
-      el.scrollTop -
-      el.clientHeight;
-
-    if (
-      distance < 80
-    ) {
-      el.scrollTop =
-        el.scrollHeight;
-    }
+    containerRef.current.scrollTop =
+      containerRef.current.scrollHeight;
   }, [
     storedLogs,
-    isOpen,
     isPinned,
   ]);
 
   return (
     <Accordion
       expanded={isOpen}
-      onChange={
-        onToggleOpen
-      }
+      onChange={onToggleOpen}
+      disableGutters
+      sx={{
+        mb: 1,
+        border:
+          "1px solid #333",
+        backgroundColor:
+          "#111",
+      }}
     >
       <AccordionSummary
         expandIcon={
-          <ExpandMoreIcon />
+          <ExpandMoreIcon
+            sx={{
+              color:
+                "#00ff00",
+            }}
+          />
         }
+        sx={{
+          backgroundColor:
+            "#1a1a1a",
+          borderBottom:
+            "1px solid #333",
+          minHeight: 48,
+        }}
       >
         <Typography
           sx={{
             flex: 1,
+            color:
+              "#00ff00",
+            fontFamily:
+              "monospace",
+            fontWeight: 600,
           }}
         >
-          Task Logs:
+          $
           {" "}
           {taskLabel}
         </Typography>
@@ -292,40 +272,94 @@ function TaskLogPanel({
             e.stopPropagation();
             onTogglePin();
           }}
+          size="small"
         >
           {isPinned ? (
-            <PushPinIcon />
+            <PushPinIcon
+              sx={{
+                color:
+                  "#00ff00",
+              }}
+            />
           ) : (
-            <PushPinOutlinedIcon />
+            <PushPinOutlinedIcon
+              sx={{
+                color:
+                  "#00ff00",
+              }}
+            />
           )}
         </IconButton>
       </AccordionSummary>
 
-      <AccordionDetails>
+      <AccordionDetails
+        sx={{
+          p: 0,
+          backgroundColor:
+            "#000",
+        }}
+      >
         <Box
-          ref={
-            containerRef
-          }
+          ref={containerRef}
           sx={{
-            fontFamily:
-              "monospace",
+            backgroundColor: "#000",
+            color: "#00ff00",
+
+            fontFamily: `"Courier New", monospace`,
             fontSize: 12,
-            maxHeight: 300,
-            overflowY:
-              "auto",
+            lineHeight: 1.4,
+
+            minHeight: "3cm",
+            maxHeight: "6cm",
+            height: "auto",
+
+            overflowY: "auto",
+            overflowX: "hidden",
+
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+
+            p: 1.5,
+
+            display: "flex",
+            flexDirection: "column",
+
+            border: "1px solid #00aa00",
+
+            boxShadow:
+              "inset 0 0 10px rgba(0,255,0,0.15)",
           }}
         >
-          {storedLogs.map(
-            (
-              l: LogEntry,
-              i: number,
-            ) => (
-              <div key={i}>
-                {
-                  l.content
-                }
-              </div>
-            ),
+          {storedLogs.length ===
+          0 ? (
+            <Typography
+              sx={{
+                color:
+                  "#008800",
+                fontFamily:
+                  "monospace",
+                fontSize: 12,
+              }}
+            >
+              Waiting for logs...
+            </Typography>
+          ) : (
+            storedLogs.map(
+              (
+                log,
+                index,
+              ) => (
+                <div
+                  key={
+                    index
+                  }
+                >
+                  {
+                    log.content
+                  }
+                </div>
+              ),
+            )
           )}
         </Box>
       </AccordionDetails>

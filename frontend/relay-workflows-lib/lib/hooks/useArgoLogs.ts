@@ -73,7 +73,7 @@ export function useArgoLogs({
           if (cancelled) {
             return;
           }
-
+          new Date().toISOString(),
           console.log("[useArgoLogs] WS message:", res);
 
           const log = res?.data?.logs;
