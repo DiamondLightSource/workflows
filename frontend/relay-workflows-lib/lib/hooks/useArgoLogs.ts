@@ -18,6 +18,20 @@ type Args = {
   enabled?: boolean;
 };
 
+/*
+ * Global cache shared by every hook instance.
+ * This prevents duplicate websocket subscriptions
+ * when the task is subscribed in the background
+ * and later opened in the UI.
+ */
+const subscriptions = new Map<
+  string,
+  {
+    dispose: () => void;
+    listeners: Set<(log: LogEntry) => void>;
+  }
+>();
+
 export function useArgoLogs({
   visit,
   workflowName,
@@ -25,115 +39,376 @@ export function useArgoLogs({
   container = "main",
   enabled = true,
 }: Args) {
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const storageKey = taskId
+    ? `workflow-logs-${workflowName}-${taskId}`
+    : null;
 
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const [logs, setLogs] = useState<LogEntry[]>(() => {
+    if (!storageKey) {
+      return [];
+    }
 
+    try {
+      const stored =
+        localStorage.getItem(storageKey);
+
+      return stored
+        ? JSON.parse(stored)
+        : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const listenerRef =
+    useRef<(log: LogEntry) => void>();
+
+  const uploadedIndexRef =
+    useRef(0);
+
+  const uploadInProgressRef =
+    useRef(false);
+
+  /*
+   * Persist logs immediately.
+   */
   useEffect(() => {
-    if (!enabled || !taskId) {
+    if (!storageKey) {
       return;
     }
 
-    console.log("[useArgoLogs] subscribing to task:", taskId);
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify(logs),
+    );
+  }, [
+    logs,
+    storageKey,
+  ]);
 
-    // DO NOT clear logs here.
-    // If Relay refreshes or websocket reconnects we want
-    // previously received logs to remain visible.
-    setError(null);
+  /*
+  * Upload new logs every 10 seconds.
+  */
+  useEffect(() => {
+    if (
+      !taskId ||
+      logs.length === 0
+    ) {
+      return;
+    }
+
+    const interval =
+      setInterval(async () => {
+
+        if (
+          uploadInProgressRef.current
+        ) {
+          return;
+        }
+
+        const newLogs =
+          logs.slice(
+            uploadedIndexRef.current,
+          );
+
+        if (
+          newLogs.length === 0
+        ) {
+          return;
+        }
+
+        uploadInProgressRef.current =
+          true;
+
+        try {
+          await fetch(
+            "/api/logs/upload",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                visit,
+                workflowName,
+                taskId,
+                logs: newLogs,
+              }),
+            },
+          );
+
+          uploadedIndexRef.current =
+            logs.length;
+        }
+        catch (err) {
+          console.error(
+            "Failed to upload logs",
+            err,
+          );
+        }
+        finally {
+          uploadInProgressRef.current =
+            false;
+        }
+
+      }, 10000);
+
+    return () =>
+      clearInterval(
+        interval,
+      );
+
+  }, [
+    logs,
+    taskId,
+    workflowName,
+    visit,
+  ]);
+
+
+  useEffect(() => {
+    if (
+      !enabled ||
+      !taskId ||
+      !storageKey
+    ) {
+      return;
+    }
+
+    /*
+     * Reload logs from localStorage if another
+     * background subscriber already collected some.
+     */
+    try {
+      const stored =
+        localStorage.getItem(storageKey);
+
+      if (stored) {
+        setLogs(JSON.parse(stored));
+      }
+    } catch {}
+
+    listenerRef.current = (
+      log: LogEntry,
+    ) => {
+      setLogs((prev) => {
+        const last =
+          prev[prev.length - 1];
+
+        /*
+         * Avoid duplicate messages after reconnect.
+         */
+        if (
+          last &&
+          last.content ===
+            log.content &&
+          last.podName ===
+            log.podName
+        ) {
+          return prev;
+        }
+
+        return [
+          ...prev,
+          log,
+        ];
+      });
+    };
+
+    /*
+     * Reuse existing websocket if present.
+     */
+    const existing =
+      subscriptions.get(
+        storageKey,
+      );
+
+    if (existing) {
+      existing.listeners.add(
+        listenerRef.current,
+      );
+
+      return () => {
+        existing.listeners.delete(
+          listenerRef.current!,
+        );
+      };
+    }
+
+    console.log(
+      "[useArgoLogs] opening websocket:",
+      taskId,
+    );
+
+    const listeners =
+      new Set<
+        (
+          log: LogEntry,
+        ) => void
+      >();
+
+    listeners.add(
+      listenerRef.current,
+    );
 
     let cancelled = false;
 
-    const dispose = wsClient.subscribe(
-      {
-        query: `
-          subscription Logs(
-            $visit: VisitInput!
-            $workflowName: String!
-            $taskId: String!
-          ) {
-            logs(
-              visit: $visit
-              workflowName: $workflowName
-              taskId: $taskId
+    const dispose =
+      wsClient.subscribe(
+        {
+          query: `
+            subscription Logs(
+              $visit: VisitInput!
+              $workflowName: String!
+              $taskId: String!
             ) {
-              content
-              podName
+              logs(
+                visit: $visit
+                workflowName: $workflowName
+                taskId: $taskId
+              ) {
+                content
+                podName
+              }
             }
-          }
-        `,
-        variables: {
-          visit,
-          workflowName,
-          taskId,
+          `,
+          variables: {
+            visit,
+            workflowName,
+            taskId,
+          },
         },
-      },
-      {
-        next: (res: any) => {
-          if (cancelled) {
-            return;
-          }
-          new Date().toISOString(),
-          console.log("[useArgoLogs] WS message:", res);
-
-          const log = res?.data?.logs;
-
-          if (!log) {
-            return;
-          }
-
-          setLogs((prev) => {
-            const last = prev[prev.length - 1];
-
-            // avoid duplicate messages after reconnect
-            if (
-              last &&
-              last.content === log.content &&
-              last.podName === log.podName
-            ) {
-              return prev;
+        {
+          next: (res: any) => {
+            if (cancelled) {
+              return;
             }
 
-            return [...prev, log];
-          });
-        },
+            const log =
+              res?.data?.logs;
 
-        error: (err: any) => {
-          console.error("[useArgoLogs] WS error:", err);
+            if (!log) {
+              return;
+            }
 
-          if (!cancelled) {
-            setError(
-              err instanceof Error
-                ? err.message
-                : JSON.stringify(err, null, 2),
+            /*
+             * Save immediately so refreshes preserve logs.
+             */
+            try {
+              const current =
+                localStorage.getItem(
+                  storageKey,
+                );
+
+              const parsed =
+                current
+                  ? JSON.parse(
+                      current,
+                    )
+                  : [];
+
+              const last =
+                parsed[
+                  parsed.length -
+                    1
+                ];
+
+              if (
+                !last ||
+                last.content !==
+                  log.content ||
+                last.podName !==
+                  log.podName
+              ) {
+                parsed.push(log);
+
+                localStorage.setItem(
+                  storageKey,
+                  JSON.stringify(
+                    parsed,
+                  ),
+                );
+              }
+            } catch {}
+
+            listeners.forEach(
+              (
+                listener,
+              ) => {
+                listener(log);
+              },
             );
-          }
-        },
+          },
 
-        complete: () => {
-          console.log(
-            "[useArgoLogs] subscription completed",
-          );
+          error: (err: any) => {
+            console.error(
+              "[useArgoLogs]",
+              err,
+            );
+
+            if (
+              !cancelled
+            ) {
+              setError(
+                err instanceof Error
+                  ? err.message
+                  : JSON.stringify(
+                      err,
+                      null,
+                      2,
+                    ),
+              );
+            }
+          },
+
+          complete: () => {
+            console.log(
+              `[useArgoLogs] completed ${taskId}`,
+            );
+          },
         },
+      );
+
+    subscriptions.set(
+      storageKey,
+      {
+        dispose: () => {
+          dispose();
+        },
+        listeners,
       },
     );
 
-    unsubscribeRef.current = () => {
-      try {
-        dispose();
-      } catch (e) {
-        console.warn(
-          "[useArgoLogs] dispose error",
-          e,
+    return () => {
+      if (
+        listenerRef.current
+      ) {
+        listeners.delete(
+          listenerRef.current,
         );
       }
-    };
 
-    return () => {
-      cancelled = true;
+      /*
+       * Keep websocket alive if background
+       * subscribers still exist.
+       */
+      if (
+        listeners.size === 0
+      ) {
+        cancelled = true;
 
-      unsubscribeRef.current?.();
-      unsubscribeRef.current = null;
+        try {
+          dispose();
+        } catch {}
+
+        subscriptions.delete(
+          storageKey,
+        );
+      }
     };
   }, [
     visit.proposalCode,
@@ -143,6 +418,7 @@ export function useArgoLogs({
     taskId,
     container,
     enabled,
+    storageKey,
   ]);
 
   return {
