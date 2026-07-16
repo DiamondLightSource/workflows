@@ -1,8 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Accordion,
@@ -27,56 +23,29 @@ type Props = {
   taskIds: string[];
 };
 
-export default function TaskLogsPanel({
-  visit,
-  workflowName,
-  taskIds,
-}: Props) {
+export default function TaskLogsPanel({ visit, workflowName, taskIds }: Props) {
+  const storageKey = `workflow-logs-${workflowName}`;
 
-  const storageKey =
-    `workflow-logs-${workflowName}`;
+  const [logsByTask, setLogsByTask] = useState<Record<string, LogEntry[]>>(
+    () => {
+      const stored = sessionStorage.getItem(storageKey);
 
-  const [logsByTask, setLogsByTask] =
-    useState<Record<string, LogEntry[]>>(
-      () => {
-        const stored =
-          sessionStorage.getItem(
-            storageKey,
-          );
-
-        return stored
-          ? JSON.parse(stored)
-          : {};
-      },
-    );
-
-  const [
-    expanded,
-    setExpanded,
-  ] = useState<string | null>(
-    null,
+      return stored ? JSON.parse(stored) : {};
+    },
   );
 
-  const subscriptionsRef =
-    useRef<
-      Record<
-        string,
-        () => void
-      >
-    >({});
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const subscriptionsRef = useRef<Record<string, () => void>>({});
 
   /*
    * Debug mount/unmount
    */
   useEffect(() => {
-    console.log(
-      "[TaskLogsPanel] mounted",
-    );
+    console.log("[TaskLogsPanel] mounted");
 
     return () => {
-      console.log(
-        "[TaskLogsPanel] unmounted",
-      );
+      console.log("[TaskLogsPanel] unmounted");
     };
   }, []);
 
@@ -84,57 +53,30 @@ export default function TaskLogsPanel({
    * Persist logs across refreshes/remounts
    */
   useEffect(() => {
-    sessionStorage.setItem(
-      storageKey,
-      JSON.stringify(
-        logsByTask,
-      ),
-    );
-  }, [
-    logsByTask,
-    storageKey,
-  ]);
+    sessionStorage.setItem(storageKey, JSON.stringify(logsByTask));
+  }, [logsByTask, storageKey]);
 
   /*
    * Subscribe once per task
    */
   useEffect(() => {
+    console.log("[TaskLogsPanel] taskIds:", taskIds);
 
-    console.log(
-      "[TaskLogsPanel] taskIds:",
-      taskIds,
-    );
+    taskIds.forEach((taskId) => {
+      if (subscriptionsRef.current[taskId]) {
+        return;
+      }
 
-    taskIds.forEach(
-      (taskId) => {
+      setLogsByTask((prev) => ({
+        ...prev,
+        [taskId]: prev[taskId] ?? [],
+      }));
 
-        if (
-          subscriptionsRef.current[
-            taskId
-          ]
-        ) {
-          return;
-        }
+      console.log("[TaskLogsPanel] subscribing:", taskId);
 
-        setLogsByTask(
-          (prev) => ({
-            ...prev,
-            [taskId]:
-              prev[
-                taskId
-              ] ?? [],
-          }),
-        );
-
-        console.log(
-          "[TaskLogsPanel] subscribing:",
-          taskId,
-        );
-
-        const dispose =
-          wsClient.subscribe(
-            {
-              query: `
+      const dispose = wsClient.subscribe(
+        {
+          query: `
                 subscription Logs(
                   $visit: VisitInput!
                   $workflowName: String!
@@ -150,116 +92,65 @@ export default function TaskLogsPanel({
                   }
                 }
               `,
-              variables: {
-                visit,
-                workflowName,
-                taskId,
-              },
-            },
-            {
-              next: (
-                res: any,
-              ) => {
+          variables: {
+            visit,
+            workflowName,
+            taskId,
+          },
+        },
+        {
+          next: (res: any) => {
+            const log = res?.data?.logs;
 
-                const log =
-                  res?.data
-                    ?.logs;
+            if (!log) {
+              return;
+            }
 
-                if (
-                  !log
-                ) {
-                  return;
-                }
+            setLogsByTask((prev) => {
+              const existing = prev[taskId] ?? [];
 
-                setLogsByTask(
-                  (
-                    prev,
-                  ) => {
+              const last = existing[existing.length - 1];
 
-                    const existing =
-                      prev[
-                        taskId
-                      ] ??
-                      [];
+              /*
+               * Prevent duplicates after reconnects
+               */
+              if (
+                last &&
+                last.content === log.content &&
+                last.podName === log.podName
+              ) {
+                return prev;
+              }
 
-                    const last =
-                      existing[
-                        existing.length -
-                          1
-                      ];
+              return {
+                ...prev,
+                [taskId]: [...existing, log],
+              };
+            });
+          },
 
-                    /*
-                     * Prevent duplicates after reconnects
-                     */
-                    if (
-                      last &&
-                      last.content ===
-                        log.content &&
-                      last.podName ===
-                        log.podName
-                    ) {
-                      return prev;
-                    }
+          error: (err: any) => {
+            console.error("[TaskLogsPanel] error:", err);
+          },
 
-                    return {
-                      ...prev,
-                      [taskId]:
-                        [
-                          ...existing,
-                          log,
-                        ],
-                    };
-                  },
-                );
-              },
+          complete: () => {
+            console.log("[TaskLogsPanel] subscription completed:", taskId);
+          },
+        },
+      );
 
-              error: (
-                err: any,
-              ) => {
-                console.error(
-                  "[TaskLogsPanel] error:",
-                  err,
-                );
-              },
+      subscriptionsRef.current[taskId] = dispose;
 
-              complete:
-                () => {
-                  console.log(
-                    "[TaskLogsPanel] subscription completed:",
-                    taskId,
-                  );
-                },
-            },
-          );
-
-        subscriptionsRef.current[
-          taskId
-        ] = dispose;
-
-        setExpanded(
-          taskId,
-        );
-      },
-    );
+      setExpanded(taskId);
+    });
 
     return () => {
-      console.log(
-        "[TaskLogsPanel] cleaning subscriptions",
-      );
+      console.log("[TaskLogsPanel] cleaning subscriptions");
 
-      Object.values(
-        subscriptionsRef.current,
-      ).forEach(
-        (
-          dispose,
-        ) =>
-          dispose(),
-      );
+      Object.values(subscriptionsRef.current).forEach((dispose) => dispose());
 
-      subscriptionsRef.current =
-        {};
+      subscriptionsRef.current = {};
     };
-
   }, [
     taskIds,
     visit.proposalCode,
@@ -270,95 +161,35 @@ export default function TaskLogsPanel({
 
   return (
     <Box mt={2}>
-      {taskIds.map(
-        (
-          taskId,
-        ) => (
-          <Accordion
-            key={
-              taskId
-            }
-            expanded={
-              expanded ===
-              taskId
-            }
-            onChange={() =>
-              setExpanded(
-                expanded ===
-                  taskId
-                  ? null
-                  : taskId,
-              )
-            }
-          >
-            <AccordionSummary
-              expandIcon={
-                <ExpandMoreIcon />
-              }
-            >
-              <Typography
-                fontWeight={
-                  600
-                }
-              >
-                Task Logs:
-                {" "}
-                {taskId}
-                {" "}
-                (
-                {
-                  (
-                    logsByTask[
-                      taskId
-                    ] ??
-                    []
-                  )
-                    .length
-                }
-                {" "}
-                lines)
-              </Typography>
-            </AccordionSummary>
+      {taskIds.map((taskId) => (
+        <Accordion
+          key={taskId}
+          expanded={expanded === taskId}
+          onChange={() => setExpanded(expanded === taskId ? null : taskId)}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight={600}>
+              Task Logs: {taskId} ({(logsByTask[taskId] ?? []).length} lines)
+            </Typography>
+          </AccordionSummary>
 
-            <AccordionDetails>
-              <Box
-                sx={{
-                  fontFamily:
-                    "monospace",
-                  fontSize: 12,
-                  whiteSpace:
-                    "pre-wrap",
-                  maxHeight: 300,
-                  overflowY:
-                    "auto",
-                }}
-              >
-                {(
-                  logsByTask[
-                    taskId
-                  ] ??
-                  []
-                ).map(
-                  (
-                    l,
-                    i,
-                  ) => (
-                    <div
-                      key={
-                        i
-                      }
-                    >
-                      {
-                        l.content
-                      }
-                    </div>
-                  ),
-                )}
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        ),
-      )}
+          <AccordionDetails>
+            <Box
+              sx={{
+                fontFamily: "monospace",
+                fontSize: 12,
+                whiteSpace: "pre-wrap",
+                maxHeight: 300,
+                overflowY: "auto",
+              }}
+            >
+              {(logsByTask[taskId] ?? []).map((l, i) => (
+                <div key={i}>{l.content}</div>
+              ))}
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      ))}
     </Box>
   );
 }

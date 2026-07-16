@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Accordion,
@@ -13,9 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import ExpandMoreIcon
-  from "@mui/icons-material/ExpandMore";
-
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { Box, ToggleButton } from "@mui/material";
 
@@ -35,14 +27,9 @@ import {
 import WorkflowInfo from "../components/WorkflowInfo";
 import WorkflowLogsAccordion from "../components/WorkflowLogsAccordion";
 
-import {
-  graphql,
-  useFragment,
-} from "react-relay";
+import { graphql, useFragment } from "react-relay";
 
-import {
-  BaseSingleWorkflowViewFragment$key,
-} from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
+import { BaseSingleWorkflowViewFragment$key } from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
 
 import BaseWorkflowRelay from "../components/BaseWorkflowRelay";
 
@@ -102,45 +89,25 @@ export default function BaseSingleWorkflowView({
   taskIds,
   fragmentRef,
 }: BaseSingleWorkflowViewProps) {
+  const data = useFragment(BaseSingleWorkflowViewFragment, fragmentRef);
 
-  const data = useFragment(
-    BaseSingleWorkflowViewFragment,
-    fragmentRef,
-  );
+  const fetchedTasks = useFetchedTasks(data ?? null);
 
-  const fetchedTasks = useFetchedTasks(
-    data ?? null,
-  );
+  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
-  const [
-    selectedTaskIds,
-    setSelectedTaskIds,
-  ] = useSelectedTaskIds();
-
-  const [
-    filledTaskId,
-    setFilledTaskId,
-  ] = useState<string | null>(null);
+  const [filledTaskId, setFilledTaskId] = useState<string | null>(null);
 
   /*
    * Persist opened log windows across refreshes.
    */
-  const [
-    openedTaskIds,
-    setOpenedTaskIds,
-  ] = useState<string[]>(() => {
+  const [openedTaskIds, setOpenedTaskIds] = useState<string[]>(() => {
     if (!data?.name) {
       return [];
     }
 
-    const stored =
-      sessionStorage.getItem(
-        `workflow-opened-${data.name}`,
-      );
+    const stored = sessionStorage.getItem(`workflow-opened-${data.name}`);
 
-    return stored
-      ? JSON.parse(stored)
-      : [];
+    return stored ? JSON.parse(stored) : [];
   });
 
   useEffect(() => {
@@ -150,183 +117,85 @@ export default function BaseSingleWorkflowView({
 
     sessionStorage.setItem(
       `workflow-opened-${data.name}`,
-      JSON.stringify(
-        openedTaskIds,
-      ),
+      JSON.stringify(openedTaskIds),
     );
-  }, [
-    openedTaskIds,
-    data?.name,
-  ]);
+  }, [openedTaskIds, data?.name]);
 
-  const [
-    taskLabels,
-    setTaskLabels,
-  ] = useState<Record<string, string>>({});
+  const [taskLabels, setTaskLabels] = useState<Record<string, string>>({});
+
+  const taskStatuses = useMemo(
+    () =>
+      Object.fromEntries(fetchedTasks.map((task) => [task.id, task.status])),
+    [fetchedTasks],
+  );
 
   useEffect(() => {
     if (!fetchedTasks.length) {
       return;
     }
 
-    setOpenedTaskIds(
-      (previous) => {
-        const validTaskIds =
-          new Set(
-            fetchedTasks.map(
-              (task) =>
-                task.id,
-            ),
-          );
+    fetchedTasks.forEach((task) => {
+      console.log(`Task ${task.name}:`, task.status);
+    });
 
-        return previous.filter(
-          (id) =>
-            validTaskIds.has(
-              id,
-            ),
-        );
-      },
-    );
+    setOpenedTaskIds((previous) => {
+      const validTaskIds = new Set(fetchedTasks.map((task) => task.id));
+
+      return previous.filter((id) => validTaskIds.has(id));
+    });
   }, [fetchedTasks]);
 
-  const taskTree = useMemo(
-    () =>
-      buildTaskTree(
-        fetchedTasks,
-      ),
-    [fetchedTasks],
-  );
+  const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
 
-  const outputTaskIds =
-    useMemo(() => {
-      const result: string[] =
-        [];
+  const outputTaskIds = useMemo(() => {
+    const result: string[] = [];
 
-      const traverse = (
-        tasks: TaskNode[],
-      ) => {
-        const sorted = [
-          ...tasks,
-        ].sort(
-          (a, b) =>
-            a.id.localeCompare(
-              b.id,
-            ),
-        );
+    const traverse = (tasks: TaskNode[]) => {
+      const sorted = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
 
-        sorted.forEach(
-          (
-            taskNode,
-          ) => {
-            if (
-              taskNode.children &&
-              taskNode.children
-                .length === 0
-            ) {
-              if (
-                !result.includes(
-                  taskNode.id,
-                )
-              ) {
-                result.push(
-                  taskNode.id,
-                );
-              }
-            } else if (
-              taskNode.children &&
-              taskNode.children
-                .length > 0
-            ) {
-              traverse(
-                taskNode.children,
-              );
-            }
-          },
-        );
-      };
-
-      traverse(taskTree);
-
-      return result;
-    }, [taskTree]);
-
-  const handleSelectOutput =
-    () => {
-      setSelectedTaskIds(
-        outputTaskIds,
-      );
+      sorted.forEach((taskNode) => {
+        if (taskNode.children && taskNode.children.length === 0) {
+          if (!result.includes(taskNode.id)) {
+            result.push(taskNode.id);
+          }
+        } else if (taskNode.children && taskNode.children.length > 0) {
+          traverse(taskNode.children);
+        }
+      });
     };
 
-  const handleSelectClear =
-    () => {
-      setSelectedTaskIds([]);
-    };
+    traverse(taskTree);
 
-  const onArtifactHover =
-    useCallback(
-      (
-        artifact:
-          | Artifact
-          | null,
-      ) => {
-        setFilledTaskId(
-          artifact
-            ? artifact.parentTaskId
-            : null,
-        );
-      },
-      [],
-    );
+    return result;
+  }, [taskTree]);
+
+  const handleSelectOutput = () => {
+    setSelectedTaskIds(outputTaskIds);
+  };
+
+  const handleSelectClear = () => {
+    setSelectedTaskIds([]);
+  };
+
+  const onArtifactHover = useCallback((artifact: Artifact | null) => {
+    setFilledTaskId(artifact ? artifact.parentTaskId : null);
+  }, []);
 
   useEffect(() => {
-    setSelectedTaskIds(
-      taskIds ?? [],
-    );
-  }, [
-    taskIds,
-    setSelectedTaskIds,
-  ]);
+    setSelectedTaskIds(taskIds ?? []);
+  }, [taskIds, setSelectedTaskIds]);
 
-  const artifactList =
-    useMemo((): Artifact[] => {
-      const filteredTasks =
-        selectedTaskIds.length
-          ? selectedTaskIds
-              .map(
-                (
-                  id,
-                ) =>
-                  fetchedTasks.find(
-                    (
-                      task,
-                    ) =>
-                      task.id ===
-                      id,
-                  ),
-              )
-              .filter(
-                (
-                  task,
-                ): task is Task =>
-                  !!task,
-              )
-          : fetchedTasks;
+  const artifactList = useMemo((): Artifact[] => {
+    const filteredTasks = selectedTaskIds.length
+      ? selectedTaskIds
+          .map((id) => fetchedTasks.find((task) => task.id === id))
+          .filter((task): task is Task => !!task)
+      : fetchedTasks;
 
-      return filteredTasks.flatMap(
-        (
-          task,
-        ) =>
-          task.artifacts,
-      );
-    }, [
-      selectedTaskIds,
-      fetchedTasks,
-    ]);
+    return filteredTasks.flatMap((task) => task.artifacts);
+  }, [selectedTaskIds, fetchedTasks]);
 
-  if (
-    !data ||
-    !data.status
-  ) {
+  if (!data || !data.status) {
     return null;
   }
 
@@ -334,24 +203,20 @@ export default function BaseSingleWorkflowView({
     <>
       {/* Background log collection */}
       {fetchedTasks.map((task) => {
-        const existingLogs =
-          localStorage.getItem(
-            `workflow-logs-${data.name}-${task.id}`,
-          );
+        const existingLogs = localStorage.getItem(
+          `workflow-logs-${data.name}-${task.id}`,
+        );
 
         /*
-        * If logs already exist and workflow has completed,
-        * avoid creating another websocket.
-        */
+         * If logs already exist and workflow has completed,
+         * avoid creating another websocket.
+         */
         const workflowFinished =
           data.status?.__typename === "Succeeded" ||
           data.status?.__typename === "Failed" ||
           data.status?.__typename === "Error";
 
-        if (
-          workflowFinished &&
-          existingLogs
-        ) {
+        if (workflowFinished && existingLogs) {
           return null;
         }
 
@@ -366,8 +231,7 @@ export default function BaseSingleWorkflowView({
       })}
       <Box
         sx={{
-          position:
-            "relative",
+          position: "relative",
           display: "flex",
           width: "100%",
           height: "100%",
@@ -388,18 +252,14 @@ export default function BaseSingleWorkflowView({
             flexDirection="column"
             gap={1}
             sx={{
-              position:
-                "absolute",
-              left:
-                "-100px",
+              position: "absolute",
+              left: "-100px",
             }}
           >
             <ToggleButton
               value="output"
               aria-label="output"
-              onClick={
-                handleSelectOutput
-              }
+              onClick={handleSelectOutput}
             >
               OUTPUT
             </ToggleButton>
@@ -407,9 +267,7 @@ export default function BaseSingleWorkflowView({
             <ToggleButton
               value="clear"
               aria-label="clear"
-              onClick={
-                handleSelectClear
-              }
+              onClick={handleSelectClear}
             >
               CLEAR
             </ToggleButton>
@@ -420,62 +278,29 @@ export default function BaseSingleWorkflowView({
               sx={{
                 flex: 1,
                 minWidth: 0,
-                width:
-                  "100%",
-                height:
-                  "100%",
+                width: "100%",
+                height: "100%",
               }}
             >
               <BaseWorkflowRelay
-                fragmentRef={
-                  data
-                }
+                fragmentRef={data}
                 workflowLink
-                filledTaskId={
-                  filledTaskId
-                }
+                filledTaskId={filledTaskId}
                 expanded
-                onSelectTask={(
-                  taskId,
-                  taskLabel,
-                ) => {
-                  setOpenedTaskIds(
-                    (
-                      previous,
-                    ) => {
-                      if (
-                        previous.includes(
-                          taskId,
-                        )
-                      ) {
-                        return previous.filter(
-                          (
-                            id,
-                          ) =>
-                            id !==
-                            taskId,
-                        );
-                      }
+                onSelectTask={(taskId, taskLabel) => {
+                  setOpenedTaskIds((previous) => {
+                    if (previous.includes(taskId)) {
+                      return previous.filter((id) => id !== taskId);
+                    }
 
-                      return [
-                        ...previous,
-                        taskId,
-                      ];
-                    },
-                  );
+                    return [...previous, taskId];
+                  });
 
-                  if (
-                    taskLabel
-                  ) {
-                    setTaskLabels(
-                      (
-                        previous,
-                      ) => ({
-                        ...previous,
-                        [taskId]:
-                          taskLabel,
-                      }),
-                    );
+                  if (taskLabel) {
+                    setTaskLabels((previous) => ({
+                      ...previous,
+                      [taskId]: taskLabel,
+                    }));
                   }
                 }}
               />
@@ -484,42 +309,22 @@ export default function BaseSingleWorkflowView({
         </Box>
       </Box>
 
-      <TaskInfo
-        artifactList={
-          artifactList
-        }
-        onArtifactHover={
-          onArtifactHover
-        }
-      />
+      <TaskInfo artifactList={artifactList} onArtifactHover={onArtifactHover} />
 
-      <WorkflowInfo
-        fragmentRef={
-          data
-        }
-      />
+      <WorkflowInfo fragmentRef={data} />
 
       {openedTaskIds.length > 0 && (
         <Accordion
           defaultExpanded
           sx={{
             mt: 2,
+            width: "100%",
+            minWidth: 0,
+            boxSizing: "border-box",
           }}
         >
-          <AccordionSummary
-            expandIcon={
-              <ExpandMoreIcon />
-            }
-          >
-            <Typography
-              variant="h6"
-            >
-              Logs
-              {" "}
-              (
-              {openedTaskIds.length}
-              )
-            </Typography>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Logs ({openedTaskIds.length})</Typography>
           </AccordionSummary>
 
           <AccordionDetails>
@@ -528,6 +333,7 @@ export default function BaseSingleWorkflowView({
               workflowName={data.name}
               taskIds={openedTaskIds}
               taskLabels={taskLabels}
+              taskStatuses={taskStatuses}
             />
           </AccordionDetails>
         </Accordion>

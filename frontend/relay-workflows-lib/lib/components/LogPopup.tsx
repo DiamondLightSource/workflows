@@ -1,4 +1,3 @@
-import React from "react";
 import { Dialog, DialogTitle, DialogContent } from "@mui/material";
 import { useArgoLogs } from "../hooks/useArgoLogs";
 

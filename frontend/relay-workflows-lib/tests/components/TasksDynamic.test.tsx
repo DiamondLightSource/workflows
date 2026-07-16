@@ -41,7 +41,7 @@ describe("TasksFlow", () => {
     render(
       <TasksFlow
         workflowName="mockWorkflowA"
-        isDynamic={true}
+        // isDynamic={true}
         onNavigate={() => {}}
       />,
     );

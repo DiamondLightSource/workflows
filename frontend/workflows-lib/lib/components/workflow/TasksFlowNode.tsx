@@ -33,7 +33,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({
 
   const handleOpenTaskPage = (e: React.MouseEvent) => {
     console.log("NODE CLICK", data.taskId);
-    
+
     onSelectTask?.(data.taskId, data.label);
     onNavigate(data.taskId, data.label, e);
   };

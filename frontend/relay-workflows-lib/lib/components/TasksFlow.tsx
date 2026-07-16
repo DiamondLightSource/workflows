@@ -1,25 +1,19 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Box, IconButton, Tooltip } from "@mui/material";
+
 import { AspectRatio } from "@mui/icons-material";
 
 import {
   ReactFlow,
   ReactFlowInstance,
   Node,
+  NodeMouseHandler,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 
-import type {
-  TaskFlowNodeData,
-} from "workflows-lib";
+import type { TaskFlowNodeData } from "workflows-lib";
 
 import {
   TaskFlowNode,
@@ -31,10 +25,7 @@ import {
 
 import { useFetchedTasks } from "../utils/workflowRelayUtils";
 
-import {
-  WorkflowTasksFragment$key,
-} from "../graphql/__generated__/WorkflowTasksFragment.graphql";
-
+import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTasksFragment.graphql";
 
 interface TasksFlowProps {
   workflowName: string;
@@ -46,15 +37,9 @@ interface TasksFlowProps {
   ) => void;
   highlightedTaskIds?: string[];
   filledTaskId?: string | null;
-  onSelectTask?: (
-    taskId: string,
-    taskLabel?: string,
-  ) => void;
-  onTaskLabelsChange?: (
-    labels: Record<string,string>,
-  ) => void;
+  onSelectTask?: (taskId: string, taskLabel?: string) => void;
+  onTaskLabelsChange?: (labels: Record<string, string>) => void;
 }
-
 
 const TasksFlow = ({
   tasksRef,
@@ -64,23 +49,13 @@ const TasksFlow = ({
   onSelectTask,
   onTaskLabelsChange,
 }: TasksFlowProps) => {
+  const tasks = useFetchedTasks(tasksRef ?? null);
 
-  const tasks = useFetchedTasks(
-    tasksRef ?? null,
-  );
-
-
-  const reactFlowInstance =
-    useRef<ReactFlowInstance | null>(null);
-
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   const nodeTypes = useMemo(
     () => ({
-      custom: (
-        props: {
-          data: TaskFlowNodeData;
-        },
-      ) => (
+      custom: (props: { data: TaskFlowNodeData }) => (
         <TaskFlowNode
           {...props}
           onNavigate={onNavigate}
@@ -88,140 +63,76 @@ const TasksFlow = ({
         />
       ),
     }),
-    [
-      onNavigate,
-      onSelectTask,
-    ],
+    [onNavigate, onSelectTask],
   );
 
+  const taskTree = useMemo(() => buildTaskTree(tasks), [tasks]);
 
-  const taskTree = useMemo(
-    () => buildTaskTree(tasks),
-    [tasks],
-  );
-
-
-  const {
-    nodes,
-    edges,
-  } = useMemo(
-    () =>
-      generateNodesAndEdges(taskTree),
+  const { nodes, edges } = useMemo(
+    () => generateNodesAndEdges(taskTree),
     [taskTree],
   );
 
-
-  const {
-    nodes: layoutedNodes,
-    edges: layoutedEdges,
-  } =
-    useMemo(
-      () =>
-        applyDagreLayout(
-          nodes,
-          edges,
-        ),
-      [
-        nodes,
-        edges,
-      ],
-    );
-
-
-  const [
-    nodesWithHighlights,
-    setNodesWithHighlights,
-  ] = useState<Node[]>(
-    layoutedNodes,
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
+    () => applyDagreLayout(nodes, edges),
+    [nodes, edges],
   );
 
+  const [nodesWithHighlights, setNodesWithHighlights] =
+    useState<Node[]>(layoutedNodes);
 
   useEffect(() => {
-
     setNodesWithHighlights(
-      addHighlightsAndFills(
-        layoutedNodes,
-        highlightedTaskIds,
-        filledTaskId,
-      ),
+      addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId),
     );
-
-  }, [
-    layoutedNodes,
-    highlightedTaskIds,
-    filledTaskId,
-  ]);
-
-
+  }, [layoutedNodes, highlightedTaskIds, filledTaskId]);
 
   useEffect(() => {
-
     if (!onTaskLabelsChange) {
       return;
     }
 
-
-    const labels: Record<string,string> = {};
-
+    const labels: Record<string, string> = {};
 
     layoutedNodes.forEach((node) => {
+      const data = node.data as TaskFlowNodeData;
 
-      labels[node.id] =
-        (node.data as any)?.label ??
-        node.id;
-
+      labels[node.id] = data.label ?? node.id;
     });
 
-
     onTaskLabelsChange(labels);
+  }, [layoutedNodes, onTaskLabelsChange]);
 
-  }, [
-    layoutedNodes,
-    onTaskLabelsChange,
-  ]);
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    reactFlowInstance.current = instance;
 
+    instance.fitView();
+  }, []);
 
+  const handleNodeClick: NodeMouseHandler = useCallback(
+    (event, node) => {
+      console.log("[TasksFlow] node clicked:", node.id, node.data);
 
-  const onInit = useCallback(
-    (
-      instance: ReactFlowInstance,
-    ) => {
+      const data = node.data as TaskFlowNodeData;
 
-      reactFlowInstance.current =
-        instance;
+      const label = data.label ?? node.id;
 
-      instance.fitView();
-
+      onNavigate(node.id, label, event as React.MouseEvent);
     },
-    [],
+    [onNavigate],
   );
 
-
-
   return (
-
-    <Box
-      width="100%"
-      height="100%"
-    >
-
+    <Box width="100%" height="100%">
       <Tooltip title="Reset View">
-
         <IconButton
-          onClick={() =>
-            reactFlowInstance
-              .current
-              ?.fitView()
-          }
+          onClick={() => {
+            reactFlowInstance.current?.fitView();
+          }}
         >
-
           <AspectRatio />
-
         </IconButton>
-
       </Tooltip>
-
-
 
       <ReactFlow
         nodes={nodesWithHighlights}
@@ -229,31 +140,10 @@ const TasksFlow = ({
         onInit={onInit}
         nodeTypes={nodeTypes}
         fitView
-
-        onNodeClick={(event, node) => {
-          console.log(
-            "[TasksFlow] node clicked:",
-            node.id,
-            node.data,
-          );
-
-          const label =
-            (node.data as any)?.label ??
-            node.id;
-
-          onNavigate(
-            node.id,
-            label,
-            event as any,
-          );
-        }}
+        onNodeClick={handleNodeClick}
       />
-
     </Box>
-
   );
-
 };
-
 
 export default TasksFlow;

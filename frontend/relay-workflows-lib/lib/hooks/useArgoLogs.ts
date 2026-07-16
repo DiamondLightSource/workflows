@@ -72,6 +72,9 @@ export function useArgoLogs({
   const uploadInProgressRef =
     useRef(false);
 
+
+  const [hasReceivedLiveLogs, setHasReceivedLiveLogs] =
+  useState(false);  
   /*
    * Persist logs immediately.
    */
@@ -295,6 +298,8 @@ export function useArgoLogs({
               return;
             }
 
+            setHasReceivedLiveLogs(true);
+
             /*
              * Save immediately so refreshes preserve logs.
              */
@@ -424,5 +429,9 @@ export function useArgoLogs({
   return {
     logs,
     error,
+    connected: !error,
+    cached:
+      logs.length > 0,
+    hasReceivedLiveLogs,
   };
 }
