@@ -1,0 +1,62 @@
+replicas: 1
+
+image:
+  registry: ""
+  repository: ghcr.io/diamondlightsource/workflows-auth-broker
+  tag: latest
+  digest: ""
+  pullPolicy: IfNotPresent
+
+
+service:
+  port: 8080
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+authBrokerConfig:
+  targetName: auth-broker-config
+
+  config:
+    oidc_provider_url: https://identity-test.diamond.ac.uk/realms/dls
+    port: 8080
+    graph_url: http://graph-proxy.graph-proxy.svc.cluster.local/
+
+    client_id:
+      name: workflows-cluster-client
+      key: client-id
+      namespace: workflows
+
+    client_secret:
+      name: workflows-cluster-client
+      key: client-secret
+      namespace: workflows
+
+    postgres_database: auth_service
+    postgres_hostname: workflows-postgresql-ha-pgpool.workflows.svc.cluster.local
+    postgres_port: 5432
+
+    postgres_user:
+      name: postgres-auth-service-password
+      key: username
+      namespace: workflows
+
+    postgres_password:
+      name: postgres-auth-service-password
+      key: password
+      namespace: workflows
+
+    encryption_public_key:
+      name: auth-keys
+      key: encryption_public_key
+      namespace: workflows
+
+    encryption_private_key:
+      name: auth-keys
+      key: encryption_private_key
+      namespace: workflows

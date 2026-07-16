@@ -1,0 +1,98 @@
+{{- $policyName := printf "%s-generator" .Values.authBrokerConfig.targetName -}}
+{{- $targetName := .Values.authBrokerConfig.targetName -}}
+{{- $targetNamespace := .Values.authBrokerConfig.targetNamespace | default .Release.Namespace -}}
+{{- $config := .Values.authBrokerConfig.config -}}
+
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: {{ $policyName | quote }}
+spec:
+  evaluation:
+    synchronize:
+      enabled: false
+    generateExisting:
+      enabled: false
+
+  matchConstraints:
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - workflows
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["secrets"]
+
+  matchConditions:
+    - name: watched-input-secrets
+      expression: >
+        [
+{{- range $key, $value := $config }}
+{{- if and (kindIs "map" $value) (hasKey $value "name") (hasKey $value "key") }}
+          {
+            "namespace": {{ ($value.namespace | default $targetNamespace) | quote }},
+            "name": {{ $value.name | quote }}
+          },
+{{- end }}
+{{- end }}
+        ].exists(s,
+          object.metadata.namespace == s.namespace &&
+          object.metadata.name == s.name
+        )
+
+  variables:
+{{- range $key, $value := $config }}
+{{- if and (kindIs "map" $value) (hasKey $value "name") (hasKey $value "key") }}
+    - name: {{ printf "secret_%s" $key | replace "-" "_" | quote }}
+      expression: >
+        resource.Get(
+          "v1",
+          "secrets",
+          {{ ($value.namespace | default $targetNamespace) | quote }},
+          {{ $value.name | quote }}
+        )
+{{- end }}
+{{- end }}
+
+  generate:
+    - expression: >
+        generator.Apply(
+          {{ $targetNamespace | quote }},
+          [
+            dyn({
+              "apiVersion": dyn("v1"),
+              "kind": dyn("Secret"),
+              "metadata": dyn({
+                "name": dyn({{ $targetName | quote }}),
+                "namespace": dyn({{ $targetNamespace | quote }})
+              }),
+              "type": dyn("Opaque"),
+              "stringData": dyn({
+                "config.yaml": dyn(
+{{- range $key, $value := $config }}
+{{- if and (kindIs "map" $value) (hasKey $value "name") (hasKey $value "key") }}
+{{- $varName := printf "secret_%s" $key | replace "-" "_" -}}
+{{- if $value.block }}
+                  {{ printf "%s: |\n  " $key | quote }} +
+                  string(base64.decode(variables.{{ $varName }}.data[{{ $value.key | quote }}]))
+                    .replace("\n", "\n  ", -1) +
+                  "\n" +
+{{- else }}
+                  {{ printf "%s: \"" $key | quote }} +
+                  string(base64.decode(variables.{{ $varName }}.data[{{ $value.key | quote }}])) +
+                  "\"\n" +
+{{- end }}
+{{- else }}
+                  {{ printf "%s: %v\n" $key $value | quote }} +
+{{- end }}
+{{- end }}
+                  ""
+                )
+              })
+            })
+          ]
+        )

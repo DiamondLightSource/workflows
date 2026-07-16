@@ -153,6 +153,8 @@ vcluster:
             "/rclone-config": "workflows/rclone-config"
             "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
             "/auth-gateway-config": "workflows/auth-gateway-config"
+            "/auth-keys": "workflows/auth-keys"
+            "/workflows-cluster-client": "workflows/workflows-cluster-client"
       configMaps:
         enabled: true
         mappings:
