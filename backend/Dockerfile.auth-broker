@@ -38,16 +38,16 @@ RUN mkdir -p argo-workflows-openapi/src \
 
 RUN cargo build --release --package telemetry
 
-RUN touch --date @0 auth-daemon/src/main.rs \
-  && cargo build --release --package auth-daemon
+RUN touch --date @0 auth-broker/src/main.rs \
+  && cargo build --release --package auth-broker
 
 COPY . .
 
-RUN touch auth-daemon/src/main.rs \
-  && cargo auditable build --release --package auth-daemon
+RUN touch auth-broker/src/main.rs \
+  && cargo auditable build --release --package auth-broker
 
 FROM gcr.io/distroless/cc-debian12@sha256:d703b626ba455c4e6c6fbe5f36e6f427c85d51445598d564652a2f334179f96e AS deploy
 
-COPY --from=build /app/target/release/auth-daemon /auth-daemon
+COPY --from=build /app/target/release/auth-broker /auth-broker
 
-ENTRYPOINT ["/auth-daemon"]
+ENTRYPOINT ["/auth-broker"]
