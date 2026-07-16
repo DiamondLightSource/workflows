@@ -10,6 +10,7 @@ COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
 COPY auth-daemon/Cargo.toml auth-daemon/
+COPY auth-broker/Cargo.toml auth-broker/
 COPY auth-gateway/Cargo.toml auth-gateway/
 COPY auth-core/Cargo.toml auth-core/
 COPY auth-core/src/lib.rs auth-core/src/lib.rs
@@ -26,6 +27,8 @@ RUN mkdir -p argo-workflows-openapi/src \
     && echo "fn main() {}" > sessionspaces/src/main.rs \
     && mkdir -p auth-daemon/src \
     && echo "fn prebuild() {}" > auth-daemon/src/main.rs \
+    && mkdir -p auth-broker/src \
+    && echo "fn main() {}" > auth-broker/src/main.rs \
     && mkdir -p auth-gateway/src \
     && echo "fn main() {}" > auth-gateway/src/main.rs \
     && mkdir -p telemetry/src \

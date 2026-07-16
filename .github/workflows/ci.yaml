@@ -79,6 +79,20 @@ jobs:
       contents: read
       packages: write
 
+  auth_broker_code:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_auth_broker_code.yaml
+
+  auth_broker_container:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: auth_broker_code
+    uses: ./.github/workflows/_auth_broker_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
   auth_gateway_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
