@@ -293,6 +293,7 @@ impl WorkflowTemplatesMutation {
                 submit_options: Some(
                     argo_workflows_openapi::IoArgoprojWorkflowV1alpha1SubmitOpts {
                         annotations: None,
+                        artifacts: vec![],
                         dry_run: None,
                         entry_point: None,
                         generate_name: None,
