@@ -106,3 +106,9 @@ openbao:
   extraValueFiles:
     - staging-values.yaml
   valuesObject: {}
+
+authBroker:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}

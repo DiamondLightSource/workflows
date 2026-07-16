@@ -172,3 +172,9 @@ openbao:
   targetRevision: HEAD
   extraValueFiles: []
   valuesObject: {}
+
+authBroker:
+  enabled: false
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}

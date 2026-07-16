@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "auth-broker.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auth-broker.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "auth-broker.selectorLabels" . | nindent 4 }}
