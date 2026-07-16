@@ -1,0 +1,171 @@
+{{- if .Values.authenticatedWorkflows.enableEnvoy }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ .Release.Name }}-inject-envoy-sidecar
+spec:
+  validationFailureAction: Enforce
+  background: false
+
+  rules:
+    - name: inject-envoy-sidecar
+      match:
+        any:
+          - resources:
+              kinds:
+                - argoproj.io/v1alpha1/Workflow
+              operations:
+                - CREATE
+
+      preconditions:
+        all:
+          - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/authenticated\" || '' }}` }}"
+            operator: Equals
+            value: "true"
+
+          - key: '{{ "{{ (request.object.spec.templateDefaults.initContainer || `[]`)[?name == ''auth-init''] | length(@) }}" }}'
+            operator: Equals
+            value: 0
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            templateDefaults:
+              volumes:
+                - name: envoy-config
+                  emptyDir: {}
+
+              initContainers:
+                - name: auth-init
+                  image: busybox:1.36
+                  command:
+                    - /bin/sh
+                    - -c
+                    - |
+                      cat > /etc/envoy/envoy.yaml << 'ENVOYEOF'
+                      static_resources:
+                        listeners:
+                        - name: ingress
+                          address:
+                            socket_address:
+                              address: 0.0.0.0
+                              port_value: 6000
+                          filter_chains:
+                          - filters:
+                            - name: envoy.filters.network.http_connection_manager
+                              typed_config:
+                                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                                stat_prefix: ingress
+                                route_config:
+                                  name: local_route
+                                  virtual_hosts:
+                                  - name: backend
+                                    domains: ["*"]
+                                    routes:
+                                    - match: { prefix: "/" }
+                                      route:
+                                        cluster: graph-proxy
+                                        timeout: 30s
+                                http_filters:
+                                - name: envoy.filters.http.lua
+                                  typed_config:
+                                    "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                                    default_source_code:
+                                      inline: |
+                                        function envoy_on_request(request_handle)
+                                          local f = io.open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r")
+                                          if f then
+                                            local token = f:read("*a")
+                                            f:close()
+                                            request_handle:headers():replace("K8s-Pod-Service-Account-Token", token)
+                                          end
+                                        end
+                                - name: envoy.filters.http.ext_authz
+                                  typed_config:
+                                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                                    transport_api_version: V3
+                                    with_request_body:
+                                      max_request_bytes: 1048576
+                                    http_service:
+                                      server_uri:
+                                        uri: http://auth-broker.auth-broker.svc.cluster.local:8080
+                                        cluster: auth-broker
+                                        timeout: 5s
+                                      authorization_request:
+                                        allowed_headers:
+                                          patterns:
+                                          - exact: "K8s-Pod-Service-Account-Token"
+                                          - exact: "content-type"
+                                          - exact: "authorization"
+                                      authorization_response:
+                                        allowed_upstream_headers:
+                                          patterns:
+                                          - exact: "authorization"
+                                - name: envoy.filters.http.router
+                                  typed_config:
+                                    "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                      clusters:
+                      - name: graph-proxy
+                        connect_timeout: 5s
+                        type: STRICT_DNS
+                        lb_policy: ROUND_ROBIN
+                        typed_extension_protocol_options:
+                          envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+                            "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+                            explicit_http_config:
+                              http2_protocol_options: {}
+                        load_assignment:
+                          cluster_name: graph-proxy
+                          endpoints:
+                          - lb_endpoints:
+                            - endpoint:
+                                address:
+                                  socket_address:
+                                    address: graph-proxy.graph-proxy.svc.cluster.local
+                                    port_value: 80
+                      - name: auth-broker
+                        connect_timeout: 5s
+                        type: STRICT_DNS
+                        lb_policy: ROUND_ROBIN
+                        load_assignment:
+                          cluster_name: auth-broker
+                          endpoints:
+                          - lb_endpoints:
+                            - endpoint:
+                                address:
+                                  socket_address:
+                                    address: auth-broker.auth-broker.svc.cluster.local
+                                    port_value: 8080
+                      ENVOYEOF
+                  volumeMounts:
+                    - name: envoy-config
+                      mountPath: /etc/envoy
+
+                - name: auth-envoy
+                  image: envoyproxy/envoy:v1.32.3
+                  restartPolicy: Always
+                  args:
+                    - "-c"
+                    - "/etc/envoy/envoy.yaml"
+                    - "--log-level"
+                    - "warning"
+                  startupProbe:
+                    httpGet:
+                      path: /healthz
+                      port: 6000
+                    initialDelaySeconds: 5
+                    periodSeconds: 1
+                  volumeMounts:
+                    - name: envoy-config
+                      mountPath: /etc/envoy
+
+              container:
+                env:
+                  - name: GRAPH_PROXY_URL
+                    value: http://127.0.0.1:6000
+
+              script:
+                env:
+                  - name: GRAPH_PROXY_URL
+                    value: http://127.0.0.1:6000
+{{- end }}
