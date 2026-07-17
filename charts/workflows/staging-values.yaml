@@ -41,4 +41,10 @@ postgresql-ha:
 allowTriggerUid: true
 
 authenticatedWorkflows:
-  enabled: true
+  # Enable auth-daemon based authentication method
+  # TODO: switch on these chainsaw tests when switching this to true
+  # charts/workflows/test-policy/authdaemon/chainsaw-test.yaml
+  enableAuthDaemon: false
+  # Enables auth-broker + Envoy sidecar injection (replaces auth-daemon)
+  # Requires the auth-broker service to be deployed in the auth-broker namespace
+  enableEnvoy: true
