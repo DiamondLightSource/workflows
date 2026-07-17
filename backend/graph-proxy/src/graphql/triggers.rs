@@ -228,13 +228,15 @@ mod tests {
         validate_token::ValidatedAuthToken,
         KubernetesApiUrl,
     };
-    use async_graphql::{EmptyMutation, EmptySubscription, PathSegment, Pos, Schema, ServerError};
-    use axum_extra::headers::Authorization;
-    use serde_json::{json, Value};
 
+    use async_graphql::{EmptySubscription, PathSegment, Pos, Schema, ServerError};
+    use axum_extra::headers::Authorization;
     use jsonwebtoken::{encode, EncodingKey, Header};
-    use mockito::Matcher;
+    use mockito::{Matcher, ServerGuard};
+    use rstest::rstest;
     use serde::{Deserialize, Serialize};
+    use serde_json::{json, Value};
+    use std::path::PathBuf;
 
     #[derive(Debug, Serialize, Deserialize)]
     struct TestClaims {
@@ -243,7 +245,7 @@ mod tests {
 
     fn test_token() -> ValidatedAuthToken {
         let claims = TestClaims {
-            posix_uid: "7357".to_string(),
+            posix_uid: "7357".into(),
         };
 
         let token = encode(
@@ -251,55 +253,89 @@ mod tests {
             &claims,
             &EncodingKey::from_secret(b"test-secret"),
         )
-        .expect("failed to create test jwt");
+        .expect("failed to create jwt");
 
-        let auth = Authorization::bearer(&token).expect("token always valid");
+        let auth = Authorization::bearer(&token).unwrap();
+
         ValidatedAuthToken::Valid(auth)
     }
 
-    async fn trigger_mutation(
-        query: &str,
-        mock_file: &str,
+    fn asset(name: &str) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("test-assets")
+            .join(name)
+    }
+
+    struct TestContext {
+        _kubeconfig: tempfile::NamedTempFile,
+        server: ServerGuard,
+        schema: Schema<TriggerQuery, TriggerMutation, EmptySubscription>,
+    }
+
+    impl TestContext {
+        async fn new() -> anyhow::Result<Self> {
+            let _ = rustls::crypto::ring::default_provider().install_default();
+
+            let server = mockito::Server::new_async().await;
+
+            let kubeconfig = format!(
+                r#"
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: {}
+  name: test
+contexts:
+- context:
+    cluster: test
+    user: test
+  name: test
+current-context: test
+users:
+- name: test
+  user: {{}}
+"#,
+                server.url()
+            );
+
+            let file = tempfile::NamedTempFile::new()?;
+            std::fs::write(file.path(), kubeconfig)?;
+
+            std::env::set_var("KUBECONFIG", file.path());
+
+            let schema = Schema::build(TriggerQuery, TriggerMutation, EmptySubscription)
+                .data(KubernetesApiUrl(server.url().parse()?))
+                .data(test_token())
+                .finish();
+
+            Ok(Self {
+                _kubeconfig: file,
+                server,
+                schema,
+            })
+        }
+    }
+
+    async fn execute(
+        schema: &Schema<TriggerQuery, TriggerMutation, EmptySubscription>,
+        query: impl Into<String>,
+    ) -> anyhow::Result<Value> {
+        Ok(schema.execute(query.into()).await.data.into_json()?)
+    }
+
+    async fn mock_create_trigger(
+        server: &mut ServerGuard,
         namespace: &str,
-        expected: Value,
-    ) -> anyhow::Result<()> {
-        let _ = rustls::crypto::ring::default_provider().install_default();
-        let mut server = mockito::Server::new_async().await;
-        let kubeconfig = format!(
-            r#"
-            apiVersion: v1
-            kind: Config
-            clusters:
-            - cluster:
-                server: {}
-              name: test
-            contexts:
-            - context:
-                cluster: test
-                user: test
-              name: test
-            current-context: test
-            users:
-            - name: test
-              user: {{}}
-            "#,
-            server.url()
-        );
-
-        let file = tempfile::NamedTempFile::new()?;
-        std::fs::write(file.path(), kubeconfig)?;
-
-        std::env::set_var("KUBECONFIG", file.path());
-        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-assets");
-        response_file_path.push(mock_file);
-        let trigger_endpoint = server
+        response_fixture: &str,
+    ) -> mockito::Mock {
+        server
             .mock(
                 "POST",
                 &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{namespace}/triggers?")
                     [..],
             )
-            .match_body(Matcher::PartialJson(serde_json::json!({
+            .match_body(Matcher::PartialJson(json!({
                 "metadata": {
                     "labels": {
                         "workflows.diamond.ac.uk/posixuid": "7357"
@@ -308,335 +344,257 @@ mod tests {
             })))
             .with_status(200)
             .with_header("content-type", "application/json")
-            .with_body_from_file(response_file_path)
+            .with_body_from_file(asset(response_fixture))
             .create_async()
-            .await;
-        let kubernetes_server_url = server.url().parse()?;
-        println!("URL = {}", kubernetes_server_url);
-        let schema = Schema::build(TriggerQuery, TriggerMutation, EmptySubscription)
-            .data(KubernetesApiUrl(kubernetes_server_url))
-            .data(test_token())
-            .finish();
-        let response = schema.execute(query).await;
-
-        println!("Errors: {:#?}", response.errors);
-        trigger_endpoint.assert_async().await;
-        let actual = response.data.into_json().unwrap();
-        assert_eq!(expected, actual);
-        Ok(())
+            .await
     }
 
-    #[tokio::test]
-    async fn simple_trigger_mutation() -> anyhow::Result<()> {
-        let query = r#"
-                mutation {
-                    createTrigger(templateRef: "test-trigger") {
-                        name
-                    }
-                }
-                "#;
-        let expected = serde_json::json!(
-            {
-                "createTrigger": {
-                    "name": "test-trigger-s6qzl"
-                }
-            }
-        );
-        trigger_mutation(query, "make-trigger.json", "events", expected).await
-    }
-
-    #[tokio::test]
-    async fn named_trigger_mutation() -> anyhow::Result<()> {
-        let query = r#"
-                mutation {
-                    createTrigger(templateRef: "test-trigger", name: "custom-name") {
-                        name
-                    }
-                }
-                "#;
-        let expected = serde_json::json!(
-            {
-                "createTrigger": {
-                    "name": "custom-name"
-                }
-            }
-        );
-        trigger_mutation(query, "named-trigger.json", "events", expected).await
-    }
-
-    #[tokio::test]
-    async fn namespaced_trigger_mutation() -> anyhow::Result<()> {
-        let query = r#"
-                mutation {
-                    createTrigger(
-                        templateRef: "test-trigger", 
-                        visit: {
-                            proposalCode: "mg",
-                            proposalNumber: 36964,
-                            number: 1
-                        }
-                    ) {
-                        name
-                    }
-                }
-                "#;
-        let expected = serde_json::json!(
-            {
-                "createTrigger": {
-                    "name": "test-trigger-s6qzl"
-                }
-            }
-        );
-        trigger_mutation(query, "namespaced-trigger.json", "mg36964-1", expected).await
-    }
-
-    #[tokio::test]
-    async fn get_single_trigger() -> anyhow::Result<()> {
-        let _ = rustls::crypto::ring::default_provider().install_default();
-        let mut server = mockito::Server::new_async().await;
-        let kubeconfig = format!(
-            r#"
-            apiVersion: v1
-            kind: Config
-            clusters:
-            - cluster:
-                server: {}
-              name: test
-            contexts:
-            - context:
-                cluster: test
-                user: test
-              name: test
-            current-context: test
-            users:
-            - name: test
-              user: {{}}
-            "#,
-            server.url()
-        );
-
-        let trigger_name = "example-trigger-mfvpj";
-
-        let file = tempfile::NamedTempFile::new()?;
-        std::fs::write(file.path(), kubeconfig)?;
-        std::env::set_var("KUBECONFIG", file.path());
-
-        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-assets");
-        response_file_path.push("get-single-trigger.json");
-        let trigger_endpoint = server
+    async fn mock_get_trigger(
+        server: &mut ServerGuard,
+        name: &str,
+        response_fixture: &str,
+    ) -> mockito::Mock {
+        server
             .mock(
                 "GET",
                 &format!(
-                    "/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/events/triggers/{}",
-                    trigger_name
+                    "/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/events/triggers/{name}"
                 )[..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
-            .with_body_from_file(response_file_path)
+            .with_body_from_file(asset(response_fixture))
             .create_async()
-            .await;
-        let kubernetes_server_url = server.url().parse()?;
-        let schema = Schema::build(TriggerQuery, EmptyMutation, EmptySubscription)
-            .data(KubernetesApiUrl(kubernetes_server_url))
-            .data(test_token())
-            .finish();
-        let query = format!(
+            .await
+    }
+
+    async fn mock_list_triggers(server: &mut ServerGuard, response_fixture: &str) -> mockito::Mock {
+        server
+            .mock("GET", "/apis/workflows.diamond.ac.uk/v1alpha1/triggers")
+            .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(asset(response_fixture))
+            .create_async()
+            .await
+    }
+
+    #[rstest]
+    #[case(
+        r#"
+        mutation {
+            createTrigger(templateRef: "test-trigger") {
+                name
+            }
+        }
+        "#,
+        "make-trigger.json",
+        "events",
+        json!({
+            "createTrigger": {
+                "name": "test-trigger-s6qzl"
+            }
+        })
+    )]
+    #[case(
+        r#"
+        mutation {
+            createTrigger(
+                templateRef: "test-trigger",
+                name: "custom-name"
+            ) {
+                name
+            }
+        }
+        "#,
+        "named-trigger.json",
+        "events",
+        json!({
+            "createTrigger": {
+                "name": "custom-name"
+            }
+        })
+    )]
+    #[case(
+        r#"
+        mutation {
+            createTrigger(
+                templateRef: "test-trigger",
+                visit: {
+                    proposalCode: "mg",
+                    proposalNumber: 36964,
+                    number: 1
+                }
+            ) {
+                name
+            }
+        }
+        "#,
+        "namespaced-trigger.json",
+        "mg36964-1",
+        json!({
+            "createTrigger": {
+                "name": "test-trigger-s6qzl"
+            }
+        })
+    )]
+    #[tokio::test]
+    async fn create_trigger_mutations(
+        #[case] query: &str,
+        #[case] fixture: &str,
+        #[case] namespace: &str,
+        #[case] expected: Value,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+
+        let mock = mock_create_trigger(&mut ctx.server, namespace, fixture).await;
+        let actual = execute(&ctx.schema, query).await?;
+
+        mock.assert_async().await;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_single_trigger() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+
+        let mock = mock_get_trigger(
+            &mut ctx.server,
+            "example-trigger-mfvpj",
+            "get-single-trigger.json",
+        )
+        .await;
+
+        let actual = execute(
+            &ctx.schema,
             r#"
-            query {{
-                trigger(name: "{}") {{
+            query {
+                trigger(name: "example-trigger-mfvpj") {
                     name
                     beamline
-                }}
-            }}
-            "#,
-            trigger_name
-        );
-        let resp = schema.execute(query).await.into_result().unwrap();
-        trigger_endpoint.assert_async().await;
-        let expected_data = json!({
-            "trigger": {
-                "name": "example-trigger-mfvpj",
-                "beamline": "test-beamline"
+                }
             }
-        });
-        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+            "#,
+        )
+        .await?;
+
+        mock.assert_async().await;
+
+        assert_eq!(
+            actual,
+            json!({
+                "trigger": {
+                    "name": "example-trigger-mfvpj",
+                    "beamline": "test-beamline"
+                }
+            })
+        );
         Ok(())
     }
 
     #[tokio::test]
     async fn unauthorised_get_single_trigger() -> anyhow::Result<()> {
-        let mut server = mockito::Server::new_async().await;
-        let kubeconfig = format!(
-            r#"
-            apiVersion: v1
-            kind: Config
-            clusters:
-            - cluster:
-                server: {}
-              name: test
-            contexts:
-            - context:
-                cluster: test
-                user: test
-              name: test
-            current-context: test
-            users:
-            - name: test
-              user: {{}}
-            "#,
-            server.url()
-        );
+        let mut ctx = TestContext::new().await?;
 
-        let trigger_name = "example-trigger-mfvpj";
+        mock_get_trigger(
+            &mut ctx.server,
+            "example-trigger-mfvpj",
+            "unauthorised-trigger.json",
+        )
+        .await;
 
-        let file = tempfile::NamedTempFile::new()?;
-        std::fs::write(file.path(), kubeconfig)?;
-        std::env::set_var("KUBECONFIG", file.path());
-
-        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-assets");
-        response_file_path.push("unauthorised-trigger.json");
-        server
-            .mock(
-                "GET",
-                &format!(
-                    "/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/events/triggers/{}",
-                    trigger_name
-                )[..],
+        let response = ctx
+            .schema
+            .execute(
+                r#"
+                query {
+                    trigger(name: "example-trigger-mfvpj") {
+                        name
+                        beamline
+                    }
+                }
+                "#,
             )
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body_from_file(response_file_path)
-            .create_async()
             .await;
-        let kubernetes_server_url = server.url().parse()?;
-        let schema = Schema::build(TriggerQuery, EmptyMutation, EmptySubscription)
-            .data(KubernetesApiUrl(kubernetes_server_url))
-            .data(test_token())
-            .finish();
-        let query = format!(
-            r#"
-            query {{
-                trigger(name: "{}") {{
-                    name
-                    beamline
-                }}
-            }}
-            "#,
-            trigger_name
-        );
-        let resp = schema.execute(query).await.into_result().unwrap_err();
+
+        let err = response.into_result().unwrap_err();
         let exp_err = ServerError {
-            message: String::from("Forbidden from accessing resource"),
+            message: "Forbidden from accessing resource".into(),
             locations: vec![Pos {
                 line: 3,
-                column: 17,
+                column: 21,
             }],
             source: None,
-            path: vec![PathSegment::Field(String::from("trigger"))],
+            path: vec![PathSegment::Field("trigger".into())],
             extensions: None,
         };
-        assert_eq!(resp[0], exp_err);
+
+        assert_eq!(err[0], exp_err);
         Ok(())
     }
 
     #[tokio::test]
     async fn get_many_triggers() -> anyhow::Result<()> {
-        let _ = rustls::crypto::ring::default_provider().install_default();
-        let mut server = mockito::Server::new_async().await;
-        let kubeconfig = format!(
+        let mut ctx = TestContext::new().await?;
+        let mock = mock_list_triggers(&mut ctx.server, "get-many-triggers.json").await;
+        let actual = execute(
+            &ctx.schema,
             r#"
-            apiVersion: v1
-            kind: Config
-            clusters:
-            - cluster:
-                server: {}
-              name: test
-            contexts:
-            - context:
-                cluster: test
-                user: test
-              name: test
-            current-context: test
-            users:
-            - name: test
-              user: {{}}
-            "#,
-            server.url()
-        );
-        let file = tempfile::NamedTempFile::new()?;
-        std::fs::write(file.path(), kubeconfig)?;
-        std::env::set_var("KUBECONFIG", file.path());
-
-        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        response_file_path.push("test-assets");
-        response_file_path.push("get-many-triggers.json");
-        let trigger_endpoint = server
-            .mock("GET", "/apis/workflows.diamond.ac.uk/v1alpha1/triggers")
-            .match_query(Matcher::Any)
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body_from_file(response_file_path)
-            .create_async()
-            .await;
-        let kubernetes_server_url = server.url().parse()?;
-        let schema = Schema::build(TriggerQuery, EmptyMutation, EmptySubscription)
-            .data(KubernetesApiUrl(kubernetes_server_url))
-            .data(test_token())
-            .finish();
-        let query = format!(
-            r#"
-            query {{
-                triggers {{
-                    nodes {{
+            query {
+                triggers {
+                    nodes {
                         name
                         beamline
-                    }}
-                }}
-            }}
-            "#,
-        );
-        let resp = schema.execute(query).await.into_result().unwrap();
-        trigger_endpoint.assert_async().await;
-        let expected_data = json!({"triggers": {
-          "nodes": [
-            {
-              "name": "example-trigger-bv597",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-cht7k",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-hc7fx",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-kpgsr",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-mfvpj",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-nr7l9",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-sccmt",
-              "beamline": "test-beamline"
-            },
-            {
-              "name": "example-trigger-vsm7t",
-              "beamline": "test-beamline"
+                    }
+                }
             }
-          ]
-        }});
-        assert_eq!(resp.data.into_json().unwrap(), expected_data);
+            "#,
+        )
+        .await?;
+        mock.assert_async().await;
+        assert_eq!(actual, expected_triggers());
         Ok(())
+    }
+
+    fn expected_triggers() -> Value {
+        json!({
+            "triggers": {
+                "nodes": [
+                    {
+                        "name": "example-trigger-bv597",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-cht7k",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-hc7fx",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-kpgsr",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-mfvpj",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-nr7l9",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-sccmt",
+                        "beamline": "test-beamline"
+                    },
+                    {
+                        "name": "example-trigger-vsm7t",
+                        "beamline": "test-beamline"
+                    }
+                ]
+            }
+        })
     }
 }
