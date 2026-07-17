@@ -1,0 +1,337 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:25Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-bv597",
+                "namespace": "events",
+                "resourceVersion": "44576242",
+                "uid": "7c395a01-bb89-4e8d-97bd-5dbd5b37f959"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:22Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-cht7k",
+                "namespace": "events",
+                "resourceVersion": "44576183",
+                "uid": "d5991076-c3d8-4710-9a92-a8448a3ebc8a"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:23Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-hc7fx",
+                "namespace": "events",
+                "resourceVersion": "44576207",
+                "uid": "40c0e581-bcb6-4a9a-b89a-ddb7bdfcb634"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:25Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-kpgsr",
+                "namespace": "events",
+                "resourceVersion": "44576237",
+                "uid": "5d0d322c-a8b7-4e2e-bdc9-94851685c560"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T08:19:18Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-mfvpj",
+                "namespace": "events",
+                "resourceVersion": "44311920",
+                "uid": "2ff86138-9952-46f6-8d42-a60b7da9b003"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:24Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-nr7l9",
+                "namespace": "events",
+                "resourceVersion": "44576223",
+                "uid": "92c79973-800b-4e69-98c7-a8383a9904b1"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:24Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-sccmt",
+                "namespace": "events",
+                "resourceVersion": "44576216",
+                "uid": "73434741-4b92-4678-9870-05503f7d52bd"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        },
+        {
+            "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+            "kind": "Trigger",
+            "metadata": {
+                "creationTimestamp": "2026-07-17T13:43:23Z",
+                "generateName": "example-trigger-",
+                "generation": 1,
+                "labels": {
+                    "workflows.diamond.ac.uk/beamline": "test-beamline",
+                    "workflows.diamond.ac.uk/posixuid": "7357",
+                    "workflows.diamond.ac.uk/source": "webhook"
+                },
+                "name": "example-trigger-vsm7t",
+                "namespace": "events",
+                "resourceVersion": "44576200",
+                "uid": "452bcade-389e-40f4-8e0b-b9113d1fd60e"
+            },
+            "spec": {
+                "enabled": true,
+                "eventName": "example",
+                "templateRef": "example-trigger",
+                "workflow": {
+                    "parameters": [
+                        {
+                            "name": "tif",
+                            "path": "parameters.tif"
+                        },
+                        {
+                            "name": "tiff",
+                            "path": "parameters.tiff"
+                        },
+                        {
+                            "default": "true",
+                            "name": "png",
+                            "path": "parameters.png"
+                        }
+                    ],
+                    "template": "example-template"
+                }
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

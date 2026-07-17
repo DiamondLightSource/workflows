@@ -1,0 +1,41 @@
+{
+    "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
+    "kind": "Trigger",
+    "metadata": {
+        "creationTimestamp": "2026-07-17T08:19:18Z",
+        "generateName": "example-trigger-",
+        "generation": 1,
+        "labels": {
+            "workflows.diamond.ac.uk/beamline": "test-beamline",
+            "workflows.diamond.ac.uk/posixuid": "7357",
+            "workflows.diamond.ac.uk/source": "webhook"
+        },
+        "name": "example-trigger-mfvpj",
+        "namespace": "events",
+        "resourceVersion": "44311920",
+        "uid": "2ff86138-9952-46f6-8d42-a60b7da9b003"
+    },
+    "spec": {
+        "enabled": true,
+        "eventName": "example",
+        "templateRef": "example-trigger",
+        "workflow": {
+            "parameters": [
+                {
+                    "name": "tif",
+                    "path": "parameters.tif"
+                },
+                {
+                    "name": "tiff",
+                    "path": "parameters.tiff"
+                },
+                {
+                    "default": "true",
+                    "name": "png",
+                    "path": "parameters.png"
+                }
+            ],
+            "template": "example-template"
+        }
+    }
+}
