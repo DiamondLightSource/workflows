@@ -44,7 +44,7 @@ jobs:
       - name: Build Image
         uses: docker/build-push-action@v6.18.0
         with:
-          build-args: ARGO_SERVER_SCHEMA_URL=https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
+          build-args: ARGO_SERVER_SCHEMA_URL=https://raw.githubusercontent.com/argoproj/argo-workflows/refs/tags/v4.0.6/api/jsonschema/schema.json
           context: backend
           file: backend/Dockerfile.graph-proxy
           target: deploy
