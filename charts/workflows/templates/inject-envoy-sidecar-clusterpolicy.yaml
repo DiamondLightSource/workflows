@@ -161,11 +161,22 @@ spec:
 
               container:
                 env:
-                  - name: GRAPH_PROXY_URL
-                    value: http://127.0.0.1:6000
+                  - name: HTTP_PROXY
+                    value: "http://127.0.0.1:15001"
+                  - name: HTTPS_PROXY
+                    value: "http://127.0.0.1:15001"
+                  - name: NO_PROXY
+                    value: "localhost,127.0.0.1,.svc,.svc.cluster.local"
 
               script:
                 env:
-                  - name: GRAPH_PROXY_URL
-                    value: http://127.0.0.1:6000
+                  - name: HTTP_PROXY
+                    value: "http://127.0.0.1:15001"
+                  - name: HTTPS_PROXY
+                    value: "http://127.0.0.1:15001"
+                  - name: NO_PROXY
+                    value: "localhost,127.0.0.1,.svc,.svc.cluster.local"
 {{- end }}
+
+
+
