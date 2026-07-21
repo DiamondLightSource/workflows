@@ -184,18 +184,18 @@ spec:
               container:
                 env:
                   - name: HTTP_PROXY
-                    value: "http://127.0.0.1:15001"
+                    value: "http://127.0.0.1:6000"
                   - name: HTTPS_PROXY
-                    value: "http://127.0.0.1:15001"
+                    value: "http://127.0.0.1:6000"
                   - name: NO_PROXY
                     value: "localhost,127.0.0.1,.svc,.svc.cluster.local"
 
               script:
                 env:
                   - name: HTTP_PROXY
-                    value: "http://127.0.0.1:15001"
+                    value: "http://127.0.0.1:6000"
                   - name: HTTPS_PROXY
-                    value: "http://127.0.0.1:15001"
+                    value: "http://127.0.0.1:6000"
                   - name: NO_PROXY
                     value: "localhost,127.0.0.1,.svc,.svc.cluster.local"
 {{- end }}
