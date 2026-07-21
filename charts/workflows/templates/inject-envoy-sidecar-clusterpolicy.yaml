@@ -56,16 +56,85 @@ spec:
                               typed_config:
                                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                                 stat_prefix: ingress
+
+                                # Required for explicit HTTPS_PROXY traffic. Clients will send CONNECT
+                                # foo.diamond.ac.uk:443 HTTP/1.1 to this listener.
+                                upgrade_configs:
+                                - upgrade_type: CONNECT
+
                                 route_config:
                                   name: local_route
                                   virtual_hosts:
-                                  - name: backend
-                                    domains: ["*"]
+                                  #
+                                  # Authenticated egress for Diamond hosts.
+                                  #
+                                  # Include :443 because HTTPS proxy traffic normally routes by
+                                  # CONNECT authority, e.g. foo.diamond.ac.uk:443.
+                                  #
+                                  - name: diamond_authenticated
+                                    domains:
+                                    - "*.diamond.ac.uk"
+                                    - "*.diamond.ac.uk:443"
+                                    - "*.diamond.ac.uk:80"
+
                                     routes:
-                                    - match: { prefix: "/" }
+                                    # HTTPS explicit proxy traffic.
+                                    - match:
+                                        connect_matcher: {}
                                       route:
-                                        cluster: graph-proxy
+                                        cluster: dynamic_forward_proxy_cluster
+                                        timeout: 0s
+                                        upgrade_configs:
+                                        - upgrade_type: CONNECT
+                                          enabled: true
+                                      typed_per_filter_config:
+                                        envoy.filters.http.ext_authz:
+                                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                          disabled: false
+
+                                    # Plain HTTP proxy traffic.
+                                    - match:
+                                        prefix: "/"
+                                      route:
+                                        cluster: dynamic_forward_proxy_cluster
                                         timeout: 30s
+                                      typed_per_filter_config:
+                                        envoy.filters.http.ext_authz:
+                                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                          disabled: false
+
+                                  #
+                                  # Everything else is just proxied directly, without ext_authz.
+                                  #
+                                  - name: default_passthrough
+                                    domains:
+                                    - "*"
+                                    routes:
+                                    # HTTPS explicit proxy traffic.
+                                    - match:
+                                        connect_matcher: {}
+                                      route:
+                                        cluster: dynamic_forward_proxy_cluster
+                                        timeout: 0s
+                                        upgrade_configs:
+                                        - upgrade_type: CONNECT
+                                          enabled: true
+                                      typed_per_filter_config:
+                                        envoy.filters.http.ext_authz:
+                                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                          disabled: true
+
+                                    # Plain HTTP proxy traffic.
+                                    - match:
+                                        prefix: "/"
+                                      route:
+                                        cluster: dynamic_forward_proxy_cluster
+                                        timeout: 30s
+                                      typed_per_filter_config:
+                                        envoy.filters.http.ext_authz:
+                                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                          disabled: true
+
                                 http_filters:
                                 - name: envoy.filters.http.lua
                                   typed_config:
@@ -80,6 +149,7 @@ spec:
                                             request_handle:headers():replace("K8s-Pod-Service-Account-Token", token)
                                           end
                                         end
+
                                 - name: envoy.filters.http.ext_authz
                                   typed_config:
                                     "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
@@ -97,32 +167,38 @@ spec:
                                           - exact: "K8s-Pod-Service-Account-Token"
                                           - exact: "content-type"
                                           - exact: "authorization"
+                                          - exact: ":method"
+                                          - exact: ":authority"
+                                          - exact: ":path"
+                                          - exact: "host"
                                       authorization_response:
                                         allowed_upstream_headers:
                                           patterns:
                                           - exact: "authorization"
+
+                                - name: envoy.filters.http.dynamic_forward_proxy
+                                  typed_config:
+                                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+                                    dns_cache_config:
+                                      name: dynamic_forward_proxy_cache
+                                      dns_lookup_family: V4_ONLY
+
                                 - name: envoy.filters.http.router
                                   typed_config:
                                     "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
                         clusters:
-                        - name: graph-proxy
+                        - name: dynamic_forward_proxy_cluster
                           connect_timeout: 5s
-                          type: STRICT_DNS
-                          lb_policy: ROUND_ROBIN
-                          typed_extension_protocol_options:
-                            envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-                              "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-                              explicit_http_config:
-                                http2_protocol_options: {}
-                          load_assignment:
-                            cluster_name: graph-proxy
-                            endpoints:
-                            - lb_endpoints:
-                              - endpoint:
-                                  address:
-                                    socket_address:
-                                      address: graph-proxy.graph-proxy.svc.cluster.local
-                                      port_value: 80
+                          lb_policy: CLUSTER_PROVIDED
+                          cluster_type:
+                            name: envoy.clusters.dynamic_forward_proxy
+                            typed_config:
+                              "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+                              dns_cache_config:
+                                name: dynamic_forward_proxy_cache
+                                dns_lookup_family: V4_ONLY
+
                         - name: auth-broker
                           connect_timeout: 5s
                           type: STRICT_DNS
