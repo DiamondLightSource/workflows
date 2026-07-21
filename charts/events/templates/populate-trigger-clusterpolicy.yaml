@@ -26,6 +26,12 @@ spec:
             urlPath: "/apis/workflows.diamond.ac.uk/v1alpha1/clustertriggertemplates/{{`{{templateRef}}`}}"
             method: GET
 
+      preconditions:
+        all:
+          - key: "{{`{{ templateRef }}`}}"
+            operator: NotEquals
+            value: ""
+
       mutate:
         patchStrategicMerge:
           metadata:
