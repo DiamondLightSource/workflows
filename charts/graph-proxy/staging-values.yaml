@@ -2,6 +2,15 @@ argoServerUrl: https://argo-workflows.staging.workflows.diamond.ac.uk
 oidcIssuerUrl: https://identity-test.diamond.ac.uk/realms/dls
 oidcAudiences: "workflows-cluster-staging,graph"
 
+image:
+  registry: ghcr.io
+  repository: diamondlightsource/workflows-graph-proxy
+  tag: "tbt"
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+
 s3:
   url: https://sci-nas-s3.diamond.ac.uk
   forcePathStyle: true
