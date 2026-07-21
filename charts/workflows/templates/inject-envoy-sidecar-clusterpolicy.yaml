@@ -23,7 +23,7 @@ spec:
             operator: Equals
             value: "true"
 
-          - key: '{{ "{{ (request.object.spec.templateDefaults.initContainer || `[]`)[?name == ''auth-init''] | length(@) }}" }}'
+          - key: '{{ "{{ (request.object.spec.templateDefaults.initContainers || `[]`)[?name == ''auth-init''] | length(@) }}" }}'
             operator: Equals
             value: 0
 
@@ -104,38 +104,38 @@ spec:
                                 - name: envoy.filters.http.router
                                   typed_config:
                                     "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-                      clusters:
-                      - name: graph-proxy
-                        connect_timeout: 5s
-                        type: STRICT_DNS
-                        lb_policy: ROUND_ROBIN
-                        typed_extension_protocol_options:
-                          envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-                            "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-                            explicit_http_config:
-                              http2_protocol_options: {}
-                        load_assignment:
-                          cluster_name: graph-proxy
-                          endpoints:
-                          - lb_endpoints:
-                            - endpoint:
-                                address:
-                                  socket_address:
-                                    address: graph-proxy.graph-proxy.svc.cluster.local
-                                    port_value: 80
-                      - name: auth-broker
-                        connect_timeout: 5s
-                        type: STRICT_DNS
-                        lb_policy: ROUND_ROBIN
-                        load_assignment:
-                          cluster_name: auth-broker
-                          endpoints:
-                          - lb_endpoints:
-                            - endpoint:
-                                address:
-                                  socket_address:
-                                    address: auth-broker.auth-broker.svc.cluster.local
-                                    port_value: 8080
+                        clusters:
+                        - name: graph-proxy
+                          connect_timeout: 5s
+                          type: STRICT_DNS
+                          lb_policy: ROUND_ROBIN
+                          typed_extension_protocol_options:
+                            envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+                              "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+                              explicit_http_config:
+                                http2_protocol_options: {}
+                          load_assignment:
+                            cluster_name: graph-proxy
+                            endpoints:
+                            - lb_endpoints:
+                              - endpoint:
+                                  address:
+                                    socket_address:
+                                      address: graph-proxy.graph-proxy.svc.cluster.local
+                                      port_value: 80
+                        - name: auth-broker
+                          connect_timeout: 5s
+                          type: STRICT_DNS
+                          lb_policy: ROUND_ROBIN
+                          load_assignment:
+                            cluster_name: auth-broker
+                            endpoints:
+                            - lb_endpoints:
+                              - endpoint:
+                                  address:
+                                    socket_address:
+                                      address: auth-broker.auth-broker.svc.cluster.local
+                                      port_value: 8080
                       ENVOYEOF
                   volumeMounts:
                     - name: envoy-config
