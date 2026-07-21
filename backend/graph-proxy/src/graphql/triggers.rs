@@ -46,7 +46,7 @@ enum TriggerError {
 struct TriggerSpec {
     /// The name of a ClusterTriggerTemplate that the Trigger is created from
     #[serde(rename = "templateRef")]
-    template_ref: String,
+    template_ref: Option<String>,
 }
 
 /// A Trigger for creating automated workflows
@@ -56,7 +56,7 @@ struct TriggerGQL {
     /// The name of the Trigger
     name: Option<String>,
     /// The name of a ClusterTriggerTemplate that the Trigger is created from
-    template_ref: String,
+    template_ref: Option<String>,
     /// The beamline that the Trigger monitors
     beamline: Option<String>,
 }
@@ -211,7 +211,9 @@ impl TriggerMutation {
                 )])),
                 ..Default::default()
             },
-            spec: TriggerSpec { template_ref },
+            spec: TriggerSpec {
+                template_ref: Some(template_ref),
+            },
         };
 
         match api.create(&PostParams::default(), &trigger).await {
