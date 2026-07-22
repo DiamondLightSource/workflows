@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.7...sessionspaces@v0.1.8) (2026-07-22)
+
+
+### Features
+
+* **auth-gateway:** enable auth-gateway support for dashboard ([f227b36](https://github.com/DiamondLightSource/workflows/commit/f227b366bfee45eb77949ad104c43df26fc49144))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.6...sessionspaces@v0.1.7) (2026-07-02)
 
 
