@@ -1,0 +1,248 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: surface-analysis
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: Surface Analysis Example
+    workflows.argoproj.io/description: |
+      This is an example template to use during testing and development.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+    workflows.diamond.ac.uk/type: "live"
+
+spec:
+  entrypoint: surface-analysis-dag
+
+  volumes:
+    - name: workdir
+      emptyDir: {}
+
+  arguments:
+    parameters:
+      - name: sample
+        value: unknown-sample
+
+  templates:
+
+    - name: surface-analysis-dag
+      dag:
+        tasks:
+          - name: reconstruct-3d
+            template: reconstruct-3d
+
+          - name: segment-surface
+            dependencies: [reconstruct-3d]
+            template: segment-surface
+            arguments:
+              artifacts:
+                - name: reconstructed
+                  from: "{{tasks.reconstruct-3d.outputs.artifacts.reconstructed}}"
+
+          - name: detect-cracks
+            dependencies: [segment-surface]
+            template: detect-cracks
+            arguments:
+              artifacts:
+                - name: segmented
+                  from: "{{tasks.segment-surface.outputs.artifacts.segmented}}"
+
+          - name: analyse-surface
+            dependencies: [segment-surface]
+            template: analyse-surface
+            arguments:
+              artifacts:
+                - name: segmented
+                  from: "{{tasks.segment-surface.outputs.artifacts.segmented}}"
+
+          - name: generate-report
+            dependencies: [detect-cracks, analyse-surface]
+            template: generate-report
+            arguments:
+              artifacts:
+                - name: cracks
+                  from: "{{tasks.detect-cracks.outputs.artifacts.cracks}}"
+                - name: roughness
+                  from: "{{tasks.analyse-surface.outputs.artifacts.roughness}}"
+
+    - name: reconstruct-3d
+      script:
+        image: jupyter/scipy-notebook:latest
+        command: [python]
+        volumeMounts:
+          - name: workdir
+            mountPath: /work
+        source: |
+          import numpy as np
+
+          print("Generating synthetic CT volume...")
+
+          volume = np.random.rand(64, 64, 64)
+          volume[30:35, 20:22, 10:50] = 0
+
+          np.save("/work/surface.npy", volume)
+
+          print("Saved reconstructed volume")
+
+      outputs:
+        artifacts:
+          - name: reconstructed
+            path: /work/surface.npy
+
+    - name: segment-surface
+      inputs:
+        artifacts:
+          - name: reconstructed
+            path: /work/surface.npy
+
+      script:
+        image: jupyter/scipy-notebook:latest
+        command: [python]
+        volumeMounts:
+          - name: workdir
+            mountPath: /work
+        source: |
+          import numpy as np
+
+          print("Loading reconstructed volume...")
+
+          volume = np.load("/work/surface.npy")
+
+          segmented = (volume > 0.5).astype(int)
+
+          np.save("/work/segmented.npy", segmented)
+
+          print("Surface segmentation complete")
+
+      outputs:
+        artifacts:
+          - name: segmented
+            path: /work/segmented.npy
+
+    - name: detect-cracks
+      inputs:
+        artifacts:
+          - name: segmented
+            path: /work/segmented.npy
+
+      script:
+        image: python:3.12
+        command: [python]
+        volumeMounts:
+          - name: workdir
+            mountPath: /work
+        source: |
+          import csv
+          import random
+
+          print("Detecting cracks...")
+
+          cracks = [
+              ["crack_id", "length_mm"],
+              [1, round(random.uniform(1.0, 5.0), 2)],
+              [2, round(random.uniform(1.0, 5.0), 2)],
+              [3, round(random.uniform(1.0, 5.0), 2)],
+          ]
+
+          with open("/work/cracks.csv", "w", newline="") as f:
+              writer = csv.writer(f)
+              writer.writerows(cracks)
+
+          print("Crack detection complete")
+
+      outputs:
+        artifacts:
+          - name: cracks
+            path: /work/cracks.csv
+
+    - name: analyse-surface
+      inputs:
+        artifacts:
+          - name: segmented
+            path: /work/segmented.npy
+
+      script:
+        image: python:3.12
+        command: [python]
+        volumeMounts:
+          - name: workdir
+            mountPath: /work
+        source: |
+          import csv
+          import random
+
+          print("Analysing surface roughness...")
+
+          roughness = round(random.uniform(0.2, 1.0), 2)
+          area = round(random.uniform(100, 200), 2)
+
+          rows = [
+              ["surface_area_mm2", "average_roughness_um"],
+              [area, roughness]
+          ]
+
+          with open("/work/roughness.csv", "w", newline="") as f:
+              writer = csv.writer(f)
+              writer.writerows(rows)
+
+          print("Surface analysis complete")
+
+      outputs:
+        artifacts:
+          - name: roughness
+            path: /work/roughness.csv
+
+    - name: generate-report
+      inputs:
+        artifacts:
+          - name: cracks
+            path: /work/cracks.csv
+          - name: roughness
+            path: /work/roughness.csv
+
+      script:
+        image: python:3.12
+        command: [python]
+        volumeMounts:
+          - name: workdir
+            mountPath: /work
+        source: |
+          import csv
+
+          print("Generating report...")
+
+          with open("/work/cracks.csv") as f:
+              cracks = list(csv.reader(f))
+
+          with open("/work/roughness.csv") as f:
+              roughness = list(csv.reader(f))
+
+          report = f'''
+          <html>
+          <body>
+          <h1>Surface Analysis Report</h1>
+
+          <h2>Detected Cracks</h2>
+          <pre>{cracks}</pre>
+
+          <h2>Surface Metrics</h2>
+          <pre>{roughness}</pre>
+
+          <h2>Result</h2>
+          <h3>PASS</h3>
+
+          </body>
+          </html>
+          '''
+
+          with open("/work/report.html", "w") as f:
+              f.write(report)
+
+          print(report)
+          print("Report generated")
+
+      outputs:
+        artifacts:
+          - name: report
+            path: /work/report.html
+
