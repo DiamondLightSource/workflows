@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.21](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.20...graph-proxy@v0.1.21) (2026-07-22)
+
+
+### Features
+
+* **graph-proxy:** add queries to get live triggers ([460b6ad](https://github.com/DiamondLightSource/workflows/commit/460b6ad5f9d4f28f12096b904054c923d37af92e))
+* **graph-proxy:** add yaml submission to the graph ([5d7df02](https://github.com/DiamondLightSource/workflows/commit/5d7df0283c577071d162be8c49ff7f6c88443b27))
+
+
+### Bug Fixes
+
+* add missing documentation for GraphQL filter types ([caad783](https://github.com/DiamondLightSource/workflows/commit/caad78309adcf2393fe0f7593c19ca8c4c26d40c))
+* did the changes required in the PR ([5ac2404](https://github.com/DiamondLightSource/workflows/commit/5ac2404f2d17255a8928b2c196635853be2e4596))
+* **graph-proxy:** make Trigger templateRef optional ([8a6da40](https://github.com/DiamondLightSource/workflows/commit/8a6da40cafd6acd0d3dcdaa7d172f4d0f282cf6b))
+* **graph-proxy:** pin CI swagger.json to deployed version of Argo Workflows & fix graph build error ([c47f197](https://github.com/DiamondLightSource/workflows/commit/c47f197b089aa5c28dce0d1f1e9302b7d61319a8))
+* **graph-proxy:** update for Argo workflow submit API changes ([622da4d](https://github.com/DiamondLightSource/workflows/commit/622da4d8f6ccdfd95b9bb16547c5c1a25f90d513))
+* the label filter working as expected ([fed6569](https://github.com/DiamondLightSource/workflows/commit/fed65695010a2738fa0dfec3756b21aa016fb764))
+* use singular labelSelector for Argo workflow queries ([b3e9ba0](https://github.com/DiamondLightSource/workflows/commit/b3e9ba07e1d137adc84fb88b7ef5c30aeecec3ab))
+
 ## [0.1.20](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.19...graph-proxy@v0.1.20) (2026-07-09)
 
 
