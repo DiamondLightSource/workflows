@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/telemetry@v0.1.2...telemetry@v0.1.3) (2026-07-22)
+
+
+### Bug Fixes
+
+* modified backend toml files ([b7113d8](https://github.com/DiamondLightSource/workflows/commit/b7113d8016c130e765b95e712210c11445fec4dc))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/telemetry@v0.1.1...telemetry@v0.1.2) (2025-04-14)
 
 
