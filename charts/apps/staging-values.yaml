@@ -37,6 +37,9 @@ kyverno:
         requests:
           cpu: 100m
           memory: 4Gi
+    cleanupController:
+      enabled: true
+      replicas: 1
 
 sessionspaces:
   enabled: true

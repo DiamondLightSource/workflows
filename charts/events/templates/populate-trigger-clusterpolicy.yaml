@@ -41,6 +41,37 @@ spec:
           spec: "{{`{{templateObject.spec}}`}}"
 
 ---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: assign-trigger-ttl
+spec:
+  rules:
+    - name: propagate-user-ttl
+      match:
+        resources:
+          kinds:
+            - workflows.diamond.ac.uk/v1alpha1/Trigger
+          operations:
+            - CREATE
+      context:
+        - name: lifetime
+          variable:
+            jmesPath: request.object.spec.lifetime || ""
+
+      preconditions:
+        all:
+          - key: "{{`{{ lifetime }}`}}"
+            operator: AnyNotIn
+            value:
+              - "forever"
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              cleanup.kyverno.io/ttl: "{{`{{ lifetime }}`}}"
+
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -67,4 +98,26 @@ subjects:
     namespace: kyverno
   - kind: ServiceAccount
     name: kyverno-admission-controller
+    namespace: kyverno
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:delete-triggers
+rules:
+  - apiGroups: ["workflows.diamond.ac.uk"]
+    resources: ["triggers"]
+    verbs: ["get", "list", "watch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno:delete-triggers
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno:delete-triggers
+subjects:
+  - kind: ServiceAccount
+    name: kyverno-cleanup-controller
     namespace: kyverno
