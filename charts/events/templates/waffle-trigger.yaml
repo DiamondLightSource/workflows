@@ -1,0 +1,8 @@
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: Trigger
+metadata:
+  name: waffle-trigger
+  labels:
+    workflows.diamond.ac.uk/posixuid: "36242"
+spec:
+  templateRef: waffle-trigger
