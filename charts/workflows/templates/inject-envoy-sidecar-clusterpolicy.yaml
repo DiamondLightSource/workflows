@@ -84,10 +84,46 @@ spec:
                                     default_source_code:
                                       inline_string: |
                                         function envoy_on_request(request_handle)
-                                          request_handle:logInfo("lua: adding k8s-pod-service-account-token test header")
+                                          local token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+                                          request_handle:logInfo("lua: reading Kubernetes service account token")
+
+                                          if io == nil or io.open == nil then
+                                            request_handle:logErr("lua: io.open is not available in this Envoy Lua runtime")
+                                            return
+                                          end
+
+                                          local ok, file_or_err = pcall(io.open, token_path, "r")
+
+                                          if not ok then
+                                            request_handle:logErr("lua: io.open raised error: " .. tostring(file_or_err))
+                                            return
+                                          end
+
+                                          local f = file_or_err
+
+                                          if f == nil then
+                                            request_handle:logErr("lua: failed to open service account token file: " .. token_path)
+                                            return
+                                          end
+
+                                          local token = f:read("*a")
+                                          f:close()
+
+                                          if token == nil or token == "" then
+                                            request_handle:logErr("lua: service account token file was empty")
+                                            return
+                                          end
+
+                                          -- Strip trailing newline just in case.
+                                          token = string.gsub(token, "%s+$", "")
+
                                           request_handle:headers():replace(
                                             "k8s-pod-service-account-token",
-                                            "test-token")
+                                            token
+                                          )
+
+                                          request_handle:logInfo("lua: added k8s-pod-service-account-token header")
                                         end
 
                                 #
