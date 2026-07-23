@@ -247,10 +247,9 @@ async fn setup_router(
             .with_state(schema.clone())
             .layer(
                 CorsLayer::new()
-                    .allow_methods([Method::GET, Method::POST])
+                    .allow_methods([Method::GET, Method::POST, Method::POST])
                     .allow_headers(tower_http::cors::Any)
                     .allow_origin(cors_origin)
-                    .allow_credentials(true),
             ),
     )
 }

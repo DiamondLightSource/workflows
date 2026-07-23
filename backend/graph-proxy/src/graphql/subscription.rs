@@ -121,42 +121,55 @@ impl WorkflowsSubscription {
             .await?;
 
         let status = response.status();
+        tracing::info!("Argo logs response status: {}", status);
+
         let byte_stream = response.bytes_stream();
-  
 
         let log_stream = stream! {
             let mut all_logs = String::new();
 
+            tracing::info!("Starting log stream for workflow {}", workflow_name);
+
             for await chunk_result in byte_stream {
                 match chunk_result {
                     Ok(chunk) if status.is_success() => {
+                        tracing::info!("Received chunk ({} bytes)", chunk.len());
 
                         let text = String::from_utf8_lossy(&chunk).to_string();
 
+                        tracing::debug!("Chunk contents:\n{}", text);
+
                         for line in text.lines() {
+                            tracing::debug!("Processing line: {}", line);
 
                             match serde_json::from_str::<LogResponse>(line) {
-
                                 Ok(parsed) => {
-
                                     if let Some(result) = parsed.result {
+                                        tracing::debug!(
+                                            "Parsed log from pod {}: {}",
+                                            result.pod_name,
+                                            result.content
+                                        );
 
                                         all_logs.push_str(&result.content);
                                         all_logs.push('\n');
 
-                                        let log = LogEntry {
+                                        yield Ok(LogEntry {
                                             content: result.content.clone(),
                                             pod_name: result.pod_name.clone(),
-                                        };
-
-                                        yield Ok(log);
-
+                                        });
                                     } else {
+                                        tracing::warn!("Parsed JSON but result was None");
                                         yield Err("Missing result in log response".to_string());
                                     }
                                 }
 
-                                Err(_) => {
+                                Err(err) => {
+                                    tracing::debug!(
+                                        "Treating line as plain text ({}): {}",
+                                        err,
+                                        line
+                                    );
 
                                     all_logs.push_str(line.trim());
                                     all_logs.push('\n');
@@ -170,22 +183,28 @@ impl WorkflowsSubscription {
                         }
                     }
 
-                    Ok(_) | Err(_) => {
+                    Ok(_) => {
+                        tracing::warn!("Received non-success HTTP response: {}", status);
+                        yield Err("Failed to read log chunk".to_string());
+                    }
+
+                    Err(err) => {
+                        tracing::error!("Error reading log stream: {:?}", err);
                         yield Err("Failed to read log chunk".to_string());
                     }
                 }
             }
 
-            if !all_logs.is_empty() {
-                let _ = upload_logs(
-                    &s3_client,
-                    &s3_bucket,
-                    &s3_key,
-                    all_logs,
-                )
-                .await;
-            }
+            tracing::info!(
+                "Finished log stream. Collected {} bytes of logs.",
+                all_logs.len()
+            );
+
+            tracing::debug!("Collected logs:\n{}", all_logs);
+
+            // upload_logs(...) will go here once verified
         };
+
         Ok(log_stream)
     }
 

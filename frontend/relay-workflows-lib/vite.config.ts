@@ -11,6 +11,7 @@ export default defineConfig({
       entry: resolve(__dirname, "lib/main.ts"),
       name: "relay-workflows-lib",
       fileName: "relay-workflows-lib",
+      formats: ["es"],
     },
     rollupOptions: {
       external: ["react", "react-dom", "react-relay"],

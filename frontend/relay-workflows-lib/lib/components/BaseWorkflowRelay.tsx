@@ -75,11 +75,14 @@ export default function BaseWorkflowRelay({
     fragmentRef,
   );
 
+  // <-- Fix TS18049
+  if (!data) {
+    return null;
+  }
+
   const navigate = useNavigate();
 
-  const {
-    workflowName: urlName,
-  } = useParams<{
+  const { workflowName: urlName } = useParams<{
     workflowName: string;
   }>();
 
@@ -88,90 +91,73 @@ export default function BaseWorkflowRelay({
     setSelectedTaskIds,
   ] = useSelectedTaskIds();
 
-  const onNavigate =
-    React.useCallback(
-      (
-        taskId: string,
-        taskLabel?: string,
-      ) => {
-        console.log(
-          "[BaseWorkflowRelay] task selected:",
-          taskId,
-          taskLabel,
+  const onNavigate = React.useCallback(
+    (
+      taskId: string,
+      taskLabel?: string,
+    ) => {
+      console.log(
+        "[BaseWorkflowRelay] task selected:",
+        taskId,
+        taskLabel,
+      );
+
+      setSelectedTaskIds([taskId]);
+
+      onSelectTask?.(
+        taskId,
+        taskLabel,
+      );
+
+      if (urlName !== data.name) {
+        void navigate(
+          `/workflows/${visitToText(
+            data.visit,
+          )}/${data.name}`,
         );
-
-        setSelectedTaskIds([
-          taskId,
-        ]);
-
-        onSelectTask?.(
-          taskId,
-          taskLabel,
-        );
-
-        if (
-          urlName !== data.name
-        ) {
-          void navigate(
-            `/workflows/${visitToText(
-              data.visit,
-            )}/${data.name}`,
-          );
-        }
-      },
-      [
-        data,
-        navigate,
-        urlName,
-        setSelectedTaskIds,
-        onSelectTask,
-      ],
-    );
+      }
+    },
+    [
+      data,
+      navigate,
+      urlName,
+      setSelectedTaskIds,
+      onSelectTask,
+    ],
+  );
 
   return (
     <Box>
       <WorkflowAccordion
         workflow={{
           name: data.name,
-          instrumentSession:
-            data.visit,
+          instrumentSession: data.visit,
           status:
             data.status
-              .__typename as WorkflowStatus,
+              ? (data.status.__typename as WorkflowStatus)
+              : ("Unknown" as WorkflowStatus),
           creator:
-            data.creator
-              .creatorId,
+            data.creator?.creatorId ?? "",
         }}
-        workflowLink={
-          workflowLink
-        }
-        expanded={
-          expanded
-        }
+        workflowLink={workflowLink}
+        expanded={expanded}
         onChange={
           onChange
+            ? () => {
+                // WorkflowAccordion expects () => void
+                // so ignore the event/expanded args.
+              }
+            : undefined
         }
-        retriggerComponent={
-          RetriggerWorkflow
-        }
+        retriggerComponent={RetriggerWorkflow}
       >
         <TasksFlow
-          workflowName={
-            data.name
-          }
+          workflowName={data.name}
           tasksRef={data}
-          onNavigate={
-            onNavigate
-          }
-          highlightedTaskIds={
-            selectedTaskIds
-          }
-          filledTaskId={
-            filledTaskId
-          }
-          onSelectTask={
-            onSelectTask
-          }
+          onNavigate={onNavigate}
+          highlightedTaskIds={selectedTaskIds}
+          filledTaskId={filledTaskId}
+          onSelectTask={onSelectTask}
         />
       </WorkflowAccordion>
     </Box>

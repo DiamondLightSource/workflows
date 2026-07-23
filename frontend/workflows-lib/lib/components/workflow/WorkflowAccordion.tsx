@@ -11,7 +11,10 @@ import {
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
+import {
+  Visit,
+  visitToText,
+} from "@diamondlightsource/sci-react-ui";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
 import { Workflow } from "../../types";
 
@@ -20,7 +23,10 @@ interface WorkflowProps {
   children: React.ReactNode;
   workflowLink?: boolean;
   expanded?: boolean;
-  onChange?: () => void;
+  onChange?: (
+    event: React.SyntheticEvent,
+    expanded: boolean,
+  ) => void;
   retriggerComponent?: React.ComponentType<{
     instrumentSession: Visit;
     workflowName: string;
@@ -48,38 +54,57 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   githubComponent,
 }) => {
   return (
-    <Accordion key={workflow.name} expanded={expanded} onChange={onChange}>
+    <Accordion
+      key={workflow.name}
+      expanded={expanded}
+      onChange={onChange}
+    >
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-        <Box sx={{ display: "flex", flexBasis: 0, flexGrow: 5, gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexBasis: 0,
+            flexGrow: 5,
+            gap: 2,
+          }}
+        >
           {getWorkflowStatusIcon(workflow.status)}
+
           {workflowLink && (
             <Tooltip title="Open workflow in tab">
               <Link
-                to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}
+                to={`/workflows/${visitToText(
+                  workflow.instrumentSession,
+                )}/${workflow.name}`}
                 aria-label={`Open workflow ${workflow.name} in tab`}
               >
                 <OpenInNewIcon />
               </Link>
             </Tooltip>
           )}
+
           {retriggerComponent &&
             React.createElement(retriggerComponent, {
               instrumentSession: workflow.instrumentSession,
               workflowName: workflow.name,
             })}
+
           {githubComponent &&
             React.createElement(githubComponent, {
               instrumentSession: workflow.instrumentSession,
               workflowName: workflow.name,
             })}
+
           <Typography>{workflow.name}</Typography>
         </Box>
+
         <Box flexBasis={0} flexGrow={1}>
           <Typography color="#757575">
             Creator: {workflow.creator || "Unknown"}
           </Typography>
         </Box>
       </AccordionSummary>
+
       <AccordionDetails>{children}</AccordionDetails>
     </Accordion>
   );
