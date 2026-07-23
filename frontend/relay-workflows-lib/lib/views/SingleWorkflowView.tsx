@@ -33,19 +33,21 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
       name: props.workflowName,
     },
   );
-  const finished =
-    queryData.workflow?.status?.__typename &&
-    finishedStatuses.has(queryData.workflow.status.__typename);
+
   const [isNull, setIsNull] = useState<boolean>(false);
+
   const onNullSubscriptionData = () => {
     setIsNull(true);
   };
 
-  return finished || isNull ? (
-    <BaseSingleWorkflowView
-      fragmentRef={queryData.workflow ?? null}
-      taskIds={props.taskIds}
-    />
+  const workflow = queryData.workflow;
+
+  const finished =
+    workflow?.status != null &&
+    finishedStatuses.has(workflow.status.__typename);
+
+  return workflow && (finished || isNull) ? (
+    <BaseSingleWorkflowView fragmentRef={workflow} taskIds={props.taskIds} />
   ) : (
     <LiveSingleWorkflowView
       {...props}

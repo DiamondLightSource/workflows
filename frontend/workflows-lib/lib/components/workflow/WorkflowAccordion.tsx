@@ -78,6 +78,12 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
           <Typography color="#757575">
             Creator: {workflow.creator || "Unknown"}
           </Typography>
+
+          {workflow.submittedTime && (
+            <Typography color="#757575">
+              Submitted: {new Date(workflow.submittedTime).toLocaleString()}
+            </Typography>
+          )}
         </Box>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>

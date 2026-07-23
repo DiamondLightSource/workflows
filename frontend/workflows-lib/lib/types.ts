@@ -45,6 +45,7 @@ export interface Workflow {
   instrumentSession: Visit;
   status: WorkflowStatus;
   creator: string;
+  submittedTime?: string;
 }
 
 export interface Visit {
