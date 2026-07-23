@@ -299,6 +299,7 @@ impl WorkflowTemplatesMutation {
                         labels: None,
                         name: None,
                         owner_reference: None,
+                        artifacts: vec![],
                         parameters: parameters
                             .0
                             .into_iter()

@@ -7,14 +7,21 @@ use futures_util::{Stream, StreamExt};
 use serde::Deserialize;
 use std::ops::Deref;
 
+
+
 use crate::{
     graphql::{
         workflows::{Workflow, WorkflowParsingError},
         VisitInput,
     },
+    s3client::{Client, S3Bucket},
     validate_token::ValidatedAuthToken,
     ArgoServerUrl,
 };
+
+use crate::log_storage::upload_logs;
+
+
 
 /// Subscribe to events involving workflows
 #[derive(Debug, Clone, Default)]
@@ -75,10 +82,21 @@ impl WorkflowsSubscription {
         task_id: String,
     ) -> anyhow::Result<impl Stream<Item = Result<LogEntry, String>>> {
         let auth_token = get_auth_token(ctx)?;
+        let s3_client = ctx.data_unchecked::<Client>().clone();
+        let s3_bucket = ctx.data_unchecked::<S3Bucket>().clone();
 
         let namespace = visit.to_string();
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref().clone();
         let mut url = server_url;
+
+        let s3_key = format!(
+            "{}/{}/{}.log",
+            namespace,
+            workflow_name,
+            task_id,
+        );  
+        
+        
 
         url.path_segments_mut().expect("Invalid base URL").extend([
             "api",
@@ -104,24 +122,45 @@ impl WorkflowsSubscription {
 
         let status = response.status();
         let byte_stream = response.bytes_stream();
+  
+
         let log_stream = stream! {
+            let mut all_logs = String::new();
+
             for await chunk_result in byte_stream {
                 match chunk_result {
                     Ok(chunk) if status.is_success() => {
+
                         let text = String::from_utf8_lossy(&chunk).to_string();
+
                         for line in text.lines() {
+
                             match serde_json::from_str::<LogResponse>(line) {
+
                                 Ok(parsed) => {
+
                                     if let Some(result) = parsed.result {
-                                        yield Ok(LogEntry {
-                                            content: result.content,
-                                            pod_name: result.pod_name,
-                                        });
+
+                                        all_logs.push_str(&result.content);
+                                        all_logs.push('\n');
+
+                                        let log = LogEntry {
+                                            content: result.content.clone(),
+                                            pod_name: result.pod_name.clone(),
+                                        };
+
+                                        yield Ok(log);
+
                                     } else {
                                         yield Err("Missing result in log response".to_string());
                                     }
                                 }
+
                                 Err(_) => {
+
+                                    all_logs.push_str(line.trim());
+                                    all_logs.push('\n');
+
                                     yield Ok(LogEntry {
                                         content: line.trim().to_string(),
                                         pod_name: task_id.clone(),
@@ -130,13 +169,23 @@ impl WorkflowsSubscription {
                             }
                         }
                     }
+
                     Ok(_) | Err(_) => {
                         yield Err("Failed to read log chunk".to_string());
                     }
                 }
             }
-        };
 
+            if !all_logs.is_empty() {
+                let _ = upload_logs(
+                    &s3_client,
+                    &s3_bucket,
+                    &s3_key,
+                    all_logs,
+                )
+                .await;
+            }
+        };
         Ok(log_stream)
     }
 

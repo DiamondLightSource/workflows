@@ -212,15 +212,22 @@ function TaskLogPanel({
         sx={{
           backgroundColor: "#1a1a1a",
           borderBottom: "1px solid #333",
-          minHeight: 48,
+          minHeight: 36,
+
+          "& .MuiAccordionSummary-content": {
+            margin: "6px 0",
+          },
         }}
       >
         <Typography
           sx={{
             flex: 1,
-            color: "#00ff00",
-            fontFamily: "monospace",
-            fontWeight: 600,
+            color: "#ffffff",
+            fontFamily:
+              `"Cascadia Code", "JetBrains Mono", "Consolas", monospace`,
+            fontWeight: 400,      // normal weight
+            fontSize: "13px",
+            letterSpacing: "0.02em",
           }}
         >
           $ {taskLabel}{" "}
@@ -309,33 +316,47 @@ function TaskLogPanel({
         </IconButton>
       </AccordionSummary>
 
-      <AccordionDetails
-        sx={{
-          p: 0,
-          backgroundColor: "#000",
-        }}
-      >
-        <Box
-          ref={containerRef}
-          sx={{
-            backgroundColor: "#000",
-            color: "#00ff00",
-            fontFamily: `"Courier New", monospace`,
-            fontSize: 12,
-            lineHeight: 1.4,
-            minHeight: "3cm",
-            maxHeight: "6cm",
-            overflowY: "auto",
-            overflowX: "hidden",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            p: 1.5,
-            display: "flex",
-            flexDirection: "column",
-            border: "1px solid #00aa00",
-            boxShadow: "inset 0 0 10px rgba(0,255,0,0.15)",
-          }}
-        >
+ <AccordionDetails
+  sx={{
+    p: 0,
+    backgroundColor: "#2e7d32", // optional: match the terminal background
+  }}
+>
+  <Box
+    ref={containerRef}
+    sx={{
+      backgroundColor: "#2e7d32", // green background
+      fontFamily:
+        `"Cascadia Code", "JetBrains Mono", "Consolas", "Menlo", "Monaco", monospace`,
+
+      fontSize: "11px",
+      fontWeight: 500,
+      lineHeight: 1.5,
+      letterSpacing: "0.02em",
+
+      color: "#f8f8f2",
+
+      WebkitFontSmoothing: "antialiased",
+      MozOsxFontSmoothing: "grayscale",
+      textRendering: "optimizeLegibility",
+      minHeight: "3cm",
+      maxHeight: "6cm",
+
+      overflowY: "auto",
+      overflowX: "hidden",
+
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+
+      p: 1.5,
+
+      display: "flex",
+      flexDirection: "column",
+
+      border: "1px solid #1b5e20",
+      boxShadow: "inset 0 0 10px rgba(0,0,0,0.15)",
+    }}
+  >
           {state.logs.length === 0 ? (
             <Typography
               sx={{

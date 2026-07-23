@@ -8,6 +8,8 @@ mod graphql;
 /// S3 client
 mod s3client;
 
+mod log_storage;
+
 /// Graph-proxy-specific metrics
 mod metrics;
 
@@ -200,6 +202,7 @@ async fn setup_router(
     token_validator: TokenValidator,
 ) -> anyhow::Result<Router> {
     info!("Setting up the router");
+
     let cors_origin = if let Some(cors_allow) = cors_allow {
         info!("Allowing CORS Origin(s) matching: {:?}", cors_allow);
         AllowOrigin::predicate(move |origin, _| {
@@ -215,40 +218,43 @@ async fn setup_router(
     };
 
     let socket_path = append_to_path(prefix_path, "/ws");
-    Ok(Router::new()
-        .route(
-            prefix_path,
-            get(Html(
-                GraphiQLSource::build()
-                    .endpoint(prefix_path)
-                    .subscription_endpoint(&socket_path)
-                    .finish(),
-            ))
-            .post(graphql_handler)
-            .with_state(RouterState {
-                schema: schema.clone(),
-                metrics_state: metrics_state.clone(),
-                token_validator: token_validator.clone(),
-            }),
-        )
-        .route_service(
-            &socket_path,
-            get_service(GraphQLSubscription::new(
-                schema.clone(),
-                metrics_state.clone(),
-                Arc::new(token_validator),
-            )),
-        )
-        .with_state(schema.clone())
-        .layer(
-            CorsLayer::new()
-                .allow_methods([Method::GET, Method::POST])
-                .allow_headers(tower_http::cors::Any)
-                .allow_origin(cors_origin),
-        ))
+
+    Ok(
+        Router::new()
+            .route(
+                prefix_path,
+                get(Html(
+                    GraphiQLSource::build()
+                        .endpoint(prefix_path)
+                        .subscription_endpoint(&socket_path)
+                        .finish(),
+                ))
+                .post(graphql_handler)
+                .with_state(RouterState {
+                    schema: schema.clone(),
+                    metrics_state: metrics_state.clone(),
+                    token_validator: token_validator.clone(),
+                }),
+            )
+            .route_service(
+                &socket_path,
+                get_service(GraphQLSubscription::new(
+                    schema.clone(),
+                    metrics_state.clone(),
+                    Arc::new(token_validator),
+                )),
+            )
+            .with_state(schema.clone())
+            .layer(
+                CorsLayer::new()
+                    .allow_methods([Method::GET, Method::POST])
+                    .allow_headers(tower_http::cors::Any)
+                    .allow_origin(cors_origin)
+                    .allow_credentials(true),
+            ),
+    )
 }
 
-/// Append the websocket path to the graph prefix
 fn append_to_path(base: &str, extension: &str) -> String {
     let clean_base = base.trim_matches('/');
     let clean_extension = extension.trim_matches('/');
