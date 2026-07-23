@@ -44,7 +44,7 @@ spec:
             mountPath: /data
         command: [/bin/sh, "-c"]
         workingDir: /data
-        args: ["id && pwd && ls"]
+        args: ["id && pwd && ls && date >> test_workflow_write.txt"]
 
       volumes:
         - name: visitdir

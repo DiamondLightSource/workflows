@@ -13,6 +13,25 @@ from typing import Literal
 from deepmerge import conservative_merger
 from expiringdict import ExpiringDict
 
+TEST_MESSAGE = {
+    "name": "start",
+    "doc": {
+        "uid": "1ff204f8-1659-42b6-8978-550eaa05b026",
+        "time": 1779791822.2596142,
+        "versions": {"ophyd": "1.11.1", "ophyd_async": "0.17a4", "bluesky": "1.14.6"},
+        "instrument": "i15-1",
+        "user": "gmg29649",
+        "instrument_session": "cm44163-2",
+        "data_session_directory": "/dls/i15-1/data/2026/cm44163-2",
+        "detector_file_template": "{instrument}-{scan_id}-{device_name}",
+        "scan_file": "i15-1-95533",
+        "scan_id": 95533,
+        "plan_type": "generator",
+        "plan_name": "take_eiger_and_i0_data",
+    },
+    "task_id": "a82a08cb-cfa0-4f83-9877-953eb8bfefbc",
+}
+
 
 class EventSourceConfig(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
@@ -75,7 +94,7 @@ class ConnectionManager:
 class _StompListener(stomp.ConnectionListener):
     def __init__(self, q):
         self.q: queue.SimpleQueue = q
-        self.start_messages = ExpiringDict(100, 60^2 * 24) # One day expiry
+        self.start_messages = ExpiringDict(100, 60 ^ 2 * 24)  # One day expiry
 
     def _add_start_message(self, message: dict) -> None:
         uid: str | None = message.get("doc", {}).get("uid")
@@ -121,7 +140,8 @@ class _StompListener(stomp.ConnectionListener):
                 logging.debug(f"Unsupported message type: {message_type}")
 
     def on_heartbeat(self) -> None:
-        logging.debug("Hearbeat received")
+        logging.debug("Hearbeat received - adding test message to queue")
+        self.q.put(json.dumps(TEST_MESSAGE))
 
 
 class StompEventServicer(generic_pb2_grpc.EventingServicer):
