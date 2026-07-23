@@ -98,6 +98,17 @@ spec:
                                   typed_config:
                                     "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
                                     transport_api_version: V3
+
+                                    allowed_headers:
+                                      patterns:
+                                      - exact: "K8s-Pod-Service-Account-Token"
+                                      - exact: "content-type"
+                                      - exact: "authorization"
+                                      - exact: "host"
+                                      - exact: ":method"
+                                      - exact: ":path"
+                                      - exact: ":authority"
+
                                     with_request_body:
                                       max_request_bytes: 1048576
                                       allow_partial_message: true
@@ -106,16 +117,6 @@ spec:
                                         uri: http://auth-broker.auth-broker.svc.cluster.local:8080
                                         cluster: auth-broker
                                         timeout: 5s
-                                      authorization_request:
-                                        allowed_headers:
-                                          patterns:
-                                          - exact: "K8s-Pod-Service-Account-Token"
-                                          - exact: "content-type"
-                                          - exact: "authorization"
-                                          - exact: "host"
-                                          - exact: ":method"
-                                          - exact: ":path"
-                                          - exact: ":authority"
                                       authorization_response:
                                         allowed_upstream_headers:
                                           patterns:
@@ -125,14 +126,14 @@ spec:
                                 # Do not leak the Kubernetes service account token to GraphQL.
                                 # It is only for auth-broker.
                                 #
-                                - name: envoy.filters.http.lua
-                                  typed_config:
-                                    "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-                                    default_source_code:
-                                      inline_string: |
-                                        function envoy_on_request(request_handle)
-                                          request_handle:headers():remove("K8s-Pod-Service-Account-Token")
-                                        end
+                                # - name: envoy.filters.http.lua
+                                #   typed_config:
+                                #     "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                                #     default_source_code:
+                                #       inline_string: |
+                                #         function envoy_on_request(request_handle)
+                                #           request_handle:headers():remove("K8s-Pod-Service-Account-Token")
+                                #         end
 
                                 - name: envoy.filters.http.router
                                   typed_config:
