@@ -74,6 +74,9 @@ export default function BaseWorkflowRelay({
     BaseWorkflowRelayFragment,
     fragmentRef,
   );
+  if (!data) {
+    return null;
+  }
 
   const navigate = useNavigate();
 
@@ -136,8 +139,7 @@ export default function BaseWorkflowRelay({
           instrumentSession:
             data.visit,
           status:
-            data.status
-              .__typename as WorkflowStatus,
+            data.status!.__typename as WorkflowStatus,
           creator:
             data.creator
               .creatorId,

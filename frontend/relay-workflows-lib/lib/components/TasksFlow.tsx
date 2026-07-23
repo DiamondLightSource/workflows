@@ -95,7 +95,7 @@ const TasksFlow = ({
     const labels: Record<string, string> = {};
 
     layoutedNodes.forEach((node) => {
-      const data = node.data as TaskFlowNodeData;
+      const data = node.data as unknown as TaskFlowNodeData;
 
       labels[node.id] = data.label ?? node.id;
     });
@@ -113,7 +113,7 @@ const TasksFlow = ({
     (event, node) => {
       console.log("[TasksFlow] node clicked:", node.id, node.data);
 
-      const data = node.data as TaskFlowNodeData;
+      const data = node.data as unknown as TaskFlowNodeData;
 
       const label = data.label ?? node.id;
 

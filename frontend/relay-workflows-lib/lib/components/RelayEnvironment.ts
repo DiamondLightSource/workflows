@@ -21,12 +21,34 @@ const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
 const USE_AUTH_GATEWAY = getUseAuthGateway();
 const AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
 
-const keycloak = await getKeycloak();
+let keycloak: Awaited<ReturnType<typeof getKeycloak>> | null = null;
 
 let kcinitPromise: Promise<boolean> | null = null;
 
 // needed to prevent repeated refresh of page when using subscriptions
-function ensureKeycloakInit(): Promise<boolean> {
+async function ensureKeycloakInit(): Promise<boolean> {
+  if (!keycloak) {
+    keycloak = await getKeycloak();
+
+    if (!USE_AUTH_GATEWAY) {
+      keycloak.onTokenExpired = () => {
+        console.log("JWT expired");
+        keycloak!
+          .updateToken(10)
+          .then((refreshed) => {
+            if (refreshed) {
+              console.log("Fetched new JWT");
+            } else {
+              console.warn("Token still valid");
+            }
+          })
+          .catch((err: unknown) => {
+            console.error("Failed to update JWT", err);
+          });
+      };
+    }
+  }
+
   if (!kcinitPromise) {
     kcinitPromise = keycloak
       .init({
@@ -38,46 +60,26 @@ function ensureKeycloakInit(): Promise<boolean> {
         return false;
       });
   }
+
   return kcinitPromise;
 }
 
-if (!USE_AUTH_GATEWAY) {
-  keycloak.onTokenExpired = () => {
-    console.log("JWT expired");
-    keycloak
-      .updateToken(10)
-      .then((refreshed) => {
-        if (refreshed) {
-          console.log("Fetched new JWT");
-        } else {
-          console.warn("Token still valid");
-        }
-      })
-      .catch((err: unknown) => {
-        console.error("Failed to update JWT", err);
-      });
-  };
-}
-
 const fetchFn: FetchFunction = async (request, variables) => {
-  if (!keycloak.authenticated) {
-    await ensureKeycloakInit();
-  }
-
+  await ensureKeycloakInit();
   const headers: Record<string, string> = {
     Accept:
       "application/graphql-response+json; charset=utf-8, application/json; charset=utf-8",
     "Content-Type": "application/json",
   };
 
-  if (!USE_AUTH_GATEWAY && keycloak.token) {
+  if (!USE_AUTH_GATEWAY && keycloak?.token) {
     headers.Authorization = `Bearer ${keycloak.token}`;
   }
 
   const resp = await fetch(HTTP_ENDPOINT, {
     method: "POST",
     headers,
-    credentials: "include",
+    //credentials: "include",
     body: JSON.stringify({
       query: request.text, // <-- The GraphQL document composed by Relay
       variables,
@@ -95,14 +97,14 @@ const fetchFn: FetchFunction = async (request, variables) => {
 export const wsClient = createClient({
   url: WS_ENDPOINT,
   connectionParams: async () => {
-    if (!USE_AUTH_GATEWAY && !keycloak.authenticated) {
-      await ensureKeycloakInit();
-    }
+    await ensureKeycloakInit();
+
     if (!USE_AUTH_GATEWAY) {
       return {
-        Authorization: `Bearer ${keycloak.token ?? ""}`,
+        Authorization: `Bearer ${keycloak!.token ?? ""}`,
       };
     }
+
     return {};
   },
 });
@@ -149,13 +151,12 @@ export async function getRelayEnvironment(): Promise<Environment> {
 }
 
 export async function getUser(): Promise<AuthState | null> {
-  if (!keycloak.authenticated) {
-    await ensureKeycloakInit();
-  }
-  if (keycloak.token) {
+  await ensureKeycloakInit();
+
+  if (keycloak!.token) {
     let parsedToken: JSONObject = {};
     try {
-      parsedToken = parseJwt(keycloak.token);
+      parsedToken = parseJwt(keycloak!.token);
     } catch (error) {
       console.error("Could not parse JWT: ", error);
     }
