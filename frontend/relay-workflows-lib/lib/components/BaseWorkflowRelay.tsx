@@ -23,7 +23,24 @@ export const BaseWorkflowRelayFragment = graphql`
     }
     status {
       __typename
+
+      ... on WorkflowRunningStatus {
+        startTime
+      }
+
+      ... on WorkflowSucceededStatus {
+        startTime
+      }
+
+      ... on WorkflowFailedStatus {
+        startTime
+      }
+
+      ... on WorkflowErroredStatus {
+        startTime
+      }
     }
+
     ...WorkflowTasksFragment
   }
 `;
@@ -45,6 +62,14 @@ export default function BaseWorkflowRelay({
 }: BaseWorkflowRelayProps) {
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
   const statusText = data.status?.__typename ?? "Unknown";
+  const submittedTime =
+    data.status?.__typename === "WorkflowRunningStatus" ||
+    data.status?.__typename === "WorkflowSucceededStatus" ||
+    data.status?.__typename === "WorkflowFailedStatus" ||
+    data.status?.__typename === "WorkflowErroredStatus"
+      ? data.status.startTime
+      : undefined;
+
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
@@ -87,6 +112,7 @@ export default function BaseWorkflowRelay({
           instrumentSession: data.visit,
           status: statusText as WorkflowStatus,
           creator: data.creator.creatorId,
+          submittedTime,
         }}
         workflowLink={workflowLink}
         expanded={expanded}
