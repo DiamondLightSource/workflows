@@ -84,12 +84,9 @@ spec:
                                     default_source_code:
                                       inline_string: |
                                         function envoy_on_request(request_handle)
-                                          local f = io.open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r")
-                                          if f then
-                                            local token = f:read("*a")
-                                            f:close()
-                                            request_handle:headers():replace("K8s-Pod-Service-Account-Token", token)
-                                          end
+                                          request_handle:headers():replace(
+                                            "k8s-pod-service-account-token",
+                                            "test-token")
                                         end
 
                                 #
