@@ -84,6 +84,7 @@ spec:
                                     default_source_code:
                                       inline_string: |
                                         function envoy_on_request(request_handle)
+                                          request_handle:logInfo("lua: adding k8s-pod-service-account-token test header")
                                           request_handle:headers():replace(
                                             "k8s-pod-service-account-token",
                                             "test-token")
@@ -101,13 +102,10 @@ spec:
 
                                     allowed_headers:
                                       patterns:
-                                      - exact: "K8s-Pod-Service-Account-Token"
+                                      - exact: "k8s-pod-service-account-token"
                                       - exact: "content-type"
                                       - exact: "authorization"
                                       - exact: "host"
-                                      - exact: ":method"
-                                      - exact: ":path"
-                                      - exact: ":authority"
 
                                     with_request_body:
                                       max_request_bytes: 1048576
@@ -132,7 +130,7 @@ spec:
                                 #     default_source_code:
                                 #       inline_string: |
                                 #         function envoy_on_request(request_handle)
-                                #           request_handle:headers():remove("K8s-Pod-Service-Account-Token")
+                                #           request_handle:headers():remove("k8s-pod-service-account-token")
                                 #         end
 
                                 - name: envoy.filters.http.router
@@ -199,7 +197,7 @@ spec:
                     - "-c"
                     - "/etc/envoy/envoy.yaml"
                     - "--log-level"
-                    - "info"
+                    - "debug"
                   startupProbe:
                     tcpSocket:
                       port: 6000
@@ -227,6 +225,3 @@ spec:
                   - name: GRAPH_URL
                     value: "http://127.0.0.1:6000/graphql"
 {{- end }}
-
-
-
