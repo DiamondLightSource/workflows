@@ -8,21 +8,17 @@ metadata:
   namespace: {{ $eventBus.namespace }}
   name: {{ $eventBus.name }}
 spec:
-  nats:
-    native:
-      # Optional, defaults to 3. If it is < 3, set it to 3, that is the minimal requirement.
-      replicas: 3
-      # Optional, auth strategy, "none" or "token", defaults to "none"
-      auth: token
-      {{- if $eventBus.resources }}  
-      containerTemplate:
-        resources:
-          {{- $eventBus.resources | toYaml | nindent 10 }} 
-      {{- end }}
-      {{- if $eventBus.metricsresources }}  
-      metricsContainerTemplate:
-        resources:
-           {{- $eventBus.metricsresources | toYaml | nindent 10 }} 
-      {{- end }}
+  jetstream:
+    version: "2.10.10"
+    {{- if $eventBus.resources }}
+    containerTemplate:
+      resources:
+        {{- $eventBus.resources | toYaml | nindent 10 }} 
+    {{- end }}
+    {{- if $eventBus.metricsresources }}  
+    metricsContainerTemplate:
+      resources:
+          {{- $eventBus.metricsresources | toYaml | nindent 10 }} 
+    {{- end }}
   {{- end }}
 {{- end }}
