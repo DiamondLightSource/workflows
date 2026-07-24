@@ -1,13 +1,28 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "auth-broker.fullname" . }}
+  name: {{ include "auth-broker.fullname" . }}-tokenreview
   labels:
     {{- include "auth-broker.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "auth-broker.fullname" . }}
+  name: {{ include "auth-broker.fullname" . }}-tokenreview
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "auth-broker.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "auth-broker.fullname" . }}-reader
+  labels:
+    {{- include "auth-broker.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "auth-broker.fullname" . }}-reader
 subjects:
   - kind: ServiceAccount
     name: {{ include "auth-broker.fullname" . }}

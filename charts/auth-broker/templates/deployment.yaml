@@ -16,6 +16,13 @@ spec:
         {{- include "auth-broker.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "auth-broker.fullname" . }}
+      # auth-broker is the only workload that needs this SA's token. Explicitly opting in
+      # here (the SA defaults to automount off) prevents other pods from accessing it.
+      automountServiceAccountToken: true
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
