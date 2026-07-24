@@ -1,5 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
+import re
 from typing import TypedDict, NotRequired, Literal
 from pydantic import BaseModel, ValidationError
 
@@ -61,6 +62,7 @@ class TriggerSpec(BaseModel):
 
 class TriggerMetadata(BaseModel):
   name: str
+  namespace: str
   labels: dict[str, str]
 
 
@@ -91,6 +93,7 @@ class Controller(BaseHTTPRequestHandler):
         continue
 
       name: str | None = trigger.metadata.name
+      namespace: str | None = trigger.metadata.namespace
       source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
       uid: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/posixuid")
       workflow = trigger.spec.workflow
@@ -103,17 +106,27 @@ class Controller(BaseHTTPRequestHandler):
         "eventName": eventName,
       }
 
+      dataFilters = []
+
       if workflow.triggerOnMessageType and source_type == "generic":
-        filter = {
-          "data": [{
+        dataFilters.append({
             "path": "body.name",
             "type": "string",
             "value": [workflow.triggerOnMessageType],
-          }]
-        }
-        dependency.update({"filters": filter})
+          })
+      
+      if namespace != "events":
+        dataFilters.append({
+          "path": "body.doc.instrument_session",
+          "type": "string",
+          "value": [namespace],
+        })
+        
+      if dataFilters:
+        dependency.update({"filters": {"data": dataFilters}})
       
       dependencies.append(dependency)
+
       sensorParams = [{
           "src": {
             "dependencyName": name, 
@@ -139,6 +152,7 @@ class Controller(BaseHTTPRequestHandler):
       triggers.append({
         "template": {
           "name": name,
+          "conditions": name,
           "argoWorkflow": {
             "parameters": sensorParams,
             "operation": "submit",
