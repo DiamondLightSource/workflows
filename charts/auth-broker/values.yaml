@@ -4,7 +4,7 @@ image:
   registry: ""
   repository: ghcr.io/diamondlightsource/workflows-auth-broker
   tag: latest
-  digest: ""
+  digest: "sha256:70cc33ff46ed8de53ebb02b569260a5b63add937d12021eff96292ce977fb2ea"
   pullPolicy: IfNotPresent
 
 

@@ -1,0 +1,13 @@
+authenticatedWorkflows:
+  authDaemon:
+    enabled: false
+  envoy:
+    enabled: true
+    authBrokerServerUri: http://fake-auth-broker.envoy-authz-chainsaw.svc.cluster.local:8080
+    authBrokerServerSocketAddress: fake-auth-broker.envoy-authz-chainsaw.svc.cluster.local
+    authBrokerServerSocketPort: 8080
+    graphAddress: fake-graph.envoy-authz-chainsaw.svc.cluster.local
+    graphPort: 8080
+    tls:
+      enabled: false
+    logLevel: warn
