@@ -1,5 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
+import re
 from typing import TypedDict, NotRequired, Literal
 from pydantic import BaseModel, ValidationError
 
@@ -61,6 +62,7 @@ class TriggerSpec(BaseModel):
 
 class TriggerMetadata(BaseModel):
   name: str
+  namespace: str
   labels: dict[str, str]
 
 
@@ -91,6 +93,7 @@ class Controller(BaseHTTPRequestHandler):
         continue
 
       name: str | None = trigger.metadata.name
+      namespace: str | None = trigger.metadata.namespace
       source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
       uid: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/posixuid")
       workflow = trigger.spec.workflow
@@ -114,11 +117,16 @@ class Controller(BaseHTTPRequestHandler):
         dependency.update({"filters": filter})
       
       dependencies.append(dependency)
+
+      src = {"dependencyName": name}
+
+      if re.match(r"^([A-Za-z]+)(\d+)-(\d+)$", namespace or ""):
+        src.update({"value": namespace})
+      else:
+        src.update({"dataKey": "body.doc.instrument_session"})
+
       sensorParams = [{
-          "src": {
-            "dependencyName": name, 
-            "dataKey": "body.doc.instrument_session"
-          },
+          "src": src,
           "dest": "metadata.namespace"
         }]
       templateArgs = []
