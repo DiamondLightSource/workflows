@@ -1,0 +1,112 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: envoy-authz-service-account-token
+spec:
+  namespace: envoy-authz-chainsaw
+  timeouts:
+    cleanup: 90s
+    delete: 30s
+
+  steps:
+    - name: test envoy policy works
+      try:
+        - apply:
+            file: fake-graph.yaml
+
+        - assert:
+            file: fake-graph.yaml
+
+        - apply:
+            file: fake-auth-broker.yaml
+
+        - assert:
+            file: fake-auth-broker.yaml
+
+        - script:
+            content: |
+              set -eu
+              pwd
+              : "${CHART_DIR:=../../}"
+
+              helm template chainsaw-envoy-auth "$CHART_DIR" \
+                --namespace "$NAMESPACE" \
+                --values values-chainsaw.yaml \
+                | yq 'select(.kind == "ClusterPolicy" and .metadata.name == "chainsaw-envoy-auth-inject-envoy-sidecar")' | kubectl apply -f -
+
+              kubectl wait \
+                --for=condition=Ready \
+                clusterpolicy/chainsaw-envoy-auth-inject-envoy-sidecar \
+                --timeout=60s
+
+        - apply:
+            file: pod.yaml
+
+        - assert:
+            file: pod-mutated.yaml
+
+        - assert:
+            file: pod-succeeded.yaml
+
+        - script:
+            content: |
+              set -eu
+
+              echo "Checking fake-auth-broker logs"
+
+              LOGS="$(kubectl logs \
+                --namespace "$NAMESPACE" \
+                -l app=fake-auth-broker \
+                -c fake-auth-broker)"
+
+              echo "$LOGS" | grep -Fq 'TOKEN_PRESENT true'
+
+        - script:
+            content: |
+              set -eu
+
+              echo "Checking fake-graph logs"
+
+              LOGS="$(kubectl logs \
+                --namespace "$NAMESPACE" \
+                -l app=fake-graph \
+                -c fake-graph)"
+
+              echo "$LOGS" | grep -Fq 'TOKEN_HAS_AUTH_HEADER true' || {
+                echo "Expected TOKEN_HAS_AUTH_HEADER true in fake-graph logs"
+                echo "$LOGS"
+                exit 1
+              }
+
+              echo "$LOGS" | grep -Fq 'TOKEN_LEAKED false' || {
+                echo "Expected TOKEN_PRESENT false in fake-graph logs"
+                echo "$LOGS"
+                exit 1
+              }
+
+      catch:
+        - describe:
+            apiVersion: v1
+            kind: Pod
+            name: envoy-auth-test
+
+        - podLogs:
+            name: envoy-auth-test
+            container: workflows-auth-envoy
+
+        - podLogs:
+            name: envoy-auth-test
+            container: main
+
+        - podLogs:
+            selector: app=fake-auth-broker
+            container: fake-auth-broker
+
+        - podLogs:
+            selector: app=fake-graph
+            container: fake-graph
+
+      finally:
+        - script:
+            content: |
+              kubectl delete clusterpolicy chainsaw-envoy-auth-inject-envoy-sidecar --ignore-not-found

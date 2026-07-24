@@ -58,6 +58,9 @@ spec:
             - name: config
               mountPath: /etc/auth-broker
               readOnly: true
+          env:
+            - name: LOG_LEVEL
+              value: "debug"
       volumes:
         - name: config
           secret:
