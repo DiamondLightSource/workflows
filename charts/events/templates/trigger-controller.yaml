@@ -15,9 +15,11 @@ spec:
         method: InPlace
   hooks:
     sync:
+      version: {{ .Values.metacontroller.hooks.sync.version }}
       webhook:
         url: http://workflows-metacontroller.events/sync
     customize:
+      version: {{ .Values.metacontroller.hooks.customize.version }}
       webhook:
         url: http://workflows-metacontroller.events/customize
 {{- end }}
