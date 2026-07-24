@@ -75,7 +75,9 @@ const fetchFn: FetchFunction = async (request, variables) => {
   if (!USE_AUTH_GATEWAY && keycloak?.token) {
     headers.Authorization = `Bearer ${keycloak.token}`;
   }
-
+  console.log("HTTP_ENDPOINT =", HTTP_ENDPOINT);console.log("USE_AUTH_GATEWAY =", USE_AUTH_GATEWAY);
+  console.log("Token length =", keycloak?.token?.length ?? 0);
+  console.log("Headers =", headers);
   const resp = await fetch(HTTP_ENDPOINT, {
     method: "POST",
     headers,

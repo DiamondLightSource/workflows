@@ -63,7 +63,7 @@ struct WatchEvent {
 }
 
 /// Get authentication token
-pub fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
+pub fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String>{
     let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
     auth_token
         .as_ref()
@@ -74,6 +74,7 @@ pub fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
 #[Subscription(guard = "AuthGuard")]
 impl WorkflowsSubscription {
     /// Processing to subscribe to logs for a single pod of a workflow
+/// Processing to subscribe to logs for a single pod of a workflow
     async fn logs(
         &self,
         ctx: &Context<'_>,
@@ -82,6 +83,7 @@ impl WorkflowsSubscription {
         task_id: String,
     ) -> anyhow::Result<impl Stream<Item = Result<LogEntry, String>>> {
         let auth_token = get_auth_token(ctx)?;
+
         let s3_client = ctx.data_unchecked::<Client>().clone();
         let s3_bucket = ctx.data_unchecked::<S3Bucket>().clone();
 
@@ -89,14 +91,7 @@ impl WorkflowsSubscription {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref().clone();
         let mut url = server_url;
 
-        let s3_key = format!(
-            "{}/{}/{}.log",
-            namespace,
-            workflow_name,
-            task_id,
-        );  
-        
-        
+        let s3_key = format!("{}/{}/{}.log", namespace, workflow_name, task_id);
 
         url.path_segments_mut().expect("Invalid base URL").extend([
             "api",
@@ -113,6 +108,7 @@ impl WorkflowsSubscription {
             .append_pair("logOptions.follow", "true");
 
         let client = reqwest::Client::new();
+
         let response = client
             .get(url)
             .bearer_auth(auth_token)
@@ -122,74 +118,88 @@ impl WorkflowsSubscription {
 
         let status = response.status();
         let byte_stream = response.bytes_stream();
-  
+
+        let fallback_pod_name = task_id.clone();
 
         let log_stream = stream! {
             let mut all_logs = String::new();
+            let mut error_body = String::new();
 
             for await chunk_result in byte_stream {
                 match chunk_result {
                     Ok(chunk) if status.is_success() => {
-
                         let text = String::from_utf8_lossy(&chunk).to_string();
 
                         for line in text.lines() {
+                            let line = line.trim_end();
+
+                            if line.is_empty() {
+                                continue;
+                            }
 
                             match serde_json::from_str::<LogResponse>(line) {
-
                                 Ok(parsed) => {
-
                                     if let Some(result) = parsed.result {
-
                                         all_logs.push_str(&result.content);
                                         all_logs.push('\n');
 
-                                        let log = LogEntry {
-                                            content: result.content.clone(),
-                                            pod_name: result.pod_name.clone(),
-                                        };
-
-                                        yield Ok(log);
-
+                                        yield Ok(LogEntry {
+                                            content: result.content,
+                                            pod_name: result.pod_name,
+                                        });
                                     } else {
                                         yield Err("Missing result in log response".to_string());
                                     }
                                 }
 
                                 Err(_) => {
-
-                                    all_logs.push_str(line.trim());
+                                    all_logs.push_str(line);
                                     all_logs.push('\n');
 
                                     yield Ok(LogEntry {
-                                        content: line.trim().to_string(),
-                                        pod_name: task_id.clone(),
+                                        content: line.to_string(),
+                                        pod_name: fallback_pod_name.clone(),
                                     });
                                 }
                             }
                         }
                     }
 
-                    Ok(_) | Err(_) => {
-                        yield Err("Failed to read log chunk".to_string());
+                    Ok(chunk) => {
+                        error_body.push_str(&String::from_utf8_lossy(&chunk));
+                    }
+
+                    Err(err) => {
+                        yield Err(format!("Failed to read log chunk: {err}"));
                     }
                 }
             }
 
-            if !all_logs.is_empty() {
-                let _ = upload_logs(
+            if !status.is_success() {
+                let body = error_body.trim();
+
+                if body.is_empty() {
+                    yield Err(format!("Argo logs API returned HTTP {status}"));
+                } else {
+                    yield Err(format!("Argo logs API returned HTTP {status}: {body}"));
+                }
+            } else if !all_logs.is_empty() {
+                if let Err(err) = upload_logs(
                     &s3_client,
                     &s3_bucket,
                     &s3_key,
                     all_logs,
                 )
-                .await;
+                .await
+                {
+                    yield Err(format!("Failed to upload logs to S3: {err}"));
+                }
             }
         };
+
         Ok(log_stream)
     }
-
-    /// Processing to subscribe to data for all workflows in a session
+        /// Processing to subscribe to data for all workflows in a session
     async fn workflow(
         &self,
         ctx: &Context<'_>,

@@ -250,7 +250,7 @@ async fn setup_router(
                     .allow_methods([Method::GET, Method::POST])
                     .allow_headers(tower_http::cors::Any)
                     .allow_origin(cors_origin)
-                    .allow_credentials(true),
+                  
             ),
     )
 }
