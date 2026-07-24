@@ -1,0 +1,114 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: assign-default-trigger-ttl
+spec:
+  steps:
+    - try:
+      - create:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: test-template
+              labels:
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+      - assert:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: test-template
+              labels:
+                cleanup.kyverno.io/ttl: 24h
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: propagate-user-defined-trigger-expiration
+spec:
+  steps:
+    - try:
+      - create:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: test-template
+              labels:
+                workflows.diamond.ac.uk/expiration: 30m
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+      - assert:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: test-template
+              labels:
+                cleanup.kyverno.io/ttl: 30m
+                workflows.diamond.ac.uk/expiration: 30m
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: allow-never-ending-trigger
+spec:
+  steps:
+    - try:
+      - create:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: test-template
+              labels:
+                workflows.diamond.ac.uk/expiration: never
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+      - assert:
+          resource:
+            apiVersion: workflows.diamond.ac.uk/v1alpha1
+            kind: Trigger
+            metadata:
+              name: test-template
+              labels:
+                workflows.diamond.ac.uk/expiration: never
+                workflows.diamond.ac.uk/source: test-source
+                workflows.diamond.ac.uk/beamline: test-beamline
+            spec:
+              enabled: true
+              eventName: test-eventname
+              workflow:
+                template: workflow-template
+
