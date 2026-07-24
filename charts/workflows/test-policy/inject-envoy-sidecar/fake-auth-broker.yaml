@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-auth-broker
+data:
+  server.py: |
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            token = self.headers.get("k8s-pod-service-account-token")
+            token_present = bool(token)
+            print(f"TOKEN_PRESENT {str(token_present).lower()}", flush=True)
+
+            if token_present:
+                self.send_response(200)
+                self.send_header("authorization", "Bearer fake-auth-broker-token")
+                self.end_headers()
+                self.wfile.write(b"ok")
+            else:
+                self.send_response(403)
+                self.end_headers()
+                self.wfile.write(b"missing or invalid token")
+
+    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-auth-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fake-auth-broker
+  template:
+    metadata:
+      labels:
+        app: fake-auth-broker
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: fake-auth-broker
+          image: python:3.14-alpine
+          command:
+            - python
+            - /app/server.py
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          configMap:
+            name: fake-auth-broker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fake-auth-broker
+spec:
+  selector:
+    app: fake-auth-broker
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

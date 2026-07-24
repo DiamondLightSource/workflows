@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-graph
+data:
+  server.py: |
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            has_expected_auth_header = self.headers.get("authorization") == "Bearer fake-auth-broker-token"
+            print(f"TOKEN_HAS_AUTH_HEADER {str(has_expected_auth_header).lower()}", flush=True)
+            leaked = self.headers.get("k8s-pod-service-account-token") is not None
+            print(f"TOKEN_LEAKED {str(leaked).lower()}", flush=True)
+
+            if has_expected_auth_header and not leaked:
+                body = b'{"data":{"workflowTemplates":{"nodes":[{"name":"mock-template"}]}}}'
+                self.send_response(200)
+                self.send_header("content-type", "application/json")
+                self.send_header("content-length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            else:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"invalid token or headers")
+                return
+
+    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-graph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fake-graph
+  template:
+    metadata:
+      labels:
+        app: fake-graph
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: fake-graph
+          image: python:3.14-alpine
+          command:
+            - python
+            - /app/server.py
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          configMap:
+            name: fake-graph
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fake-graph
+spec:
+  selector:
+    app: fake-graph
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

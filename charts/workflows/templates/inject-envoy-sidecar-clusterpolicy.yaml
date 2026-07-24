@@ -1,0 +1,364 @@
+{{- if .Values.authenticatedWorkflows.envoy.enabled }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ .Release.Name }}-inject-envoy-sidecar
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  validationFailureAction: Enforce
+  background: false
+
+  rules:
+    - name: inject-envoy-sidecar
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              selector:
+                matchExpressions:
+                  - key: workflows.argoproj.io/workflow
+                    operator: Exists
+
+      preconditions:
+        all:
+          - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/authenticated\" || '' }}` }}"
+            operator: Equals
+            value: "true"
+
+          - key: '{{ "{{ (request.object.spec.initContainers || `[]`)[?name == ''workflows-auth-init''] | length(@) }}" }}'
+            operator: Equals
+            value: 0
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            volumes:
+              - name: workflows-envoy-config
+                emptyDir: {}
+
+            initContainers:
+              - name: workflows-auth-init
+                image: busybox:1.36
+                resources:
+                  requests:
+                    cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "25m" }}
+                    memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).memory | default "32Mi" }}
+                  limits:
+                    memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).limits).memory | default "64Mi" }}
+                command:
+                  - /bin/sh
+                  - -c
+                  # Configure Envoy Proxy for the following behaviour:
+                  # 
+                  # main container
+                  #   POST http://127.0.0.1:6000/graphql
+                  #         |
+                  #         v
+                  # Envoy listener :6000
+                  #         |
+                  #         v
+                  # HTTP connection manager
+                  #         |
+                  #         v
+                  # Lua filter #1
+                  #   reads /var/run/secrets/kubernetes.io/serviceaccount/token
+                  #   adds k8s-pod-service-account-token header
+                  #         |
+                  #         v
+                  # ext_authz filter
+                  #   sends authorization check to auth-broker
+                  #   includes selected headers and up to 1 MiB request body
+                  #         |
+                  #         | if denied
+                  #         |   -> Envoy returns 403 to caller
+                  #         |
+                  #         | if allowed
+                  #         v
+                  # Lua filter #2
+                  #   removes k8s-pod-service-account-token
+                  #         |
+                  #         v
+                  # Router filter
+                  #   forwards request to graph-upstream
+                  #         |
+                  #         v
+                  # GraphQL server
+                  - |
+                    cat > /etc/envoy/envoy.yaml << 'ENVOYEOF'
+                    static_resources:
+                      listeners:
+                      - name: envoy-local-graph-proxy
+                        address:
+                          socket_address:
+                            address: 0.0.0.0
+                            port_value: 6000
+                        filter_chains:
+                        - filters:
+                          - name: envoy.filters.network.http_connection_manager
+                            typed_config:
+                              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                              stat_prefix: envoy-local-graph-proxy
+                              codec_type: AUTO
+                              upgrade_configs:
+                                - upgrade_type: websocket
+                              route_config:
+                                name: local_route
+                                virtual_hosts:
+                                - name: graph_backend
+                                  domains:
+                                  - "*"
+                                  routes:
+                                    - match:
+                                        prefix: "/graphql/ws"
+                                      route:
+                                        cluster: graph-upstream
+                                        timeout: 0s
+                                        host_rewrite_literal: {{ .Values.authenticatedWorkflows.envoy.graphAddress | quote }}
+                                        upgrade_configs:
+                                          - upgrade_type: websocket
+                                            enabled: true
+                                      typed_per_filter_config:
+                                        envoy.filters.http.ext_authz:
+                                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                          disabled: false
+                                    - match:
+                                        prefix: "/"
+                                      route:
+                                        cluster: graph-upstream
+                                        timeout: 30s
+                                        host_rewrite_literal: {{ .Values.authenticatedWorkflows.envoy.graphAddress | quote }}
+                                      typed_per_filter_config:
+                                        envoy.filters.http.ext_authz:
+                                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                          disabled: false
+                              http_filters:
+                              # Add the Pod service account token to send to auth broker
+                              - name: envoy.filters.http.lua
+                                typed_config:
+                                  "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                                  default_source_code:
+                                    inline_string: |
+                                      function envoy_on_request(request_handle)
+                                        local token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+                                        request_handle:logInfo("lua: reading Kubernetes service account token")
+
+                                        if io == nil or io.open == nil then
+                                          request_handle:logErr("lua: io.open is not available in this Envoy Lua runtime")
+                                          return
+                                        end
+
+                                        local ok, file_or_err = pcall(io.open, token_path, "r")
+
+                                        if not ok then
+                                          request_handle:logErr("lua: io.open raised error: " .. tostring(file_or_err))
+                                          return
+                                        end
+
+                                        local f = file_or_err
+
+                                        if f == nil then
+                                          request_handle:logErr("lua: failed to open service account token file: " .. token_path)
+                                          return
+                                        end
+
+                                        local token = f:read("*a")
+                                        f:close()
+
+                                        if token == nil or token == "" then
+                                          request_handle:logErr("lua: service account token file was empty")
+                                          return
+                                        end
+
+                                        token = string.gsub(token, "%s+$", "")
+
+                                        request_handle:headers():replace(
+                                          "k8s-pod-service-account-token",
+                                          token
+                                        )
+
+                                        request_handle:logInfo("lua: added k8s-pod-service-account-token header")
+                                      end
+
+                              # Request access token from auth-broker
+                              - name: envoy.filters.http.ext_authz
+                                typed_config:
+                                  "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                                  transport_api_version: V3
+
+                                  allowed_headers:
+                                    patterns:
+                                    - exact: "k8s-pod-service-account-token"
+                                    - exact: "content-type"
+                                    - exact: "authorization"
+                                    - exact: "host"
+
+                                  http_service:
+                                    server_uri:
+                                      uri: {{ .Values.authenticatedWorkflows.envoy.authBrokerServerUri | quote }}
+                                      cluster: auth-broker
+                                      timeout: 5s
+                                    authorization_response:
+                                      allowed_upstream_headers:
+                                        patterns:
+                                        - exact: "authorization"
+
+                              # Remove pod service token so that it is not sent outside the cluster to the GraphQL server
+                              - name: envoy.filters.http.lua
+                                typed_config:
+                                  "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                                  default_source_code:
+                                    inline_string: |
+                                      function envoy_on_request(request_handle)
+                                        request_handle:headers():remove("k8s-pod-service-account-token")
+                                      end
+
+                              - name: envoy.filters.http.router
+                                typed_config:
+                                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+                      clusters:
+                      - name: graph-upstream
+                        connect_timeout: 5s
+                        type: LOGICAL_DNS
+                        lb_policy: ROUND_ROBIN
+                        load_assignment:
+                          cluster_name: graph-upstream
+                          endpoints:
+                          - lb_endpoints:
+                            - endpoint:
+                                address:
+                                  socket_address:
+                                    address: {{ .Values.authenticatedWorkflows.envoy.graphAddress | quote }}
+                                    port_value: {{ .Values.authenticatedWorkflows.envoy.graphPort }}
+                        {{- if .Values.authenticatedWorkflows.envoy.tls.enabled }}
+                        transport_socket:
+                          name: envoy.transport_sockets.tls
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+                            sni: {{ .Values.authenticatedWorkflows.envoy.graphAddress | quote }}
+                        {{- end }}
+
+                      - name: auth-broker
+                        connect_timeout: 5s
+                        type: STRICT_DNS
+                        lb_policy: ROUND_ROBIN
+                        load_assignment:
+                          cluster_name: auth-broker
+                          endpoints:
+                          - lb_endpoints:
+                            - endpoint:
+                                address:
+                                  socket_address:
+                                    address: {{ .Values.authenticatedWorkflows.envoy.authBrokerServerSocketAddress | quote }}
+                                    port_value: {{ .Values.authenticatedWorkflows.envoy.authBrokerServerSocketPort }}
+                    ENVOYEOF
+                volumeMounts:
+                  - name: workflows-envoy-config
+                    mountPath: /etc/envoy
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                      - ALL
+
+              - name: workflows-auth-envoy-validate
+                image: envoyproxy/envoy:distroless-v1.39.0
+                resources:
+                  requests:
+                    cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "25m" }}
+                    memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).memory | default "32Mi" }}
+                  limits:
+                    memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).limits).memory | default "64Mi" }}
+                command:
+                  - /usr/local/bin/envoy
+                args:
+                  - --mode
+                  - validate
+                  - -c
+                  - /etc/envoy/envoy.yaml
+                  - --log-level
+                  - info
+                volumeMounts:
+                  - name: workflows-envoy-config
+                    mountPath: /etc/envoy
+                securityContext:
+                  runAsNonRoot: true
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                      - ALL
+
+              - name: workflows-auth-envoy
+                image: envoyproxy/envoy:distroless-v1.39.0
+                resources:
+                  requests:
+                    cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "25m" }}
+                    memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).memory | default "32Mi" }}
+                  limits:
+                    memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).limits).memory | default "64Mi" }}
+                restartPolicy: Always
+                args:
+                  - "-c"
+                  - "/etc/envoy/envoy.yaml"
+                  - "--log-level"
+                  - "{{ .Values.authenticatedWorkflows.envoy.logLevel | default "warn" }}"
+                startupProbe:
+                  tcpSocket:
+                    port: 6000
+                  initialDelaySeconds: 1
+                  periodSeconds: 1
+                  failureThreshold: 30
+                  timeoutSeconds: 1
+                volumeMounts:
+                  - name: workflows-envoy-config
+                    mountPath: /etc/envoy
+                securityContext:
+                  runAsNonRoot: true
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                      - ALL
+
+    - name: set-graph-url-on-containers
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+              selector:
+                matchExpressions:
+                  - key: workflows.argoproj.io/workflow
+                    operator: Exists
+
+      preconditions:
+        all:
+          - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/authenticated\" || '' }}` }}"
+            operator: Equals
+            value: "true"
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            preconditions:
+              all:
+                # do not patch the Argo workflows "wait" container
+                - key: "{{ "{{ element.name }}" }}"
+                  operator: NotEquals
+                  value: wait
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{ "{{ element.name }}" }}"
+                    env:
+                      - name: GRAPH_URL
+                        value: "http://127.0.0.1:6000/graphql"
+                      - name: GRAPH_URL_WS
+                        value: "http://127.0.0.1:6000/graphql/ws"
+{{- end }}

@@ -277,6 +277,20 @@ s3mock:
 allowTriggerUid: false
 
 authenticatedWorkflows:
+  # Enable auth-daemon based authentication method
   # TODO: switch on these chainsaw tests when switching this to true
   # charts/workflows/test-policy/authdaemon/chainsaw-test.yaml
-  enabled: false
+  authDaemon:
+    enabled: false
+  # Enables auth-broker + Envoy sidecar injection
+  # Requires the auth-broker service to be deployed in the auth-broker namespace
+  envoy:
+    enabled: false
+    authBrokerServerUri: http://auth-broker.auth-broker.svc.cluster.local:8080
+    authBrokerServerSocketAddress: auth-broker.auth-broker.svc.cluster.local
+    authBrokerServerSocketPort: 8080
+    graphAddress: graph.diamond.ac.uk
+    graphPort: 443
+    tls:
+      enabled: true
+    logLevel: warn
