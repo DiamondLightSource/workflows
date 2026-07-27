@@ -23,6 +23,7 @@ const RenderSubmittedMessageFragment = graphql`
     status {
       __typename
     }
+    id
   }
 `;
 
@@ -50,7 +51,7 @@ export const RenderSubmittedMessage: React.FC<
           <AccordionSummary>
             <Typography sx={{ width: "100%", lineHeight: "25px" }}>
               Successfully submitted{" "}
-              <Link to={`/workflows/${result.message}`}>{result.message}</Link>
+              <Link to={`/workflows/${result.link}`}>{result.message}</Link>
             </Typography>
             {data
               ? getWorkflowStatusIcon(data.status?.__typename as WorkflowStatus)

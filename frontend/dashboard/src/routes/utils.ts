@@ -5,6 +5,7 @@ import {
   visitTextToVisit,
   convertStringToScienceGroup,
   WorkflowTemplatesFilter,
+  splitWorkflowId,
 } from "workflows-lib";
 
 export const useVisitInput = (initialVisitId?: string | null) => {
@@ -55,4 +56,19 @@ export function getFilterFromParams(searchParams: URLSearchParams) {
     ?.map((entry) => convertStringToScienceGroup(entry))
     .filter((entry) => entry !== undefined);
   return filter;
+}
+
+export function tidyPath(pathname: string, includeVisit: boolean = false) {
+  const splitPath = pathname.split("/");
+  const id = splitPath.pop();
+  const splitId = splitWorkflowId(id);
+  if (!splitId) {
+    return pathname;
+  }
+  const tidyIdElements = [];
+  if (includeVisit) tidyIdElements.push(visitToText(splitId.visit));
+  if (splitId.workflowName) tidyIdElements.push(splitId.workflowName);
+
+  splitPath.push(tidyIdElements.join("-"));
+  return splitPath.join("/");
 }

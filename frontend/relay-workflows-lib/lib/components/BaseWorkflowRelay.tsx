@@ -1,11 +1,9 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { Box } from "@mui/material";
-import { visitToText } from "@diamondlightsource/sci-react-ui";
 import { WorkflowAccordion, type WorkflowStatus } from "workflows-lib";
 import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
 import { useSelectedTaskIds } from "../utils/workflowRelayUtils";
-import { useParams, useNavigate } from "react-router-dom";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
@@ -14,6 +12,7 @@ import TasksFlow from "./TasksFlow";
 export const BaseWorkflowRelayFragment = graphql`
   fragment BaseWorkflowRelayFragment on Workflow {
     name
+    id
     visit {
       proposalCode
       proposalNumber
@@ -44,10 +43,6 @@ export default function BaseWorkflowRelay({
   onChange,
   fragmentRef,
 }: BaseWorkflowRelayProps) {
-  const { workflowName: workflowNameURL } = useParams<{
-    workflowName: string;
-  }>();
-  const navigate = useNavigate();
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
   const statusText = data.status?.__typename ?? "Unknown";
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
@@ -65,12 +60,9 @@ export default function BaseWorkflowRelay({
       } else {
         updatedTaskIds = [taskId];
       }
-      if (workflowNameURL !== data.name) {
-        void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
-      }
       setSelectedTaskIds(updatedTaskIds);
     },
-    [navigate, selectedTaskIds, setSelectedTaskIds, workflowNameURL, data],
+    [selectedTaskIds, setSelectedTaskIds],
   );
 
   return (
@@ -91,6 +83,7 @@ export default function BaseWorkflowRelay({
       <WorkflowAccordion
         workflow={{
           name: data.name,
+          id: data.id,
           instrumentSession: data.visit,
           status: statusText as WorkflowStatus,
           creator: data.creator.creatorId,
@@ -117,7 +110,7 @@ export default function BaseWorkflowRelay({
           }}
         >
           <TasksFlow
-            workflowName={data.name}
+            workflowId={data.id}
             tasksRef={data}
             onNavigate={onNavigate}
             highlightedTaskIds={selectedTaskIds}
