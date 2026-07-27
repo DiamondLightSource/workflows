@@ -70,21 +70,26 @@ function BackgroundLogSubscription({
   visit,
   workflowName,
   taskId,
+  completed,
+  logUrl,
 }: {
   visit: any;
   workflowName: string;
   taskId: string;
+  completed: boolean;
+  logUrl?: string;
 }) {
   useArgoLogs({
     visit,
     workflowName,
     taskId,
+    completed,
+    logUrl,
     enabled: true,
   });
 
   return null;
 }
-
 export default function BaseSingleWorkflowView({
   taskIds,
   fragmentRef,
@@ -93,6 +98,27 @@ export default function BaseSingleWorkflowView({
 
   const fetchedTasks = useFetchedTasks(data ?? null);
 
+  useEffect(() => {
+    console.log("BaseSingleWorkflowView useEffect fired");
+    console.log("fetchedTasks:", fetchedTasks);
+
+    if (fetchedTasks.length === 0) {
+      console.log("No fetched tasks");
+      return;
+    }
+
+    fetchedTasks.forEach((task) => {
+      console.group(`Task ${task.name}`);
+
+      console.log(task);
+
+      task.artifacts.forEach((artifact) => {
+        console.log("Artifact:", artifact);
+      });
+
+      console.groupEnd();
+    });
+  }, [fetchedTasks]);
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
   const [filledTaskId, setFilledTaskId] = useState<string | null>(null);
@@ -129,13 +155,39 @@ export default function BaseSingleWorkflowView({
     [fetchedTasks],
   );
 
+
+  const taskLogUrls = useMemo(
+    () =>
+      Object.fromEntries(
+        fetchedTasks.map((task) => {
+          const logArtifact = task.artifacts.find(
+            (artifact) => artifact.name === "main.log",
+          );
+
+          return [task.id, logArtifact?.url];
+        }),
+      ),
+    [fetchedTasks],
+  );  
+
   useEffect(() => {
     if (!fetchedTasks.length) {
       return;
     }
 
+    console.clear();
+
     fetchedTasks.forEach((task) => {
-      console.log(`Task ${task.name}:`, task.status);
+      console.group(`Task: ${task.name}`);
+
+      console.log("Status:", task.status);
+
+      console.log(
+        "Artifacts JSON:",
+        JSON.stringify(task.artifacts, null, 2),
+      );
+
+      console.groupEnd();
     });
 
     setOpenedTaskIds((previous) => {
@@ -221,12 +273,22 @@ export default function BaseSingleWorkflowView({
         }
 
         return (
-          <BackgroundLogSubscription
-            key={task.id}
-            visit={data.visit}
-            workflowName={data.name}
-            taskId={task.id}
-          />
+        <BackgroundLogSubscription
+          key={task.id}
+          visit={data.visit}
+          workflowName={data.name}
+          taskId={task.id}
+          completed={
+            task.status === "SUCCEEDED" ||
+            task.status === "FAILED" ||
+            task.status === "ERROR"
+          }
+          logUrl={
+            task.artifacts.find(
+              (artifact) => artifact.name === "main.log",
+            )?.url
+          }
+        />
         );
       })}
       <Box
@@ -334,6 +396,7 @@ export default function BaseSingleWorkflowView({
               taskIds={openedTaskIds}
               taskLabels={taskLabels}
               taskStatuses={taskStatuses}
+              taskLogUrls={taskLogUrls}
             />
           </AccordionDetails>
         </Accordion>

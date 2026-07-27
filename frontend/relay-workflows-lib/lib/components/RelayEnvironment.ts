@@ -77,7 +77,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   const resp = await fetch(HTTP_ENDPOINT, {
     method: "POST",
     headers,
-    credentials: "include",
+    //credentials: "include",
     body: JSON.stringify({
       query: request.text, // <-- The GraphQL document composed by Relay
       variables,

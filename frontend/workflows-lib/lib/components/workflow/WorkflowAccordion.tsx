@@ -20,7 +20,7 @@ interface WorkflowProps {
   children: React.ReactNode;
   workflowLink?: boolean;
   expanded?: boolean;
-  onChange?: () => void;
+  onChange?: (  event: React.SyntheticEvent,  expanded: boolean,) => void;
   retriggerComponent?: React.ComponentType<{
     instrumentSession: Visit;
     workflowName: string;

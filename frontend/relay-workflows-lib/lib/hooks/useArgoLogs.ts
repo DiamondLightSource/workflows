@@ -14,6 +14,17 @@ type Args = {
   };
   workflowName: string;
   taskId: string | null;
+
+  /*
+   * S3 URL for the archived main.log.
+   */
+  logUrl?: string;
+
+  /*
+   * True once this task has finished.
+   */
+  completed?: boolean;
+
   container?: string;
   enabled?: boolean;
 };
@@ -36,6 +47,8 @@ export function useArgoLogs({
   visit,
   workflowName,
   taskId,
+  logUrl,
+  completed = false,
   container = "main",
   enabled = true,
 }: Args) {
@@ -66,15 +79,16 @@ export function useArgoLogs({
   const listenerRef =
     useRef<(log: LogEntry) => void>();
 
-  const uploadedIndexRef =
-    useRef(0);
+  // const uploadedIndexRef =
+  //   useRef(0);
 
-  const uploadInProgressRef =
-    useRef(false);
+  // const uploadInProgressRef =
+  //   useRef(false);
 
 
   const [hasReceivedLiveLogs, setHasReceivedLiveLogs] =
   useState(false);  
+  const fetchedS3Ref = useRef(false);
   /*
    * Persist logs immediately.
    */
@@ -92,85 +106,87 @@ export function useArgoLogs({
     storageKey,
   ]);
 
-  /*
-  * Upload new logs every 10 seconds.
-  */
-  useEffect(() => {
-    if (
-      !taskId ||
-      logs.length === 0
-    ) {
-      return;
-    }
+    
 
-    const interval =
-      setInterval(async () => {
+  // /*
+  // * Upload new logs every 10 seconds.
+  // */
+  // useEffect(() => {
+  //   if (
+  //     !taskId ||
+  //     logs.length === 0
+  //   ) {
+  //     return;
+  //   }
 
-        if (
-          uploadInProgressRef.current
-        ) {
-          return;
-        }
+  //   const interval =
+  //     setInterval(async () => {
 
-        const newLogs =
-          logs.slice(
-            uploadedIndexRef.current,
-          );
+  //       if (
+  //         uploadInProgressRef.current
+  //       ) {
+  //         return;
+  //       }
 
-        if (
-          newLogs.length === 0
-        ) {
-          return;
-        }
+  //       const newLogs =
+  //         logs.slice(
+  //           uploadedIndexRef.current,
+  //         );
 
-        uploadInProgressRef.current =
-          true;
+  //       if (
+  //         newLogs.length === 0
+  //       ) {
+  //         return;
+  //       }
 
-        try {
-          await fetch(
-            "/api/logs/upload",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-              body: JSON.stringify({
-                visit,
-                workflowName,
-                taskId,
-                logs: newLogs,
-              }),
-            },
-          );
+  //       uploadInProgressRef.current =
+  //         true;
 
-          uploadedIndexRef.current =
-            logs.length;
-        }
-        catch (err) {
-          console.error(
-            "Failed to upload logs",
-            err,
-          );
-        }
-        finally {
-          uploadInProgressRef.current =
-            false;
-        }
+  //       try {
+  //         await fetch(
+  //           "/api/logs/upload",
+  //           {
+  //             method: "POST",
+  //             headers: {
+  //               "Content-Type":
+  //                 "application/json",
+  //             },
+  //             body: JSON.stringify({
+  //               visit,
+  //               workflowName,
+  //               taskId,
+  //               logs: newLogs,
+  //             }),
+  //           },
+  //         );
 
-      }, 10000);
+  //         uploadedIndexRef.current =
+  //           logs.length;
+  //       }
+  //       catch (err) {
+  //         console.error(
+  //           "Failed to upload logs",
+  //           err,
+  //         );
+  //       }
+  //       finally {
+  //         uploadInProgressRef.current =
+  //           false;
+  //       }
 
-    return () =>
-      clearInterval(
-        interval,
-      );
+  //     }, 10000);
 
-  }, [
-    logs,
-    taskId,
-    workflowName,
-    visit,
-  ]);
+  //   return () =>
+  //     clearInterval(
+  //       interval,
+  //     );
+
+  // }, [
+  //   logs,
+  //   taskId,
+  //   workflowName,
+  //   visit,
+  // ]);
 
 
   useEffect(() => {
@@ -424,6 +440,81 @@ export function useArgoLogs({
     container,
     enabled,
     storageKey,
+  ]);
+
+  /*
+  * Once the task has completed, load the archived S3 log
+  * if we never received live websocket logs.
+  */
+  useEffect(() => {
+    if (
+      !completed ||
+      !logUrl ||
+      hasReceivedLiveLogs
+    ) {
+      return;
+    }
+    const archivedLogUrl = logUrl;
+
+    let cancelled = false;
+
+    async function loadArchivedLog() {
+      try {
+        console.log(
+          "[useArgoLogs] Fetching archived log:",
+          archivedLogUrl,
+        );
+
+        const response = await fetch(archivedLogUrl);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const text = await response.text();
+
+        const parsed: LogEntry[] = text
+          .split("\n")
+          .filter((line) => line.trim().length > 0)
+          .map((line) => ({
+            content: line,
+            podName: "main",
+          }));
+
+        if (!cancelled) {
+          setLogs((existing) => {
+            if (existing.length > 0) {
+              return existing;
+            }
+
+            return parsed;
+          });
+
+          if (storageKey) {
+            localStorage.setItem(
+              storageKey,
+              JSON.stringify(parsed),
+            );
+          }
+        }
+      } catch (err) {
+        console.error(
+          "[useArgoLogs] Failed to fetch archived log",
+          err,
+        );
+      }
+    }
+
+    loadArchivedLog();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    completed,
+    logUrl,
+    storageKey,
+    hasReceivedLiveLogs,
   ]);
 
   return {

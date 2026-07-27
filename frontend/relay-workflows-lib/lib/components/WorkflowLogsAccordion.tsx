@@ -26,6 +26,7 @@ type Props = {
   taskIds: string[];
   taskLabels: Record<string, string>;
   taskStatuses: Record<string, string>;
+  taskLogUrls: Record<string, string | undefined>;
 };
 
 type TaskState = {
@@ -41,6 +42,7 @@ export default function WorkflowLogsAccordion({
   taskIds,
   taskLabels,
   taskStatuses,
+  taskLogUrls: _taskLogUrls,
 }: Props) {
   const storageKey = `workflow-logs-${workflowName}`;
 
