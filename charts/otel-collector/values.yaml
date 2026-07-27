@@ -28,7 +28,7 @@ opentelemetry-collector:
     hosts:
       - host: otelcollector.workflows.diamond.ac.uk
         paths:
-          - path: '/'
+          - path: "/"
             pathType: Prefix
             port: 9090
     tls:
@@ -37,17 +37,17 @@ opentelemetry-collector:
           - otelcollector.workflows.diamond.ac.uk
   resources:
     requests:
-      cpu: '8'
+      cpu: "8"
       memory: 24Gi
     limits:
-      cpu: '12'
+      cpu: "12"
       memory: 24Gi
   config:
     processors:
       batch:
         send_batch_size: 512
       k8sattributes:
-        auth_type: 'serviceAccount'
+        auth_type: "serviceAccount"
         extract:
           metadata:
             - k8s.namespace.name
@@ -73,7 +73,7 @@ opentelemetry-collector:
       prometheus:
         config:
           scrape_configs:
-            - job_name: 'kubernetes-pods'
+            - job_name: "kubernetes-pods"
               # scheme: https
               # tls_config:
               #   insecure_skip_verify: true
@@ -89,21 +89,25 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_namespace]
                   regex: kube-system
                   action: drop
-                - source_labels: [__meta_kubernetes_namespace]
-                  regex: k6
-                  action: keep
-                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                - source_labels:
+                    [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
                   action: keep
                   regex: "true"
-                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+                - source_labels:
+                    [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
                   action: replace
                   regex: (https?)
                   target_label: __scheme__
-                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                - source_labels:
+                    [__meta_kubernetes_pod_annotation_prometheus_io_path]
                   action: replace
                   target_label: __metrics_path__
                   regex: (.+)
-                - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                - source_labels:
+                    [
+                      __address__,
+                      __meta_kubernetes_pod_annotation_prometheus_io_port,
+                    ]
                   action: replace
                   regex: ([^:]+)(?::\d+)?;(\d+)
                   replacement: $1:$2
