@@ -1,5 +1,6 @@
 import { useFragment } from "react-relay";
 import {
+  splitWorkflowId,
   SubmissionForm as SubmissionFormBase,
   templateSourceToLink,
   Visit,
@@ -42,13 +43,13 @@ const SubmissionForm = ({
   prepopulatedParameters,
   visit,
   onSubmit,
-  workflowName,
+  workflowId,
 }: {
   template: SubmissionFormFragment$key;
   prepopulatedParameters?: SubmissionFormParametersFragment$key;
   visit?: Visit;
   onSubmit: (visit: Visit, parameters: object) => void;
-  workflowName?: string;
+  workflowId?: string;
 }) => {
   const data = useFragment(SubmissionFormFragment, template);
   const repositoryUrl =
@@ -84,11 +85,11 @@ const SubmissionForm = ({
       >
         <Info fontSize="small" />
         <Typography>
-          {workflowName && (
+          {workflowId && (
             <>
               Parameter values have been reused from{" "}
-              <Link to={`/workflows/${visitToText(visit)}/${workflowName}`}>
-                {workflowName}
+              <Link to={`/workflows/${visitToText(visit)}/${workflowId}`}>
+                {splitWorkflowId(workflowId)?.workflowName}
               </Link>
               .{" "}
             </>

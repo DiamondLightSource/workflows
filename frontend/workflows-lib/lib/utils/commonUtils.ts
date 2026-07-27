@@ -2,9 +2,6 @@ import { Visit, regexToVisit } from "@diamondlightsource/sci-react-ui";
 import { TemplateSource, ScienceGroup } from "../types";
 
 const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
-export const visitWithTemplateRegex = new RegExp(
-  `${visitRegex.source}(?:-(.+))?$`,
-);
 
 export function visitTextToVisit(visitid?: string): Visit | null {
   if (visitid) {
@@ -16,14 +13,24 @@ export function visitTextToVisit(visitid?: string): Visit | null {
   return null;
 }
 
-export function parseVisitAndTemplate(input: string): [Visit, string] | null {
-  const match = visitWithTemplateRegex.exec(input);
-  if (!match) return null;
+export function splitWorkflowId(
+  id?: string,
+): { visit: Visit; workflowName?: string; uid?: string } | undefined {
+  if (!id) {
+    return;
+  }
 
-  const visit = regexToVisit(match);
-  const templateName = match[4];
+  const idParts = id.split(":");
+  const visit = visitTextToVisit(idParts[0]);
 
-  return [visit, templateName];
+  if (!visit) {
+    console.error("Invalid visit format in workflow ID");
+    return;
+  }
+  if (idParts.length != 3) {
+    return { visit: visit };
+  }
+  return { visit: visit, workflowName: idParts[1], uid: idParts[2] };
 }
 
 export function templateSourceToLink(
