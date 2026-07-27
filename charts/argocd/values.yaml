@@ -13,6 +13,16 @@ argo-cd:
           - openid
           - profile
           - email
+      resource.exclusions: |
+        # Fix: "panic: assignment to entry in nil map from populatePodInfo" in Argo CD 3.4.5
+        # https://github.com/argoproj/argo-cd/issues/26529
+        # Remove when upgrading to Argo CD 3.5
+        # It is safe to exclude Pods as there are no Pods directly deployed by ArgoCD
+        # (only indirectly via deployments, statefulsets, etc)
+        - apiGroups:
+          - ''
+          kinds:
+          - Pod
     rbac:
       create: true
       policy.default: role:readonly
