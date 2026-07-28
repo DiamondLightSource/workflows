@@ -8,38 +8,14 @@ import {
   GraphQLResponse,
   Observable,
 } from "relay-runtime";
-import { getKeycloak } from "../utils/keycloak";
 import { createClient } from "graphql-ws";
-import { AuthState } from "@diamondlightsource/sci-react-ui";
-import { parseJwt } from "../utils/coreUtils";
-import { JSONObject } from "workflows-lib";
 import { getUseAuthGateway } from "../utils/useAuthGateway";
+import { ensureKeycloakInit, keycloak } from "../utils/keycloakSession";
+import { login } from "../utils/auth";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
-const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
 const USE_AUTH_GATEWAY = getUseAuthGateway();
-const AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
-
-const keycloak = await getKeycloak();
-
-let kcinitPromise: Promise<boolean> | null = null;
-
-// needed to prevent repeated refresh of page when using subscriptions
-function ensureKeycloakInit(): Promise<boolean> {
-  if (!kcinitPromise) {
-    kcinitPromise = keycloak
-      .init({
-        onLoad: "login-required",
-        scope: KEYCLOAK_SCOPE,
-      })
-      .catch((err: unknown) => {
-        console.error("Keycloak init failed", err);
-        return false;
-      });
-  }
-  return kcinitPromise;
-}
 
 if (!USE_AUTH_GATEWAY) {
   keycloak.onTokenExpired = () => {
@@ -84,8 +60,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
     }),
   });
   if (USE_AUTH_GATEWAY && resp.status === 401) {
-    const returnTo = encodeURIComponent(window.location.href);
-    window.location.assign(`${AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`);
+    await login();
     return {};
   }
 
@@ -146,23 +121,4 @@ export async function getRelayEnvironment(): Promise<Environment> {
     });
   }
   return RelayEnvironment;
-}
-
-export async function getUser(): Promise<AuthState | null> {
-  if (!keycloak.authenticated) {
-    await ensureKeycloakInit();
-  }
-  if (keycloak.token) {
-    let parsedToken: JSONObject = {};
-    try {
-      parsedToken = parseJwt(keycloak.token);
-    } catch (error) {
-      console.error("Could not parse JWT: ", error);
-    }
-    const user: AuthState = {
-      name: parsedToken.name as string,
-      fedid: (parsedToken.preferred_username ?? parsedToken.fedid) as string,
-    };
-    return user;
-  } else return null;
 }

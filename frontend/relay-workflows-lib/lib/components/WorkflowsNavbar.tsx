@@ -8,19 +8,12 @@ import {
   User,
   AuthState,
 } from "@diamondlightsource/sci-react-ui";
-import { getUser } from "relay-workflows-lib";
 import { useEffect, useState } from "react";
-import { externalRedirect } from "../utils/coreUtils";
+import { getUser, login, logout } from "../utils/auth";
 
 interface WorkflowsNavbarProps {
   sessionInfo?: string;
 }
-
-const handleLogout = () => {
-  externalRedirect(
-    "https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/logout",
-  );
-};
 
 const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
   const [user, setUser] = useState<AuthState | null>(null);
@@ -29,9 +22,21 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
     getUser()
       .then(setUser)
       .catch(() => {
-        console.error("Failed to fetch user from JWT");
+        console.error("Failed to fetch the current user");
       });
   }, []);
+
+  const handleLogin = () => {
+    login().catch((error: unknown) => {
+      console.error("Login failed: ", error);
+    });
+  };
+
+  const handleLogout = () => {
+    logout().catch((error: unknown) => {
+      console.error("Logout failed: ", error);
+    });
+  };
 
   return (
     <Navbar
@@ -80,7 +85,12 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
               {sessionInfo}
             </Typography>
           )}
-          <User colour="white" user={user} onLogout={handleLogout}></User>
+          <User
+            colour="white"
+            user={user}
+            onLogin={handleLogin}
+            onLogout={handleLogout}
+          ></User>
         </>
       }
     />

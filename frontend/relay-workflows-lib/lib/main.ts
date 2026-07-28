@@ -13,11 +13,8 @@ export { default as TemplateViewRetrigger } from "./views/TemplateViewRetrigger"
 export { default as SingleWorkflowView } from "./views/SingleWorkflowView";
 export { default as RepositoryLink } from "./query-components/RepositoryLink";
 export { default as WorkflowsNavbar } from "./components/WorkflowsNavbar";
-export {
-  getRelayEnvironment,
-  getUser,
-  wsClient,
-} from "./components/RelayEnvironment";
+export { getRelayEnvironment, wsClient } from "./components/RelayEnvironment";
+export { getUser, login, logout } from "./utils/auth";
 export { RenderSubmittedMessage } from "./components/RenderSubmittedMessage";
 export { SubscribeAndRender } from "./subscription-components/SubscribeAndRender";
 export { handlers } from "../tests/mocks/handlers";

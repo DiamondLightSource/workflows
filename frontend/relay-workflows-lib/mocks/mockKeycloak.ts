@@ -18,6 +18,8 @@ const mockToken = createMockJwt(mockJwtPayload);
 
 const mockKeycloak = {
   init: () => Promise.resolve(true),
+  login: () => Promise.resolve(),
+  logout: () => Promise.resolve(),
   authenticated: true,
   token: mockToken,
   updateToken: () => Promise.resolve(true),
