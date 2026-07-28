@@ -1,0 +1,9 @@
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: Trigger
+metadata:
+  name: waffle-monitor
+  labels:
+    workflows.diamond.ac.uk/source: generic
+    workflows.diamond.ac.uk/beamline: i15-1
+spec:
+  templateRef: waffle-trigger
