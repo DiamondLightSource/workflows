@@ -55,22 +55,21 @@ spec:
           operations:
             - CREATE
       context:
-        - name: expiration
+        - name: lifetime
           variable:
-            jmesPath: request.object.metadata.labels."workflows.diamond.ac.uk/expiration" || ""
-            default: "24h"
+            jmesPath: request.object.spec.lifetime || ""
 
       preconditions:
         all:
-          - key: "{{`{{ expiration }}`}}"
+          - key: "{{`{{ lifetime }}`}}"
             operator: AnyNotIn
             value:
-              - "never"
+              - "forever"
       mutate:
         patchStrategicMerge:
           metadata:
             labels:
-              cleanup.kyverno.io/ttl: "{{`{{ expiration }}`}}"
+              cleanup.kyverno.io/ttl: "{{`{{ lifetime }}`}}"
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
