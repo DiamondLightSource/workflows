@@ -49,10 +49,10 @@ spec:
             metadata:
               name: test-template
               labels:
-                workflows.diamond.ac.uk/expiration: 30m
                 workflows.diamond.ac.uk/source: test-source
                 workflows.diamond.ac.uk/beamline: test-beamline
             spec:
+              lifetime: 30m
               enabled: true
               eventName: test-eventname
               workflow:
@@ -65,10 +65,10 @@ spec:
               name: test-template
               labels:
                 cleanup.kyverno.io/ttl: 30m
-                workflows.diamond.ac.uk/expiration: 30m
                 workflows.diamond.ac.uk/source: test-source
                 workflows.diamond.ac.uk/beamline: test-beamline
             spec:
+              lifetime: 30m
               enabled: true
               eventName: test-eventname
               workflow:
@@ -88,7 +88,7 @@ spec:
             metadata:
               name: test-template
               labels:
-                workflows.diamond.ac.uk/expiration: never
+                lifetime: forever
                 workflows.diamond.ac.uk/source: test-source
                 workflows.diamond.ac.uk/beamline: test-beamline
             spec:
@@ -103,7 +103,7 @@ spec:
             metadata:
               name: test-template
               labels:
-                workflows.diamond.ac.uk/expiration: never
+                lifetime: forever
                 workflows.diamond.ac.uk/source: test-source
                 workflows.diamond.ac.uk/beamline: test-beamline
             spec:
