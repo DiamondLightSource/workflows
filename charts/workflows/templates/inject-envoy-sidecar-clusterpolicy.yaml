@@ -45,6 +45,9 @@ spec:
                     - serviceAccountToken:
                         path: token
                         audience: workflows-auth-broker
+                        # Kubelet rotates the token automatically; keep the lifetime
+                        # short so a leaked token is only briefly replayable.
+                        expirationSeconds: 1000
 
             initContainers:
               - name: workflows-auth-init
