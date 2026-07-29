@@ -57,6 +57,7 @@ spec:
                     cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "25m" }}
                     memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).memory | default "32Mi" }}
                   limits:
+                    cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "250m" }}
                     memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).limits).memory | default "64Mi" }}
                 command:
                   - /bin/sh
@@ -282,6 +283,7 @@ spec:
                     cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "25m" }}
                     memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).memory | default "32Mi" }}
                   limits:
+                    cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "250m" }}
                     memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).limits).memory | default "64Mi" }}
                 command:
                   - /usr/local/bin/envoy
@@ -309,6 +311,7 @@ spec:
                     cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "25m" }}
                     memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).memory | default "32Mi" }}
                   limits:
+                    cpu: {{ ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu | default "250m" }}
                     memory: {{ ((.Values.authenticatedWorkflows.envoy.resources).limits).memory | default "64Mi" }}
                 restartPolicy: Always
                 args:
