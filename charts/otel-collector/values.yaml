@@ -126,6 +126,27 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_pod_phase]
                   regex: Pending|Succeeded|Failed|Completed
                   action: drop
+            - job_name: "kube-state-metrics"
+              scrape_interval: 60s
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names:
+                      - monitoring
+              relabel_configs:
+                - source_labels:
+                    [__meta_kubernetes_service_label_app_kubernetes_io_name]
+                  regex: kube-state-metrics
+                  action: keep
+                - source_labels: [__meta_kubernetes_endpoint_port_name]
+                  regex: http
+                  action: keep
+              metric_relabel_configs:
+                - regex: service_name
+                  replacement: kube_service_name
+                  action: labelmap
+                - regex: service_name
+                  action: labeldrop
       otlp:
         protocols:
           grpc:
@@ -169,3 +190,20 @@ opentelemetry-collector:
             - k8sattributes
           exporters:
             - otlphttp
+
+kube-state-metrics:
+  collectors:
+    - cronjobs
+    - daemonsets
+    - deployments
+    - horizontalpodautoscalers
+    - jobs
+    - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - poddisruptionbudgets
+    - pods
+    - replicasets
+    - resourcequotas
+    - services
+    - statefulsets
