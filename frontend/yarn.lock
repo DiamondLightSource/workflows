@@ -2042,10 +2042,10 @@ babel-plugin-macros@^3.1.0:
     cosmiconfig "^7.0.0"
     resolve "^1.19.0"
 
-babel-plugin-relay@20.1.1:
-  version "20.1.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-relay/-/babel-plugin-relay-20.1.1.tgz#9d9d2a66aa85aff2e2a940b0a86460bb235af102"
-  integrity sha512-BWlqLPiHbxZTxlyng2rVgsZCwztHNje7H8FR4c+UKy3ErQJBG6BKLr9vUdeR7mAZCH2v0sOAxNhG6zR1FrWjAg==
+babel-plugin-relay@21.0.1:
+  version "21.0.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-relay/-/babel-plugin-relay-21.0.1.tgz#b8dae12ba83f2321c006991ad52cf4f5f74059cb"
+  integrity sha512-/eswQ+KRhZApdgCzORcBHQ6xVtiIQvOseAEO7XbvcufQ7r8/IKd5NmuwBIjKH2w3kpLKYjw77o4xOjAAqjdQ7Q==
   dependencies:
     babel-plugin-macros "^2.0.0"
     cosmiconfig "^5.0.5"
