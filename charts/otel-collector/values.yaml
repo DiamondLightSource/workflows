@@ -147,6 +147,27 @@ opentelemetry-collector:
                   action: labelmap
                 - regex: service_name
                   action: labeldrop
+            - job_name: "kueue"
+              scrape_interval: 60s
+              scheme: https
+              bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+              tls_config:
+                insecure_skip_verify: true
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names:
+                      - kueue
+              relabel_configs:
+                - source_labels:
+                    [
+                      __meta_kubernetes_service_label_app_kubernetes_io_component,
+                    ]
+                  regex: metrics-service
+                  action: keep
+                - source_labels: [__meta_kubernetes_endpoint_port_name]
+                  regex: https
+                  action: keep
       otlp:
         protocols:
           grpc:
