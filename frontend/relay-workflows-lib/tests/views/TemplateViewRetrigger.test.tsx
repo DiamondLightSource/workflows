@@ -19,7 +19,7 @@ describe("TemplateViewRetrigger", () => {
         <RelayEnvironmentProvider environment={environment}>
           <TemplateViewWithRetrigger
             templateName="e02-mib2x"
-            workflowName="e02-mib2x"
+            workflowId="mg36964-1:e02-mib2x:54321"
             visit={{ proposalCode: "mg", proposalNumber: 36964, number: 1 }}
           />
         </RelayEnvironmentProvider>
@@ -45,7 +45,7 @@ describe("TemplateViewRetrigger", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "e02-mib2x" })).toHaveAttribute(
       "href",
-      "/workflows/mg36964-1/e02-mib2x",
+      "/workflows/mg36964-1/mg36964-1:e02-mib2x:54321",
     );
   });
 });

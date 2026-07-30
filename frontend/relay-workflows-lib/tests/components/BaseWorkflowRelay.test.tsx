@@ -18,6 +18,7 @@ vi.mock("react-relay", async () => {
     ...actual,
     useFragment: vi.fn(() => workflowsListViewQueryResponse.workflows.nodes[0]),
     RelayEnvironmentProvider: actual.RelayEnvironmentProvider,
+    useLazyLoadQuery: actual.useLazyLoadQuery,
   };
 });
 

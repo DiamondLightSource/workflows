@@ -12,6 +12,7 @@ vi.mock("../../lib/components/common/StatusIcons", () => ({
 describe("WorkflowAccordion Component", () => {
   const mockWorkflow = {
     name: "Test Workflow",
+    id: "ab:7295-5:TestWorkflow:uid-7357",
     status: "Running" as WorkflowStatus,
     instrumentSession: {
       proposalCode: "ab",

@@ -25,14 +25,7 @@ describe("RetriggerWorkflow", () => {
     render(
       <MemoryRouter initialEntries={["/workflows/abc1234-1"]}>
         <RelayEnvironmentProvider environment={environment}>
-          <RetriggerWorkflow
-            instrumentSession={{
-              proposalCode: "abc",
-              proposalNumber: 1234,
-              number: 1,
-            }}
-            workflowName="mock-workflow"
-          />
+          <RetriggerWorkflow workflowId="ab12345-1:mock-workflow:7357" />
         </RelayEnvironmentProvider>
       </MemoryRouter>,
     );
@@ -40,7 +33,8 @@ describe("RetriggerWorkflow", () => {
 
   it("renders a link to previous workflow submission page", async () => {
     mockLazyLoadQuery<RetriggerWorkflowQuery$data>({
-      workflow: {
+      workflowById: {
+        id: "ab12345-1:mock-workflow:7357",
         templateRef: "mock-template",
       },
     });
@@ -53,13 +47,14 @@ describe("RetriggerWorkflow", () => {
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute(
       "href",
-      "/templates/mock-template/abc1234-1-mock-workflow",
+      "/templates/mock-template/ab12345-1:mock-workflow:7357",
     );
   });
 
   it("renders no template icon", async () => {
     mockLazyLoadQuery<RetriggerWorkflowQuery$data>({
-      workflow: {
+      workflowById: {
+        id: "ab12345-1:mock-workflow:7357",
         templateRef: null,
       },
     });
