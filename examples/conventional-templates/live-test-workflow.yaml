@@ -2,9 +2,10 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: live-test-
-  annotations:
-    workflows.diamond.ac.uk/type: live
+  #  annotations:
+  #  workflows.diamond.ac.uk/type: live
 spec:
   workflowTemplateRef:
     name: live-clustertemplate
     clusterScope: true
+    

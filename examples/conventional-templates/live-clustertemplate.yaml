@@ -9,9 +9,13 @@ metadata:
     workflows.argoproj.io/description: |
       Example live-priority workflow.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-    workflows.diamond.ac.uk/type: "live"
+    # workflows.diamond.ac.uk/type: "live"
 
 spec:
+  workflowMetadata:
+          annotations:
+                workflows.argoproj.io/description: Testing live-priority workflows
+                workflows.diamond.ac.uk/type: "live"
   entrypoint: hello
 
   templates:
