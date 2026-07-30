@@ -40,6 +40,7 @@ describe("RenderSubmittedMessage", () => {
   it("renders a success", async () => {
     const mockSuccess: RenderSubmittedMessageFragment$data = {
       status: { __typename: "WorkflowSucceededStatus" },
+      id: "ba54321-1:mock-workflow:uid-123",
       " $fragmentType": "RenderSubmittedMessageFragment",
     };
 
@@ -48,7 +49,11 @@ describe("RenderSubmittedMessage", () => {
     ).mockReturnValueOnce(mockSuccess);
 
     const successProps: RenderSubmittedMessagePropsList = {
-      result: { type: "success", message: "ba54321-1/mock-workflow" },
+      result: {
+        type: "success",
+        message: "ba54321-1/mock-workflow",
+        link: "ba54321-1/ba54321-1:mock-workflow:uid-123",
+      },
       index: 0,
     };
 
@@ -57,7 +62,10 @@ describe("RenderSubmittedMessage", () => {
     const link = screen.getByText("ba54321-1/mock-workflow");
     expect(screen.getByTestId("status-icon-succeeded")).toBeInTheDocument();
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/workflows/ba54321-1/mock-workflow");
+    expect(link).toHaveAttribute(
+      "href",
+      "/workflows/ba54321-1/ba54321-1:mock-workflow:uid-123",
+    );
 
     vi.clearAllMocks();
   });

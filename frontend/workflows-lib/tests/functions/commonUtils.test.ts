@@ -1,7 +1,7 @@
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import {
   visitTextToVisit,
-  parseVisitAndTemplate,
+  splitWorkflowId,
   formatErrorMessage,
 } from "../../lib/utils/commonUtils";
 
@@ -37,23 +37,24 @@ describe("visitTextToVisit", () => {
   });
 });
 
-describe("parseVisitAndTemplate", () => {
+describe("splitWorkflowId", () => {
   test.each([
-    ["md", 73575, 22, "conditional-steps-gkwnc"],
-    ["xx", 99, 9, "template2"],
+    ["md", 73575, 22, "conditional-steps-gkwnc", "19563-test"],
+    ["xx", 99, 9, "template2", "xxxxx-00000-uid"],
   ])(
-    '"%s%i-%i-%s" should be parsed as a visit and a template',
-    (proposalCode, proposalNumber, number, templateName) => {
-      const input = `${proposalCode}${proposalNumber.toString()}-${number.toString()}-${templateName}`;
+    '"%s%i-%i-%s" should be parsed as a visit, a workflow and a uid',
+    (proposalCode, proposalNumber, number, templateName, uid) => {
+      const input = `${proposalCode}${proposalNumber.toString()}-${number.toString()}:${templateName}:${uid}`;
       const resultVisit: Visit = {
         proposalCode: proposalCode,
         proposalNumber: proposalNumber,
         number: number,
       };
-      expect(parseVisitAndTemplate(input)).toStrictEqual([
-        resultVisit,
-        templateName,
-      ]);
+      expect(splitWorkflowId(input)).toStrictEqual({
+        visit: resultVisit,
+        workflowName: templateName,
+        uid: uid,
+      });
     },
   );
 
@@ -69,10 +70,9 @@ describe("parseVisitAndTemplate", () => {
         proposalNumber: proposalNumber,
         number: number,
       };
-      expect(parseVisitAndTemplate(input)).toStrictEqual([
-        resultVisit,
-        undefined,
-      ]);
+      expect(splitWorkflowId(input)).toStrictEqual({
+        visit: resultVisit,
+      });
     },
   );
 
@@ -82,8 +82,13 @@ describe("parseVisitAndTemplate", () => {
   ])(
     '"%s%i-%i-%s" should return null',
     (proposalCode, proposalNumber, number, templateName) => {
-      const input = `${proposalCode}${proposalNumber.toString()}-${number.toString()}-${templateName}`;
-      expect(parseVisitAndTemplate(input)).toBeNull();
+      const consoleSpy = vi.spyOn(console, "error");
+      consoleSpy.mockImplementation(vi.fn());
+      const input = `${proposalCode}${proposalNumber.toString()}-${number.toString()}:${templateName}:xyz-123`;
+      expect(splitWorkflowId(input)).toBeUndefined();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Invalid visit format in workflow ID",
+      );
     },
   );
 });

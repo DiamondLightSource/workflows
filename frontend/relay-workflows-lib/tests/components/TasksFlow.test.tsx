@@ -58,13 +58,13 @@ describe("TasksFlow Component", () => {
 
   it("should render without crashing", () => {
     const { getByText } = render(
-      <TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />,
+      <TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />,
     );
     expect(getByText("ReactFlow Mock")).toBeInTheDocument();
   });
 
   it("should build the task tree", () => {
-    render(<TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />);
+    render(<TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />);
 
     expect(buildTaskTree).toHaveBeenCalledWith(mockTasks);
   });
@@ -72,7 +72,7 @@ describe("TasksFlow Component", () => {
   it("should generate nodes and edges based on the task tree", () => {
     render(
       <TasksFlow
-        workflowName="mockWorkflowA"
+        workflowId="mockWorkflowA"
         highlightedTaskIds={["node-1"]}
         onNavigate={() => {}}
       />,
@@ -82,13 +82,13 @@ describe("TasksFlow Component", () => {
   });
 
   it("should apply the dagre layout", () => {
-    render(<TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />);
+    render(<TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />);
 
     expect(applyDagreLayout).toHaveBeenCalledWith(mockNodes, mockEdges);
   });
 
   it("should initialize ReactFlow with the correct nodes and edges", () => {
-    render(<TasksFlow workflowName="mockWorkflowA" onNavigate={() => {}} />);
+    render(<TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />);
 
     expect(ReactFlow).toHaveBeenCalledWith(
       expect.objectContaining({
