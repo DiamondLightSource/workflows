@@ -44,5 +44,5 @@ authenticatedWorkflows:
   authDaemon:
     enabled: false
   envoy:
-    enabled: false
+    enabled: true
     graphAddress: staging.workflows.diamond.ac.uk
