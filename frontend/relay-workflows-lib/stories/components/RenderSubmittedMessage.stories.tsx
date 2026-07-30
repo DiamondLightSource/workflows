@@ -61,6 +61,7 @@ export const unknownStatus: Story = {
     result: {
       type: "success",
       message: "workflow-name",
+      link: "workflows/ab12345-1:workflow-name:test-uid-12345",
     },
   },
 };
@@ -75,6 +76,7 @@ export const completedWorkflow: Story = {
     result: {
       type: "success",
       message: "completed-workflow",
+      link: "workflows/ab12345-1:workflow-name:test-uid-12345",
     },
   },
 };
@@ -89,6 +91,7 @@ export const runningWorkflow: Story = {
     result: {
       type: "success",
       message: "running-workflow",
+      link: "workflows/ab12345-1:workflow-name:test-uid-success-12345",
     },
   },
 };
@@ -103,6 +106,7 @@ export const pendingWorkflow: Story = {
     result: {
       type: "success",
       message: "pending-workflow",
+      link: "workflows/ab12345-1:pending-workflow:test-uid-pending-12345",
     },
   },
 };
@@ -117,6 +121,7 @@ export const erroredWorkflow: Story = {
     result: {
       type: "success",
       message: "errored-workflow",
+      link: "workflows/ab12345-1:errored-workflow:test-uid-errored-12345",
     },
   },
 };
