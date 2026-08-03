@@ -21,22 +21,28 @@ grafana:
       api_url: https://identity-test.diamond.ac.uk/realms/dls/protocol/openid-connect/userinfo
 
 thanos:
-  existingObjstoreSecret: ""
+  global:
+    thanosRules:
+      enabled: false
   storegateway:
     enabled: false
   query:
     ingress:
       enabled: false
   queryFrontend:
+    enabled: false
     ingress:
       enabled: false
   receive:
+    enabled: true
     ingress:
       enabled: false
   compactor:
     enabled: false
-    ingress:
-      enabled: false
+  ruler:
+    enabled: false
+  bucket:
+    enabled: false
 
 prometheus:
   alertmanager:
