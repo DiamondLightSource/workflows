@@ -3,6 +3,7 @@ argo-cd:
   configs:
     cm:
       admin.enabled: "false"
+      application.resourceTrackingMethod: annotation+label
       url: https://argo-cd.workflows.diamond.ac.uk
       oidc.config: |
         name: Keycloak
