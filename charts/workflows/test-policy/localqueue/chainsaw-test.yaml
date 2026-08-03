@@ -19,7 +19,7 @@ spec:
               app.kubernetes.io/managed-by: sessionspaces
     - assert:
         resource:
-          apiVersion: kueue.x-k8s.io/v1beta1
+          apiVersion: kueue.x-k8s.io/v1beta2
           kind: LocalQueue
           metadata:
             name: default-queue
