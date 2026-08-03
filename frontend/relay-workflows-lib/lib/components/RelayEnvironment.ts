@@ -74,15 +74,18 @@ const fetchFn: FetchFunction = async (request, variables) => {
     headers.Authorization = `Bearer ${keycloak.token}`;
   }
 
-  const resp = await fetch(HTTP_ENDPOINT, {
+  const fetchOptions: RequestInit = {
     method: "POST",
     headers,
-    credentials: "include",
     body: JSON.stringify({
-      query: request.text, // <-- The GraphQL document composed by Relay
+      query: request.text,
       variables,
     }),
-  });
+  };
+  if (USE_AUTH_GATEWAY) {
+    fetchOptions.credentials = "include";
+  }
+  const resp = await fetch(HTTP_ENDPOINT, fetchOptions);
   if (USE_AUTH_GATEWAY && resp.status === 401) {
     const returnTo = encodeURIComponent(window.location.href);
     window.location.assign(`${AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`);
