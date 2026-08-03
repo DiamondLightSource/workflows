@@ -4,12 +4,12 @@ secrets:
 
 backup:
   etcd:
-    enabled: false
+    enabled: true
     snapshotDir: /backup/
     snapshotName: etcd-snapshot
     fileExtension: .db
   postgres:
-    enabled: false
+    enabled: true
     snapshotDir: /backup/
     snapshotName: postgres-snapshot
     fileExtension: .pgdump
