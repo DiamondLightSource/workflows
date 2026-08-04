@@ -21,6 +21,7 @@ export interface SingleWorkflowViewProps {
   workflowId: string;
   taskIds?: string[];
   onNullSubscriptionData?: () => void;
+  onSelectTask?: (taskId: string) => void;
 }
 
 export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
@@ -28,6 +29,12 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
     SingleWorkflowViewQuery,
     {
       id: props.workflowId,
+      visit: props.visit,
+      name: props.workflowName,
+      
+      
+
+
     },
   );
   const finished =

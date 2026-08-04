@@ -1,14 +1,15 @@
 import { Container, Box, Typography } from "@mui/material";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { SingleWorkflowView, WorkflowsNavbar } from "relay-workflows-lib";
+
 import {
   visitTextToVisit,
   WorkflowErrorBoundaryWithRetry,
 } from "workflows-lib";
 import { tidyPath } from "./utils";
+import { SingleWorkflowView, WorkflowsNavbar, TaskLogViewer } from "relay-workflows-lib";
 
 function SingleWorkflowPage() {
   const { visitid, workflowId } = useParams<{
@@ -18,6 +19,7 @@ function SingleWorkflowPage() {
 
   const [searchParams] = useSearchParams();
   const taskParam = searchParams.get("tasks");
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   if (visitid) {
     localStorage.setItem("instrumentSessionID", visitid);
@@ -67,6 +69,14 @@ function SingleWorkflowPage() {
                   <SingleWorkflowView
                     workflowId={workflowId}
                     taskIds={taskIds}
+                    onSelectTask={(taskId: string) => setSelectedTaskId(taskId)}
+                  />
+                  
+                  {/* Real-time Task Log Viewer */}
+                  <TaskLogViewer
+                    visit={visit}
+                    workflowName={workflowName}
+                    selectedTaskId={selectedTaskId}
                   />
                 </Suspense>
               )}
@@ -82,7 +92,6 @@ function SingleWorkflowPage() {
           mb={4}
         >
           <Typography>No valid workflow selected</Typography>
-          {/* Go to instrumentSession or home page */}
         </Box>
       )}
     </>
