@@ -18,9 +18,15 @@ use helm_integration::ManifestType;
 /// Create repository for workflow templates
 mod create;
 
+mod triggers;
+
+mod visit;
+
 use clap::Parser;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::process::Command;
+
+use crate::visit::VisitInput;
 
 /// Workflows Tool
 #[derive(Debug, Parser)]
@@ -34,6 +40,7 @@ enum Cli {
     Submit(SubmitArgs),
     /// Create a new repository to create workflow templates as conventional manifests and/or helm based templates
     Create(CreateArgs),
+    TriggerCreate(TriggerCreateArgs),
 }
 
 /// Arguments for linting from a configfile
@@ -89,7 +96,18 @@ struct SubmitArgs {
     file_path: PathBuf,
 }
 
-fn main() {
+#[derive(Debug, Parser, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct TriggerCreateArgs {
+    #[arg(long)]
+    lifetime: Option<String>,
+    #[arg(long)]
+    visit: Option<VisitInput>,
+    template_ref: String,
+}
+
+#[tokio::main]
+async fn main() {
     let args = Cli::parse();
 
     if let Err(err) = ensure_cli() {
@@ -110,28 +128,31 @@ fn main() {
         Cli::Create(args) => {
             create::create(args);
         }
+        Cli::TriggerCreate(args) => {
+            triggers::create_trigger(args).await;
+        }
     }
 }
 
 /// Checks the underlying argo and helm CLI are present
 fn ensure_cli() -> Result<(), String> {
-    let helm_output = Command::new("which")
-        .arg("helm")
-        .output()
-        .map_err(|_| "Failed to run 'which helm'. Is it installed?")?;
+    // let helm_output = Command::new("which")
+    //     .arg("helm")
+    //     .output()
+    //     .map_err(|_| "Failed to run 'which helm'. Is it installed?")?;
 
-    if !helm_output.status.success() {
-        return Err("Could not find 'helm' on PATH. Is it installed?".into());
-    }
+    // if !helm_output.status.success() {
+    //     return Err("Could not find 'helm' on PATH. Is it installed?".into());
+    // }
 
-    let argo_output = Command::new("which")
-        .arg("argo")
-        .output()
-        .map_err(|_| "Failed to run 'which argo'. Is it installed?")?;
+    // let argo_output = Command::new("which")
+    //     .arg("argo")
+    //     .output()
+    //     .map_err(|_| "Failed to run 'which argo'. Is it installed?")?;
 
-    if !argo_output.status.success() {
-        return Err("Could not find 'argo' on PATH. Is it installed?".into());
-    }
+    // if !argo_output.status.success() {
+    //     return Err("Could not find 'argo' on PATH. Is it installed?".into());
+    // }
 
     Ok(())
 }
