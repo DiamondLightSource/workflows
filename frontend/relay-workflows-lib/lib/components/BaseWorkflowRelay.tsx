@@ -9,7 +9,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
-import TasksFlow from "./TasksFlow";
+import  TasksFlow  from "./TasksFlow";
 
 export const BaseWorkflowRelayFragment = graphql`
   fragment BaseWorkflowRelayFragment on Workflow {
@@ -35,6 +35,7 @@ interface BaseWorkflowRelayProps {
   expanded?: boolean;
   onChange?: () => void;
   fragmentRef: BaseWorkflowRelayFragment$key;
+  onSelectTask?: (taskId: string) => void;
 }
 
 export default function BaseWorkflowRelay({
@@ -43,20 +44,35 @@ export default function BaseWorkflowRelay({
   expanded,
   onChange,
   fragmentRef,
+  onSelectTask,
 }: BaseWorkflowRelayProps) {
   const { workflowName: workflowNameURL } = useParams<{
     workflowName: string;
   }>();
+
   const navigate = useNavigate();
-  const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
+
+  const data = useFragment(
+    BaseWorkflowRelayFragment,
+    fragmentRef,
+  );
+
   const statusText = data.status?.__typename ?? "Unknown";
-  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
+
+  const [selectedTaskIds, setSelectedTaskIds] =
+    useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
     (taskId: string, event?: React.MouseEvent) => {
-      const isCtrl = event?.ctrlKey || event?.metaKey;
+      const isCtrl =
+        event?.ctrlKey ||
+        event?.metaKey;
 
       let updatedTaskIds: string[];
+      console.log(
+        "TASK CLICKED",
+        taskId
+      );
 
       if (isCtrl) {
         updatedTaskIds = selectedTaskIds.includes(taskId)
@@ -65,12 +81,25 @@ export default function BaseWorkflowRelay({
       } else {
         updatedTaskIds = [taskId];
       }
+
       if (workflowNameURL !== data.name) {
-        void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
+        void navigate(
+          `/workflows/${visitToText(data.visit)}/${data.name}`,
+        );
       }
-      setSelectedTaskIds(updatedTaskIds);
+
+      if (onSelectTask) {
+        onSelectTask(taskId);
+      }
     },
-    [navigate, selectedTaskIds, setSelectedTaskIds, workflowNameURL, data],
+    [
+      navigate,
+      selectedTaskIds,
+      setSelectedTaskIds,
+      workflowNameURL,
+      data,
+      onSelectTask,
+    ],
   );
 
   return (

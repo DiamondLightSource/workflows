@@ -23,6 +23,7 @@ export interface SingleWorkflowViewProps {
   workflowName: string;
   taskIds?: string[];
   onNullSubscriptionData?: () => void;
+  onSelectTask?: (taskId: string) => void;
 }
 
 export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
@@ -31,6 +32,10 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
     {
       visit: props.visit,
       name: props.workflowName,
+      
+      
+
+
     },
   );
   const finished =
@@ -42,11 +47,12 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
   };
 
   return finished || isNull ? (
-    <BaseSingleWorkflowView
-      fragmentRef={queryData.workflow ?? null}
-      taskIds={props.taskIds}
-    />
-  ) : (
+      <BaseSingleWorkflowView
+        fragmentRef={queryData.workflow ?? null}
+        taskIds={props.taskIds}
+        onSelectTask={props.onSelectTask}
+      />
+    ) : (
     <LiveSingleWorkflowView
       {...props}
       onNullSubscriptionData={onNullSubscriptionData}
