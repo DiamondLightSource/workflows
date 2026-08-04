@@ -1,4 +1,5 @@
 export { default as Workflow } from "./components/WorkflowRelay";
+export * from "./views/TaskLogViewer";
 export { default as Submission } from "./components/SubmissionForm";
 export { default as RetriggerWorkflow } from "./query-components/RetriggerWorkflow";
 export { default as SubmittedMessagesList } from "./components/SubmittedMessagesList";

@@ -9,7 +9,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { ArtifactFilteredList } from "./ArtifactFilteredList";
 import type { Artifact } from "workflows-lib";
 import { ImageInfo, ScrollableImages } from "./ScrollableImages";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { FuzzySearchBar } from "./FuzzySearchBar";
 import { FileTypeDropdown } from "./FileTypeDropdown";
 import Fuse from "fuse.js";
@@ -37,9 +37,16 @@ const TaskInfo: React.FC<TaskInfoProps> = ({
     return types;
   }, [artifactList]);
 
+  // When fileTypes is known, default to all types except .log
+  useEffect(() => {
+    if (fileTypes.length === 0) return;
+    setSelectedFileTypes(fileTypes.filter((t) => t !== ".log"));
+  }, [fileTypes]);
+
   const filteredArtifactList: Artifact[] = useMemo(() => {
     let filtered = artifactList;
 
+    // If some file types are selected, filter by them
     if (selectedFileTypes.length > 0) {
       filtered = filtered.filter((artifact) => {
         const lastDotIndex = artifact.name.lastIndexOf(".");
