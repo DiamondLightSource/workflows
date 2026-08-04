@@ -23,17 +23,24 @@ pub struct TokenSessionData {
     pub access_token: AccessToken,
     pub access_token_expires_at: DateTime<Utc>,
     pub refresh_token: RefreshToken,
+    pub name: Option<String>,
+    pub preferred_username: Option<String>,
+    pub fedid: Option<String>,
 }
 
 impl TokenSessionData {
     pub const SESSION_KEY: &str = "token_session_data";
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         issuer: IssuerUrl,
         subject: SubjectIdentifier,
         access_token: AccessToken,
         access_token_expires_at: DateTime<Utc>,
         refresh_token: RefreshToken,
+        name: Option<String>,
+        preferred_username: Option<String>,
+        fedid: Option<String>,
     ) -> Self {
         Self {
             issuer,
@@ -41,6 +48,9 @@ impl TokenSessionData {
             access_token,
             access_token_expires_at,
             refresh_token,
+            name,
+            preferred_username,
+            fedid,
         }
     }
 
@@ -48,6 +58,9 @@ impl TokenSessionData {
         token_response: &T,
         issuer: IssuerUrl,
         subject: SubjectIdentifier,
+        name: Option<String>,
+        preferred_username: Option<String>,
+        fedid: Option<String>,
     ) -> Result<Self> {
         let access_token = token_response.access_token().clone();
         let refresh_token = token_response
@@ -64,6 +77,9 @@ impl TokenSessionData {
             access_token,
             access_token_expires_at,
             refresh_token,
+            name,
+            preferred_username,
+            fedid,
         ))
     }
 

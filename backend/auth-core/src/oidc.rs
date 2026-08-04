@@ -1,8 +1,8 @@
 use crate::config::CommonConfig;
 use anyhow::anyhow;
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
-use oauth2::{ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet, reqwest};
-use openidconnect::core::{CoreClient, CoreProviderMetadata, CoreTokenResponse};
+use oauth2::{ClientId, ClientSecret, reqwest};
+use openidconnect::core::CoreProviderMetadata;
 use openidconnect::{IssuerUrl, RefreshToken};
 use sea_orm::{Database, DatabaseConnection};
 use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
@@ -26,13 +26,42 @@ pub async fn create_db_connection(config: &CommonConfig) -> Result<DatabaseConne
     Database::connect(&database_url).await.map_err(Into::into)
 }
 
-pub type OidcClient = CoreClient<
-    EndpointSet,
-    EndpointNotSet,
-    EndpointNotSet,
-    EndpointNotSet,
-    EndpointMaybeSet,
-    EndpointMaybeSet,
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct DiamondAdditionalClaims {
+    pub fedid: Option<String>,
+}
+
+impl openidconnect::AdditionalClaims for DiamondAdditionalClaims {}
+
+pub type DiamondIdTokenFields = openidconnect::IdTokenFields<
+    DiamondAdditionalClaims,
+    openidconnect::EmptyExtraTokenFields,
+    openidconnect::core::CoreGenderClaim,
+    openidconnect::core::CoreJweContentEncryptionAlgorithm,
+    openidconnect::core::CoreJwsSigningAlgorithm,
+>;
+
+pub type DiamondTokenResponse =
+    openidconnect::StandardTokenResponse<DiamondIdTokenFields, openidconnect::core::CoreTokenType>;
+
+pub type OidcClient = openidconnect::Client<
+    DiamondAdditionalClaims,
+    openidconnect::core::CoreAuthDisplay,
+    openidconnect::core::CoreGenderClaim,
+    openidconnect::core::CoreJweContentEncryptionAlgorithm,
+    openidconnect::core::CoreJsonWebKey,
+    openidconnect::core::CoreAuthPrompt,
+    openidconnect::StandardErrorResponse<openidconnect::core::CoreErrorResponseType>,
+    DiamondTokenResponse,
+    openidconnect::core::CoreTokenIntrospectionResponse,
+    openidconnect::core::CoreRevocableToken,
+    openidconnect::core::CoreRevocationErrorResponse,
+    openidconnect::EndpointSet,
+    openidconnect::EndpointNotSet,
+    openidconnect::EndpointNotSet,
+    openidconnect::EndpointNotSet,
+    openidconnect::EndpointMaybeSet,
+    openidconnect::EndpointMaybeSet,
 >;
 
 pub async fn create_oidc_client(config: &CommonConfig) -> Result<(OidcClient, reqwest::Client)> {
@@ -48,7 +77,7 @@ pub async fn create_oidc_client(config: &CommonConfig) -> Result<(OidcClient, re
     )
     .await?;
 
-    let oidc_client = CoreClient::from_provider_metadata(
+    let oidc_client = OidcClient::from_provider_metadata(
         provider_metadata,
         ClientId::new(config.client_id.to_string()),
         if config.client_secret.is_empty() {
@@ -72,7 +101,7 @@ pub async fn exchange_refresh_token(
     oidc_client: &OidcClient,
     http_client: &reqwest::Client,
     refresh_token: &RefreshToken,
-) -> Result<CoreTokenResponse> {
+) -> Result<DiamondTokenResponse> {
     let token_response = oidc_client
         .exchange_refresh_token(refresh_token)?
         .request_async(http_client)
