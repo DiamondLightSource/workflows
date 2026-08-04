@@ -35,6 +35,7 @@ interface BaseWorkflowRelayProps {
   expanded?: boolean;
   onChange?: () => void;
   fragmentRef: BaseWorkflowRelayFragment$key;
+  onSelectTask?: (taskId: string) => void;
 }
 
 export default function BaseWorkflowRelay({
@@ -43,13 +44,18 @@ export default function BaseWorkflowRelay({
   expanded,
   onChange,
   fragmentRef,
+  onSelectTask,
 }: BaseWorkflowRelayProps) {
   const { workflowName: workflowNameURL } = useParams<{
     workflowName: string;
   }>();
+
   const navigate = useNavigate();
+
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
+
   const statusText = data.status?.__typename ?? "Unknown";
+
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
@@ -57,6 +63,7 @@ export default function BaseWorkflowRelay({
       const isCtrl = event?.ctrlKey || event?.metaKey;
 
       let updatedTaskIds: string[];
+      console.log("TASK CLICKED", taskId);
 
       if (isCtrl) {
         updatedTaskIds = selectedTaskIds.includes(taskId)
@@ -65,12 +72,24 @@ export default function BaseWorkflowRelay({
       } else {
         updatedTaskIds = [taskId];
       }
+      setSelectedTaskIds(updatedTaskIds);
+
       if (workflowNameURL !== data.name) {
         void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
       }
-      setSelectedTaskIds(updatedTaskIds);
+
+      if (onSelectTask) {
+        onSelectTask(taskId);
+      }
     },
-    [navigate, selectedTaskIds, setSelectedTaskIds, workflowNameURL, data],
+    [
+      navigate,
+      selectedTaskIds,
+      setSelectedTaskIds,
+      workflowNameURL,
+      data,
+      onSelectTask,
+    ],
   );
 
   return (

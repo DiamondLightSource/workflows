@@ -26,6 +26,8 @@ const LiveSingleWorkflowViewSubscriptionQuery = graphql`
 
 interface LiveWorkflowRelayProps extends SingleWorkflowViewProps {
   onNullSubscriptionData: () => void;
+  selectedTaskId: string | null;
+  onSelectTask: (taskId: string | null) => void;
 }
 
 export default function LiveWorkflowView({
@@ -33,6 +35,8 @@ export default function LiveWorkflowView({
   workflowName,
   taskIds,
   onNullSubscriptionData,
+  selectedTaskId,
+  onSelectTask,
 }: LiveWorkflowRelayProps) {
   const [workflowFragmentRef, setWorkflowFragmentRef] =
     useState<BaseSingleWorkflowViewFragment$key | null>(null);
@@ -75,6 +79,8 @@ export default function LiveWorkflowView({
     <BaseSingleWorkflowView
       taskIds={taskIds}
       fragmentRef={workflowFragmentRef}
+      selectedTaskId={selectedTaskId}
+      onSelectTask={onSelectTask}
     />
   ) : null;
 }
