@@ -18,8 +18,9 @@ use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::
 type Result<T> = std::result::Result<T, auth_core::error::Error>;
 
 use axum::{
-    Router,
+    Json, Router,
     extract::{Request, State},
+    http::HeaderMap,
     middleware,
     response::IntoResponse,
     routing::{get, post},
@@ -87,6 +88,13 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
         AllowOrigin::default()
     };
 
+    // Separate CorsLayer that allows any origin for `/auth/status` since it is
+    // authorized by a bearer token
+    let status_cors = CorsLayer::new()
+        .allow_origin(AllowOrigin::any())
+        .allow_methods([Method::GET, Method::OPTIONS])
+        .allow_headers([hyper::header::AUTHORIZATION, hyper::header::CONTENT_TYPE]);
+
     Router::new()
         .fallback_service(proxy)
         .layer(middleware::from_fn_with_state(
@@ -109,6 +117,10 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
                 .allow_origin(cors_origin)
                 .allow_credentials(true),
         )
+        // Registered *after* the credentialed CORS layer so it is not wrapped by
+        // it any other routes should be wrapped by CorsLayer above if not having a similar bearer
+        // token authentication to `/auth/status`
+        .route("/auth/status", get(status).layer(status_cors))
         .with_state(state)
 }
 
@@ -144,6 +156,38 @@ async fn logout(State(state): State<Arc<AppState>>, session: Session) -> Result<
     session.flush().await?;
 
     Ok(axum::http::StatusCode::OK)
+}
+
+/// Status handler that returns the user's authentication status as a JSON true or false response body
+/// Response is marked cacheable to reduce load on databse
+async fn status(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+) -> Result<impl IntoResponse> {
+    let cache_headers = [
+        (hyper::header::CACHE_CONTROL, "private, max-age=30"),
+        (hyper::header::VARY, "Authorization"),
+    ];
+
+    let access_token = headers
+        .get(hyper::header::AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.strip_prefix("Bearer "))
+        .ok_or_else(|| anyhow::anyhow!("missing or malformed Authorization header"))?;
+
+    let claims = auth_core::oidc::claims_from_access_token(access_token)?;
+
+    if let Some(expires_at) = claims.expires_at
+        && expires_at <= chrono::Utc::now()
+    {
+        return Ok((cache_headers, Json(false)));
+    }
+
+    let is_authenticated =
+        auth_core::database::token_exists_in_database(&state.database_connection, &claims.subject)
+            .await?;
+
+    Ok((cache_headers, Json(is_authenticated)))
 }
 
 async fn shutdown_signal() {
