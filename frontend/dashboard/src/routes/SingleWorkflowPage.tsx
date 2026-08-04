@@ -19,7 +19,6 @@ function SingleWorkflowPage() {
 
   const [searchParams] = useSearchParams();
   const taskParam = searchParams.get("tasks");
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   if (visitid) {
     localStorage.setItem("instrumentSessionID", visitid);
@@ -69,15 +68,14 @@ function SingleWorkflowPage() {
                   <SingleWorkflowView
                     workflowId={workflowId}
                     taskIds={taskIds}
-                    onSelectTask={(taskId: string) => setSelectedTaskId(taskId)}
                   />
                   
                   {/* Real-time Task Log Viewer */}
-                  <TaskLogViewer
+                  {/* <TaskLogViewer
                     visit={visit}
                     workflowName={workflowName}
                     selectedTaskId={selectedTaskId}
-                  />
+                  /> */}
                 </Suspense>
               )}
             </WorkflowErrorBoundaryWithRetry>
