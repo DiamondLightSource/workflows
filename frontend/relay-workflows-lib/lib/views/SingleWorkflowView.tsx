@@ -47,11 +47,12 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
   };
 
   return finished || isNull ? (
-    <BaseSingleWorkflowView
-      fragmentRef={queryData.workflow ?? null}
-      taskIds={props.taskIds}
-    />
-  ) : (
+      <BaseSingleWorkflowView
+        fragmentRef={queryData.workflow ?? null}
+        taskIds={props.taskIds}
+        onSelectTask={props.onSelectTask}
+      />
+    ) : (
     <LiveSingleWorkflowView
       {...props}
       onNullSubscriptionData={onNullSubscriptionData}

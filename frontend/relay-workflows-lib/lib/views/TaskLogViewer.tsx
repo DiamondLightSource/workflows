@@ -5,11 +5,14 @@ import React, {
   useState,
 } from "react";
 import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Box,
-  Paper,
   Typography,
   CircularProgress,
 } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { graphql, useSubscription } from "react-relay";
 import { GraphQLSubscriptionConfig } from "relay-runtime";
 import { Visit } from "@diamondlightsource/sci-react-ui";
@@ -38,6 +41,7 @@ interface TaskLogViewerProps {
   visit: Visit;
   workflowName: string;
   selectedTaskId: string | null;
+  selectedTaskName?: string;
 }
 
 
@@ -45,167 +49,195 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
   visit,
   workflowName,
   selectedTaskId,
+  selectedTaskName,
 }) => {
 
   const [logLines, setLogLines] = useState<string[]>([]);
+  const [taskCompleted, setTaskCompleted] = useState(false);
+  const [podName, setPodName] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
     console.log("TaskLogViewer selection changed:", {
-      workflowName,
-      selectedTaskId,
-      visit,
+        workflowName,
+        selectedTaskId,
+        visit,
     });
 
     setLogLines([]);
+    setTaskCompleted(false);
 
-  }, [
+    }, [
     selectedTaskId,
     workflowName,
     visit,
-  ]);
+    ]);
 
 
-
-    const subscriptionConfig =
+  const subscriptionConfig =
     useMemo<GraphQLSubscriptionConfig<TaskLogViewerSubscription>>(
-        () => ({
+      () => ({
         subscription: taskLogViewerSubscription,
 
         variables: {
-            visit,
-            workflowName,
-            taskId: selectedTaskId ?? "",
+          visit,
+          workflowName,
+          taskId: selectedTaskId ?? "__NO_TASK_SELECTED__",
         },
 
         onNext: (payload) => {
-            console.log("LOG EVENT:", payload);
+        console.log("LOG EVENT:", payload);
 
-            const line = payload?.logs?.content;
+        const line = payload?.logs?.content;
 
-            if (line) {
+        if (line) {
             setLogLines((prev) => [
-                ...prev,
-                line,
+            ...prev,
+            line,
             ]);
+
+            if (
+            line.includes("sub-process exited") ||
+            line.includes("completed") ||
+            line.includes("finished") ||
+            line.includes("done")
+            ) {
+            setTaskCompleted(true);
             }
+        }
         },
 
         onError: (error) => {
-            console.error("Log subscription error:", error);
+          console.error("Log subscription error:", error);
         },
-        }),
-        [
+      }),
+      [
         visit,
         workflowName,
         selectedTaskId,
-        ],
+      ],
     );
 
 
-    console.log("SUBSCRIBING WITH:", subscriptionConfig.variables);
-  // IMPORTANT:
-  // This hook must ALWAYS run
+  console.log(
+    "SUBSCRIBING WITH:",
+    subscriptionConfig.variables
+  );
+
+
+  // MUST ALWAYS RUN - never put hooks inside conditions
   useSubscription(subscriptionConfig);
 
 
-
   useEffect(() => {
-
     if (containerRef.current) {
       containerRef.current.scrollTop =
         containerRef.current.scrollHeight;
     }
-
   }, [logLines]);
 
 
 
   return (
-    <Paper
-      elevation={4}
-      sx={{
+    <Accordion
+        sx={{
         mt: 2,
         width: "100%",
-        overflow: "hidden",
-        borderRadius: 2,
         backgroundColor: "#001400",
-      }}
+        color: "#00ff00",
+        }}
     >
 
-      <Box
-        sx={{
-          px:2,
-          py:1,
-          bgcolor:"#003300",
-          display:"flex",
-          justifyContent:"space-between",
-        }}
-      >
-
-        <Typography
-          sx={{
-            color:"#00ff00",
-            fontFamily:"monospace",
-          }}
+        <AccordionSummary
+        expandIcon={
+            <ArrowDropDownIcon sx={{ color: "#00ff00" }} />
+        }
         >
-          {selectedTaskId ?? "No task selected"}
+        <Typography
+        sx={{
+            color: "#00ff00",
+            fontFamily: "monospace",
+            fontSize: "0.9rem",
+        }}
+        >
+        Logs: {selectedTaskName ?? selectedTaskId ?? "No task selected"}
         </Typography>
 
-
-        {selectedTaskId && (
-          <CircularProgress
+        {selectedTaskId && !taskCompleted && (
+        <CircularProgress
             size={12}
             sx={{
-              color:"#00ff00",
+            color: "#f5dd05",
             }}
-          />
+        />
         )}
 
-      </Box>
+        {taskCompleted && (
+        <Typography
+            sx={{
+            color: "#ff3333",
+            fontFamily: "monospace",
+            fontSize: "0.75rem",
+            ml: 2,
+            fontWeight: "bold",
+            }}
+        >
+            COMPLETED
+        </Typography>
+        )}
+
+        </AccordionSummary>
 
 
-
-      <Box
-        ref={containerRef}
+        <AccordionDetails
         sx={{
-          height:300,
-          overflowY:"auto",
-          p:2,
-          bgcolor:"#000",
-          color:"#00ff00",
-          fontFamily:"monospace",
-          whiteSpace:"pre-wrap",
+            p: 0,
         }}
-      >
+        >
 
-        {!selectedTaskId && (
-          <Typography>
-            Select a task.
-          </Typography>
-        )}
+        <Box
+            ref={containerRef}
+            sx={{
+            height: 200,
+            overflowY: "auto",
+            p: 2,
+            bgcolor: "#000",
+            color: "#00ff00",
+            fontFamily: "monospace",
+            fontSize: "10px",
+            whiteSpace: "pre-wrap",
+            }}
+        >
 
-
-        {selectedTaskId &&
-          logLines.length === 0 && (
+            {!selectedTaskId && (
             <Typography>
-              Waiting for log output...
+                Select a task.
             </Typography>
-        )}
+            )}
 
 
-        {logLines.map((line,index)=>(
-          <Box key={index}>
-            {line}
-          </Box>
-        ))}
+            {selectedTaskId &&
+            logLines.length === 0 && (
+                <Typography>
+                Waiting for log output...
+                </Typography>
+            )}
 
-      </Box>
 
-    </Paper>
-  );
+            {logLines.map((line, index) => (
+            <Box key={index}>
+                {line}
+            </Box>
+            ))}
+
+        </Box>
+
+        </AccordionDetails>
+
+    </Accordion>
+);
 };
 
 
