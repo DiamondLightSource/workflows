@@ -218,14 +218,16 @@ oauth2-proxy:
       injectRequestHeaders:
         - name: Authorization
           values:
-            - claim: access_token
-              prefix: "Bearer "
+            - claimSource:
+                claim: access_token
+                prefix: "Bearer "
           preserveRequestValue: true
 
       injectResponseHeaders:
         - name: Identity
           values:
-            - claim: id_token
+            - claimSource:
+                claim: id_token
 
       providers:
         - provider: oidc
