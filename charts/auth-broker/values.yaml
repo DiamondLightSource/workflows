@@ -3,7 +3,7 @@ replicas: 1
 image:
   registry: ""
   repository: ghcr.io/diamondlightsource/workflows-auth-broker
-  tag: latest
+  tag: ""
   digest: ""
   pullPolicy: IfNotPresent
 
