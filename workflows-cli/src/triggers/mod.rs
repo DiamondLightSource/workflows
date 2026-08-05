@@ -1,21 +1,30 @@
 use crate::TriggerCreateArgs;
+use auth_core::oidc;
 use gql_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
+    fmt::Display,
     fs::{self, DirEntry, File},
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-const GRAPH_URL: &str = "https://workflows.diamond.ac.uk/graphql";
+const GRAPH_URL: &str = "https://staging.workflows.diamond.ac.uk/graphql";
+const KEYCLOAK_URL: &str = "https://identity.test.diamond.ac.uk";
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Trigger {
-    name: Option<String>,
+    name: String,
     template_ref: Option<String>,
     beamline: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CreateTriggerResponse {
+    create_trigger: Trigger,
 }
 
 pub async fn create_trigger(args: TriggerCreateArgs) {
@@ -23,19 +32,20 @@ pub async fn create_trigger(args: TriggerCreateArgs) {
         mutation createTrigger($templateRef: String!, $visit: VisitInput, $name: String) {
             createTrigger(templateRef: $templateRef, visit: $visit, name: $name) {
                 name
+                beamline
+                templateRef
             }
         }
     "#;
     let token = get_auth_token();
     let mut headers = HashMap::new();
     headers.insert("Authorization", format!("Bearer {}", token));
-    println!("{}", GRAPH_URL);
     let client = Client::new_with_headers(GRAPH_URL, headers);
     let resp = client
-        .query_with_vars_unwrap::<Trigger, TriggerCreateArgs>(mutation, args)
+        .query_with_vars_unwrap::<CreateTriggerResponse, TriggerCreateArgs>(mutation, args)
         .await
         .expect("Mutation failed");
-    println!("Created trigger {:?}", resp.name);
+    println!("Created trigger {}", resp.create_trigger.name);
 }
 
 #[derive(Deserialize)]
@@ -65,4 +75,18 @@ fn get_auth_token() -> String {
     let tokens = serde_json::from_reader::<File, CachedTokens>(file)
         .expect("Error: cached tokens are formatted incorrectly");
     tokens.id_token
+}
+
+async fn get_refreshed_token(refresh_token: String) {
+    let token_url = KEYCLOAK_URL.to_string() + "/realms/dls/protocol/openid-connect/token";
+    let res = reqwest::Client::new()
+        .get(token_url)
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body("client_id=workflows-cli")
+        .body("grant_type=refresh_token")
+        .body(format!("refresh_token={refresh_token}"))
+        .send()
+        .await
+        .expect("Failed to refresh token");
+    println!("{:?}", res)
 }

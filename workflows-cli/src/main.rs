@@ -100,7 +100,7 @@ struct SubmitArgs {
 #[serde(rename_all = "camelCase")]
 struct TriggerCreateArgs {
     #[arg(long)]
-    lifetime: Option<String>,
+    name: Option<String>,
     #[arg(long)]
     visit: Option<VisitInput>,
     template_ref: String,
