@@ -11,15 +11,24 @@ import {
 import { getUser } from "relay-workflows-lib";
 import { useEffect, useState } from "react";
 import { externalRedirect } from "../utils/coreUtils";
+import { getUseAuthGateway } from "../utils/useAuthGateway";
 
 interface WorkflowsNavbarProps {
   sessionInfo?: string;
 }
 
+const LOGOUT_URL = import.meta.env.VITE_LOGOUT_URL;
+
 const handleLogout = () => {
-  externalRedirect(
-    "https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/logout",
-  );
+  if (getUseAuthGateway()) {
+    fetch(LOGOUT_URL, { method: "POST", credentials: "include" })
+      .then(() => { externalRedirect("/") })
+      .catch((error: unknown) => {
+        console.error("Logout failed: ", error);
+      });
+  } else {
+    externalRedirect(LOGOUT_URL);
+  }
 };
 
 const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
