@@ -1,17 +1,17 @@
 use crate::TriggerCreateArgs;
-use auth_core::oidc;
 use gql_client::Client;
+use jsonwebtoken::dangerous::insecure_decode;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{
     collections::HashMap,
-    fmt::Display,
     fs::{self, DirEntry, File},
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 const GRAPH_URL: &str = "https://staging.workflows.diamond.ac.uk/graphql";
-const KEYCLOAK_URL: &str = "https://identity.test.diamond.ac.uk";
+const KEYCLOAK_URL: &str = "https://identity-test.diamond.ac.uk";
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,7 +37,7 @@ pub async fn create_trigger(args: TriggerCreateArgs) {
             }
         }
     "#;
-    let token = get_auth_token();
+    let token = get_auth_token().await;
     let mut headers = HashMap::new();
     headers.insert("Authorization", format!("Bearer {}", token));
     let client = Client::new_with_headers(GRAPH_URL, headers);
@@ -51,9 +51,18 @@ pub async fn create_trigger(args: TriggerCreateArgs) {
 #[derive(Deserialize)]
 struct CachedTokens {
     id_token: String,
+    refresh_token: String,
 }
 
-fn get_auth_token() -> String {
+#[derive(Deserialize, Serialize)]
+struct RefreshTokenResponse {
+    access_token: String,
+    id_token: String,
+    refresh_token: String,
+    exp: String,
+}
+
+async fn get_auth_token() -> String {
     let cache_path = Path::new("/root/.kube/cache/workflows/oidc-login"); // CHANGE TO /home/user
     let dir_contents = fs::read_dir(cache_path).expect("Unable to access cached tokens directory");
     let mut newest_file: Option<DirEntry> = None;
@@ -74,10 +83,27 @@ fn get_auth_token() -> String {
     "#);
     let tokens = serde_json::from_reader::<File, CachedTokens>(file)
         .expect("Error: cached tokens are formatted incorrectly");
-    tokens.id_token
+
+    let expiry = insecure_decode::<Value>(&tokens.id_token)
+        .expect("Unable to decode access token")
+        .claims["exp"]
+        .as_u64()
+        .expect("expiry is not an int");
+
+    if expiry
+        >= SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Cannot read system time")
+            .as_secs()
+    {
+        println!("Token is not expired: {:?}", expiry);
+        return tokens.id_token;
+    };
+
+    get_refreshed_token(tokens.refresh_token).await
 }
 
-async fn get_refreshed_token(refresh_token: String) {
+async fn get_refreshed_token(refresh_token: String) -> String {
     let token_url = KEYCLOAK_URL.to_string() + "/realms/dls/protocol/openid-connect/token";
     let res = reqwest::Client::new()
         .get(token_url)
@@ -87,6 +113,10 @@ async fn get_refreshed_token(refresh_token: String) {
         .body(format!("refresh_token={refresh_token}"))
         .send()
         .await
-        .expect("Failed to refresh token");
-    println!("{:?}", res)
+        .expect("Failed to refresh token")
+        .json::<RefreshTokenResponse>()
+        .await
+        .expect("Unable to parse response into JSON");
+
+    res.access_token
 }
