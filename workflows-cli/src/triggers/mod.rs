@@ -59,7 +59,13 @@ struct RefreshTokenResponse {
     access_token: String,
     id_token: String,
     refresh_token: String,
-    exp: String,
+    expires_in: u32,
+    refresh_expires_in: u32,
+    token_type: String,
+    #[serde(rename = "not-before-policy")]
+    not_before_policy: u32,
+    session_state: String,
+    scope: String,
 }
 
 async fn get_auth_token() -> String {
@@ -105,18 +111,21 @@ async fn get_auth_token() -> String {
 
 async fn get_refreshed_token(refresh_token: String) -> String {
     let token_url = KEYCLOAK_URL.to_string() + "/realms/dls/protocol/openid-connect/token";
+
+    let mut params = HashMap::new();
+    params.insert("client_id", "workflows-cli");
+    params.insert("grant_type", "refresh_token");
+    params.insert("refresh_token", refresh_token.as_str());
+
     let res = reqwest::Client::new()
-        .get(token_url)
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body("client_id=workflows-cli")
-        .body("grant_type=refresh_token")
-        .body(format!("refresh_token={refresh_token}"))
+        .post(token_url)
+        .form(&params)
         .send()
         .await
         .expect("Failed to refresh token")
         .json::<RefreshTokenResponse>()
         .await
-        .expect("Unable to parse response into JSON");
+        .unwrap();
 
     res.access_token
 }
