@@ -132,8 +132,6 @@ vcluster:
     toHost:
       ingresses:
         enabled: true
-      volumeSnapshots:
-        enabled: false
     fromHost:
       nodes:
         enabled: true
