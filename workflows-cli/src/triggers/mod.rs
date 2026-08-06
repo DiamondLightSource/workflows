@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
     collections::HashMap,
-    fs::{self, DirEntry, File},
+    fs::{self, DirEntry, File, OpenOptions},
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -48,7 +48,7 @@ pub async fn create_trigger(args: TriggerCreateArgs) {
     println!("Created trigger {}", resp.create_trigger.name);
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct CachedTokens {
     id_token: String,
     refresh_token: String,
@@ -83,10 +83,12 @@ async fn get_auth_token() -> String {
             timestamp = file_timestamp;
         }
     }
+    let file_path = newest_file.expect("No cached token files found").path();
 
-    let file = fs::File::open(newest_file.expect("No cached token files found").path()).expect(r#"
+    let file = fs::File::open(&file_path).expect(r#"
         Authentication error. Please run 'kubectl get workflows -n {}' to prompt a login and try again.
     "#);
+
     let tokens = serde_json::from_reader::<File, CachedTokens>(file)
         .expect("Error: cached tokens are formatted incorrectly");
 
@@ -106,10 +108,10 @@ async fn get_auth_token() -> String {
         return tokens.id_token;
     };
 
-    get_refreshed_token(tokens.refresh_token).await
+    get_refreshed_token(tokens.refresh_token, &file_path).await
 }
 
-async fn get_refreshed_token(refresh_token: String) -> String {
+async fn get_refreshed_token(refresh_token: String, path: &Path) -> String {
     let token_url = KEYCLOAK_URL.to_string() + "/realms/dls/protocol/openid-connect/token";
 
     let mut params = HashMap::new();
@@ -127,5 +129,15 @@ async fn get_refreshed_token(refresh_token: String) -> String {
         .await
         .unwrap();
 
+    let new_cached_tokens = CachedTokens {
+        id_token: res.access_token.clone(),
+        refresh_token: res.refresh_token.clone(),
+    };
+    fs::write(
+        path,
+        serde_json::to_string_pretty(&new_cached_tokens)
+            .expect("Unable to create new token object"),
+    )
+    .expect("Couldn't write to file");
     res.access_token
 }
