@@ -22,11 +22,14 @@ mod triggers;
 
 mod visit;
 
-use clap::Parser;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+mod auth;
 
-use crate::visit::VisitInput;
+use clap::Parser;
+use gql_client::Client;
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 /// Workflows Tool
 #[derive(Debug, Parser)]
@@ -40,7 +43,7 @@ enum Cli {
     Submit(SubmitArgs),
     /// Create a new repository to create workflow templates as conventional manifests and/or helm based templates
     Create(CreateArgs),
-    TriggerCreate(TriggerCreateArgs),
+    TriggerCreate(triggers::TriggerCreateArgs),
 }
 
 /// Arguments for linting from a configfile
@@ -96,40 +99,6 @@ struct SubmitArgs {
     file_path: PathBuf,
 }
 
-#[derive(Debug, Parser, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct TriggerCreateArgs {
-    #[arg(long)]
-    name: Option<String>,
-    #[arg(long)]
-    visit: Option<VisitInput>,
-    template_ref: String,
-}
-
-const CREATE_TRIGGER_MUTATION: &str = r#"
-    mutation createTrigger($templateRef: String!, $visit: VisitInput, $name: String) {
-        createTrigger(templateRef: $templateRef, visit: $visit, name: $name) {
-            name
-            beamline
-            templateRef
-        }
-    }
-"#;
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Trigger {
-    name: String,
-    template_ref: Option<String>,
-    beamline: Option<String>,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CreateTriggerResponse {
-    create_trigger: Trigger,
-}
-
 #[tokio::main]
 async fn main() {
     let args = Cli::parse();
@@ -153,14 +122,31 @@ async fn main() {
             create::create(args);
         }
         Cli::TriggerCreate(args) => {
-            let res = triggers::run_query::<TriggerCreateArgs, CreateTriggerResponse>(
-                CREATE_TRIGGER_MUTATION,
-                args,
-            )
-            .await;
-            println!("Created trigger {}", res.create_trigger.name);
+            triggers::create_trigger(args).await;
+            // let res = run_query::<TriggerCreateArgs, CreateTriggerResponse>(
+            //     CREATE_TRIGGER_MUTATION,
+            //     args,
+            // )
+            // .await;
+            // println!("Created trigger {}", res.create_trigger.name);
         }
     }
+}
+
+const GRAPH_URL: &str = "https://staging.workflows.diamond.ac.uk/graphql";
+
+async fn run_query<T: Serialize, K: DeserializeOwned>(query: &str, args: T) -> K {
+    let token = auth::get_auth_token().await;
+    let mut headers = HashMap::new();
+    headers.insert(
+        "Authorization",
+        format!("Bearer {}", token.secret().to_string()),
+    );
+    let client = Client::new_with_headers(GRAPH_URL, headers);
+    client
+        .query_with_vars_unwrap::<K, T>(query, args)
+        .await
+        .expect("Query failed")
 }
 
 /// Checks the underlying argo and helm CLI are present
