@@ -1,4 +1,4 @@
-use crate::TriggerCreateArgs;
+use crate::{QueryArgs, QueryResponse};
 use auth_core::oauth2::{AccessToken, RefreshToken, TokenResponse};
 use auth_core::{
     config::CommonConfig,
@@ -6,6 +6,7 @@ use auth_core::{
 };
 use gql_client::Client;
 use jsonwebtoken::dangerous::insecure_decode;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -17,30 +18,11 @@ use std::{
 
 const GRAPH_URL: &str = "https://staging.workflows.diamond.ac.uk/graphql";
 
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Trigger {
-    name: String,
-    template_ref: Option<String>,
-    beamline: Option<String>,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CreateTriggerResponse {
-    create_trigger: Trigger,
-}
-
-pub async fn create_trigger(args: TriggerCreateArgs) {
-    let mutation = r#"
-        mutation createTrigger($templateRef: String!, $visit: VisitInput, $name: String) {
-            createTrigger(templateRef: $templateRef, visit: $visit, name: $name) {
-                name
-                beamline
-                templateRef
-            }
-        }
-    "#;
+pub async fn run_query<T, U>(query: &str, args: T) -> U
+where
+    T: QueryArgs + Serialize,
+    U: QueryResponse + DeserializeOwned,
+{
     let token = get_auth_token().await;
     let mut headers = HashMap::new();
     headers.insert(
@@ -48,11 +30,10 @@ pub async fn create_trigger(args: TriggerCreateArgs) {
         format!("Bearer {}", token.secret().to_string()),
     );
     let client = Client::new_with_headers(GRAPH_URL, headers);
-    let resp = client
-        .query_with_vars_unwrap::<CreateTriggerResponse, TriggerCreateArgs>(mutation, args)
+    client
+        .query_with_vars_unwrap::<U, T>(query, args)
         .await
-        .expect("Mutation failed");
-    println!("Created trigger {}", resp.create_trigger.name);
+        .expect("Mutation failed")
 }
 
 #[derive(Serialize, Deserialize)]
@@ -134,7 +115,6 @@ async fn get_auth_token() -> AccessToken {
             .expect("Cannot read system time")
             .as_secs()
     {
-        println!("Token is not expired: {:?}", expiry);
         return tokens.id_token;
     };
 
