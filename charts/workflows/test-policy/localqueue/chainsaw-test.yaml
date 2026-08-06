@@ -26,4 +26,3 @@ spec:
             namespace: test-session-ns
           spec:
             clusterQueue: default-queue
-

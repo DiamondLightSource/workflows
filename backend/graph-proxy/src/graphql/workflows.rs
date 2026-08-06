@@ -1628,7 +1628,7 @@ mod tests {
             r#"
             query {{
                 workflows(
-                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
+                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}},
                     filter: {{ workflowStatusFilter: {{ error: true }}, creator: "enu43627" }}
                 ) {{
                     nodes {{
@@ -1658,7 +1658,7 @@ mod tests {
             r#"
             query {{
                 workflows(
-                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
+                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}},
                     filter: {{ workflowStatusFilter: {{ failed: true, error: true, succeeded: false, pending: false, running: false }} }}
                 ) {{
                     nodes {{
@@ -1708,7 +1708,7 @@ mod tests {
             r#"
             query {{
                 workflows(
-                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}}, 
+                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}},
                     filter: {{ creator: "abc12345" }}
                 ) {{
                     nodes {{

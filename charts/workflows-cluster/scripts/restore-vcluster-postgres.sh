@@ -25,10 +25,7 @@ if [[ "$CLUSTER" == vcluster* ]]; then
         fi
         echo "Restore complete."
     fi
-else 
+else
     echo "ERROR: This script must be run inside the VCluster"
     exit 1
 fi
-
- 
-

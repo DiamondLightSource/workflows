@@ -111,7 +111,7 @@ jobs:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v7
         with:
-          separate-directories: true 
+          separate-directories: true
 
       - name: Download Merged Artifact
         uses: actions/download-artifact@v6.0.0

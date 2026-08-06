@@ -133,7 +133,7 @@ into that.
 Now we have have our venv configured, we can do some pre-processing to inform
 the next step. The pre-processing step accepts our bounds and step as we
 described above. Here I print the range and output it as an artifact for
-convenience, but this isn't necessary. See the 
+convenience, but this isn't necessary. See the
 [creating artifacts page](https://diamondlightsource.github.io/workflows/docs/how-tos/create-artifacts/)
 for further information about this.
 
