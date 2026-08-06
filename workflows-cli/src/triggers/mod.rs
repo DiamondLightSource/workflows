@@ -1,4 +1,3 @@
-use crate::{QueryArgs, QueryResponse};
 use auth_core::oauth2::{AccessToken, RefreshToken, TokenResponse};
 use auth_core::{
     config::CommonConfig,
@@ -18,11 +17,7 @@ use std::{
 
 const GRAPH_URL: &str = "https://staging.workflows.diamond.ac.uk/graphql";
 
-pub async fn run_query<T, U>(query: &str, args: T) -> U
-where
-    T: QueryArgs + Serialize,
-    U: QueryResponse + DeserializeOwned,
-{
+pub async fn run_query<T: Serialize, U: DeserializeOwned>(query: &str, args: T) -> U {
     let token = get_auth_token().await;
     let mut headers = HashMap::new();
     headers.insert(
