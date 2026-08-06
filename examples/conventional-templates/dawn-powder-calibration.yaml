@@ -159,5 +159,5 @@ spec:
     script:
       image: busybox
       command: [/bin/sh, "-c"]
-      args: 
+      args:
       - echo {{ workflow.parameters.confpath }} | sed 's![^/]*$!!'

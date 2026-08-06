@@ -9,7 +9,7 @@ metadata:
     workflows.argoproj.io/description: |
       Example live-priority workflow.
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-  
+
 
 spec:
   workflowMetadata:
@@ -33,5 +33,3 @@ spec:
               sleep 3
             done
             echo "finished"
-          
-

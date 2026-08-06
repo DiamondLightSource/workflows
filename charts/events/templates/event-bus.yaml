@@ -13,12 +13,12 @@ spec:
     {{- if $eventBus.resources }}
     containerTemplate:
       resources:
-        {{- $eventBus.resources | toYaml | nindent 10 }} 
+        {{- $eventBus.resources | toYaml | nindent 10 }}
     {{- end }}
-    {{- if $eventBus.metricsresources }}  
+    {{- if $eventBus.metricsresources }}
     metricsContainerTemplate:
       resources:
-          {{- $eventBus.metricsresources | toYaml | nindent 10 }} 
+          {{- $eventBus.metricsresources | toYaml | nindent 10 }}
     {{- end }}
   {{- end }}
 {{- end }}

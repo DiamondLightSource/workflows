@@ -12,7 +12,7 @@ spec:
     ports:
       - port: {{$eventSource.port }}
         targetPort: {{$eventSource.port }}
-  {{- if $eventSource.webhook }} 
+  {{- if $eventSource.webhook }}
   webhook:
     {{- $eventSource.webhook | toYaml | nindent 6 }}
   {{- end }}

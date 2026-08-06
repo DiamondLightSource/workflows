@@ -39,13 +39,16 @@ kyverno:
           enabled: true
         kyverno_policy_execution_duration_seconds:
           enabled: true
-          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+          disabledLabelDimensions:
+            ["resource_namespace", "resource_request_operation"]
         kyverno_validating_policy_execution_duration_seconds:
           enabled: true
-          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+          disabledLabelDimensions:
+            ["resource_namespace", "resource_request_operation"]
         kyverno_image_validating_policy_execution_duration_seconds:
           enabled: true
-          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+          disabledLabelDimensions:
+            ["resource_namespace", "resource_request_operation"]
         kyverno_admission_review_duration_seconds:
           enabled: true
           disabledLabelDimensions: ["resource_namespace"]

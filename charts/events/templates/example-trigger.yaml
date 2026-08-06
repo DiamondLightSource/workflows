@@ -36,7 +36,7 @@ spec:
     parameters:
       - name: visitdir
         path: doc.data_session_directory
-    
+
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: ClusterTriggerTemplate

@@ -63,7 +63,7 @@ spec:
                   - /bin/sh
                   - -c
                   # Configure Envoy Proxy for the following behaviour:
-                  # 
+                  #
                   # main container
                   #   POST http://127.0.0.1:6000/graphql
                   #         |

@@ -6,7 +6,7 @@ kueue:
           cpu: "8"
           memory: 16Gi
         requests:
-          cpu: '4'
+          cpu: "4"
           memory: 8Gi
   managerConfig:
     controllerManagerConfigYaml: |-

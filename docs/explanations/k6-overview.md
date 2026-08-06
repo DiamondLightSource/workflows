@@ -1,9 +1,9 @@
-Main files are in charts/k6-operator 
+Main files are in charts/k6-operator
 
 * Main changes made for k6:
-    - Allow machine account authentication @charts/workflows-cluster/values#186 
-    - Add scrape job for prometheus for k6 metrics @charts/otel-collector/values.yaml#92 
-    - Add myself to Grafana as admin @charts/monitoring/values.yaml#50 
+    - Allow machine account authentication @charts/workflows-cluster/values#186
+    - Add scrape job for prometheus for k6 metrics @charts/otel-collector/values.yaml#92
+    - Add myself to Grafana as admin @charts/monitoring/values.yaml#50
     - hourly CronJob creates the WebSocket synthetic probe TestRun
 
 Synthetic probe success proves:
@@ -17,25 +17,25 @@ with the end of the test printing:
 ```
 
   █ TOTAL RESULTS
- 
+
     checks_total.......: 1       0.001923/s
     checks_succeeded...: 100.00% 1 out of 1
     checks_failed......: 0.00%   0 out of 1
- 
+
     ✓ keycloak token request succeeded
- 
+
     HTTP
     http_req_duration..............: avg=759.38ms min=9.08ms med=78.24ms max=1m0s   p(90)=126.57ms p(95)=187.29ms
       { expected_response:true }...: avg=244.64ms min=9.08ms med=77.77ms max=59.96s p(90)=119.68ms p(95)=177.96ms
     http_req_failed................: 0.86% 281 out of 32621
     http_reqs......................: 32621 62.739816/s
- 
+
     EXECUTION
     iteration_duration.............: avg=759.81ms min=9.4ms  med=78.68ms max=1m0s   p(90)=126.96ms p(95)=187.69ms
     iterations.....................: 32620 62.737892/s
     vus............................: 3     min=0            max=249
     vus_max........................: 250   min=250          max=250
- 
+
     NETWORK
     data_received..................: 99 MB 189 kB/s
     data_sent......................: 66 MB 127 kB/s
@@ -79,8 +79,8 @@ Pain points:
 Future tests/to-do:
 
 1. Artifact verification
-1. write config-map/test spam-workflows.ts 
-1. have rich telemetry/metrics output for grafana 
+1. write config-map/test spam-workflows.ts
+1. have rich telemetry/metrics output for grafana
 
     1. https://grafana.com/docs/k6/latest/results-output/real-time/opentelemetry/
     1. use Check ( charts/k6-operator/tests/ws-subscription.ts#78  or https://grafana.com/docs/k6/latest/using-k6/checks/)

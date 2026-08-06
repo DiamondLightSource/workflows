@@ -53,4 +53,3 @@ spec:
                     path: parameters.param1
                   - name: param2
                     default: "true"
-          

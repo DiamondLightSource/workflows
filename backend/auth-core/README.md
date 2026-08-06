@@ -22,4 +22,3 @@ Outputs Base64-encoded public and private keys to set in service config.
 ```sh
 cd migration && cargo run
 ```
-

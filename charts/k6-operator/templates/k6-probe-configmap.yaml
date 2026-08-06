@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: k6-ws-map
   namespace: {{ .Release.Namespace}}
-data: 
+data:
   k6-ws-subscription-testrun.yaml: |
     apiVersion: k6.io/v1alpha1
     kind: TestRun
@@ -21,13 +21,13 @@ data:
       runner:
         env:
           - name: KEYCLOAK_CLIENT_ID
-            valueFrom: 
-              secretKeyRef: 
+            valueFrom:
+              secretKeyRef:
                 name: graph-proxy-k6-auth
                 key: KEYCLOAK_CLIENT_ID
           - name: KEYCLOAK_CLIENT_SECRET
-            valueFrom: 
-              secretKeyRef: 
+            valueFrom:
+              secretKeyRef:
                 name: graph-proxy-k6-auth
                 key: KEYCLOAK_CLIENT_SECRET
           - name: KEYCLOAK_TOKEN_URL
@@ -133,4 +133,3 @@ spec:
             - name: k6-yaml
               configMap:
                 name: k6-ws-map
-

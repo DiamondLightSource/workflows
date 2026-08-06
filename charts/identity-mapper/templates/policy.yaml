@@ -28,7 +28,7 @@ spec:
             {{- else }}
             default: ""
             {{- end }}
-        
+
         - name: userProfile
           apiCall:
             urlPath: "/apis/workflows.internal.diamond.ac.uk/v1/useridentities/{{`{{ posixUidString }}`}}"
@@ -48,7 +48,7 @@ spec:
             operator: NotEquals
             value: ""
 
-            
+
       mutate:
         patchStrategicMerge:
           spec:
