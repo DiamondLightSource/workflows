@@ -96,10 +96,10 @@ console.log("WS_ENDPOINTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY:", WS_ENDPOI
 export const wsClient = createClient({
   url: WS_ENDPOINT,
   on: {
-    connecting: () => console.log("WS connecting"),
-    opened: () => console.log("WS opened"),
-    connected: () => console.log("WS connected"),
-    closed: (event) => console.log("WS closed", event),
+    connecting: () => { console.log("WS connecting"); },
+    opened: () => { console.log("WS opened"); },
+    connected: () => { console.log("WS connected"); },
+    closed: (event) => { console.log("WS closed", event); },
   },
   webSocketImpl: class extends WebSocket {
     constructor(url: string | URL, protocols?: string | string[]) {

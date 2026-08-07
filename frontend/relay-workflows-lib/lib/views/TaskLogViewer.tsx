@@ -59,6 +59,8 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
 
+  const [expanded, setExpanded] = useState(false);
+
   useEffect(() => {
     console.log("TaskLogViewer selection changed:", {
         workflowName,
@@ -68,6 +70,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
 
     setLogLines([]);
     setTaskCompleted(false);
+    setExpanded(!!selectedTaskId);
 
     }, [
     selectedTaskId,
@@ -142,11 +145,13 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
 
   return (
     <Accordion
+        expanded={expanded}
+        onChange={(_, isExpanded) => { setExpanded(isExpanded); }}
         sx={{
-        mt: 2,
-        width: "100%",
-        backgroundColor: "#001400",
-        color: "#00ff00",
+            mt: 2,
+            width: "100%",
+            backgroundColor: "#001400",
+            color: "#00ff00",
         }}
     >
 
@@ -167,9 +172,10 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
 
         {selectedTaskId && !taskCompleted && (
         <CircularProgress
-            size={12}
+            size={14}
             sx={{
-            color: "#f5dd05",
+            color: "rgb(253, 251, 251)",
+            marginLeft: "10px",
             }}
         />
         )}
