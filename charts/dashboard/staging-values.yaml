@@ -6,9 +6,8 @@ configuration:
   graphUrl: https://staging.workflows.diamond.ac.uk/api
   graphWsUrl: wss://staging.workflows.diamond.ac.uk/api/ws
   sourceDir: /usr/share/nginx/html
-  useAuthGateway: "true"
+  useAuthGateway: 'true'
   authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth/login
-
 ingress:
   hosts:
     - host: staging.workflows.diamond.ac.uk
@@ -36,7 +35,7 @@ authGateway:
   image:
     registry: ghcr.io
     repository: diamondlightsource/workflows-auth-gateway
-    tag: 0.1.0
+    tag: 0.1.1
     digest: sha256:61fbf15f304ac13a5e8f1a24a65c1f53adae60d20142ff8d88da4510b5a4e9cf
     pullPolicy: IfNotPresent
     pullSecrets: []
