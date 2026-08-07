@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.9...relay-workflows-lib@v0.1.10) (2026-08-07)
+
+
+### Bug Fixes
+
+* **frontend:** fix CORS issue running frontend locally with keycloak-js ([93fc38e](https://github.com/DiamondLightSource/workflows/commit/93fc38e5480cfae11f1d4f0a8b067803ff6a29aa))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.8...relay-workflows-lib@v0.1.9) (2026-07-13)
 
 
