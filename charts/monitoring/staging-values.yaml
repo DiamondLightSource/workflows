@@ -9,7 +9,7 @@ grafana:
     tls:
       - hosts:
           - grafana.staging.workflows.diamond.ac.uk
-        secretName: letsencrypt-grafana-staging-workflows-diamond-ac-uk
+        secretName: grafana-tls-cert
   grafana.ini:
     server:
       domain: grafana.staging.workflows.diamond.ac.uk
@@ -28,7 +28,8 @@ thanos:
     enabled: false
   query:
     ingress:
-      enabled: false
+      http:
+        enabled: false
   queryFrontend:
     enabled: false
     ingress:
