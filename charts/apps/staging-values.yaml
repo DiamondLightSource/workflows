@@ -83,6 +83,13 @@ otel:
   extraValuesFiles: []
   valuesObject: {}
 
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles:
+    - staging-values.yaml
+  valuesObject: {}
+
 kueue:
   enabled: true
   targetRevision: HEAD
