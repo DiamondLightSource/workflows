@@ -71,6 +71,9 @@ dashboard:
   extraValueFiles:
     - dev-values.yaml
 
+monitoring:
+  enabled: false
+
 identityMapper:
   enabled: false
   targetRevision: HEAD

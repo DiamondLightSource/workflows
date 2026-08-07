@@ -148,6 +148,12 @@ otel:
   extraValuesFiles: []
   valuesObject: {}
 
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
 kueue:
   enabled: true
   targetRevision: HEAD
