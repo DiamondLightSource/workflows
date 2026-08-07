@@ -1,6 +1,8 @@
 cluster: argus
 
 grafana:
+  testFramework:
+    enabled: false
   rbac:
     create: false
     pspEnabled: false
@@ -143,12 +145,10 @@ thanos:
     replicaCount: 1
     persistence:
       enabled: false
-    extraArgs:
-      - --retention.resolution-raw=30d
-      - --retention.resolution-5m=30d
-      - --retention.resolution-1h=1y
-      - --consistency-delay=30m
-      - --wait
+    retentionResolutionRaw: 30d
+    retentionResolution5m: 30d
+    retentionResolution1h: 1y
+    consistencyDelay: 30m
     resources:
       requests:
         cpu: "1"
