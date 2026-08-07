@@ -176,53 +176,44 @@ vcluster:
       overwriteRules:
         - apiGroups: [""]
           resources:
-            - configmaps
-            - secrets
-            - services
-            - pods
-            - pods/attach
-            - pods/portforward
-            - pods/exec
-            - persistentvolumeclaims
+            [
+              "configmaps",
+              "secrets",
+              "services",
+              "pods",
+              "pods/attach",
+              "pods/portforward",
+              "pods/exec",
+              "persistentvolumeclaims",
+            ]
           verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-
         - apiGroups: [""]
-          resources:
-            - pods/status
-            - pods/ephemeralcontainers
+          resources: ["pods/status", "pods/ephemeralcontainers"]
           verbs: ["patch", "update"]
-
         - apiGroups: [""]
-          resources:
-            - endpoints
-          verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-
-        - apiGroups: ["discovery.k8s.io"]
-          resources:
-            - endpointslices
-          verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-
-        - apiGroups: ["coordination.k8s.io"]
-          resources:
-            - leases
-          verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-
-        - apiGroups: [""]
-          resources:
-            - pods/log
-          verbs: ["get", "list", "watch"]
-
+          resources: ["pods/resize"]
+          verbs: ["patch", "update"]
         - apiGroups: ["apps"]
-          resources:
-            - statefulsets
-            - replicasets
-            - deployments
+          resources: ["statefulsets", "replicasets", "deployments"]
+          verbs: ["get", "list", "watch", "patch", "update"]
+        - apiGroups: [""]
+          resources: ["endpoints", "pods/log"]
           verbs: ["get", "list", "watch"]
-
-        - apiGroups: ["metrics.k8s.io"]
-          resources:
-            - pods
-          verbs: ["get", "list"]
+        - apiGroups: [""]
+          resources: ["events"]
+          verbs: ["create", "get", "list", "watch"]
+        - apiGroups: [""]
+          resources: ["endpoints"]
+          verbs: ["create", "delete", "patch", "update"]
+        - apiGroups: ["discovery.k8s.io"]
+          resources: ["endpointslices"]
+          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
+        - apiGroups: ["coordination.k8s.io"]
+          resources: ["leases"]
+          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
+        - apiGroups: ["networking.k8s.io"]
+          resources: ["ingresses"]
+          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
 
   integrations:
     metricsServer:
