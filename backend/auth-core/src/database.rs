@@ -79,6 +79,34 @@ pub async fn read_token_from_database(
     Ok(stored)
 }
 
+/// Returns `true` if a non-expired token row is stored for `subject`.
+/// Does not decrypt the refresh token, just checks for existence and expiration.
+pub async fn token_exists_in_database(
+    connection: &DatabaseConnection,
+    subject: &SubjectIdentifier,
+) -> Result<bool> {
+    info!(
+        subject = subject.as_str(),
+        "Checking token presence in database"
+    );
+    let row = entity::oidc_tokens::Entity::find()
+        .filter(entity::oidc_tokens::Column::Subject.eq(subject.as_str()))
+        .one(connection)
+        .await?;
+
+    let Some(row) = row else {
+        return Ok(false);
+    };
+
+    if let Some(expires_at) = row.expires_at
+        && to_utc(expires_at) < Utc::now()
+    {
+        return Ok(false);
+    }
+
+    Ok(true)
+}
+
 pub async fn write_token_to_database(
     connection: &DatabaseConnection,
     token: &impl RefreshTokenInfo,
