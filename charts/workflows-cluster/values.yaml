@@ -4,12 +4,12 @@ secrets:
 
 backup:
   etcd:
-    enabled: false
+    enabled: true
     snapshotDir: /backup/
     snapshotName: etcd-snapshot
     fileExtension: .db
   postgres:
-    enabled: false
+    enabled: true
     snapshotDir: /backup/
     snapshotName: postgres-snapshot
     fileExtension: .pgdump
@@ -40,7 +40,7 @@ vcluster:
               # difficult or impossible
               tag: 3.6.4-0
             extraArgs:
-              - --quota-backend-bytes=8589934592  # 8Gi
+              - --quota-backend-bytes=8589934592 # 8Gi
             resources:
               requests:
                 cpu: 4000m
@@ -71,7 +71,7 @@ vcluster:
         addVolumes:
           - name: authn-config
             configMap:
-              name: "workflows-cluster-authn-config"  # TODO: Replace with templated value "{{ include "common.names.fullname" $ }}-authn-config"
+              name: "workflows-cluster-authn-config" # TODO: Replace with templated value "{{ include "common.names.fullname" $ }}-authn-config"
         addVolumeMounts:
           - name: authn-config
             mountPath: /etc/authn-config
@@ -142,6 +142,12 @@ vcluster:
             "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
             "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-otelcollector-workflows-diamond-ac-uk": "monitoring/otelcollector-tls-cert"
+            "/letsencrypt-grafana-workflows-diamond-ac-uk": "monitoring/letsencrypt-grafana-workflows-diamond-ac-uk"
+            "/letsencrypt-thanos-query-workflows-diamond-ac-uk": "monitoring/letsencrypt-thanos-query-workflows-diamond-ac-uk"
+            "/letsencrypt-alertmanager-workflows-diamond-ac-uk": "monitoring/letsencrypt-alertmanager-workflows-diamond-ac-uk"
+            "/letsencrypt-prometheus-workflows-diamond-ac-uk": "monitoring/letsencrypt-prometheus-workflows-diamond-ac-uk"
+            "/grafana-oauth": "monitoring/grafana-oauth"
+            "/monitoring-thanos-s3": "monitoring/monitoring-thanos-s3"
             "/argocd-oauth": "argocd/argocd-oauth"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
@@ -170,7 +176,6 @@ vcluster:
       nodes: true
       pods: true
 
-
 ingress:
   enabled: true
   host: kubernetes.workflows.diamond.ac.uk
@@ -197,55 +202,32 @@ authenticationConfiguration:
           claim: groups
           prefix: "oidc:"
         extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: "string(claims.?posix_uid.orValue(36055))"  # use k8s-workflows uid
-        - key: 'workflows.diamond.ac.uk/is-service-account'
-          valueExpression: "claims.?fedid.hasValue() ? '' : 'true'"
+          - key: "workflows.diamond.ac.uk/posixuid"
+            valueExpression: "string(claims.?posix_uid.orValue(36055))" # use k8s-workflows uid
+          - key: "workflows.diamond.ac.uk/is-service-account"
+            valueExpression: "claims.?fedid.hasValue() ? '' : 'true'"
       claimValidationRules:
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          claims.?client_id.hasValue()
-        message: "Invalid access token (no fedid or client_id). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          claims.?preferred_username.orValue('').startsWith('service-account-')
-        message: "Invalid access token (service-account tokens must use service-account-* preferred_username). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          (
+        - expression: >
+            claims.?fedid.hasValue()
+            ||
             claims.?client_id.hasValue()
-            &&
-            ['k6Operator'].exists(allowed, allowed == claims.client_id)
-          )
-        message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+          message: "Invalid access token (no fedid or client_id). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+        - expression: >
+            claims.?fedid.hasValue()
+            ||
+            claims.?preferred_username.orValue('').startsWith('service-account-')
+          message: "Invalid access token (service-account tokens must use service-account-* preferred_username). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+        - expression: >
+            claims.?fedid.hasValue()
+            ||
+            (
+              claims.?client_id.hasValue()
+              &&
+              ['k6Operator'].exists(allowed, allowed == claims.client_id)
+            )
+          message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
       userValidationRules:
-      - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
-      - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'
-    - issuer:
-        url: https://authn.diamond.ac.uk/realms/master
-        audiences:
-          - workflows-cluster
-          - graph
-        audienceMatchPolicy: MatchAny
-      claimMappings:
-        username:
-          claim: fedid
-          prefix: "oidc:"
-        groups:
-          claim: groups
-          prefix: "oidc:"
-        uid:
-          claim: fedid
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: 'string(claims.posix_uid)'
-      userValidationRules:
-      - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
-      - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'
+        - expression: "!user.username.startsWith('system:')"
+          message: "username cannot use reserved system: prefix"
+        - expression: "user.groups.all(group, !group.startsWith('system:'))"
+          message: "groups cannot use reserved system: prefix"

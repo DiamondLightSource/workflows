@@ -20,7 +20,7 @@ export const WorkflowsContentFragment = graphql`
     }
     nodes {
       ...WorkflowRelayFragment
-      name
+      id
     }
   }
 `;
@@ -71,10 +71,10 @@ export default function WorkflowsContent({
   }, [pageInfo, updatePageInfo]);
 
   useEffect(() => {
-    const currentNames = fetchedWorkflows.map((wf) => wf.name);
-    const prevNames = prevFetchedRef.current;
+    const currentIds = fetchedWorkflows.map((wf) => wf.id);
+    const prevIds = prevFetchedRef.current;
     const fetchedChanged =
-      JSON.stringify(currentNames) !== JSON.stringify(prevNames);
+      JSON.stringify(currentIds) !== JSON.stringify(prevIds);
     if (fetchedChanged && isPaginatedRef.current) {
       setTimeout(() => {
         isPaginatedRef.current = false;
@@ -83,13 +83,13 @@ export default function WorkflowsContent({
     }
   }, [isPaginatedRef, fetchedWorkflows, setIsPaginated]);
 
-  const handleToggleExpanded = (name: string) => {
+  const handleToggleExpanded = (id: string) => {
     setExpandedWorkflows((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        next.add(name);
+        next.add(id);
       }
       return next;
     });
@@ -102,12 +102,12 @@ export default function WorkflowsContent({
       <Box sx={{ overflowY: "auto", maxHeight: "80vh", width: "100%" }}>
         {fetchedWorkflows.map((node) => (
           <WorkflowRelay
-            key={node.name}
+            key={node.id}
             fragmentRef={node}
             workflowLink
-            expanded={expandedWorkflows.has(node.name)}
+            expanded={expandedWorkflows.has(node.id)}
             onChange={() => {
-              handleToggleExpanded(node.name);
+              handleToggleExpanded(node.id);
             }}
           />
         ))}

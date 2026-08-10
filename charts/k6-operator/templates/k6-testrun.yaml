@@ -15,13 +15,13 @@ spec:
   runner:
     env:
       - name: KEYCLOAK_CLIENT_ID
-        valueFrom: 
-          secretKeyRef: 
+        valueFrom:
+          secretKeyRef:
             name: graph-proxy-k6-auth
             key: KEYCLOAK_CLIENT_ID
       - name: KEYCLOAK_CLIENT_SECRET
-        valueFrom: 
-          secretKeyRef: 
+        valueFrom:
+          secretKeyRef:
             name: graph-proxy-k6-auth
             key: KEYCLOAK_CLIENT_SECRET
       - name: KEYCLOAK_TOKEN_URL
@@ -61,4 +61,3 @@ spec:
       requests:
         cpu: 500m
         memory: 500Mi
-

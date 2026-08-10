@@ -5,13 +5,13 @@ import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay";
 import { NavLink } from "react-router-dom";
 import { RetriggerWorkflowQuery as RetriggerWorkflowQueryType } from "./__generated__/RetriggerWorkflowQuery.graphql";
-import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import { WorkflowsErrorBoundary } from "workflows-lib";
 
 const retriggerWorkflowQuery = graphql`
-  query RetriggerWorkflowQuery($visit: VisitInput!, $workflowname: String!) {
-    workflow(visit: $visit, name: $workflowname) {
+  query RetriggerWorkflowQuery($id: ID!) {
+    workflowById(id: $id) {
       templateRef
+      id
     }
   }
 `;
@@ -25,31 +25,24 @@ const NoTemplateIcon: React.FC = () => {
 };
 
 interface RetriggerWorkflowProps {
-  instrumentSession: Visit;
-  workflowName: string;
+  workflowId: string;
 }
 
 const RetriggerWorkflowBase: React.FC<RetriggerWorkflowProps> = ({
-  instrumentSession,
-  workflowName,
+  workflowId,
 }) => {
   const data = useLazyLoadQuery<RetriggerWorkflowQueryType>(
     retriggerWorkflowQuery,
     {
-      visit: instrumentSession,
-      workflowname: workflowName,
+      id: workflowId,
     },
   );
 
-  const templateName = data.workflow?.templateRef;
+  const templateName = data.workflowById?.templateRef;
 
   return templateName ? (
     <Tooltip title="Rerun workflow">
-      <NavLink
-        to={`/templates/${templateName}/${visitToText(
-          instrumentSession,
-        )}-${workflowName}`}
-      >
+      <NavLink to={`/templates/${templateName}/${workflowId}`}>
         <RefreshIcon />
       </NavLink>
     </Tooltip>

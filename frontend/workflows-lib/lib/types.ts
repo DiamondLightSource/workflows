@@ -42,6 +42,7 @@ export type WorkflowStatus =
 
 export interface Workflow {
   name: string;
+  id: string;
   instrumentSession: Visit;
   status: WorkflowStatus;
   creator: string;
@@ -96,6 +97,7 @@ export interface WorkflowStatusBool {
 export interface SubmissionSuccessMessage {
   type: "success";
   message: string;
+  link: string;
 }
 
 export interface SubmissionNetworkErrorMessage {
@@ -115,6 +117,7 @@ export interface SubmissionData {
     | SubmissionNetworkErrorMessage;
   visit: Visit;
   workflowName?: string;
+  workflowId?: string;
 }
 
 export interface UploadedFile {

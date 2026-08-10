@@ -213,6 +213,7 @@ export const fakeTasksC = [
 
 export const fakeWorkflowA = {
   name: "Workflow 1",
+  id: "ab12345-1:Workflow1:uid-Workflow1",
   status: "Failed" as WorkflowStatus,
   workflow: "workflow1",
   instrumentSession: instrumentSession,

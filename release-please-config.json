@@ -50,6 +50,16 @@
         }
       ]
     },
+    "backend/auth-broker": {
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/auth-broker/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ]
+    },
     "backend/sessionspaces": {
       "release-type": "rust",
       "extra-files": [

@@ -22,7 +22,7 @@ systemctl --user enable --now podman.socket
 
 2) Proxy the LDAP. The LDAP is only accessible from workstations, the local cluster is usable on a root laptop. We get around this by proxying the LDAP traffic via a workstation. Something like this should work, with your own workstation as the ssh host.
 
-```bash 
+```bash
 ssh -L 1389:ldapmaster.diamond.ac.uk:389 USER@WORKSTATION
 ```
 

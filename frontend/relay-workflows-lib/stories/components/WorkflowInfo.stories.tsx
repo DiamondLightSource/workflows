@@ -22,7 +22,7 @@ const Wrapper = ({ children }: { children: ReactElement }) => {
   ) as SingleWorkflowViewQuery$data;
   const subdata = useFragment(
     BaseSingleWorkflowViewFragment,
-    data.workflow,
+    data.workflowById,
   ) as BaseSingleWorkflowViewFragment$data;
   return React.cloneElement(children, {
     fragmentRef: subdata,

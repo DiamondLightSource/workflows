@@ -136,7 +136,7 @@ The complete workflow is provided below for reference.
 
 ## Templating The Path
 
-In the above example we have written the path straight into the workflow, but the path is also template-able. 
+In the above example we have written the path straight into the workflow, but the path is also template-able.
 We cannot template the path in the above example, as the command parameter is defined at the top level of parameters.
 Below is a similar example where the path has been templated.
 
@@ -161,7 +161,7 @@ spec:
   - name: bash
     inputs:
       parameters:
-      - name: name 
+      - name: name
       - name: output_path
     container:
       image: busybox
@@ -184,7 +184,7 @@ spec:
       - name: say-hello
         template: bash
         arguments:
-          parameters: 
+          parameters:
           - name: name
             value: YOUR NAME
           - name: output_path

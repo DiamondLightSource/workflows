@@ -31,7 +31,7 @@ import { WorkflowTasksFragment$key } from "../graphql/__generated__/WorkflowTask
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 
 interface TasksFlowProps {
-  workflowName: string;
+  workflowId: string;
   tasksRef?: WorkflowTasksFragment$key | null;
   onNavigate: (path: string, e?: React.MouseEvent) => void;
   highlightedTaskIds?: string[];
@@ -40,7 +40,7 @@ interface TasksFlowProps {
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
-  workflowName,
+  workflowId: workflowId,
   tasksRef,
   onNavigate,
   highlightedTaskIds,
@@ -67,7 +67,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   );
 
   const { saveViewport, loadViewport, clearViewport } =
-    usePersistentViewport(workflowName);
+    usePersistentViewport(workflowId);
 
   const onViewportChangeEnd = useCallback(
     (viewport: Viewport) => {

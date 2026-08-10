@@ -1,4 +1,4 @@
-{{- if .Values.authenticatedWorkflows.enabled }}
+{{- if .Values.authenticatedWorkflows.authDaemon.enabled }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

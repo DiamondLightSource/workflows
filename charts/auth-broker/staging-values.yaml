@@ -1,3 +1,4 @@
-image:
-  tag: drh
-  pullPolicy: Always
+authBrokerConfig:
+  config:
+    oidc_provider_url: https://identity-test.diamond.ac.uk/realms/dls
+    graph_url: http://graph-proxy.graph-proxy.svc.cluster.local/

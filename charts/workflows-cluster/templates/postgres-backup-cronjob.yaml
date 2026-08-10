@@ -9,8 +9,10 @@ spec:
   schedule: "@yearly"
   suspend: true
   {{- end }}
+  successfulJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 2
       template:
         spec:
           restartPolicy: Never

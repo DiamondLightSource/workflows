@@ -19,7 +19,7 @@ spec:
     repoURL: {{ .repoURL }}
     path: {{ default "." .path }}
     targetRevision: {{ default "HEAD" .targetRevision }}
-    {{- if eq $sourcetype "directory"  }} 
+    {{- if eq $sourcetype "directory"  }}
     directory:
       recurse: true
     {{- end }}

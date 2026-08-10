@@ -16,4 +16,3 @@ The daemon resolves the subject (the user whose stored refresh token to load) at
 |------|--------|-------------|
 | `/` | any | Authenticated proxy to the configured GraphQL endpoint |
 | `/healthz` | `GET` | Health check (returns 202) |
-

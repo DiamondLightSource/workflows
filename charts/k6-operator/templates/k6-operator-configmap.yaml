@@ -5,4 +5,3 @@ metadata:
   namespace: {{ .Release.Namespace}}
 data:
 {{(.Files.Glob "tests/*.ts").AsConfig| indent 2}}
-

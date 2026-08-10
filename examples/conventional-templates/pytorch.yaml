@@ -37,11 +37,11 @@ spec:
           echo "done"
 
     - name: matrix-multiplication
-      inputs: 
+      inputs:
         parameters:
           - name: size
             value: 1024
-      script: 
+      script:
         image: pytorch/pytorch
         volumeMounts:
           - name: tmpdir
@@ -86,11 +86,11 @@ spec:
               none: {}
 
     - name: workflow-entry
-      dag: 
+      dag:
         tasks:
           - name: install-dependencies
             template: install-dependencies
-          
+
           - name: matrix-multiplication
             template: matrix-multiplication
             arguments:

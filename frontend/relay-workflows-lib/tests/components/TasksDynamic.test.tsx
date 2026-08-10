@@ -40,7 +40,7 @@ describe("TasksFlow", () => {
   const renderTasksFlow = () =>
     render(
       <TasksFlow
-        workflowName="mockWorkflowA"
+        workflowId="mockWorkflowA"
         isDynamic={true}
         onNavigate={() => {}}
       />,

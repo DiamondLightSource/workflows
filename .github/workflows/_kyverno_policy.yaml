@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Kyverno
         run: |
-          helm install kyverno kyverno/kyverno --version 3.5.2 --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false --set features.policyExceptions.enabled=true --set features.policyExceptions.namespace="*" --wait --timeout 5m
+          helm install kyverno kyverno/kyverno --version 3.8.2 --namespace kyverno --create-namespace --set cleanupController.enabled=false --set reportsController.enabled=false --set features.policyExceptions.enabled=true --set features.policyExceptions.namespace="*" --wait --timeout 5m
           helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "CustomResourceDefinition")' > /tmp/crds.yaml
 
       - name: Install Workflows CRDs
@@ -50,8 +50,8 @@ jobs:
 
       - name: Install Kueue CRDs
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.15.0/config/components/crd/bases/kueue.x-k8s.io_clusterqueues.yaml
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.15.0/config/components/crd/bases/kueue.x-k8s.io_localqueues.yaml
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.19.0/config/components/crd/bases/kueue.x-k8s.io_clusterqueues.yaml
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.19.0/config/components/crd/bases/kueue.x-k8s.io_localqueues.yaml
 
       - name: Install mpi-operator CRDs
         run: |

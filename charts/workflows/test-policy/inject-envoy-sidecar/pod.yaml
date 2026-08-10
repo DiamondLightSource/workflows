@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: envoy-auth-test
+  labels:
+    workflows.argoproj.io/workflow: envoy-auth-test
+  annotations:
+    workflows.diamond.ac.uk/authenticated: "true"
+spec:
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 1
+
+  containers:
+    - name: main
+      image: curlimages/curl:8.12.1
+      command:
+        - sh
+        - -c
+      args:
+        - |
+          set -eu
+
+          echo "GRAPH_URL=${GRAPH_URL}"
+
+          RESPONSE="$(curl -v \
+            --fail \
+            --silent \
+            --show-error \
+            --connect-timeout 5 \
+            -X POST \
+            "${GRAPH_URL}" \
+            -H 'Content-Type: application/json' \
+            --data '{"query":"query WorkflowTemplates { workflowTemplates { nodes { name } } }"}')"
+
+          echo "${RESPONSE}"
+
+          echo "${RESPONSE}" | grep -q '"workflowTemplates"'

@@ -25,7 +25,7 @@ spec:
         image: python:3.14-slim
         command: ["/bin/sh", "-c"]
         workingDir: /sync
-        args: 
+        args:
           - |
             pip install pydantic
             python3 /hooks/sync.py

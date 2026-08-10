@@ -4,6 +4,6 @@ INSERT INTO
         `proposalNumber`,
         `proposalCode`
     )
-VALUES 
+VALUES
     (30, "10030", "sw"),
     (31, "10031", "cm")

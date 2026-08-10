@@ -1,6 +1,7 @@
 export const singleWorkflowViewQueryResponse = {
-  workflow: {
+  workflowById: {
     name: "conditional-steps-first",
+    id: "mg36964-1:conditional-steps-first:xyz-123",
     visit: {
       proposalCode: "mg",
       proposalNumber: 36964,

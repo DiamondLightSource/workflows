@@ -5,7 +5,7 @@
     "dockerfile": "Dockerfile"
   },
   "containerEnv": {
-    "AUTH_DOMAIN": "https://authn.diamond.ac.uk/realms/master",
+    "AUTH_DOMAIN": "https://identity.diamond.ac.uk/realms/dls",
     "CLIENT_ID": "workflows-cluster",
     "GRAPH_URL": "https://workflows.diamond.ac.uk/graphql"
   },
