@@ -37,7 +37,7 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
     setIsNull(true);
   };
 
-  const workflow = queryData.workflow;
+  const workflow = queryData.workflowById;
 
   const finished =
     workflow?.status != null &&
