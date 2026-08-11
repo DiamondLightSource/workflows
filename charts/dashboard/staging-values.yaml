@@ -7,7 +7,7 @@ configuration:
   graphWsUrl: wss://staging.workflows.diamond.ac.uk/api/ws
   sourceDir: /usr/share/nginx/html
   useAuthGateway: "true"
-  authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth/login
+  authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth
 
 ingress:
   hosts:

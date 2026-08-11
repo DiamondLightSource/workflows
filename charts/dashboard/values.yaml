@@ -7,7 +7,7 @@ configuration:
   graphWsUrl: wss://workflows.diamond.ac.uk/graphql/ws
   sourceDir: "/usr/share/nginx/html"
   useAuthGateway: "false"
-  authGatewayLoginUrl: https://workflows.diamond.ac.uk/auth/login
+  authGatewayLoginUrl: https://workflows.diamond.ac.uk/auth
 
 image:
   registry: ghcr.io
