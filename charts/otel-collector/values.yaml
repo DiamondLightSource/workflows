@@ -168,6 +168,10 @@ opentelemetry-collector:
                 - source_labels: [__meta_kubernetes_endpoint_port_name]
                   regex: https
                   action: keep
+              metric_relabel_configs:
+                - source_labels: [__name__]
+                  regex: kueue_local_queue_(status|resource_usage|resource_reservation|pending_workloads)
+                  action: drop
       otlp:
         protocols:
           grpc:
