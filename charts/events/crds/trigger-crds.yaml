@@ -25,9 +25,6 @@ spec:
                 lifetime:
                   type: string
                   pattern: '^(\d+[smh]|forever)$'
-                enabled:
-                  type: boolean
-                  default: true
                 eventName:
                   type: string
                 workflow:

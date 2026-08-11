@@ -91,7 +91,8 @@ class Controller(BaseHTTPRequestHandler):
       except ValidationError:
         errored_triggers.append(trigger)
         continue
-
+      if not trigger.spec.enabled:
+        continue
       name: str | None = trigger.metadata.name
       namespace: str | None = trigger.metadata.namespace
       source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
