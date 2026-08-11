@@ -1,88 +1,37 @@
-import { useEffect, useState } from "react";
 import CircleIcon from "@mui/icons-material/Circle";
 import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { useAuthStatus } from "../../hooks/useAuthStatus";
+import { buildLoginUrl } from "../../utils/authUtils";
 
 export interface AuthStatusIndicatorProps {
-  gatewayUrl: string;
   accessToken?: string;
+  /** Defaults to the current origin, where the gateway is served under `/auth`. */
+  gatewayUrl?: string;
   cacheTtlMs?: number;
   size?: number;
   returnTo?: string;
 }
 
-interface CachedStatus {
-  authenticated: boolean;
-  checkedAt: number;
-}
-
-const CACHE_KEY = "workflows-auth-status";
-
-const readCache = (ttlMs: number): boolean | null => {
-  try {
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const cached = JSON.parse(raw) as CachedStatus;
-    if (Date.now() - cached.checkedAt > ttlMs) return null;
-    return cached.authenticated;
-  } catch {
-    return null;
-  }
-};
-
-const writeCache = (authenticated: boolean) => {
-  try {
-    sessionStorage.setItem(
-      CACHE_KEY,
-      JSON.stringify({
-        authenticated,
-        checkedAt: Date.now(),
-      } satisfies CachedStatus),
-    );
-  } catch {
-    // best-effort; ignore storage failures (e.g. private browsing)
-  }
-};
-
 const AuthStatusIndicator = ({
-  gatewayUrl,
   accessToken,
-  cacheTtlMs = 30000,
+  gatewayUrl,
+  cacheTtlMs,
   size = 20,
   returnTo,
 }: AuthStatusIndicatorProps) => {
-  const [status, setStatus] = useState<boolean | null>(() =>
-    readCache(cacheTtlMs),
-  );
-
-  useEffect(() => {
-    if (readCache(cacheTtlMs) !== null || !accessToken) return;
-
-    let active = true;
-    void fetch(`${gatewayUrl}/auth/status`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((res) => (res.ok ? (res.json() as Promise<boolean>) : false))
-      .then((result) => {
-        if (!active) return;
-        setStatus(result);
-        writeCache(result);
-      })
-      .catch(() => {
-        if (active) setStatus(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [gatewayUrl, accessToken, cacheTtlMs]);
-
-  const authenticated = accessToken ? (status ?? false) : false;
+  const { authenticated } = useAuthStatus({
+    accessToken,
+    gatewayUrl,
+    cacheTtlMs,
+  });
 
   const handleClick = () => {
     if (authenticated) return;
-    const loginUrl = new URL(`${gatewayUrl}/auth/login`);
-    if (returnTo) loginUrl.searchParams.set("returnTo", returnTo);
-    window.location.href = loginUrl.toString();
+    window.open(
+      buildLoginUrl(returnTo, gatewayUrl),
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   const text = authenticated

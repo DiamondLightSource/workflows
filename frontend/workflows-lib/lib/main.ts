@@ -25,7 +25,9 @@ export {
   type AuthStatusIndicatorProps,
 } from "./components/common/AuthStatusIndicator";
 export * from "./components/common/StatusIcons";
+export * from "./hooks/useAuthStatus";
 export * from "./types";
+export * from "./utils/authUtils";
 export * from "./utils/commonUtils";
 export * from "./utils/tasksFlowUtils";
 export * from "../tests/components/data";
