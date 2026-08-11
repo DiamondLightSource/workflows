@@ -16,7 +16,6 @@ spec:
                 workflows.diamond.ac.uk/source: test-source
                 workflows.diamond.ac.uk/beamline: test-beamline
             spec:
-              enabled: true
               eventName: test-eventname
               workflow:
                 template: workflow-template
