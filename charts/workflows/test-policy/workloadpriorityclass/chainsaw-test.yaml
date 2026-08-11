@@ -98,3 +98,111 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/priority-class: medium
+
+        # Test policy applies on Workflow UPDATE
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+
+        # Test policy does not modify running Workflows
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+              status:
+                phase: Running
+              spec: {}
+
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+              status:
+                phase: Running
+
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+                annotations:
+                  workflows.diamond.ac.uk/type: "test"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+
+        # Verify that the rejected update has not changed the Workflow.
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+              status:
+                phase: Running
