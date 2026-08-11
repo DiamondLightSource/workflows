@@ -18,15 +18,35 @@ type Story = StoryObj<typeof AuthStatusIndicator>;
 
 export default meta;
 
+// The gateway is same-origin under /auth, which Storybook does not serve, so
+// stub the status response to render each state deterministically.
+const mockAuthStatus = (authenticated: boolean) => {
+  window.fetch = () =>
+    Promise.resolve(new Response(JSON.stringify(authenticated)));
+};
+
 export const Unauthenticated: Story = {
+  decorators: [
+    (Story) => {
+      sessionStorage.clear();
+      mockAuthStatus(false);
+      return <Story />;
+    },
+  ],
   args: {
-    gatewayUrl: "https://workflows.diamond.ac.uk",
+    accessToken: "example-token",
   },
 };
 
 export const Authenticated: Story = {
+  decorators: [
+    (Story) => {
+      sessionStorage.clear();
+      mockAuthStatus(true);
+      return <Story />;
+    },
+  ],
   args: {
-    gatewayUrl: "https://workflows.diamond.ac.uk",
     accessToken: "example-token",
   },
 };
