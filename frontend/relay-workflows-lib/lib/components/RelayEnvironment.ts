@@ -12,14 +12,13 @@ import { getKeycloak } from "../utils/keycloak";
 import { createClient } from "graphql-ws";
 import { AuthState } from "@diamondlightsource/sci-react-ui";
 import { parseJwt } from "../utils/coreUtils";
-import { JSONObject } from "workflows-lib";
+import { JSONObject, buildLoginUrl } from "workflows-lib";
 import { getUseAuthGateway } from "../utils/useAuthGateway";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
 const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
 const USE_AUTH_GATEWAY = getUseAuthGateway();
-const AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
 
 const keycloak = await getKeycloak();
 
@@ -87,8 +86,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   }
   const resp = await fetch(HTTP_ENDPOINT, fetchOptions);
   if (USE_AUTH_GATEWAY && resp.status === 401) {
-    const returnTo = encodeURIComponent(window.location.href);
-    window.location.assign(`${AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`);
+    window.location.assign(buildLoginUrl(window.location.href));
     return {};
   }
 
