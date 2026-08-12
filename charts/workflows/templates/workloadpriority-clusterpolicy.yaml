@@ -26,7 +26,7 @@ spec:
           value: "medium"
         # Do not apply to Running Workflows as they may have created pods whose priority-class should not change
         # Argo Workflows should have applied all metadata before a Job enters Running phase
-        - key: "{{ `{{ request.object.status.phase || '' }}` }}"
+        - key: "{{ `{{ request.oldObject.status.phase || '' }}` }}"
           operator: NotEquals
           value: Running
       mutate:
@@ -52,7 +52,7 @@ spec:
         - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
           operator: NotEquals
           value: "high"
-        - key: "{{ `{{ request.object.status.phase || '' }}` }}"
+        - key: "{{ `{{ request.oldObject.status.phase || '' }}` }}"
           operator: NotEquals
           value: Running
       mutate:
@@ -78,7 +78,7 @@ spec:
         - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
           operator: NotEquals
           value: "low"
-        - key: "{{ `{{ request.object.status.phase || '' }}` }}"
+        - key: "{{ `{{ request.oldObject.status.phase || '' }}` }}"
           operator: NotEquals
           value: Running
       mutate:
