@@ -1,5 +1,5 @@
 {
-  "name": "workflows-lib-shared",
+  "name": "@diamondlightsource/workflows-lib-shared",
   "private": false,
   "version": "0.1.0",
   "type": "module",
@@ -7,26 +7,33 @@
     "dist"
   ],
   "main": "lib/main.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/workflows-lib-shared.cjs",
+    "module": "./dist/workflows-lib-shared.js",
+    "types": "./dist/main.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/main.d.ts",
+        "import": "./dist/workflows-lib-shared.js",
+        "require": "./dist/workflows-lib-shared.cjs"
+      },
+      "./package.json": "./package.json"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "prebuild": "rm -rf dist",
-    "build": "tsc --build && vite build",
+    "build": "tsc --build && vite build && tsc -p tsconfig.build.json",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "peerDependencies": {
-    "@dagrejs/dagre": "^1.1.4",
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
-    "@jsonforms/core": "^3.4.0",
-    "@jsonforms/material-renderers": "^3.4.0",
-    "@jsonforms/react": "^3.4.0",
-    "@mui/icons-material": "^5.16.7",
-    "@mui/material": "^5.16.7",
-    "@mui/x-date-pickers": "^7.20.0",
-    "@xyflow/react": "^12.1.1",
-    "ajv": "^8.17.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^5.16.11",
+    "@mui/material": "^6.4.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

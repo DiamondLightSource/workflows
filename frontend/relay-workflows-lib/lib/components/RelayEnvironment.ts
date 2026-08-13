@@ -12,7 +12,8 @@ import { getKeycloak } from "../utils/keycloak";
 import { createClient } from "graphql-ws";
 import { AuthState } from "@diamondlightsource/sci-react-ui";
 import { parseJwt } from "../utils/coreUtils";
-import { JSONObject, buildLoginUrl } from "workflows-lib";
+import { JSONObject } from "workflows-lib";
+import { buildLoginUrl } from "@diamondlightsource/workflows-lib-shared";
 import { getUseAuthGateway } from "../utils/useAuthGateway";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
