@@ -2,12 +2,12 @@
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: ClusterTriggerTemplate
 metadata:
-  name: example-trigger
+  name: webhook-test-trigger
   labels:
     workflows.diamond.ac.uk/source: webhook
     workflows.diamond.ac.uk/beamline: test-beamline
 spec:
-  eventName: example
+  eventName: webhook-test
   workflow:
     template: example-template
     parameters:
@@ -22,12 +22,12 @@ spec:
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: ClusterTriggerTemplate
 metadata:
-  name: waffle-trigger
+  name: i15-1-trigger
   labels:
     workflows.diamond.ac.uk/source: message-bus
     workflows.diamond.ac.uk/beamline: i15-1
 spec:
-  eventName: waffle-example
+  eventName: i15-1-message
   workflow:
     template: access-visit-dir
     triggerOnMessageType: stop
@@ -44,11 +44,13 @@ metadata:
     workflows.diamond.ac.uk/source: message-bus
     workflows.diamond.ac.uk/beamline: b01-1
 spec:
-  eventName: visr-example
+  eventName: b01-1-message
   workflow:
-    template: echo-workflow-template
-    triggerOnMessageType: start
+    template: visr-reconstruction
+    triggerOnMessageType: stop
     parameters:
-      - name: message
-        path: name
+      - name: input-file-name
+        path: doc.scan_file
+      - name: data-collection-dir
+        path: doc.data_session_directory
 {{- end }}

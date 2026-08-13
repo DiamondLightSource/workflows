@@ -8,7 +8,7 @@ argocd:
   valuesObject: {}
 
 events:
-  enabled: false
+  enabled: true
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
