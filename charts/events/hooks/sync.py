@@ -191,7 +191,7 @@ class Controller(BaseHTTPRequestHandler):
       "apiVersion": "argoproj.io/v1alpha1",
       "kind": "Sensor",
       "metadata": {
-        "name": f"{beamline}-{eventSourceName}"
+        "name": f"{eventSourceName}"
       },
       "spec": {
         "template":
