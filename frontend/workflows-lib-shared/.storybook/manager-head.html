@@ -1,0 +1,11 @@
+<!-- This is to circumvent a view window bug in Firefox v140
+    see https://github.com/storybookjs/storybook/discussions/33795 -->
+<style>
+  @-moz-document url-prefix() {
+    iframe[title="storybook-preview-iframe"] {
+      position: static !important;
+      width: 100% !important;
+      height: 100vh !important;
+    }
+  }
+</style>

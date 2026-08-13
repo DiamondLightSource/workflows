@@ -3,6 +3,7 @@
   "type": "module",
   "workspaces": [
     "workflows-lib",
+    "workflows-lib-shared",
     "relay-workflows-lib",
     "dashboard"
   ],
