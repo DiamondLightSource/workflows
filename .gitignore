@@ -9,7 +9,7 @@ kubeconfig.yaml
 
 # Relay
 __generated__
-supergraph.graphql
+workflows.graphql
 
 # File Types
 **/*.tgz # Chart files created when deploying helm dep build
