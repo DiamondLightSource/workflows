@@ -1,7 +1,7 @@
 {
   "src": "./src",
   "language": "typescript",
-  "schema": "../relay-workflows-lib/supergraph.graphql",
+  "schema": "../relay-workflows-lib/workflows.graphql",
   "exclude": ["**/node_modules/**", "**/__mocks__/**", "**/__generated__/**"],
   "eagerEsModules": true
 }
