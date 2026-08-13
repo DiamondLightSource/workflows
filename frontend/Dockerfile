@@ -6,6 +6,7 @@ COPY ./yarn.lock ./package.json .
 COPY ./dashboard/package.json ./dashboard/package.json
 COPY ./relay-workflows-lib ./relay-workflows-lib
 COPY ./workflows-lib ./workflows-lib
+COPY ./workflows-lib-shared ./workflows-lib-shared
 RUN yarn install --frozen-lockfile
 
 COPY . .
