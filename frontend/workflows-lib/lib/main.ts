@@ -20,14 +20,8 @@ export {
 } from "./components/common/RepositoryLinkBase";
 export { default as WorkflowErrorBoundaryWithRetry } from "./components/workflow/WorkflowErrorBoundaryWithRetry";
 export { default as WorkflowErrorBoundary } from "./components/workflow/WorkflowsErrorBoundary";
-export {
-  default as AuthStatusIndicator,
-  type AuthStatusIndicatorProps,
-} from "./components/common/AuthStatusIndicator";
 export * from "./components/common/StatusIcons";
-export * from "./hooks/useAuthStatus";
 export * from "./types";
-export * from "./utils/authUtils";
 export * from "./utils/commonUtils";
 export * from "./utils/tasksFlowUtils";
 export * from "../tests/components/data";
