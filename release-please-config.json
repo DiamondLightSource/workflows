@@ -86,6 +86,10 @@
     "frontend/workflows-lib": {
       "release-type": "node"
     },
+    "frontend/workflows-lib-shared": {
+      "release-type": "node",
+      "component": "workflows-lib-shared"
+    },
     "backend/telemetry": {
       "release-type": "rust"
     }
