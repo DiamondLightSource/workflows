@@ -8,8 +8,7 @@ use std::{
 use typify::{TypeSpace, TypeSpaceSettings};
 
 fn main() {
-    let argo_server_schema_url =
-        env::var("ARGO_SERVER_SCHEMA_URL").expect("ARGO_SERVER_SCHEMA_URL environment is not set.");
+    let argo_server_schema_url = get_argo_server_schema_url();
     let raw_schema = reqwest::blocking::get(&argo_server_schema_url)
         .and_then(|response| response.text())
         .unwrap_or_else(|_| panic!("Failed to retrieve argo server schema from {argo_server_schema_url}. Is ARGO_SERVER_SCHEMA_URL environment variable set?"));
@@ -74,4 +73,26 @@ fn main() {
     create_dir_all(Path::new("src")).unwrap();
     let mut file = File::create("src/types.rs").unwrap();
     file.write_all(contents.as_bytes()).unwrap();
+}
+
+const DEFAULT_ARGO_SERVER_SCHEMA_URL: &str =
+    "https://raw.githubusercontent.com/argoproj/argo-workflows/refs/tags/v4.0.6/api/jsonschema/schema.json";
+
+fn get_argo_server_schema_url() -> String {
+    println!("cargo::rerun-if-env-changed=ARGO_SERVER_SCHEMA_URL");
+
+    match env::var("ARGO_SERVER_SCHEMA_URL") {
+        Ok(url) => url,
+        Err(env::VarError::NotPresent) => {
+            println!(
+                "cargo::warning=ARGO_SERVER_SCHEMA_URL is not set; \
+                 using the default schema URL: {DEFAULT_ARGO_SERVER_SCHEMA_URL}"
+            );
+
+            DEFAULT_ARGO_SERVER_SCHEMA_URL.to_owned()
+        }
+        Err(env::VarError::NotUnicode(_)) => {
+            panic!("ARGO_SERVER_SCHEMA_URL is set but contains invalid Unicode");
+        }
+    }
 }
