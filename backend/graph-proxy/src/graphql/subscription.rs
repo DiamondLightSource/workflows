@@ -101,6 +101,14 @@ impl WorkflowsSubscription {
             .append_pair("logOptions.container", "main")
             .append_pair("logOptions.follow", "true");
 
+
+        tracing::info!(
+            "LOG REQUEST namespace={} workflow={} task={}",
+            namespace,
+            workflow_name,
+            task_id
+        );        
+
         let client = reqwest::Client::new();
 
         let response = client
@@ -137,10 +145,23 @@ impl WorkflowsSubscription {
                             match serde_json::from_str::<LogResponse>(line) {
                                 Ok(parsed) => {
                                     if let Some(result) = parsed.result {
-                                        live_lines.push(result.content.clone());
+                                        let content = result.content;
+
+                                        let skip_line =
+                                            content.contains("capturing logs")
+                                            || content.contains("waiting for signals")
+                                            || content.contains("sub-process exited")
+                                            || content.contains("file signal handler exiting")
+                                            || content.contains("no need to save artifact");
+
+                                        if skip_line {
+                                            continue;
+                                        }
+
+                                        live_lines.push(content.clone());
 
                                         yield Ok(LogEntry {
-                                            content: result.content,
+                                            content,
                                             pod_name: result.pod_name,
                                         });
                                     } else {
@@ -153,6 +174,10 @@ impl WorkflowsSubscription {
                                 Err(_) => {
                                     let content = line.trim().to_string();
 
+                                    if content.starts_with("{\"result\"") {
+                                        continue;
+                                    }
+
                                     if !content.is_empty() {
                                         live_lines.push(content.clone());
 
@@ -162,6 +187,8 @@ impl WorkflowsSubscription {
                                         });
                                     }
                                 }
+
+
                             }
                         }
                     }
