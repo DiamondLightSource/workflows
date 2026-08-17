@@ -101,13 +101,12 @@ impl WorkflowsSubscription {
             .append_pair("logOptions.container", "main")
             .append_pair("logOptions.follow", "true");
 
-
         tracing::info!(
             "LOG REQUEST namespace={} workflow={} task={}",
             namespace,
             workflow_name,
             task_id
-        );        
+        );
 
         let client = reqwest::Client::new();
 
@@ -435,8 +434,8 @@ mod tests {
         // Path-style S3 addressing produces:
         //
         // /test-bucket/numpy-benchmark-wdkwj/numpy-benchmark-wdkwj/main.log
-        let s3_key = format!("{workflow_name}/{task_id}/main.log");
-       // let s3_path = format!("/test-bucket/{s3_key}");
+        let _s3_key = format!("{workflow_name}/{task_id}/main.log");
+        // let s3_path = format!("/test-bucket/{s3_key}");
 
         let s3_log_endpoint = server
             .mock("GET", mockito::Matcher::Any)
