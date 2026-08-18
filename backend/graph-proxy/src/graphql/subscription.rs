@@ -110,15 +110,13 @@ impl WorkflowsSubscription {
 
         let client = reqwest::Client::new();
 
-        let response = client
+        // Try Argo, but don't fail the whole subscription if it errors.
+        let argo_response = client
             .get(url)
             .bearer_auth(auth_token)
             .header("Accept", "text/plain")
             .send()
-            .await?;
-
-        let status = response.status();
-        let byte_stream = response.bytes_stream();
+            .await;
 
         let s3_client = ctx
             .data::<S3Client>()
@@ -135,79 +133,88 @@ impl WorkflowsSubscription {
         let log_stream = stream! {
             let mut live_lines = Vec::new();
 
-            for await chunk_result in byte_stream {
-                match chunk_result {
-                    Ok(chunk) if status.is_success() => {
-                        let text = String::from_utf8_lossy(&chunk).to_string();
+            // --- Live Argo stream (optional) ---
+            if let Ok(response) = argo_response {
+                let status = response.status();
+                let byte_stream = response.bytes_stream();
 
-                        for line in text.lines() {
-                            match serde_json::from_str::<LogResponse>(line) {
-                                Ok(parsed) => {
-                                    if let Some(result) = parsed.result {
-                                        let content = result.content;
+                for await chunk_result in byte_stream {
+                    match chunk_result {
+                        Ok(chunk) if status.is_success() => {
+                            let text = String::from_utf8_lossy(&chunk).to_string();
 
-                                        let skip_line =
-                                            content.contains("capturing logs")
-                                            || content.contains("waiting for signals")
-                                            || content.contains("sub-process exited")
-                                            || content.contains("file signal handler exiting")
-                                            || content.contains("no need to save artifact");
+                            for line in text.lines() {
+                                match serde_json::from_str::<LogResponse>(line) {
+                                    Ok(parsed) => {
+                                        if let Some(result) = parsed.result {
+                                            let content = result.content;
 
-                                        if skip_line {
+                                            let skip_line =
+                                                content.contains("capturing logs")
+                                                || content.contains("waiting for signals")
+                                                || content.contains("sub-process exited")
+                                                || content.contains("file signal handler exiting")
+                                                || content.contains("no need to save artifact")
+                                                || content.contains("no need to save parameter");
+
+                                            if skip_line {
+                                                continue;
+                                            }
+
+                                            live_lines.push(content.clone());
+
+                                            yield Ok(LogEntry {
+                                                content,
+                                                pod_name: result.pod_name,
+                                            });
+                                        } else {
+                                            yield Err(
+                                                "Missing result in log response".to_string()
+                                            );
+                                        }
+                                    }
+
+                                    Err(_) => {
+                                        let content = line.trim().to_string();
+
+                                        if content.starts_with("{\"result\"") {
                                             continue;
                                         }
 
-                                        live_lines.push(content.clone());
+                                        if !content.is_empty() {
+                                            live_lines.push(content.clone());
 
-                                        yield Ok(LogEntry {
-                                            content,
-                                            pod_name: result.pod_name,
-                                        });
-                                    } else {
-                                        yield Err(
-                                            "Missing result in log response".to_string()
-                                        );
+                                            yield Ok(LogEntry {
+                                                content,
+                                                pod_name: task_id.clone(),
+                                            });
+                                        }
                                     }
                                 }
-
-                                Err(_) => {
-                                    let content = line.trim().to_string();
-
-                                    if content.starts_with("{\"result\"") {
-                                        continue;
-                                    }
-
-                                    if !content.is_empty() {
-                                        live_lines.push(content.clone());
-
-                                        yield Ok(LogEntry {
-                                            content,
-                                            pod_name: task_id.clone(),
-                                        });
-                                    }
-                                }
-
-
                             }
                         }
-                    }
 
-                    Ok(_) => {
-                        yield Err(format!(
-                            "Argo log request failed with status {status}"
-                        ));
-                        return;
-                    }
+                        Ok(_) => {
+                            // Argo failed (e.g. 404), log and continue to S3.
+                            tracing::warn!(
+                                "Argo log request failed with status {status}, will try S3 fallback"
+                            );
+                        }
 
-                    Err(err) => {
-                        yield Err(format!("Failed to read log chunk: {err}"));
-                        return;
+                        Err(err) => {
+                            tracing::warn!(
+                                "Failed to read log chunk from Argo: {err}, will try S3 fallback"
+                            );
+                        }
                     }
                 }
+            } else {
+                tracing::warn!("Argo log request failed entirely, will try S3 fallback");
             }
 
-            // The live Argo stream has finished. The durable log should now
-            // be available in the S3 artifact.
+            // --- S3 fallback (always attempted) ---
+            tracing::info!("ARCHIVE_LOOKUP: {}", s3_key);
+
             let archive_response = match s3_client
                 .get_object()
                 .bucket(s3_bucket)
@@ -286,7 +293,7 @@ impl WorkflowsSubscription {
         Ok(log_stream)
     }
 
-    /// Subscribe to data for all workflows in a session.
+/// Subscribe to data for all workflows in a session.
     async fn workflow(
         &self,
         ctx: &Context<'_>,
