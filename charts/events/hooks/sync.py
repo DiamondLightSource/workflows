@@ -217,6 +217,8 @@ class Controller(BaseHTTPRequestHandler):
     if not sourceTypes or not beamline:
       return []
 
+    sourceTypes = ["message-bus" if x == "generic" else x for x in sourceTypes]
+
     return [{
       "apiVersion": "workflows.diamond.ac.uk/v1alpha1",
       "resource": "triggers",
