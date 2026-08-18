@@ -76,6 +76,18 @@ pub async fn callback(
         &token_response,
         claims.issuer().clone(),
         claims.subject().clone(),
+        claims
+            .name()
+            .and_then(|name| name.get(None))
+            .map(|n| n.to_string()),
+        claims
+            .preferred_username()
+            .map(|username| username.to_string()),
+        claims
+            .additional_claims()
+            .fedid
+            .as_ref()
+            .map(|fedid| fedid.to_string()),
     )?;
     write_token_to_database(&state.database_connection, &token_data, &state.public_key).await?;
     session

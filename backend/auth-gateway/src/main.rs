@@ -3,6 +3,7 @@ mod callback;
 mod config;
 mod login;
 mod state;
+mod userinfo;
 
 use auth_core::middleware::inject_token::inject_token_with;
 use clap::Parser;
@@ -104,6 +105,7 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
         .route("/auth/login", get(login::login))
         .route("/auth/callback", get(callback::callback))
         .route("/auth/logout", post(logout))
+        .route("/auth/me", get(userinfo::userinfo))
         .route("/healthcheck", get(auth_core::healthcheck::healthcheck))
         .layer(session_layer)
         .layer(
