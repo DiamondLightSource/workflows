@@ -24,7 +24,7 @@ kind: ClusterTriggerTemplate
 metadata:
   name: waffle-trigger
   labels:
-    workflows.diamond.ac.uk/source: generic
+    workflows.diamond.ac.uk/source: message-bus
     workflows.diamond.ac.uk/beamline: i15-1
 spec:
   eventName: waffle-example
@@ -41,7 +41,7 @@ kind: ClusterTriggerTemplate
 metadata:
   name: visr-trigger
   labels:
-    workflows.diamond.ac.uk/source: generic
+    workflows.diamond.ac.uk/source: message-bus
     workflows.diamond.ac.uk/beamline: b01-1
 spec:
   eventName: visr-example
