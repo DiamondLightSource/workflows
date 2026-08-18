@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_GRAPH_WS_URL: string;
   readonly VITE_USE_AUTH_GATEWAY: string;
   readonly VITE_AUTH_GATEWAY_LOGIN_URL: string;
+  readonly VITE_LOGOUT_URL: string;
 }
 
 interface importMeta {

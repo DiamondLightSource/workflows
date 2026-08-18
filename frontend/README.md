@@ -13,6 +13,7 @@
    - VITE_GRAPH_URL
    - VITE_GRAPH_WS_URL
    - VITE_AUTH_GATEWAY_LOGIN_URL
+   - VITE_LOGOUT_URL
 5. yarn dev in frontend/dashboard
 
 ## Linting, Formatting, Compiling and Testing
