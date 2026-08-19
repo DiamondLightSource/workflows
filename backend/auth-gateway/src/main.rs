@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
 fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(false)
+        .with_secure(state.session_secure)
         .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
 
     let proxy: Router<()> = ReverseProxy::new("/api", &graph_url).into();

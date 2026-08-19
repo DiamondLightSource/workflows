@@ -23,6 +23,7 @@ pub struct AppState {
     pub callback_url: String,
     pub callback_default_return_to_url: String,
     pub cors_allow: Option<Vec<Regex>>,
+    pub session_secure: bool,
 }
 
 impl AppState {
@@ -43,6 +44,7 @@ impl AppState {
             callback_url: config.callback_url,
             callback_default_return_to_url: config.callback_default_return_to_url,
             cors_allow,
+            session_secure: config.session_secure.unwrap_or(true),
         })
     }
 }

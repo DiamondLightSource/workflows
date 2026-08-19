@@ -11,6 +11,12 @@ pub struct GatewayConfig {
     pub callback_url: String,
     pub callback_default_return_to_url: String,
     pub cors_allow: Option<Vec<String>>,
+    /// Whether to set the `Secure` attribute on the session cookie.
+    ///
+    /// Defaults to `true` (safe for production, where TLS is terminated at the
+    /// ingress). Set to `false` only for plain-HTTP local development, where
+    /// browsers and curl would otherwise reject a `Secure` cookie.
+    pub session_secure: Option<bool>,
 }
 
 impl GatewayConfig {
