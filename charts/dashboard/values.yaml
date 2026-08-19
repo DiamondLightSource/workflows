@@ -8,6 +8,7 @@ configuration:
   sourceDir: "/usr/share/nginx/html"
   useAuthGateway: "false"
   authGatewayLoginUrl: https://workflows.diamond.ac.uk/auth
+  logoutUrl: https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/logout
 
 image:
   registry: ghcr.io
