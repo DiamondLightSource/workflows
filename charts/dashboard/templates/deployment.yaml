@@ -70,6 +70,8 @@ spec:
               value: {{ .Values.configuration.useAuthGateway | toString | quote }}
             - name: AUTH_GATEWAY_LOGIN_URL
               value: {{ .Values.configuration.authGatewayLoginUrl }}
+            - name: LOGOUT_URL
+              value: {{ .Values.configuration.logoutUrl | toString | quote }}
           livenessProbe:
             httpGet:
               path: /healthcheck

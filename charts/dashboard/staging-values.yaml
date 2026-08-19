@@ -8,6 +8,7 @@ configuration:
   sourceDir: /usr/share/nginx/html
   useAuthGateway: "true"
   authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth
+  logoutUrl: https://staging.workflows.diamond.ac.uk/auth/logout
 
 ingress:
   hosts:
