@@ -4,6 +4,7 @@ use auth_core::openidconnect::core::CoreAuthenticationFlow;
 use auth_core::openidconnect::{CsrfToken, Nonce, PkceCodeChallenge, RedirectUrl, Scope};
 use axum::extract::{Query, State};
 use axum::response::Redirect;
+use regex::Regex;
 use serde::Deserialize;
 use tower_sessions::Session;
 
@@ -47,11 +48,89 @@ pub async fn login(
         .set_pkce_challenge(pkce_challenge)
         .url();
 
-    // Store data in the users session
-    let auth_session_data =
-        LoginSessionData::new(csrf_token, pkce_verifier, nonce, query_parameters.return_to);
+    // Store data in the users session.
+    let auth_session_data = LoginSessionData::new(
+        csrf_token,
+        pkce_verifier,
+        nonce,
+        validate_return_to(&state.cors_allow, query_parameters.return_to),
+    );
     session
         .insert(LoginSessionData::SESSION_KEY, auth_session_data)
         .await?;
     Ok(Redirect::temporary(auth_url.as_str()))
+}
+
+/// Only allow `return_to` URLs that match the configured allowed origins
+/// (`cors_allow`); anything else becomes `None` so the callback falls back to
+/// the default return URL. This prevents an attacker-supplied `returnTo`
+/// parameter from redirecting a user to an arbitrary site after login.
+fn validate_return_to(
+    cors_allow: &Option<Vec<Regex>>,
+    return_to: Option<String>,
+) -> Option<String> {
+    let return_to = return_to?;
+    let Some(cors_allow) = cors_allow else {
+        return None;
+    };
+    cors_allow
+        .iter()
+        .any(|re| re.is_match(&return_to))
+        .then_some(return_to)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cors_allow() -> Option<Vec<Regex>> {
+        Some(vec![
+            Regex::new(r"^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?").expect("valid regex"),
+            Regex::new(r"^https?:\/\/localhost(:\d+)?\/?").expect("valid regex"),
+        ])
+    }
+
+    #[test]
+    fn allows_localhost_return_to() {
+        let allow = cors_allow();
+        assert_eq!(
+            validate_return_to(&allow, Some("http://localhost:5173/".to_string())),
+            Some("http://localhost:5173/".to_string())
+        );
+    }
+
+    #[test]
+    fn allows_diamond_return_to_with_path() {
+        let allow = cors_allow();
+        assert_eq!(
+            validate_return_to(
+                &allow,
+                Some("https://staging.workflows.diamond.ac.uk/dashboard".to_string()),
+            ),
+            Some("https://staging.workflows.diamond.ac.uk/dashboard".to_string())
+        );
+    }
+
+    #[test]
+    fn rejects_external_url() {
+        let allow = cors_allow();
+        assert_eq!(
+            validate_return_to(&allow, Some("https://evil.com/phish".to_string())),
+            None
+        );
+    }
+
+    #[test]
+    fn rejects_return_to_when_no_allowlist_configured() {
+        assert_eq!(
+            validate_return_to(&None, Some("http://localhost:5173/".to_string())),
+            None
+        );
+    }
+
+    #[test]
+    fn handles_missing_return_to() {
+        let allow = cors_allow();
+        assert_eq!(validate_return_to(&allow, None), None);
+    }
 }
