@@ -7,6 +7,7 @@ use axum::response::Redirect;
 use regex::Regex;
 use serde::Deserialize;
 use tower_sessions::Session;
+use tracing::{info, instrument};
 
 use crate::Result;
 use crate::auth_session_data::LoginSessionData;
@@ -19,11 +20,17 @@ pub struct LoginQueryParameters {
 }
 
 #[axum::debug_handler]
+#[instrument(skip(state, session, query_parameters), fields(session_id = tracing::field::Empty), err(Debug))]
 pub async fn login(
     State(state): State<Arc<AppState>>,
     session: Session,
     Query(query_parameters): Query<LoginQueryParameters>,
 ) -> Result<Redirect> {
+    tracing::Span::current().record("session_id", tracing::field::debug(session.id()));
+    info!(
+        return_to_provided = query_parameters.return_to.is_some(),
+        "initiating OIDC authorization flow"
+    );
     // Set the URL the user will be redirected to after the authorization process.
     let oidc_client = state
         .oidc_client

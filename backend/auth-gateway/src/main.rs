@@ -15,6 +15,8 @@ use std::{
     sync::Arc,
 };
 use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
+use tracing::{debug, info, instrument};
+use tracing_subscriber::EnvFilter;
 
 type Result<T> = std::result::Result<T, auth_core::error::Error>;
 
@@ -53,18 +55,30 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_env("LOG_LEVEL"))
+        .init();
+
     let args: Args = Args::try_parse()?;
     let graph_url = args.graph_url;
+    info!(config_path = %args.config, "loading config");
     let config = GatewayConfig::from_file(args.config)?;
     let port = config.common.port;
+    info!(port, "config loaded");
+    info!("initialising app state (OIDC discovery and database connection)");
     let appstate = Arc::new(AppState::new(config).await?);
+    info!("app state initialised");
+    info!("running database migrations");
     auth_core::database::migrate_database(&appstate.database_connection).await?;
+    info!("database migrations complete");
 
     auth_core::rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
         .expect("Failed to install rust TLS cryptography");
+    info!("rust TLS cryptography provider installed");
 
     let router = create_router(appstate, graph_url);
+    info!("router built");
     serve(router, port).await
 }
 
@@ -127,8 +141,9 @@ fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
 }
 
 async fn serve(router: Router, port: u16) -> Result<()> {
-    let listener =
-        tokio::net::TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port)).await?;
+    let addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port);
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    info!(addr = %addr, "auth-gateway listening");
     let service = router.into_make_service();
     axum::serve(listener, service)
         .with_graceful_shutdown(shutdown_signal())
@@ -140,7 +155,10 @@ async fn serve(router: Router, port: u16) -> Result<()> {
 /// 1. Retrieves the user's token from the session (to get subject ID)
 /// 2. Deletes the token from the database (so workflows can't use it)
 /// 3. Clears the session (so browser requests are no longer authenticated)
+#[instrument(skip(state, session), fields(session_id = tracing::field::Empty), err(Debug))]
 async fn logout(State(state): State<Arc<AppState>>, session: Session) -> Result<impl IntoResponse> {
+    tracing::Span::current().record("session_id", tracing::field::debug(session.id()));
+    info!("logout requested");
     // Get the token data to find the subject for database deletion
     let token_session_data: Option<TokenSessionData> =
         session.get(TokenSessionData::SESSION_KEY).await?;
@@ -152,10 +170,12 @@ async fn logout(State(state): State<Arc<AppState>>, session: Session) -> Result<
             &token_data.subject,
         )
         .await?;
+        debug!("token deleted from database");
     }
 
     // Clear the entire session (removes both login and token data)
     session.flush().await?;
+    info!("session cleared");
 
     Ok(axum::http::StatusCode::OK)
 }
@@ -196,7 +216,7 @@ async fn shutdown_signal() {
     let mut sigterm: Signal =
         signal(SignalKind::terminate()).expect("Failed to listen for SIGTERM");
     sigterm.recv().await;
-    println!("Shutting Down");
+    info!("Shutting Down");
     process::exit(0);
 }
 

@@ -687,6 +687,8 @@ dependencies = [
  "tower-http 0.6.8",
  "tower-sessions",
  "tower-sessions-cookie-store",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
