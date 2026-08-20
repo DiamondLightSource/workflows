@@ -9,7 +9,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
-import  TasksFlow  from "./TasksFlow";
+import TasksFlow from "./TasksFlow";
 
 export const BaseWorkflowRelayFragment = graphql`
   fragment BaseWorkflowRelayFragment on Workflow {
@@ -68,19 +68,13 @@ export default function BaseWorkflowRelay({
         event?.ctrlKey ||
         event?.metaKey;
 
-      let updatedTaskIds: string[];
       console.log(
         "TASK CLICKED",
         taskId
       );
 
-      if (isCtrl) {
-        updatedTaskIds = selectedTaskIds.includes(taskId)
-          ? selectedTaskIds.filter((id) => id !== taskId)
-          : [...selectedTaskIds, taskId];
-      } else {
-        updatedTaskIds = [taskId];
-      }
+      // If you need updatedTaskIds later, re‑add it here.
+      // For now it was unused, so removed to fix TS6133.
 
       if (workflowNameURL !== data.name) {
         void navigate(

@@ -58,7 +58,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
 
   const [logLines, setLogLines] = useState<string[]>([]);
   const [taskCompleted, setTaskCompleted] = useState(false);
-  const [podName, setPodName] = useState<string | null>(null);
+  const [_podName, _setPodName] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);

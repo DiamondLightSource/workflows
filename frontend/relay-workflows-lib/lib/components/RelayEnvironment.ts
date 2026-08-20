@@ -34,7 +34,8 @@ function ensureKeycloakInit(): Promise<boolean> {
         scope: KEYCLOAK_SCOPE,
       })
       .catch((err: unknown) => {
-        console.error("Keycloak init failed", err);
+        const error = err instanceof Error ? err : new Error(String(err));
+        console.error("Keycloak init failed", error);
         return false;
       });
   }
@@ -43,18 +44,17 @@ function ensureKeycloakInit(): Promise<boolean> {
 
 if (!USE_AUTH_GATEWAY) {
   keycloak.onTokenExpired = () => {
-    console.log("JWT expired");
     keycloak
       .updateToken(10)
       .then((refreshed) => {
         if (refreshed) {
-          console.log("Fetched new JWT");
         } else {
           console.warn("Token still valid");
         }
       })
       .catch((err: unknown) => {
-        console.error("Failed to update JWT", err);
+        const error = err instanceof Error ? err : new Error(String(err));
+        console.error("Failed to update JWT", error);
       });
   };
 }
@@ -77,7 +77,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   const resp = await fetch(HTTP_ENDPOINT, {
     method: "POST",
     headers,
-  //  credentials: "include",
+    //  credentials: "include",
     body: JSON.stringify({
       query: request.text, // <-- The GraphQL document composed by Relay
       variables,
@@ -91,8 +91,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
 
   return await resp.json(); // eslint-disable-line @typescript-eslint/no-unsafe-return
 };
-console.log("HTTP_ENDPOINTXXXXXXXXXXXXXXXXXXXXXXXXXXXX:", HTTP_ENDPOINT);
-console.log("WS_ENDPOINTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY:", WS_ENDPOINT);
+
 export const wsClient = createClient({
   url: WS_ENDPOINT,
   on: {
@@ -108,8 +107,6 @@ export const wsClient = createClient({
     }
   },
 
-
-
   connectionParams: async () => {
     if (!USE_AUTH_GATEWAY && !keycloak.authenticated) {
       await ensureKeycloakInit();
@@ -124,12 +121,6 @@ export const wsClient = createClient({
 });
 
 const subscribeFn: SubscribeFunction = (operation, variables) => {
-  console.log(
-    "WS SUBSCRIBE STARTED:",
-    operation.name,
-    variables
-  );
-
   return Observable.create((sink) => {
     const cleanup = wsClient.subscribe(
       {
@@ -139,18 +130,14 @@ const subscribeFn: SubscribeFunction = (operation, variables) => {
       },
       {
         next: (response) => {
-          console.log("WS SUBSCRIPTION RESPONSE:", response);
-
           sink.next(response as GraphQLResponse);
         },
 
         error: (error) => {
-          console.error("WS SUBSCRIPTION ERROR:", error);
           sink.error(error);
         },
 
         complete: () => {
-          console.log("WS SUBSCRIPTION COMPLETE");
           sink.complete();
         },
       },
@@ -182,7 +169,7 @@ export async function getUser(): Promise<AuthState | null> {
     try {
       parsedToken = parseJwt(keycloak.token);
     } catch (error) {
-      console.error("Could not parse JWT: ", error);
+      // error is unknown; we intentionally ignore it here
     }
     const user: AuthState = {
       name: parsedToken.name as string,
