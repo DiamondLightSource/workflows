@@ -10,7 +10,7 @@ use async_graphql::{
 };
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
-    api::{ListParams, ObjectMeta, PostParams},
+    api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams},
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
@@ -31,8 +31,10 @@ enum TriggerError {
     ConfigInferError,
     #[error(r#"Unable to create Kubernetes config"#)]
     ClientCreationError,
-    #[error(r#"Forbidden from accessing resource"#)]
+    #[error(r#"Permission denied: You may only access your own triggers"#)]
     ForbiddenAccess,
+    #[error(r#"Unable to find trigger {0}"#)]
+    TriggerNotFound(String),
 }
 
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
@@ -99,6 +101,44 @@ async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<String, TriggerError> {
         .ok_or(TriggerError::MissingPosixUid)
 }
 
+/// Uses the provided API to retrieve a Trigger, if the posix uid argument matches the label on the Trigger
+async fn get_trigger(
+    api: &Api<Trigger>,
+    posix_uid: &str,
+    name: &str,
+) -> anyhow::Result<Option<TriggerGQL>> {
+    match api.get(name).await {
+        Ok(trigger) => {
+            if trigger.clone().metadata.labels.is_some_and(|f| {
+                f.get("workflows.diamond.ac.uk/posixuid")
+                    .is_some_and(|l| l == posix_uid)
+            }) {
+                Ok(Some(trigger.into()))
+            } else {
+                Err(TriggerError::ForbiddenAccess.into())
+            }
+        }
+        Err(err) => Err(err.into()),
+    }
+}
+
+/// Sets the value of the `enabled` field of a Trigger to the supplied value
+async fn toggle_trigger(
+    api: &Api<Trigger>,
+    name: &str,
+    enabled: bool,
+) -> anyhow::Result<Option<TriggerGQL>> {
+    let patch = serde_json::json!({
+        "spec": {
+            "enabled": enabled
+        }
+    });
+    let patch = Patch::Merge(&patch);
+    let pp = PatchParams::apply("graph-proxy");
+    let trigger_patched = api.patch(name, &pp, &patch).await?;
+    Ok(Some(trigger_patched.into()))
+}
+
 /// Queries related to [`Trigger`]s
 #[derive(Debug, Clone, Default)]
 pub struct TriggerQuery;
@@ -116,19 +156,7 @@ impl TriggerQuery {
         let posix_uid = get_posix_from_ctx(ctx).await?;
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        match api.get(&name).await {
-            Ok(trigger) => {
-                if trigger.clone().metadata.labels.is_some_and(|f| {
-                    f.get("workflows.diamond.ac.uk/posixuid")
-                        .is_some_and(|l| l == &posix_uid)
-                }) {
-                    Ok(Some(trigger.into()))
-                } else {
-                    Err(TriggerError::ForbiddenAccess.into())
-                }
-            }
-            Err(err) => Err(err.into()),
-        }
+        get_trigger(&api, &posix_uid, &name).await
     }
 
     /// Get multiple Triggers across namespaces
@@ -221,6 +249,57 @@ impl TriggerMutation {
             Ok(creation) => Ok(Some(creation.into())),
             Err(err) => Err(err.into()),
         }
+    }
+
+    /// Delete an automated workflow trigger
+    async fn delete_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: VisitInput,
+    ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let api: Api<Trigger> = Api::namespaced(client, &visit.to_string());
+
+        let trigger = get_trigger(&api, &posix_uid, &name)
+            .await?
+            .ok_or(TriggerError::TriggerNotFound(name.clone()))?;
+
+        api.delete(&name, &DeleteParams::default()).await?;
+        Ok(Some(trigger))
+    }
+
+    /// Disable an automated workflow trigger
+    async fn disable_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: Option<VisitInput>,
+    ) -> anyhow::Result<Option<TriggerGQL>> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await?;
+        toggle_trigger(&api, &name, false).await
+    }
+
+    /// Reactivate a disabled automated workflow trigger
+    async fn enable_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: Option<VisitInput>,
+    ) -> anyhow::Result<Option<TriggerGQL>> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await?;
+        toggle_trigger(&api, &name, true).await
     }
 }
 
@@ -552,7 +631,7 @@ users:
 
         let err = response.into_result().unwrap_err();
         let exp_err = ServerError {
-            message: "Forbidden from accessing resource".into(),
+            message: "Permission denied: You may only access your own triggers".into(),
             locations: vec![Pos {
                 line: 3,
                 column: 21,
