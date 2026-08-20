@@ -37,17 +37,16 @@ const TaskInfo: React.FC<TaskInfoProps> = ({
     return types;
   }, [artifactList]);
 
-
-  // Default: all types except .log
+  // When fileTypes is known, default to all types except .log
   useEffect(() => {
     if (fileTypes.length === 0) return;
     setSelectedFileTypes(fileTypes.filter((t) => t !== ".log"));
   }, [fileTypes]);
 
-
   const filteredArtifactList: Artifact[] = useMemo(() => {
     let filtered = artifactList;
 
+    // If some file types are selected, filter by them
     if (selectedFileTypes.length > 0) {
       filtered = filtered.filter((artifact) => {
         const lastDotIndex = artifact.name.lastIndexOf(".");
