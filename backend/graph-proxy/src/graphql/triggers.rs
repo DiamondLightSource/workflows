@@ -10,7 +10,7 @@ use async_graphql::{
 };
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
-    api::{ListParams, ObjectMeta, PostParams},
+    api::{DeleteParams, ListParams, ObjectMeta, PostParams},
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
@@ -220,6 +220,24 @@ impl TriggerMutation {
             Ok(creation) => Ok(Some(creation.into())),
             Err(err) => Err(err.into()),
         }
+    }
+
+    async fn delete_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: VisitInput,
+    ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
+        let client = setup_client(ctx).await?;
+        // let posix_uid = get_posix_from_ctx(ctx).await?;
+        let trigger: Api<Trigger> = Api::namespaced(client, &visit.to_string());
+        // let delete_params = DeleteParams::foreground();
+        trigger
+            .delete(&name, &DeleteParams::default())
+            .await?
+            .map_left(|o| println!("Deleting trigger: {:?}", o))
+            .map_right(|s| println!("Deleted trigger: {:?}", s));
+        Ok(None)
     }
 }
 
