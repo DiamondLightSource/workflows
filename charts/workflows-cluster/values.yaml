@@ -269,6 +269,15 @@ authenticationConfiguration:
             ['k6Operator'].exists(allowed, allowed == claims.client_id)
           )
         message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+      - expression: >
+          claims.?posix_uid.hasValue()
+          ||
+          (
+            claims.?client_id.hasValue()
+            &&
+            ['k6Operator'].exists(allowed, allowed == claims.client_id)
+          )
+        message: "Invalid access token (missing posix-uid). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
     userValidationRules:
       - expression: "!user.username.startsWith('system:')"
         message: "username cannot use reserved system: prefix"
