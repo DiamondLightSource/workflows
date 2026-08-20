@@ -9,7 +9,7 @@
   "frontend/relay-workflows-lib": "0.1.9",
   "+5": "0.0.0",
   "frontend/workflows-lib": "0.1.7",
-  "frontend/workflows-lib-shared": "0.1.0",
+  "frontend/workflows-lib-shared": "0.1.1",
   "+6": "0.0.0",
   "backend/telemetry": "0.1.2",
   "+7": "0.0.0",
