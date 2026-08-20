@@ -17,6 +17,10 @@ pub struct GatewayConfig {
     /// ingress). Set to `false` only for plain-HTTP local development, where
     /// browsers and curl would otherwise reject a `Secure` cookie.
     pub session_secure: Option<bool>,
+    /// Set Cookie SameSite
+    ///
+    /// Defaults to Strict. Can be set to Lax for localhost development.
+    pub cookie_same_site: Option<String>,
 }
 
 impl GatewayConfig {
