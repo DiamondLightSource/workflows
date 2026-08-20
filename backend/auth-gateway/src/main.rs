@@ -14,7 +14,9 @@ use std::{
     process,
     sync::Arc,
 };
-use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer, cookie::time::Duration};
+use tower_sessions::{
+    Expiry, MemoryStore, Session, SessionManagerLayer, cookie::SameSite, cookie::time::Duration,
+};
 use tracing::{debug, info, instrument};
 use tracing_subscriber::EnvFilter;
 
@@ -66,6 +68,10 @@ async fn main() -> Result<()> {
     let port = config.common.port;
     info!(port, "config loaded");
     info!("initialising app state (OIDC discovery and database connection)");
+    let same_site = match config.cookie_same_site.as_deref() {
+        Some("lax") => SameSite::Lax,
+        _ => SameSite::Strict,
+    };
     let appstate = Arc::new(AppState::new(config).await?);
     info!("app state initialised");
     info!("running database migrations");
@@ -77,14 +83,15 @@ async fn main() -> Result<()> {
         .expect("Failed to install rust TLS cryptography");
     info!("rust TLS cryptography provider installed");
 
-    let router = create_router(appstate, graph_url);
+    let router = create_router(appstate, graph_url, same_site);
     info!("router built");
     serve(router, port).await
 }
 
-fn create_router(state: Arc<AppState>, graph_url: String) -> Router {
+fn create_router(state: Arc<AppState>, graph_url: String, same_site: SameSite) -> Router {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
+        .with_same_site(same_site)
         .with_secure(state.session_secure)
         .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
 
