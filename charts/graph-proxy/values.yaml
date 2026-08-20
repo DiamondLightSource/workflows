@@ -1,8 +1,8 @@
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-graph-proxy
-  tag: ""
-  digest: ""
+  tag: "jamesdoingstuff"
+  digest: "sha256:23bef3ea110c62e3fc53398e83330eccdcddafbc06933a8a4518ca744f15f17d"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -13,7 +13,7 @@ oidcAudiences: "workflows-cluster,graph"
 prefixPath: /graphql
 
 deployment:
-  replicas: 3
+  replicas: 1
   annotations: []
   podAnnotations: []
   resources:
