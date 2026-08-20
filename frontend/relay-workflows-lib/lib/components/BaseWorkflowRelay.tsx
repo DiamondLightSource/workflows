@@ -68,12 +68,7 @@ export default function BaseWorkflowRelay({
         event?.ctrlKey ||
         event?.metaKey;
 
-      let updatedTaskIds: string[];
-      console.log(
-        "TASK CLICKED",
-        taskId
-      );
-
+     let updatedTaskIds: string[];
       if (isCtrl) {
         updatedTaskIds = selectedTaskIds.includes(taskId)
           ? selectedTaskIds.filter((id) => id !== taskId)
@@ -82,6 +77,7 @@ export default function BaseWorkflowRelay({
         updatedTaskIds = [taskId];
       }
 
+      setSelectedTaskIds(updatedTaskIds);
       if (workflowNameURL !== data.name) {
         void navigate(
           `/workflows/${visitToText(data.visit)}/${data.name}`,

@@ -144,9 +144,9 @@ const subscribeFn: SubscribeFunction = (operation, variables) => {
           sink.next(response as GraphQLResponse);
         },
 
-        error: (error) => {
+        error: (error: unknown) => {
           console.error("WS SUBSCRIPTION ERROR:", error);
-          sink.error(error);
+          sink.error(error instanceof Error ? error : new Error(String(error)));
         },
 
         complete: () => {
