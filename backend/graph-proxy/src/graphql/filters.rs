@@ -182,10 +182,7 @@ impl WorkflowFilter {
     }
 
     /// Returns true when the workflow matches all requested parameters.
-    pub fn matches_parameters(
-        &self,
-        workflow: &IoArgoprojWorkflowV1alpha1Workflow,
-    ) -> bool {
+    pub fn matches_parameters(&self, workflow: &IoArgoprojWorkflowV1alpha1Workflow) -> bool {
         let Some(filters) = &self.parameters else {
             return true;
         };
@@ -369,22 +366,14 @@ impl LabelSelector {
 #[cfg(test)]
 mod tests {
     use crate::graphql::filters::{
-        Creator,
-        LabelSelector,
-        ScienceGroup,
-        Template,
-        WorkflowFilter,
-        WorkflowLabelSelectorOperator,
-        WorkflowParameterFilter,
-        WorkflowStatusFilter,
+        Creator, LabelSelector, ScienceGroup, Template, WorkflowFilter,
+        WorkflowLabelSelectorOperator, WorkflowParameterFilter, WorkflowStatusFilter,
         WorkflowTemplatesFilter,
     };
 
     use argo_workflows_openapi::{
-        IoArgoprojWorkflowV1alpha1Arguments,
-        IoArgoprojWorkflowV1alpha1Parameter,
-        IoArgoprojWorkflowV1alpha1Workflow,
-        IoArgoprojWorkflowV1alpha1WorkflowSpec,
+        IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
+        IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowSpec,
     };
 
     fn workflow_with_parameters(
@@ -423,8 +412,8 @@ mod tests {
         }
     }
 
-/// tests ............................
-/// 
+    /// tests ............................
+    ///
     #[test]
     fn parameter_filter_matches_workflow_parameter() {
         let filter = WorkflowFilter {
@@ -432,14 +421,10 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
-            parameters: Some(vec![
-                parameter_filter("scan_number", "12345"),
-            ]),
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
 
-        let workflow = workflow_with_parameters(vec![
-            ("scan_number", "12345"),
-        ]);
+        let workflow = workflow_with_parameters(vec![("scan_number", "12345")]);
 
         assert!(filter.matches_parameters(&workflow));
     }
@@ -452,17 +437,13 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
-            parameters: Some(vec![
-                parameter_filter("scan_number", "12345"),
-            ]),
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
 
-        let workflow = workflow_with_parameters(vec![
-            ("scan_number", "99999"),
-        ]);
+        let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
 
         assert!(!filter.matches_parameters(&workflow));
-    }    
+    }
 
     /// Missing parameter
     #[test]
@@ -472,20 +453,16 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
-            parameters: Some(vec![
-                parameter_filter("scan_number", "12345"),
-            ]),
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
 
-        let workflow = workflow_with_parameters(vec![
-            ("beamline", "i14"),
-        ]);
+        let workflow = workflow_with_parameters(vec![("beamline", "i14")]);
 
         assert!(!filter.matches_parameters(&workflow));
     }
 
     /// No parameter filter
-    /// 
+    ///
     #[test]
     fn no_parameter_filter_matches_any_workflow() {
         let filter = WorkflowFilter {
@@ -496,9 +473,7 @@ mod tests {
             parameters: None,
         };
 
-        let workflow = workflow_with_parameters(vec![
-            ("scan_number", "99999"),
-        ]);
+        let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
 
         assert!(filter.matches_parameters(&workflow));
     }
@@ -518,15 +493,13 @@ mod tests {
             ]),
         };
 
-        let workflow = workflow_with_parameters(vec![
-            ("scan_number", "12345"),
-            ("beamline", "i14"),
-        ]);
+        let workflow =
+            workflow_with_parameters(vec![("scan_number", "12345"), ("beamline", "i14")]);
 
         assert!(filter.matches_parameters(&workflow));
     }
 
-        /// One parameter does not match
+    /// One parameter does not match
     #[test]
     fn parameter_filters_reject_when_one_parameter_does_not_match() {
         let filter = WorkflowFilter {
@@ -540,26 +513,22 @@ mod tests {
             ]),
         };
 
-        let workflow = workflow_with_parameters(vec![
-            ("scan_number", "12345"),
-            ("beamline", "i13"),
-        ]);
+        let workflow =
+            workflow_with_parameters(vec![("scan_number", "12345"), ("beamline", "i13")]);
 
         assert!(!filter.matches_parameters(&workflow));
     }
 
     /// workflow has no parameters
-    /// 
-     #[test]
+    ///
+    #[test]
     fn parameter_filter_rejects_workflow_without_arguments() {
         let filter = WorkflowFilter {
             creator: None,
             template: None,
             workflow_status_filter: None,
             labels: None,
-            parameters: Some(vec![
-                parameter_filter("scan_number", "12345"),
-            ]),
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
 
         let workflow = IoArgoprojWorkflowV1alpha1Workflow {
@@ -574,8 +543,6 @@ mod tests {
         };
         assert!(!filter.matches_parameters(&workflow));
     }
-    
-               
 
     // TEMPLATES--------------------------------------------
 
