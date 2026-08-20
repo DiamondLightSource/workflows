@@ -10,7 +10,7 @@ use async_graphql::{
 };
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
-    api::{DeleteParams, ListParams, ObjectMeta, PostParams},
+    api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams},
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
@@ -31,8 +31,10 @@ enum TriggerError {
     ConfigInferError,
     #[error(r#"Unable to create Kubernetes config"#)]
     ClientCreationError,
-    #[error(r#"Forbidden from accessing resource"#)]
+    #[error(r#"You do not have permission to access this trigger. Did you create it?"#)]
     ForbiddenAccess,
+    #[error(r#"Unable to find trigger {0}"#)]
+    TriggerNotFound(String),
 }
 
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
@@ -99,6 +101,26 @@ async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<String, TriggerError> {
         .ok_or(TriggerError::MissingPosixUid)
 }
 
+async fn get_trigger(
+    api: &Api<Trigger>,
+    posix_uid: &str,
+    name: &str,
+) -> anyhow::Result<Option<TriggerGQL>> {
+    match api.get(name).await {
+        Ok(trigger) => {
+            if trigger.clone().metadata.labels.is_some_and(|f| {
+                f.get("workflows.diamond.ac.uk/posixuid")
+                    .is_some_and(|l| l == &posix_uid)
+            }) {
+                Ok(Some(trigger.into()))
+            } else {
+                Err(TriggerError::ForbiddenAccess.into())
+            }
+        }
+        Err(err) => Err(err.into()),
+    }
+}
+
 /// Queries related to [`Trigger`]s
 #[derive(Debug, Clone, Default)]
 pub struct TriggerQuery;
@@ -110,24 +132,13 @@ impl TriggerQuery {
         &self,
         ctx: &Context<'_>,
         name: String,
-        visit: Option<String>,
+        visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
         let posix_uid = get_posix_from_ctx(ctx).await?;
-        let api: Api<Trigger> = Api::namespaced(client, &visit.unwrap_or("events".to_string()));
-        match api.get(&name).await {
-            Ok(trigger) => {
-                if trigger.clone().metadata.labels.is_some_and(|f| {
-                    f.get("workflows.diamond.ac.uk/posixuid")
-                        .is_some_and(|l| l == &posix_uid)
-                }) {
-                    Ok(Some(trigger.into()))
-                } else {
-                    Err(TriggerError::ForbiddenAccess.into())
-                }
-            }
-            Err(err) => Err(err.into()),
-        }
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await
     }
 
     /// Get multiple Triggers across namespaces
@@ -229,15 +240,38 @@ impl TriggerMutation {
         visit: VisitInput,
     ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
         let client = setup_client(ctx).await?;
-        // let posix_uid = get_posix_from_ctx(ctx).await?;
-        let trigger: Api<Trigger> = Api::namespaced(client, &visit.to_string());
-        // let delete_params = DeleteParams::foreground();
-        trigger
-            .delete(&name, &DeleteParams::default())
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let api: Api<Trigger> = Api::namespaced(client, &visit.to_string());
+
+        let trigger = get_trigger(&api, &posix_uid, &name)
             .await?
-            .map_left(|o| println!("Deleting trigger: {:?}", o))
-            .map_right(|s| println!("Deleted trigger: {:?}", s));
-        Ok(None)
+            .ok_or(TriggerError::TriggerNotFound(name.clone()))?;
+
+        api.delete(&name, &DeleteParams::default()).await?;
+        Ok(Some(trigger))
+    }
+
+    async fn disable_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: Option<VisitInput>,
+    ) -> anyhow::Result<Option<TriggerGQL>> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await?;
+        let patch = serde_json::json!({
+            "spec": {
+                "enabled": false
+            }
+        });
+        let patch = Patch::Merge(&patch);
+        let pp = PatchParams::apply(&format!("{}-{}", "graph-proxy", posix_uid));
+        let trigger_patched = api.patch(&name, &pp, &patch).await?;
+        Ok(Some(trigger_patched.into()))
     }
 }
 
