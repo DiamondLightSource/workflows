@@ -10,5 +10,5 @@ dependencies:
     repository: oci://docker.io/bitnamicharts
   - name: argo-cd
     repository: https://argoproj.github.io/argo-helm
-    version: 10.2.1
+    version: 10.4.0
     condition: argo-cd.enabled
