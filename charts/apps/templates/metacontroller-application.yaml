@@ -1,0 +1,35 @@
+{{- if .Values.metacontroller.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metacontroller
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  destination:
+    namespace: metacontroller
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/metacontroller
+    targetRevision: {{ .Values.metacontroller.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- with .Values.metacontroller.extraValueFiles }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+      {{- with .Values.metacontroller.valuesObject }}
+      valuesObject:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+{{- end }}

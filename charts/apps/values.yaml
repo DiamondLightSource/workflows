@@ -13,6 +13,12 @@ events:
   extraValuesFiles: []
   valuesObject: {}
 
+metacontroller:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles: []
+  valuesObject: {}
+
 groups:
   enabled: true
   targetRevision: HEAD

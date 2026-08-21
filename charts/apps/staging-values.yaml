@@ -9,6 +9,10 @@ events:
   extraValueFiles:
     - staging-values.yaml
 
+metacontroller:
+  enabled: true
+  targetRevision: HEAD
+
 groups:
   enabled: true
   targetRevision: HEAD
