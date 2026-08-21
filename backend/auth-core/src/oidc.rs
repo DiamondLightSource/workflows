@@ -13,7 +13,7 @@ use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
 
 use crate::Result;
 
-// Re-export types needed by downstream crates (auth-gateway, auth-daemon)
+// Re-export types needed by downstream crates (auth-gateway, auth-broker)
 pub use reqwest::Client as HttpClient;
 pub use sea_orm::DatabaseConnection as DbConnection;
 pub use sodiumoxide::crypto::box_::PublicKey as SodiumPublicKey;
