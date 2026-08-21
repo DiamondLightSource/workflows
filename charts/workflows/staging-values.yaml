@@ -41,8 +41,6 @@ postgresql-ha:
 allowTriggerUid: true
 
 authenticatedWorkflows:
-  authDaemon:
-    enabled: false
   envoy:
     enabled: true
     graphAddress: staging.workflows.diamond.ac.uk

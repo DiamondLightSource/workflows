@@ -3,7 +3,6 @@ members = [
     "argo-workflows-openapi",
     "auth-core",
     "auth-core/migration",
-    "auth-daemon",
     "auth-broker",
     "graph-proxy",
     "auth-gateway",
