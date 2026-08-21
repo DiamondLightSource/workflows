@@ -1,4 +1,3 @@
-{{- if .Values.metacontroller.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -53,4 +52,3 @@ spec:
     app: workflows-metacontroller
   ports:
   - port: 80
-{{- end }}
