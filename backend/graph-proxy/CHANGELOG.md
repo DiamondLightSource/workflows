@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.22](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.21...graph-proxy@v0.1.22) (2026-08-21)
+
+
+### Features
+
+* **graph-proxy:** added function to strip directives and remmoved extra comments ([07cb0f1](https://github.com/DiamondLightSource/workflows/commit/07cb0f1dd4c54cb7ff8d6eb20aeece158c98acc0))
+* **graph-proxy:** allow toggle for graph to be federated or not ([ba1eaa2](https://github.com/DiamondLightSource/workflows/commit/ba1eaa27144d58ca3b3464f316b5b2a90df774d8))
+
 ## [0.1.21](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.20...graph-proxy@v0.1.21) (2026-07-27)
 
 
