@@ -1,0 +1,11 @@
+apiVersion: v2
+name: metacontroller
+description: Shared Metacontroller runtime for cluster-wide composite controllers
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: metacontroller-helm
+    alias: metacontroller
+    version: 4.17.2
+    repository: oci://ghcr.io/metacontroller

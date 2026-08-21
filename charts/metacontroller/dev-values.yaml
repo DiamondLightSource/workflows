@@ -1,0 +1,4 @@
+metacontroller:
+  resources:
+    limits:
+      cpu: 400m
