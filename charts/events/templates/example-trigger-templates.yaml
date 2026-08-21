@@ -1,4 +1,3 @@
-{{- if .Values.metacontroller.enabled -}}
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: ClusterTriggerTemplate
 metadata:
@@ -53,4 +52,3 @@ spec:
         path: doc.scan_file
       - name: data-collection-dir
         path: doc.data_session_directory
-{{- end }}
