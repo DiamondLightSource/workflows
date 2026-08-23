@@ -144,19 +144,19 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
 
   useEffect(() => {
     const handleResizeAndOverflow = () => {
-      if (containerRef.current && reactFlowInstance.current) {
-        const { width, height } =
-          containerRef.current.getBoundingClientRect();
+      if (containerRef.current) {
+ 	 const { width, height } =
+   	 containerRef.current.getBoundingClientRect();
 
-        const nodeLookup = reactFlowInstance.current.getNodes();
+ 	 const nodeLookup = nodesWithHighlights ?? [];
 
-        const boundingBox = getNodesBounds(nodeLookup);
+ 	 const boundingBox = getNodesBounds(nodeLookup);
 
-        setIsOverflow(
-          boundingBox.width > width ||
-          boundingBox.height > height
-        );
-      }
+ 	 setIsOverflow(
+    		boundingBox.width > width ||
+      		boundingBox.height > height,
+ 	 );
+	}
     };
 
     const resizeObserver = new ResizeObserver(handleResizeAndOverflow);
@@ -179,7 +179,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
       resizeObserver.disconnect();
       window.removeEventListener("resize", handleResizeAndOverflow);
     };
-  }, [layoutedNodes, layoutedEdges]);
+  }, [nodesWithHighlights]);
   return (
     <Box ref={containerRef} display="flex" height="100%" width="100%">
       <Box
