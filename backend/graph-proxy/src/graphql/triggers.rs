@@ -110,11 +110,12 @@ impl TriggerQuery {
         &self,
         ctx: &Context<'_>,
         name: String,
-        visit: Option<String>,
+        visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
         let posix_uid = get_posix_from_ctx(ctx).await?;
-        let api: Api<Trigger> = Api::namespaced(client, &visit.unwrap_or("events".to_string()));
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
         match api.get(&name).await {
             Ok(trigger) => {
                 if trigger.clone().metadata.labels.is_some_and(|f| {
