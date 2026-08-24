@@ -45,7 +45,7 @@
       "extra-files": [
         {
           "type": "yaml",
-          "path": "/charts/auth-gateway/staging-values.yaml",
+          "path": "/charts/dashboard/values.yaml",
           "jsonpath": "$.authGateway.image.tag"
         }
       ]
