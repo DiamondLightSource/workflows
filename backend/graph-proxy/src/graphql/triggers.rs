@@ -431,19 +431,21 @@ users:
             .await
     }
 
-    async fn mock_get_trigger(
+    async fn mock_single_trigger_op(
         server: &mut ServerGuard,
+        method: &str,
         name: &str,
         ns: &str,
         response_fixture: &str,
     ) -> mockito::Mock {
         server
             .mock(
-                "GET",
+                method,
                 &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{ns}/triggers/{name}")
                     [..],
             )
             .with_status(200)
+            .match_query(Matcher::Any)
             .with_header("content-type", "application/json")
             .with_body_from_file(asset(response_fixture))
             .create_async()
@@ -459,6 +461,141 @@ users:
             .with_body_from_file(asset(response_fixture))
             .create_async()
             .await
+    }
+
+    #[rstest]
+    #[case(
+        "get-single-trigger.json",
+        "DELETE",
+        "get-single-trigger.json",
+        "deleteTrigger"
+    )]
+    #[case(
+        "get-single-trigger.json",
+        "PATCH",
+        "get-disabled-trigger.json",
+        "disableTrigger"
+    )]
+    #[case(
+        "get-disabled-trigger.json",
+        "PATCH",
+        "get-single-trigger.json",
+        "enableTrigger"
+    )]
+    #[tokio::test]
+    async fn trigger_mutations(
+        #[case] get_result: &str,
+        #[case] method: &str,
+        #[case] mutation_result: &str,
+        #[case] mutation_name: &str,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            get_result,
+        )
+        .await;
+        mock_single_trigger_op(
+            &mut ctx.server,
+            method,
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            mutation_result,
+        )
+        .await;
+        let query = format!(
+            r#"
+            mutation {{
+                {}(name: "example-trigger-mfvpj", visit: {{
+                        proposalCode: "ks",
+                        proposalNumber: 10000,
+                        number: 1
+                }})
+                {{
+                    name
+                }}
+            }}
+        "#,
+            mutation_name
+        );
+
+        let response = ctx.schema.execute(query).await;
+        get_mock.assert();
+        let actual = response.data.into_json()?;
+
+        assert_eq!(
+            actual,
+            json!({
+                mutation_name: {
+                    "name": "example-trigger-mfvpj",
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[rstest]
+    #[case("DELETE", "deleteTrigger")]
+    #[case("PATCH", "disableTrigger")]
+    #[case("PATCH", "enableTrigger")]
+    #[tokio::test]
+    async fn forbidden_trigger_operations(
+        #[case] mutation_http_method: &str,
+        #[case] mutation_name: &str,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            "unauthorised-trigger.json",
+        )
+        .await;
+        let mutation_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            mutation_http_method,
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            "get-single-trigger.json",
+        )
+        .await;
+        let query = format!(
+            r#"
+            mutation {{
+            {}(name: "example-trigger-mfvpj", visit: {{
+                        proposalCode: "ks",
+                        proposalNumber: 10000,
+                        number: 1
+                }})
+                {{
+                    name
+                }}
+            }}
+            "#,
+            mutation_name
+        );
+
+        let response = ctx.schema.execute(query).await;
+        get_mock.assert();
+        mutation_mock.expect(0).assert();
+        let err = response.into_result().unwrap_err();
+        let exp_err = ServerError {
+            message: "Permission denied: You may only access your own triggers".into(),
+            locations: vec![Pos {
+                line: 3,
+                column: 13,
+            }],
+            source: None,
+            path: vec![PathSegment::Field(mutation_name.into())],
+            extensions: None,
+        };
+
+        assert_eq!(err[0], exp_err);
+        Ok(())
     }
 
     #[rstest]
@@ -593,7 +730,9 @@ users:
     ) -> anyhow::Result<()> {
         let mut ctx = TestContext::new().await?;
 
-        let mock = mock_get_trigger(&mut ctx.server, trigger_name, ns, mock_response_file).await;
+        let mock =
+            mock_single_trigger_op(&mut ctx.server, "GET", trigger_name, ns, mock_response_file)
+                .await;
 
         let actual = execute(&ctx.schema, query).await?;
 
@@ -607,8 +746,9 @@ users:
     async fn unauthorised_get_single_trigger() -> anyhow::Result<()> {
         let mut ctx = TestContext::new().await?;
 
-        mock_get_trigger(
+        mock_single_trigger_op(
             &mut ctx.server,
+            "GET",
             "example-trigger-mfvpj",
             "events",
             "unauthorised-trigger.json",
