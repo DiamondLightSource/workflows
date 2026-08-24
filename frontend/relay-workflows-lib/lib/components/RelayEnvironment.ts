@@ -134,8 +134,16 @@ const subscribeFn: SubscribeFunction = (operation, variables) => {
         },
 
         error: (error) => {
-          sink.error(error);
-        },
+          sink.error(
+           error instanceof Error
+             ? error
+             : new Error(
+                 typeof error === "string"
+                   ? error
+                   : JSON.stringify(error),
+                 ),
+        );
+      },
 
         complete: () => {
           sink.complete();

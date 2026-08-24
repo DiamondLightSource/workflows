@@ -63,15 +63,7 @@ export default function BaseWorkflowRelay({
     useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
-    (taskId: string, event?: React.MouseEvent) => {
-      const isCtrl =
-        event?.ctrlKey ||
-        event?.metaKey;
-
-      console.log(
-        "TASK CLICKED",
-        taskId
-      );
+    (taskId: string) => {
 
       // If you need updatedTaskIds later, re‑add it here.
       // For now it was unused, so removed to fix TS6133.
