@@ -37,3 +37,7 @@ authGateway:
   graphUrl: https://staging.workflows.diamond.ac.uk/graphql
   configuration:
     secretName: auth-gateway-config
+    config:
+      oidc_provider_url: https://identity-test.diamond.ac.uk/realms/dls
+      callback_url: https://staging.workflows.diamond.ac.uk/auth/callback
+      callback_default_return_to_url: https://staging.workflows.diamond.ac.uk
