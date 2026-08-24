@@ -355,14 +355,14 @@ users:
     async fn mock_get_trigger(
         server: &mut ServerGuard,
         name: &str,
+        ns: &str,
         response_fixture: &str,
     ) -> mockito::Mock {
         server
             .mock(
                 "GET",
-                &format!(
-                    "/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/events/triggers/{name}"
-                )[..],
+                &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{ns}/triggers/{name}")
+                    [..],
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -458,41 +458,69 @@ users:
         Ok(())
     }
 
-    #[tokio::test]
-    async fn get_single_trigger() -> anyhow::Result<()> {
-        let mut ctx = TestContext::new().await?;
-
-        let mock = mock_get_trigger(
-            &mut ctx.server,
-            "example-trigger-mfvpj",
-            "get-single-trigger.json",
-        )
-        .await;
-
-        let actual = execute(
-            &ctx.schema,
-            r#"
+    #[rstest]
+    #[case(
+        "example-trigger-mfvpj",
+        "events",
+        r#"
             query {
                 trigger(name: "example-trigger-mfvpj") {
                     name
                     beamline
                 }
             }
-            "#,
-        )
-        .await?;
+        "#,
+        "get-single-trigger.json",
+        json!({
+            "trigger": {
+                "name": "example-trigger-mfvpj",
+                "beamline": "test-beamline"
+            }
+        })
+    )]
+    #[case(
+        "test-trigger-s6qzl",
+        "mg36964-1",
+        r#"
+            query {
+                trigger(
+                    name: "test-trigger-s6qzl",
+                    visit: {
+                        proposalCode: "mg"
+                        proposalNumber: 36964
+                        number: 1
+                    }
+                ) {
+                    name
+                    beamline
+                }
+            }
+        "#,
+        "namespaced-trigger.json",
+        json!({
+            "trigger": {
+                "name": "test-trigger-s6qzl",
+                "beamline": "b01-1"
+            }
+        })
+    )]
+    #[tokio::test]
+    async fn get_single_trigger(
+        #[case] trigger_name: &str,
+        #[case] ns: &str,
+        #[case] query: &str,
+        #[case] mock_response_file: &str,
+        #[case] expected: Value,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+
+        let mock = mock_get_trigger(&mut ctx.server, trigger_name, ns, mock_response_file).await;
+
+        let actual = execute(&ctx.schema, query).await?;
 
         mock.assert_async().await;
 
-        assert_eq!(
-            actual,
-            json!({
-                "trigger": {
-                    "name": "example-trigger-mfvpj",
-                    "beamline": "test-beamline"
-                }
-            })
-        );
+        assert_eq!(actual, expected);
         Ok(())
     }
 
@@ -503,6 +531,7 @@ users:
         mock_get_trigger(
             &mut ctx.server,
             "example-trigger-mfvpj",
+            "events",
             "unauthorised-trigger.json",
         )
         .await;
