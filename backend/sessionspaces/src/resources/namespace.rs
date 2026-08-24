@@ -21,7 +21,7 @@ pub async fn delete_namespace(
             api.delete(namespace, &DeleteParams::default()).await?;
             Ok(())
         }
-        Err(KubeError::Api(api_err)) if api_err.code == 404 => {
+        Err(KubeError::Api(status)) if status.is_not_found() => {
             info!("Namespace {namespace} does not exist, skipping deletion");
             Ok(())
         }
