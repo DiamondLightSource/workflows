@@ -52,42 +52,22 @@ export default function BaseWorkflowRelay({
 
   const navigate = useNavigate();
 
-  const data = useFragment(
-    BaseWorkflowRelayFragment,
-    fragmentRef,
-  );
+  const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
 
   const statusText = data.status?.__typename ?? "Unknown";
 
-  const [selectedTaskIds, setSelectedTaskIds] =
-    useSelectedTaskIds();
+  const [selectedTaskIds] = useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
     (taskId: string) => {
-
-      // If you need updatedTaskIds later, re‑add it here.
-      // For now it was unused, so removed to fix TS6133.
-
       if (workflowNameURL !== data.name) {
-        void navigate(
-          `/workflows/${visitToText(data.visit)}/${data.name}`,
-        );
+        void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
       }
 
-      if (onSelectTask) {
-        onSelectTask(taskId);
-      }
+      onSelectTask?.(taskId);
     },
-    [
-      navigate,
-      selectedTaskIds,
-      setSelectedTaskIds,
-      workflowNameURL,
-      data,
-      onSelectTask,
-    ],
+    [navigate, workflowNameURL, data, onSelectTask],
   );
-
   return (
     <Box
       sx={{

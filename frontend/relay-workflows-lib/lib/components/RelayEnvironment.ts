@@ -47,8 +47,7 @@ if (!USE_AUTH_GATEWAY) {
     keycloak
       .updateToken(10)
       .then((refreshed) => {
-        if (refreshed) {
-        } else {
+        if (!refreshed) {
           console.warn("Token still valid");
         }
       })
@@ -95,10 +94,18 @@ const fetchFn: FetchFunction = async (request, variables) => {
 export const wsClient = createClient({
   url: WS_ENDPOINT,
   on: {
-    connecting: () => { console.log("WS connecting"); },
-    opened: () => { console.log("WS opened"); },
-    connected: () => { console.log("WS connected"); },
-    closed: (event) => { console.log("WS closed", event); },
+    connecting: () => {
+      console.log("WS connecting");
+    },
+    opened: () => {
+      console.log("WS opened");
+    },
+    connected: () => {
+      console.log("WS connected");
+    },
+    closed: (event) => {
+      console.log("WS closed", event);
+    },
   },
   webSocketImpl: class extends WebSocket {
     constructor(url: string | URL, protocols?: string | string[]) {
@@ -135,15 +142,13 @@ const subscribeFn: SubscribeFunction = (operation, variables) => {
 
         error: (error) => {
           sink.error(
-           error instanceof Error
-             ? error
-             : new Error(
-                 typeof error === "string"
-                   ? error
-                   : JSON.stringify(error),
-                 ),
-        );
-      },
+            error instanceof Error
+              ? error
+              : new Error(
+                  typeof error === "string" ? error : JSON.stringify(error),
+                ),
+          );
+        },
 
         complete: () => {
           sink.complete();
@@ -176,8 +181,8 @@ export async function getUser(): Promise<AuthState | null> {
     let parsedToken: JSONObject = {};
     try {
       parsedToken = parseJwt(keycloak.token);
-    } catch (error) {
-      // error is unknown; we intentionally ignore it here
+    } catch {
+      console.warn("Unable to parse Keycloak token.");
     }
     const user: AuthState = {
       name: parsedToken.name as string,
