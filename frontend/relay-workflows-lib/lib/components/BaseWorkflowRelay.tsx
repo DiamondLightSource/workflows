@@ -6,6 +6,7 @@ import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
 import { useSelectedTaskIds } from "../utils/workflowRelayUtils";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
+import { useNavigate, useParams } from "react-router-dom";
 import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
 import TasksFlow from "./TasksFlow";
 
@@ -63,7 +64,9 @@ export default function BaseWorkflowRelay({
   onSelectTask,
 }: BaseWorkflowRelayProps) {
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
+
   const statusText = data.status?.__typename ?? "Unknown";
+
   const submittedTime =
     data.status?.__typename === "WorkflowRunningStatus" ||
     data.status?.__typename === "WorkflowSucceededStatus" ||
@@ -73,17 +76,12 @@ export default function BaseWorkflowRelay({
       : undefined;
 
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
+
   const { workflowName: workflowNameURL } = useParams<{
     workflowName: string;
   }>();
 
   const navigate = useNavigate();
-
-  const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
-
-  const statusText = data.status?.__typename ?? "Unknown";
-
-  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
   const onNavigate = React.useCallback(
     (taskId: string, event?: React.MouseEvent) => {
@@ -98,7 +96,15 @@ export default function BaseWorkflowRelay({
       setSelectedTaskIds(updatedTaskIds);
 
       if (workflowNameURL !== data.name) {
-        void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
+        const visitPath = [
+          data.visit?.proposalCode,
+          data.visit?.proposalNumber,
+          data.visit?.number,
+        ]
+          .filter(Boolean)
+          .join("-");
+
+        void navigate(`/workflows/${visitPath}/${data.name}`);
       }
 
       onSelectTask?.(taskId);
