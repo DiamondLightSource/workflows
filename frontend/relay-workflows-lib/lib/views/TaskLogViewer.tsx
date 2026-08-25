@@ -68,7 +68,7 @@ export const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
   const [taskCompleted, setTaskCompleted] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(Boolean(selectedTaskId));
 
   console.log("SELECTED TASK:", {
     selectedTaskId,
