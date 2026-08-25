@@ -97,9 +97,9 @@ export default function BaseWorkflowRelay({
 
       if (workflowNameURL !== data.name) {
         const visitPath = [
-          data.visit?.proposalCode,
-          data.visit?.proposalNumber,
-          data.visit?.number,
+          data.visit.proposalCode,
+          data.visit.proposalNumber,
+          data.visit.number,
         ]
           .filter(Boolean)
           .join("-");
