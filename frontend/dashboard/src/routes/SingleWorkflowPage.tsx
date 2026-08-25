@@ -9,8 +9,10 @@ import {
   WorkflowErrorBoundaryWithRetry,
 } from "workflows-lib";
 import { tidyPath } from "./utils";
-import { SingleWorkflowView, WorkflowsNavbar, TaskLogViewer } from "relay-workflows-lib";
-import { SingleWorkflowView, WorkflowsNavbar } from "relay-workflows-lib";
+import {
+  SingleWorkflowView,
+  WorkflowsNavbar,
+} from "relay-workflows-lib";
 
 function SingleWorkflowPage() {
   const { visitid, workflowId } = useParams<{

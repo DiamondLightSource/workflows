@@ -1,8 +1,6 @@
 import LiveSingleWorkflowView from "./LiveSingleWorkflowView";
 import { useLazyLoadQuery } from "react-relay";
-import {
-  SingleWorkflowViewQuery as SingleWorkflowViewQueryType,
-} from "./__generated__/SingleWorkflowViewQuery.graphql";
+import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__generated__/SingleWorkflowViewQuery.graphql";
 import { finishedStatuses } from "../utils/coreUtils";
 import BaseSingleWorkflowView from "./BaseSingleWorkflowView";
 import { graphql } from "react-relay";

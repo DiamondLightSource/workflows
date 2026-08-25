@@ -87,7 +87,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   const fetchOptions: RequestInit = {
     method: "POST",
     headers,
-    
+
     body: JSON.stringify({
       query: request.text,
       variables,
