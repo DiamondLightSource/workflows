@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -24,11 +19,7 @@ const taskLogViewerSubscription = graphql`
     $workflowName: String!
     $taskId: String!
   ) {
-    logs(
-      visit: $visit
-      workflowName: $workflowName
-      taskId: $taskId
-    ) {
+    logs(visit: $visit, workflowName: $workflowName, taskId: $taskId) {
       content
       podName
     }
@@ -42,7 +33,24 @@ interface TaskLogViewerProps {
   selectedTaskName?: string;
 }
 
-export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
+export function TaskLogViewer({
+  selectedTaskId,
+  selectedTaskName,
+  workflowName,
+  visit,
+}: TaskLogViewerProps) {
+  return (
+    <TaskLogViewerContent
+      key={`${visit.proposalCode}-${String(visit.proposalNumber)}-${String(visit.number)}-${workflowName}-${selectedTaskId ?? ""}`}
+      selectedTaskId={selectedTaskId}
+      selectedTaskName={selectedTaskName}
+      workflowName={workflowName}
+      visit={visit}
+    />
+  );
+}
+
+export const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
   visit,
   workflowName,
   selectedTaskId,
@@ -62,25 +70,15 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    console.log("CLEARING LOGS - TaskLogViewer selection changed:", {
-      workflowName,
-      selectedTaskId,
-      visit,
-    });
-
-    setLogLines([]);
-    setTaskCompleted(false);
-    setExpanded(!!selectedTaskId);
-  }, [selectedTaskId, workflowName, visit]);
-
   console.log("SELECTED TASK:", {
     selectedTaskId,
     selectedTaskName,
   });
 
   // Build subscription config unconditionally
-  const subscriptionConfig = useMemo<GraphQLSubscriptionConfig<TaskLogViewerSubscription>>(
+  const subscriptionConfig = useMemo<
+    GraphQLSubscriptionConfig<TaskLogViewerSubscription>
+  >(
     () => ({
       subscription: taskLogViewerSubscription,
 
@@ -95,7 +93,11 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
       onNext: (payload) => {
         console.log("LOG RECEIVED:", payload);
 
-        const line = payload?.logs?.content;
+        if (!payload) {
+          return;
+        }
+
+        const line = payload.logs.content;
 
         if (line) {
           console.log("APPENDING:", line);
@@ -125,7 +127,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
         setTaskCompleted(true);
       },
     }),
-    [visit, workflowName, selectedTaskId]
+    [visit, workflowName, selectedTaskId],
   );
   console.log("SUBSCRIBING WITH:", subscriptionConfig.variables);
   console.log("TASK VIEWER", {
@@ -156,9 +158,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
         }}
       >
         <AccordionSummary
-          expandIcon={
-            <ArrowDropDownIcon sx={{ color: "#00ff00" }} />
-          }
+          expandIcon={<ArrowDropDownIcon sx={{ color: "#00ff00" }} />}
         >
           <Typography
             sx={{
@@ -198,7 +198,9 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
   return (
     <Accordion
       expanded={expanded}
-      onChange={(_, isExpanded) => setExpanded(isExpanded)}
+      onChange={(_, isExpanded) => {
+        setExpanded(isExpanded);
+      }}
       sx={{
         mt: 2,
         width: "100%",

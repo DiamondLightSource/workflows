@@ -87,6 +87,7 @@ const fetchFn: FetchFunction = async (request, variables) => {
   const fetchOptions: RequestInit = {
     method: "POST",
     headers,
+    
     body: JSON.stringify({
       query: request.text,
       variables,
@@ -103,13 +104,22 @@ const fetchFn: FetchFunction = async (request, variables) => {
 
   return await resp.json(); // eslint-disable-line @typescript-eslint/no-unsafe-return
 };
+
 export const wsClient = createClient({
   url: WS_ENDPOINT,
   on: {
-    connecting: () => { console.log("WS connecting"); },
-    opened: () => { console.log("WS opened"); },
-    connected: () => { console.log("WS connected"); },
-    closed: (event) => { console.log("WS closed", event); },
+    connecting: () => {
+      console.log("WS connecting");
+    },
+    opened: () => {
+      console.log("WS opened");
+    },
+    connected: () => {
+      console.log("WS connected");
+    },
+    closed: (event) => {
+      console.log("WS closed", event);
+    },
   },
   webSocketImpl: class extends WebSocket {
     constructor(url: string | URL, protocols?: string | string[]) {
@@ -117,8 +127,6 @@ export const wsClient = createClient({
       super(url, protocols);
     }
   },
-
-
 
   connectionParams: async () => {
     if (!USE_AUTH_GATEWAY && !keycloak.authenticated) {
@@ -134,11 +142,7 @@ export const wsClient = createClient({
 });
 
 const subscribeFn: SubscribeFunction = (operation, variables) => {
-  console.log(
-    "WS SUBSCRIBE STARTED:",
-    operation.name,
-    variables
-  );
+  console.log("WS SUBSCRIBE STARTED:", operation.name, variables);
 
   return Observable.create((sink) => {
     const cleanup = wsClient.subscribe(
@@ -156,9 +160,7 @@ const subscribeFn: SubscribeFunction = (operation, variables) => {
 
         error: (error) => {
           console.error("WS SUBSCRIPTION ERROR:", error);
-          sink.error(
-            error instanceof Error ? error : new Error(String(error)),
-          );
+          sink.error(error instanceof Error ? error : new Error(String(error)));
         },
 
         complete: () => {

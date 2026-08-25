@@ -31,10 +31,6 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
       id: props.workflowId,
       visit: props.visit,
       name: props.workflowName,
-      
-      
-
-
     },
   );
   const finished =
@@ -46,12 +42,12 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
   };
 
   return finished || isNull ? (
-      <BaseSingleWorkflowView
-        fragmentRef={queryData.workflow ?? null}
-        taskIds={props.taskIds}
-        onSelectTask={props.onSelectTask}
-      />
-    ) : (
+    <BaseSingleWorkflowView
+      fragmentRef={queryData.workflow ?? null}
+      taskIds={props.taskIds}
+      onSelectTask={props.onSelectTask}
+    />
+  ) : (
     <LiveSingleWorkflowView
       {...props}
       onNullSubscriptionData={onNullSubscriptionData}

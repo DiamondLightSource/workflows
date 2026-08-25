@@ -145,17 +145,13 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   useEffect(() => {
     const handleResizeAndOverflow = () => {
       if (containerRef.current && reactFlowInstance.current) {
-        const { width, height } =
-          containerRef.current.getBoundingClientRect();
+        const { width, height } = containerRef.current.getBoundingClientRect();
 
         const nodeLookup = reactFlowInstance.current.getNodes();
 
         const boundingBox = getNodesBounds(nodeLookup);
 
-        setIsOverflow(
-          boundingBox.width > width ||
-          boundingBox.height > height
-        );
+        setIsOverflow(boundingBox.width > width || boundingBox.height > height);
       }
     };
 

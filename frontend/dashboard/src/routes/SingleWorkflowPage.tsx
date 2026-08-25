@@ -70,7 +70,7 @@ function SingleWorkflowPage() {
                     workflowId={workflowId}
                     taskIds={taskIds}
                   />
-                  
+
                   {/* Real-time Task Log Viewer */}
                   {/* <TaskLogViewer
                     visit={visit}
