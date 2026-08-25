@@ -92,13 +92,10 @@ export default function BaseWorkflowRelay({
       const updatedTaskIds = isCtrl
         ? selectedTaskIds.includes(taskId)
           ? selectedTaskIds.filter((id) => id !== taskId)
-          : [...selectedTaskIds, taskId];
-      } else {
-        updatedTaskIds = [taskId];
-      }
+          : [...selectedTaskIds, taskId]
+        : [taskId];
+
       setSelectedTaskIds(updatedTaskIds);
-    },
-    [selectedTaskIds, setSelectedTaskIds],
 
       if (workflowNameURL !== data.name) {
         void navigate(`/workflows/${visitToText(data.visit)}/${data.name}`);
