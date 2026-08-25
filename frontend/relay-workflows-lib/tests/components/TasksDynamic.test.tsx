@@ -14,6 +14,7 @@ vi.mock("@xyflow/react", () => ({
   }) => {
     const mockInstance = {
       fitView: vi.fn(),
+      getNodes: vi.fn(() => []),
     } as unknown as ReactFlowInstance;
     onInit(mockInstance);
     return <div data-testid="reactflow-mock" />;
