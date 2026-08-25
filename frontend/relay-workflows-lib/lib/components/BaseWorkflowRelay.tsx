@@ -91,18 +91,10 @@ export default function BaseWorkflowRelay({
 
   const onNavigate = React.useCallback(
     (taskId: string, event?: React.MouseEvent) => {
-      const isCtrl =
-        event?.ctrlKey ||
-        event?.metaKey;
+      const isCtrl = event?.ctrlKey || event?.metaKey;
 
-      let updatedTaskIds: string[];
-      console.log(
-        "TASK CLICKED",
-        taskId
-      );
-
-      if (isCtrl) {
-        updatedTaskIds = selectedTaskIds.includes(taskId)
+      const updatedTaskIds = isCtrl
+        ? selectedTaskIds.includes(taskId)
           ? selectedTaskIds.filter((id) => id !== taskId)
           : [...selectedTaskIds, taskId];
       } else {
@@ -118,9 +110,7 @@ export default function BaseWorkflowRelay({
         );
       }
 
-      if (onSelectTask) {
-        onSelectTask(taskId);
-      }
+      onSelectTask?.(taskId);
     },
     [
       navigate,

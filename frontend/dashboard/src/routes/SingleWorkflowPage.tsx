@@ -1,6 +1,6 @@
 import { Container, Box, Typography } from "@mui/material";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
 
@@ -10,6 +10,7 @@ import {
 } from "workflows-lib";
 import { tidyPath } from "./utils";
 import { SingleWorkflowView, WorkflowsNavbar, TaskLogViewer } from "relay-workflows-lib";
+import { SingleWorkflowView, WorkflowsNavbar } from "relay-workflows-lib";
 
 function SingleWorkflowPage() {
   const { visitid, workflowId } = useParams<{
