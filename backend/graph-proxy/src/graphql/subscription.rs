@@ -293,8 +293,8 @@ impl WorkflowsSubscription {
         Ok(log_stream)
     }
 
- /// Subscribe to data for all workflows in a session.
-async fn workflow(
+    /// Subscribe to data for all workflows in a session.
+    async fn workflow(
         &self,
         ctx: &Context<'_>,
         visit: VisitInput,
