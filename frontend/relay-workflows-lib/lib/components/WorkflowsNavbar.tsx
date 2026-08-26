@@ -67,6 +67,9 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
             <NavLink to="/templates" linkComponent={Link}>
               Templates
             </NavLink>
+            <NavLink to="/triggers" linkComponent={Link}>
+              Triggers
+            </NavLink>
           </NavLinks>
         </Box>
       }
