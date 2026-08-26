@@ -17,11 +17,6 @@ backup:
 
 vcluster:
   controlPlane:
-    distro:
-      k8s:
-        # vCluster documentation recommends keeping this version in sync with the host cluster
-        # see: https://www.vcluster.com/docs/vcluster/manage/upgrade/supported_versions#kubernetes-compatibility-matrix
-        version: v1.35.7
     backingStore:
       etcd:
         deploy:
