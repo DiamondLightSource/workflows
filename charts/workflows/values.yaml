@@ -287,7 +287,7 @@ authenticatedWorkflows:
   # Enables auth-broker + Envoy sidecar injection
   # Requires the auth-broker service to be deployed in the auth-broker namespace
   envoy:
-    enabled: false
+    enabled: true
     authBrokerServerUri: http://auth-broker.auth-broker.svc.cluster.local:8080
     authBrokerServerSocketAddress: auth-broker.auth-broker.svc.cluster.local
     authBrokerServerSocketPort: 8080
