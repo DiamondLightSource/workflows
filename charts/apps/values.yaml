@@ -189,7 +189,7 @@ openbao:
   valuesObject: {}
 
 authBroker:
-  enabled: false
+  enabled: true
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}
