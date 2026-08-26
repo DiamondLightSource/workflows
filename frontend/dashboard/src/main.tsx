@@ -10,6 +10,7 @@ import SingleTemplatePage from "./routes/SingleTemplatePage";
 import SingleWorkflowPage from "./routes/SingleWorkflowPage";
 import ErrorPage from "./ErrorPage";
 import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import TriggersListPage from "./routes/TriggersListPage";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: "workflows/:visitid/:workflowId/:tasknames",
     element: <SingleWorkflowPage />,
+  },
+  {
+    path: "triggers",
+    element: <TriggersListPage />,
   },
 ]);
 
