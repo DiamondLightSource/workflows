@@ -299,8 +299,8 @@ authenticatedWorkflows:
     resources:
       requests:
         cpu: 100m
-        memory: 32Mi
+        memory: 128Mi
       limits:
         # limit range doesn't allow a smaller value
         cpu: 1000m
-        memory: 64Mi
+        memory: 256Mi
