@@ -86,11 +86,20 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
         onError: (error) => {
           console.error("Log subscription error:", error);
 
-          setSubscriptionError(
+          const message =
             error instanceof Error
               ? error.message
-              : "Unable to retrieve task logs.",
-          );
+              : String(error);
+
+          if (
+            message.includes("NoSuchKey") ||
+            message.includes("No logs") ||
+            message.includes("Failed to retrieve archived log artifact")
+          ) {
+            setSubscriptionError("No logs available");
+          } else {
+            setSubscriptionError("Unable to retrieve task logs");
+          }
 
           setTaskCompleted(true);
         },

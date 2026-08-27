@@ -107,13 +107,6 @@ impl WorkflowsSubscription {
             .append_pair("logOptions.container", "main")
             .append_pair("logOptions.follow", "true");
 
-        tracing::info!(
-            "LOG REQUEST namespace={} workflow={} task={}",
-            namespace,
-            workflow_name,
-            task_id
-        );
-
         let s3_client = ctx
             .data::<S3Client>()
             .map_err(|_| anyhow::anyhow!("Missing S3 client"))?
@@ -161,9 +154,10 @@ impl WorkflowsSubscription {
         // main.log is not already available in S3.
         let live_response = if initial_archive.is_none() {
             tracing::info!(
-                "STARTING_LIVE_STREAM task={} workflow={}",
-                task_id,
-                workflow_name
+                "STARTING_LIVE_STREAM namespace={} workflow={} task={}",
+                namespace,
+                workflow_name,
+                task_id
             );
 
             let client = reqwest::Client::new();
@@ -230,7 +224,7 @@ impl WorkflowsSubscription {
             let mut live_lines = Vec::new();
             let mut archive_check =
                 tokio::time::interval(std::time::Duration::from_secs(2));
-
+            archive_check.tick().await;
             archive_check.set_missed_tick_behavior(
                 tokio::time::MissedTickBehavior::Skip,
             );
@@ -291,7 +285,9 @@ impl WorkflowsSubscription {
                                                 continue;
                                             }
 
-                                            if !content.is_empty() {
+                                            if !content.is_empty()
+                                                && !should_skip_log_line(&content)
+                                            {
                                                 live_lines.push(content.clone());
 
                                                 yield Ok(LogEntry {
@@ -408,10 +404,7 @@ impl WorkflowsSubscription {
                         }
 
                         Err(err) => {
-                            yield Err(format!(
-                                "Failed to retrieve archived log artifact \
-                                after {attempts} attempts: {err:?}"
-                            ));
+                            yield Err("No logs available".to_string());
                             return;
                         }
                     }
@@ -607,7 +600,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn logs_subscription_reads_archived_s3_log_after_live_stream() {
+    async fn logs_subscription_reads_archived_s3_log_before_live_stream() {
         let workflow_name = "numpy-benchmark-wdkwj";
         let task_id = "numpy-benchmark-wdkwj";
 
@@ -619,32 +612,10 @@ mod tests {
 
         let mut server = mockito::Server::new_async().await;
 
-        // Mock the live Argo log endpoint.
-        let argo_log_body = concat!(
-            r#"{"result":{"content":"line 1","podName":"numpy-benchmark-wdkwj"}}"#,
-            "\n",
-            r#"{"result":{"content":"line 2","podName":"numpy-benchmark-wdkwj"}}"#,
-            "\n",
-        );
-
-        let argo_log_path = format!("/api/v1/workflows/{visit}/{workflow_name}/log");
-
-        let argo_log_endpoint = server
-            .mock("GET", argo_log_path.as_str())
-            .match_query(Matcher::UrlEncoded("podName".into(), task_id.into()))
-            .match_query(Matcher::UrlEncoded(
-                "logOptions.container".into(),
-                "main".into(),
-            ))
-            .match_query(Matcher::UrlEncoded(
-                "logOptions.follow".into(),
-                "true".into(),
-            ))
-            .with_status(200)
-            .with_header("content-type", "text/plain")
-            .with_body(argo_log_body)
-            .create_async()
-            .await;
+        // No Argo log request is expected.
+        //
+        // The implementation now checks S3 first and returns the
+        // archived log immediately when main.log exists.
 
         // Mock the archived S3 main.log.
         //
@@ -738,7 +709,6 @@ mod tests {
             ]
         );
 
-        argo_log_endpoint.assert_async().await;
         s3_log_endpoint.assert_async().await;
     }
 
