@@ -82,6 +82,12 @@ impl WorkflowsSubscription {
     ) -> anyhow::Result<impl Stream<Item = Result<LogEntry, String>>> {
         let auth_token = get_auth_token(ctx)?;
 
+        if task_id.is_empty() || task_id == "__NO_TASK_SELECTED__" {
+            return Err(anyhow::anyhow!(
+                "A valid task ID is required to retrieve task logs"
+            ));
+        }
+
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref().clone();
         let mut url = server_url;
 
@@ -108,18 +114,6 @@ impl WorkflowsSubscription {
             task_id
         );
 
-        let client = reqwest::Client::new();
-
-        let response = client
-            .get(url)
-            .bearer_auth(auth_token)
-            .header("Accept", "text/plain")
-            .send()
-            .await?;
-
-        let status = response.status();
-        let byte_stream = response.bytes_stream();
-
         let s3_client = ctx
             .data::<S3Client>()
             .map_err(|_| anyhow::anyhow!("Missing S3 client"))?
@@ -132,99 +126,297 @@ impl WorkflowsSubscription {
 
         let s3_key = format!("{workflow_name}/{task_id}/main.log");
 
+        // Check S3 first because the task pod may already have been deleted
+        // while the overall workflow is still running.
+        let initial_archive = match s3_client
+            .get_object()
+            .bucket(s3_bucket.clone())
+            .key(&s3_key)
+            .send()
+            .await
+        {
+            Ok(response) => {
+                tracing::info!(
+                    "ARCHIVE_FOUND_BEFORE_LIVE task={} workflow={} key={}",
+                    task_id,
+                    workflow_name,
+                    s3_key
+                );
+
+                Some(response)
+            }
+
+            Err(_) => {
+                tracing::info!(
+                    "ARCHIVE_NOT_FOUND_BEFORE_LIVE task={} workflow={}",
+                    task_id,
+                    workflow_name
+                );
+
+                None
+            }
+        };
+
+        // Only contact the Argo live-log endpoint when the archived
+        // main.log is not already available in S3.
+        let live_response = if initial_archive.is_none() {
+            tracing::info!(
+                "STARTING_LIVE_STREAM task={} workflow={}",
+                task_id,
+                workflow_name
+            );
+
+            let client = reqwest::Client::new();
+
+            Some(
+                client
+                    .get(url)
+                    .bearer_auth(auth_token)
+                    .header("Accept", "text/plain")
+                    .send()
+                    .await?,
+            )
+        } else {
+            None
+        };
+
+        let live_status = live_response.as_ref().map(|response| response.status());
+
+        let mut byte_stream = live_response.map(|response| response.bytes_stream());
+
         let log_stream = stream! {
+            if let Some(archive_response) = initial_archive {
+                let archive_bytes = match archive_response.body.collect().await {
+                    Ok(bytes) => bytes,
+
+                    Err(err) => {
+                        yield Err(format!(
+                            "Failed to read archived log artifact: {err}"
+                        ));
+                        return;
+                    }
+                };
+
+                let archived_text = String::from_utf8_lossy(
+                    archive_bytes.into_bytes().as_ref(),
+                )
+                .to_string();
+
+                for line in archived_text.lines() {
+                    let content = line.trim_end();
+
+                    if content.is_empty()
+                        || should_skip_log_line(content)
+                    {
+                        continue;
+                    }
+
+                    yield Ok(LogEntry {
+                        content: content.to_string(),
+                        pod_name: task_id.clone(),
+                    });
+                }
+
+                tracing::info!(
+                    "ARCHIVE_EMITTED_BEFORE_LIVE task={} workflow={} key={}",
+                    task_id,
+                    workflow_name,
+                    s3_key
+                );
+
+                return;
+            }
+
             let mut live_lines = Vec::new();
+            let mut archive_check =
+                tokio::time::interval(std::time::Duration::from_secs(2));
 
-            for await chunk_result in byte_stream {
-                match chunk_result {
-                    Ok(chunk) if status.is_success() => {
-                        let text = String::from_utf8_lossy(&chunk).to_string();
+            archive_check.set_missed_tick_behavior(
+                tokio::time::MissedTickBehavior::Skip,
+            );
 
-                        for line in text.lines() {
-                            match serde_json::from_str::<LogResponse>(line) {
-                                Ok(parsed) => {
-                                    if let Some(result) = parsed.result {
-                                        let content = result.content;
+            'live_stream: loop {
+                tokio::select! {
+                    chunk_result = async {
+                    match byte_stream.as_mut() {
+                    Some(stream) => stream.next().await,
+                    None => None,
+                    }
+                    } => {
+                        match chunk_result {
+                            Some(Ok(chunk))
+                                if live_status
+                                    .map(|status| status.is_success())
+                                    .unwrap_or(false) =>
+                            {
+                                let text =
+                                    String::from_utf8_lossy(&chunk).to_string();
 
-                                        let skip_line =
-                                            content.contains("capturing logs")
-                                            || content.contains("waiting for signals")
-                                            || content.contains("sub-process exited")
-                                            || content.contains("file signal handler exiting")
-                                            || content.contains("no need to save artifact");
+                                for line in text.lines() {
+                                    match serde_json::from_str::<LogResponse>(line) {
+                                        Ok(parsed) => {
+                                            if let Some(result) = parsed.result {
+                                                let content = result.content;
 
-                                        if skip_line {
-                                            continue;
+                                                let skip_line =
+                                                    content.contains("capturing logs")
+                                                    || content.contains("waiting for signals")
+                                                    || content.contains("sub-process exited")
+                                                    || content.contains("file signal handler exiting")
+                                                    || content.contains("no need to save artifact")
+                                                    || content.contains("no need to save parameter");
+
+                                                if skip_line {
+                                                    continue;
+                                                }
+
+                                                live_lines.push(content.clone());
+
+                                                yield Ok(LogEntry {
+                                                    content,
+                                                    pod_name: result.pod_name,
+                                                });
+                                            } else {
+                                                yield Err(
+                                                    "Missing result in log response"
+                                                        .to_string()
+                                                );
+                                            }
                                         }
 
-                                        live_lines.push(content.clone());
+                                        Err(_) => {
+                                            let content = line.trim().to_string();
 
-                                        yield Ok(LogEntry {
-                                            content,
-                                            pod_name: result.pod_name,
-                                        });
-                                    } else {
-                                        yield Err(
-                                            "Missing result in log response".to_string()
-                                        );
+                                            if content.starts_with("{\"result\"") {
+                                                continue;
+                                            }
+
+                                            if !content.is_empty() {
+                                                live_lines.push(content.clone());
+
+                                                yield Ok(LogEntry {
+                                                    content,
+                                                    pod_name: task_id.clone(),
+                                                });
+                                            }
+                                        }
                                     }
                                 }
+                            }
 
-                                Err(_) => {
-                                    let content = line.trim().to_string();
+                            Some(Ok(_)) => {
+                                tracing::info!(
+                                    "Live log request unavailable for task {}; checking archive",
+                                    task_id
+                                );
 
-                                    if content.starts_with("{\"result\"") {
-                                        continue;
-                                    }
+                                break 'live_stream;
+                            }
 
-                                    if !content.is_empty() {
-                                        live_lines.push(content.clone());
+                            Some(Err(err)) => {
+                                tracing::warn!(
+                                    "Live log stream ended for task {}: {}; checking archive",
+                                    task_id,
+                                    err
+                                );
 
-                                        yield Ok(LogEntry {
-                                            content,
-                                            pod_name: task_id.clone(),
-                                        });
-                                    }
-                                }
+                                break 'live_stream;
+                            }
 
+                            None => {
+                                tracing::info!(
+                                    "Live log stream completed for task {}; checking archive",
+                                    task_id
+                                );
 
+                                break 'live_stream;
                             }
                         }
                     }
 
-                    Ok(_) => {
-                        yield Err(format!(
-                            "Argo log request failed with status {status}"
-                        ));
-                        return;
-                    }
+                    _ = archive_check.tick() => {
+                        let archive_available = s3_client
+                            .head_object()
+                            .bucket(s3_bucket.clone())
+                            .key(&s3_key)
+                            .send()
+                            .await
+                            .is_ok();
 
-                    Err(err) => {
-                        yield Err(format!("Failed to read log chunk: {err}"));
-                        return;
+                        if archive_available {
+                            tracing::info!(
+                                "Archived log is available before workflow completion: {}",
+                                s3_key
+                            );
+
+                            break 'live_stream;
+                        }
                     }
                 }
             }
 
             // The live Argo stream has finished. The durable log should now
             // be available in the S3 artifact.
-            let archive_response = match s3_client
-                .get_object()
-                .bucket(s3_bucket)
-                .key(&s3_key)
-                .send()
-                .await
-            {
-                Ok(response) => response,
+            tracing::info!(
+                "LIVE_STREAM_ENDED task={} workflow={}",
+                task_id,
+                workflow_name
+            );
 
-                Err(err) => {
-                    yield Err(format!(
-                        "Failed to retrieve archived log artifact: {err:?}"
-                    ));
-                    return;
+            tracing::info!(
+                "ARCHIVE_LOOKUP bucket={} key={}",
+                s3_bucket.0,
+                s3_key
+            );
+
+            let archive_response = {
+                let mut attempts = 0;
+
+                loop {
+                    attempts += 1;
+
+                    match s3_client
+                        .get_object()
+                        .bucket(s3_bucket.clone())
+                        .key(&s3_key)
+                        .send()
+                        .await
+                    {
+                        Ok(response) => {
+                            tracing::info!(
+                                "ARCHIVE_RETRIEVED task={} workflow={} key={}",
+                                task_id,
+                                workflow_name,
+                                s3_key
+                            );
+
+                            break response;
+                        }
+
+                        Err(_) if attempts < 10 => {
+                            tracing::info!(
+                                "Archived log not available yet for task {}; \
+                                retrying S3 lookup, attempt {}",
+                                task_id,
+                                attempts
+                            );
+
+                            tokio::time::sleep(
+                                std::time::Duration::from_secs(1)
+                            )
+                            .await;
+                        }
+
+                        Err(err) => {
+                            yield Err(format!(
+                                "Failed to retrieve archived log artifact \
+                                after {attempts} attempts: {err:?}"
+                            ));
+                            return;
+                        }
+                    }
                 }
             };
-
             let archive_bytes = match archive_response.body.collect().await {
                 Ok(bytes) => bytes,
 
@@ -241,6 +433,14 @@ impl WorkflowsSubscription {
 
             let archived_lines: Vec<String> = archived_text
                 .lines()
+                .filter(|line| {
+                    !line.contains("capturing logs")
+                        && !line.contains("waiting for signals")
+                        && !line.contains("sub-process exited")
+                        && !line.contains("file signal handler exiting")
+                        && !line.contains("no need to save artifact")
+                        && !line.contains("no need to save parameter")
+                })
                 .map(str::to_string)
                 .collect();
 
@@ -272,6 +472,13 @@ impl WorkflowsSubscription {
                     }
                 }
             }
+            tracing::info!(
+                "ARCHIVE_DEBUG task={} live_lines={} archived_lines={} archive_start={}",
+                task_id,
+                live_lines.len(),
+                archived_lines.len(),
+                archive_start
+            );
 
             // Send only the archived lines that were not already emitted
             // from the live Argo stream.
@@ -357,6 +564,16 @@ impl WorkflowsSubscription {
 
         Ok(stream)
     }
+}
+
+/// Returns true for Argo executor messages that should not be displayed.
+fn should_skip_log_line(content: &str) -> bool {
+    content.contains("capturing logs")
+        || content.contains("waiting for signals")
+        || content.contains("sub-process exited")
+        || content.contains("file signal handler exiting")
+        || content.contains("no need to save artifact")
+        || content.contains("no need to save parameter")
 }
 
 /// Struct for storing message of StreamError

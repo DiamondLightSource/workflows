@@ -1,4 +1,6 @@
 import React, {
+  Dispatch,
+  SetStateAction,
   useEffect,
   useMemo,
   useRef,
@@ -18,7 +20,6 @@ import { GraphQLSubscriptionConfig } from "relay-runtime";
 import { Visit } from "@diamondlightsource/sci-react-ui";
 import { TaskLogViewerSubscription } from "./__generated__/TaskLogViewerSubscription.graphql";
 
-
 const taskLogViewerSubscription = graphql`
   subscription TaskLogViewerSubscription(
     $visit: VisitInput!
@@ -36,7 +37,6 @@ const taskLogViewerSubscription = graphql`
   }
 `;
 
-
 interface TaskLogViewerProps {
   visit: Visit;
   workflowName: string;
@@ -44,41 +44,23 @@ interface TaskLogViewerProps {
   selectedTaskName?: string;
 }
 
+interface TaskLogSubscriptionProps {
+  visit: Visit;
+  workflowName: string;
+  taskId: string;
+  setLogLines: Dispatch<SetStateAction<string[]>>;
+  setTaskCompleted: Dispatch<SetStateAction<boolean>>;
+  setSubscriptionError: Dispatch<SetStateAction<string | null>>;
+}
 
-export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
+const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
   visit,
   workflowName,
-  selectedTaskId,
-  selectedTaskName,
+  taskId,
+  setLogLines,
+  setTaskCompleted,
+  setSubscriptionError,
 }) => {
-
-  const [logLines, setLogLines] = useState<string[]>([]);
-  const [taskCompleted, setTaskCompleted] = useState(false);
-  const [podName, setPodName] = useState<string | null>(null);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    console.log("TaskLogViewer selection changed:", {
-        workflowName,
-        selectedTaskId,
-        visit,
-    });
-
-    setLogLines([]);
-    setTaskCompleted(false);
-    setExpanded(!!selectedTaskId);
-
-    }, [
-    selectedTaskId,
-    workflowName,
-    visit,
-    ]);
-
-
   const subscriptionConfig =
     useMemo<GraphQLSubscriptionConfig<TaskLogViewerSubscription>>(
       () => ({
@@ -87,52 +69,77 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
         variables: {
           visit,
           workflowName,
-          taskId: selectedTaskId ?? "__NO_TASK_SELECTED__",
+          taskId,
         },
 
         onNext: (payload) => {
-        console.log("LOG EVENT:", payload);
+          const line = payload?.logs?.content;
 
-        const line = payload?.logs?.content;
-
-        if (line) {
-            setLogLines((prev) => [
-            ...prev,
-            line,
+          if (line) {
+            setLogLines((previousLines) => [
+              ...previousLines,
+              line,
             ]);
-
-            if (
-            line.includes("sub-process exited") ||
-            line.includes("completed") ||
-            line.includes("finished") ||
-            line.includes("done")
-            ) {
-            setTaskCompleted(true);
-            }
-        }
+          }
         },
 
         onError: (error) => {
           console.error("Log subscription error:", error);
+
+          setSubscriptionError(
+            error instanceof Error
+              ? error.message
+              : "Unable to retrieve task logs.",
+          );
+
+          setTaskCompleted(true);
+        },
+
+        onCompleted: () => {
+          setTaskCompleted(true);
         },
       }),
       [
         visit,
         workflowName,
-        selectedTaskId,
+        taskId,
+        setLogLines,
+        setTaskCompleted,
+        setSubscriptionError,
       ],
     );
 
-
-  console.log(
-    "SUBSCRIBING WITH:",
-    subscriptionConfig.variables
-  );
-
-
-  // MUST ALWAYS RUN - never put hooks inside conditions
   useSubscription(subscriptionConfig);
 
+  return null;
+};
+
+export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
+  visit,
+  workflowName,
+  selectedTaskId,
+  selectedTaskName,
+}) => {
+  const [logLines, setLogLines] = useState<string[]>([]);
+  const [taskCompleted, setTaskCompleted] = useState(false);
+  const [subscriptionError, setSubscriptionError] =
+    useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setLogLines([]);
+    setTaskCompleted(false);
+    setSubscriptionError(null);
+    setExpanded(Boolean(selectedTaskId));
+  }, [
+    selectedTaskId,
+    workflowName,
+    visit.proposalCode,
+    visit.proposalNumber,
+    visit.number,
+  ]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -141,110 +148,125 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
     }
   }, [logLines]);
 
-
-
   return (
-    <Accordion
-        expanded={expanded}
-        onChange={(_, isExpanded) => { setExpanded(isExpanded); }}
-        sx={{
-            mt: 2,
-            width: "100%",
-            backgroundColor: "#001400",
-            color: "#00ff00",
-        }}
-    >
-
-        <AccordionSummary
-        expandIcon={
-            <ArrowDropDownIcon sx={{ color: "#00ff00" }} />
-        }
-        >
-        <Typography
-        sx={{
-            color: "#00ff00",
-            fontFamily: "monospace",
-            fontSize: "0.9rem",
-        }}
-        >
-        Logs: {selectedTaskName ?? selectedTaskId ?? "No task selected"}
-        </Typography>
-
-        {selectedTaskId && !taskCompleted && (
-        <CircularProgress
-            size={14}
-            sx={{
-            color: "rgb(253, 251, 251)",
-            marginLeft: "10px",
-            }}
+    <>
+      {selectedTaskId && (
+        <TaskLogSubscription
+          key={`${workflowName}-${selectedTaskId}`}
+          visit={visit}
+          workflowName={workflowName}
+          taskId={selectedTaskId}
+          setLogLines={setLogLines}
+          setTaskCompleted={setTaskCompleted}
+          setSubscriptionError={setSubscriptionError}
         />
-        )}
+      )}
 
-        {taskCompleted && (
-        <Typography
-            sx={{
-            color: "#ff3333",
-            fontFamily: "monospace",
-            fontSize: "0.75rem",
-            ml: 2,
-            fontWeight: "bold",
-            }}
+      <Accordion
+        expanded={expanded}
+        onChange={(_, isExpanded) => {
+          setExpanded(isExpanded);
+        }}
+        sx={{
+          mt: 2,
+          width: "100%",
+          backgroundColor: "#001400",
+          color: "#00ff00",
+        }}
+      >
+        <AccordionSummary
+          expandIcon={
+            <ArrowDropDownIcon
+              sx={{ color: "#00ff00" }}
+            />
+          }
         >
-            COMPLETED
-        </Typography>
-        )}
+          <Typography
+            sx={{
+              color: "#00ff00",
+              fontFamily: "monospace",
+              fontSize: "0.9rem",
+            }}
+          >
+            Logs:{" "}
+            {selectedTaskName ??
+              selectedTaskId ??
+              "No task selected"}
+          </Typography>
 
+          {selectedTaskId && !taskCompleted && (
+            <CircularProgress
+              size={14}
+              sx={{
+                color: "rgb(253, 251, 251)",
+                marginLeft: "10px",
+              }}
+            />
+          )}
+
+          {selectedTaskId && taskCompleted && (
+            <Typography
+              sx={{
+                color: "#ff3333",
+                fontFamily: "monospace",
+                fontSize: "0.75rem",
+                ml: 2,
+                fontWeight: "bold",
+              }}
+            >
+              COMPLETED
+            </Typography>
+          )}
         </AccordionSummary>
 
-
-        <AccordionDetails
-        sx={{
-            p: 0,
-        }}
-        >
-
-        <Box
+        <AccordionDetails sx={{ p: 0 }}>
+          <Box
             ref={containerRef}
             sx={{
-            height: 200,
-            overflowY: "auto",
-            p: 2,
-            bgcolor: "#000",
-            color: "#00ff00",
-            fontFamily: "monospace",
-            fontSize: "10px",
-            whiteSpace: "pre-wrap",
+              height: 200,
+              overflowY: "auto",
+              p: 2,
+              bgcolor: "#000",
+              color: "#00ff00",
+              fontFamily: "monospace",
+              fontSize: "10px",
+              whiteSpace: "pre-wrap",
             }}
-        >
-
-            {!selectedTaskId && (
-            <Typography>
-                Select a task.
-            </Typography>
+          >
+            {subscriptionError ? (
+              <Typography
+                sx={{
+                  color: "#ff3333",
+                  fontFamily: "monospace",
+                  fontSize: "10px",
+                }}
+              >
+                {subscriptionError}
+              </Typography>
+            ) : logLines.length > 0 ? (
+              logLines.map((line, index) => (
+                <React.Fragment key={`${line}-${index}`}>
+                  {line}
+                  {index < logLines.length - 1 && "\n"}
+                </React.Fragment>
+              ))
+            ) : (
+              <Typography
+                sx={{
+                  color: "#00ff00",
+                  fontFamily: "monospace",
+                  fontSize: "10px",
+                }}
+              >
+                {selectedTaskId
+                  ? "Waiting for logs..."
+                  : "No task selected"}
+              </Typography>
             )}
-
-
-            {selectedTaskId &&
-            logLines.length === 0 && (
-                <Typography>
-                Waiting for log output...
-                </Typography>
-            )}
-
-
-            {logLines.map((line, index) => (
-            <Box key={index}>
-                {line}
-            </Box>
-            ))}
-
-        </Box>
-
+          </Box>
         </AccordionDetails>
-
-    </Accordion>
-);
+      </Accordion>
+    </>
+  );
 };
-
-
-export default TaskLogViewer;
+        

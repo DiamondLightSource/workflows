@@ -46,15 +46,21 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
     setIsNull(true);
   };
 
+
+  const [selectedTaskId, setSelectedTaskId] =
+      useState<string | null>(null);
   return finished || isNull ? (
-      <BaseSingleWorkflowView
-        fragmentRef={queryData.workflow ?? null}
-        taskIds={props.taskIds}
-        onSelectTask={props.onSelectTask}
-      />
-    ) : (
+    <BaseSingleWorkflowView
+      fragmentRef={queryData.workflow ?? null}
+      taskIds={props.taskIds}
+      selectedTaskId={selectedTaskId}
+      onSelectTask={setSelectedTaskId}
+    />
+  ) : (
     <LiveSingleWorkflowView
       {...props}
+      selectedTaskId={selectedTaskId}
+      onSelectTask={setSelectedTaskId}
       onNullSubscriptionData={onNullSubscriptionData}
     />
   );

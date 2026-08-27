@@ -39,13 +39,14 @@ export const BaseSingleWorkflowViewFragment = graphql`
 interface BaseSingleWorkflowViewProps {
   fragmentRef: BaseSingleWorkflowViewFragment$key | null;
   taskIds?: string[];
-  onSelectTask?: (taskId: string) => void;
+  selectedTaskId: string | null;
+  onSelectTask: (taskId: string | null) => void;
 }
-
 
 export default function BaseSingleWorkflowView({
   taskIds,
   fragmentRef,
+  selectedTaskId,
   onSelectTask,
 }: BaseSingleWorkflowViewProps) {
 
@@ -57,12 +58,6 @@ export default function BaseSingleWorkflowView({
 
   const fetchedTasks = useFetchedTasks(data ?? null);
 
-
-  // Task selected for log viewer
-  const [
-    selectedTaskId,
-    setSelectedTaskId,
-  ] = useState<string | null>(null);
 
   const [
     filledTaskId,
@@ -154,10 +149,8 @@ export default function BaseSingleWorkflowView({
 
   const handleSelectClear = () => {
     setSelectedTaskIds([]);
-    setSelectedTaskId(null);
+    onSelectTask(null);
   };
-
-
 
   const onArtifactHover = useCallback(
     (artifact: Artifact | null) => {
@@ -289,17 +282,7 @@ export default function BaseSingleWorkflowView({
             filledTaskId={filledTaskId}
             expanded={true}
             onSelectTask={(taskId) => {
-
-              console.log(
-                "BASE SINGLE TASK SELECTED:",
-                taskId
-              );
-
-
-              setSelectedTaskId(taskId);
-
-
-              onSelectTask?.(taskId);
+              onSelectTask(taskId)
 
             }}
           />
