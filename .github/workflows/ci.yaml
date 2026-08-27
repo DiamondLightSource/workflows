@@ -3,57 +3,55 @@ name: Test internal runner
 on:
   workflow_dispatch:
   push:
-  pull_request:
 
 permissions:
   contents: read
 
 jobs:
   test-internal-runner:
-    name: Test internal connectivity
+    name: Test Argo CD connectivity
+
     runs-on:
-      group: IRIS
-      labels: iris-cpu
+      group: iris
+      labels:
+        - self-hosted
+        - linux
+
+    container:
+      image: curlimages/curl:8.16.0
 
     timeout-minutes: 5
 
     steps:
       - name: Show runner information
-        shell: bash
+        shell: sh
         run: |
-          set -euo pipefail
+          set -eu
 
-          echo "Runner name: $RUNNER_NAME"
-          echo "Runner OS: $RUNNER_OS"
-          echo "Runner architecture: $RUNNER_ARCH"
-          echo "Hostname: $(hostname)"
-          echo "User: $(id -un)"
+          echo "Runner name: ${RUNNER_NAME}"
+          echo "Runner OS: ${RUNNER_OS}"
+          echo "Runner architecture: ${RUNNER_ARCH}"
+          echo "Container hostname: $(hostname)"
+          id
 
       - name: Check internal DNS
-        shell: bash
+        shell: sh
         run: |
-          set -euo pipefail
+          set -eu
 
-          getent hosts argo-cd.workflows.diamond.ac.uk
+          nslookup argo-cd.workflows.diamond.ac.uk ||
+            getent hosts argo-cd.workflows.diamond.ac.uk
 
       - name: Check Argo CD HTTPS connectivity
-        shell: bash
+        shell: sh
         run: |
-          set -euo pipefail
+          set -eu
 
           curl \
-            --fail \
+            --fail-with-body \
             --silent \
             --show-error \
             --connect-timeout 10 \
             --max-time 30 \
-            --output /dev/null \
-            --write-out "HTTP status: %{http_code}\n" \
+            --write-out '\nHTTP status: %{http_code}\n' \
             https://argo-cd.workflows.diamond.ac.uk/api/version
-
-      - name: Check Argo CD CLI
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          argocd version --client
