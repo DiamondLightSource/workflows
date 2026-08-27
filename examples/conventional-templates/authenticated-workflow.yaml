@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: authenticated-graph-query
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: Authenticated GraphQL Query
+    workflows.argoproj.io/description: |
+      An example demonstrating how perform an authenticated GraphQL Query from a running workflow.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+spec:
+  entrypoint: get-workflow-templates
+  templates:
+    - name: get-workflow-templates
+      metadata:
+        annotations:
+          workflows.diamond.ac.uk/authenticated: "true"
+      container:
+        image: curlimages/curl:8.12.1
+        command: [sh, -c]
+        args:
+          - |
+            curl \
+              -X POST \
+              "${GRAPH_URL}" \
+              -H 'Content-Type: application/json' \
+              --data '{"query":"query WorkflowTemplates { workflowTemplates { nodes { name } } }"}'
