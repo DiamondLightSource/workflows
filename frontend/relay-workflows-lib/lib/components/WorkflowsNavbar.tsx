@@ -1,8 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { NavLink as Link } from "react-router-dom";
 import {
   Navbar,
-  DiamondTheme,
   NavLinks,
   NavLink,
   User,
@@ -32,7 +31,7 @@ const handleLogout = () => {
   }
 };
 
-const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
+const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = () => {
   const [user, setUser] = useState<AuthState | null>(null);
 
   useEffect(() => {
@@ -74,27 +73,7 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
         </Box>
       }
       rightSlot={
-        <>
-          {sessionInfo && (
-            <Typography
-              sx={{
-                color: DiamondTheme.palette.primary.contrastText,
-                fontSize: {
-                  xs: "0.75rem",
-                  sm: "0.8rem",
-                  md: "0.8rem",
-                  lg: "1rem",
-                },
-                textAlign: "right",
-                ml: 2,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {sessionInfo}
-            </Typography>
-          )}
-          <User colour="white" user={user} onLogout={handleLogout}></User>
-        </>
+        <User colour="white" user={user} onLogout={handleLogout}></User>
       }
     />
   );
