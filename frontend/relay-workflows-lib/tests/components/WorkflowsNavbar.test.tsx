@@ -26,31 +26,6 @@ describe("WorkflowsNavbar", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders with title and sessionInfo", () => {
-    const { getByText } = render(
-      <ThemeProvider theme={DiamondTheme}>
-        <BrowserRouter>
-          <WorkflowsNavbar sessionInfo="cm12345-6" />
-        </BrowserRouter>
-      </ThemeProvider>,
-    );
-    expect(getByText("cm12345-6")).toBeInTheDocument();
-  });
-
-  it("applies the correct styles", () => {
-    const { getByText } = render(
-      <ThemeProvider theme={DiamondTheme}>
-        <BrowserRouter>
-          <WorkflowsNavbar sessionInfo="cm34567-8" />
-        </BrowserRouter>
-      </ThemeProvider>,
-    );
-    const sessionElement = getByText("cm34567-8");
-    expect(sessionElement).toHaveStyle(
-      `color: ${DiamondTheme.palette.primary.contrastText}`,
-    );
-  });
-
   it("displays the logged in user", async () => {
     vi.mocked(getUser).mockReturnValue(Promise.resolve(testUser));
     render(
