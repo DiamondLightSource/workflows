@@ -179,22 +179,22 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
         sx={{
           mt: 2,
           width: "100%",
-          backgroundColor: "#001400",
-          color: "#00ff00",
+          backgroundColor: "#f3f5f3",
+          color: "#030303",
         }}
       >
         <AccordionSummary
           expandIcon={
             <ArrowDropDownIcon
-              sx={{ color: "#00ff00" }}
+              sx={{ color: "#030303" }}
             />
           }
         >
           <Typography
             sx={{
-              color: "#00ff00",
-              fontFamily: "monospace",
-              fontSize: "0.9rem",
+              color: "inherit",
+              fontFamily: "inherit",
+              fontSize: "1rem",
             }}
           >
             Logs:{" "}
@@ -223,7 +223,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
                 fontWeight: "bold",
               }}
             >
-              COMPLETED
+              ARCHIEVED
             </Typography>
           )}
         </AccordionSummary>
@@ -232,10 +232,10 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
           <Box
             ref={containerRef}
             sx={{
-              height: 200,
+              height: 180,
               overflowY: "auto",
               p: 2,
-              bgcolor: "#000",
+              bgcolor: "#313030",
               color: "#00ff00",
               fontFamily: "monospace",
               fontSize: "10px",
@@ -264,7 +264,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
                 sx={{
                   color: "#00ff00",
                   fontFamily: "monospace",
-                  fontSize: "10px",
+                  fontSize: "12px",
                 }}
               >
                 {selectedTaskId
