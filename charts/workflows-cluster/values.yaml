@@ -148,6 +148,7 @@ vcluster:
             "/letsencrypt-thanos-query-workflows-diamond-ac-uk": "monitoring/letsencrypt-thanos-query-workflows-diamond-ac-uk"
             "/letsencrypt-alertmanager-workflows-diamond-ac-uk": "monitoring/letsencrypt-alertmanager-workflows-diamond-ac-uk"
             "/letsencrypt-prometheus-workflows-diamond-ac-uk": "monitoring/letsencrypt-prometheus-workflows-diamond-ac-uk"
+            "/slack-alert-webhook": monitoring/slack-alert-webhook"
             "/grafana-oauth": "monitoring/grafana-oauth"
             "/monitoring-thanos-s3": "monitoring/monitoring-thanos-s3"
             "/argocd-oauth": "argocd/argocd-oauth"
