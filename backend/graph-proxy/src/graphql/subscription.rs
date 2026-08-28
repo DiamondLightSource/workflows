@@ -403,7 +403,7 @@ impl WorkflowsSubscription {
                             .await;
                         }
 
-                        Err(err) => {
+                        Err(_err) => {
                             yield Err("No logs available".to_string());
                             return;
                         }
