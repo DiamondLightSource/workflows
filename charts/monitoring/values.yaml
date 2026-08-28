@@ -177,6 +177,15 @@ prometheus:
   rbac:
     create: false
   alertmanager:
+    config:
+      route:
+        receiver: slack-notifications
+      receivers:
+        - name: slack-notifications
+          slack_configs:
+            - api_url_file: /etc/secrets/slack-api-url
+              channel: "#analysis-platform-alerts"
+              send_resolved: true
     serviceAccount:
       create: true
       annotations: {}
@@ -197,6 +206,11 @@ prometheus:
         memory: 2Gi
     extraArgs:
       web.external-url: https://alertmanager.workflows.diamond.ac.uk
+    extraSecretMounts:
+      - name: slack-alert-webhook
+        secretName: slack-alert-webhook
+        mountPath: /etc/secrets
+        readOnly: true
     configmapReload:
       enabled: true
       resources:
