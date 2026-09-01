@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.7...workflows-lib@v0.1.8) (2026-08-21)
+
+
+### Features
+
+* display workflow submission time in the workflows list ([93ad2e5](https://github.com/DiamondLightSource/workflows/commit/93ad2e556d791d937251114b2f21d610d2cc78f8))
+* **frontend:** added authenticated component ([3cf299d](https://github.com/DiamondLightSource/workflows/commit/3cf299d6f544e5d2a8bc62c15affd56c3019e9b4))
+* **frontend:** added story for authenticated component ([d2b75ca](https://github.com/DiamondLightSource/workflows/commit/d2b75ca6fa9d70ff33e6f43f13aa32526ee120a9))
+* **frontend:** auth status component and logic and hooks ([a076281](https://github.com/DiamondLightSource/workflows/commit/a0762810cc2e85b60ced97d17cebf88c287c7e09))
+* **frontend:** story for AuthStatusIndicator ([bcfa2af](https://github.com/DiamondLightSource/workflows/commit/bcfa2af34b53cb19061924b9e3a0b509c66af5cb))
+
+
+### Bug Fixes
+
+* **frontend:** change authGatewayUrl in charts and frontend ([d497e71](https://github.com/DiamondLightSource/workflows/commit/d497e7108a81c9590d0882a89658aa0096e9637c))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.6...workflows-lib@v0.1.7) (2026-07-13)
 
 

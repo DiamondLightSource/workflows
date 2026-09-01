@@ -60,7 +60,7 @@ for PtyPy, for example the following multi-stage Dockerfile in the box below
         mamba env update -n base -f dependencies.yml && \
         mamba env update -n base -f dependencies_cufft.yml
 
-    # Pull from platform specific image and install ptypy 
+    # Pull from platform specific image and install ptypy
     FROM ${PLATFORM} as build
     COPY pyproject.toml setup.py ./
     COPY ./scripts ./scripts
@@ -91,7 +91,7 @@ for PtyPy, for example the following multi-stage Dockerfile in the box below
 
 ### Building a container
 
-To build a container image `ptypy-container` with openmpi as the MPI backend and CuPy as the backend for PtyPy, 
+To build a container image `ptypy-container` with openmpi as the MPI backend and CuPy as the backend for PtyPy,
 we can use the following podman command
 
 ```bash
@@ -168,7 +168,7 @@ For each task, we need to specify a command and its arguments that we would like
       image: gcr.io/diamond-privreg/ptypy/test_openmpi_full:0.1
       command:
       - mpirun
-      args: 
+      args:
       - "-n"
       - "{{ inputs.parameters.nprocs }}"
       - "ptypy.cli"
@@ -248,7 +248,7 @@ like described above.
 
 ### GPU resources
 
-For GPU jobs, we need to add entries for  ```nvidia.com/gpu``` in both the resource ```requests``` and 
+For GPU jobs, we need to add entries for  ```nvidia.com/gpu``` in both the resource ```requests``` and
 ```limits```. In addition, we also need to add some ```tolerations```:
 
 ```yaml
@@ -308,7 +308,7 @@ to our template and mount it into our container like so
       container:
         volumeMounts:
         - name: tmpdir
-          mountPath: /tmp  
+          mountPath: /tmp
 ```
 
 ## Examples

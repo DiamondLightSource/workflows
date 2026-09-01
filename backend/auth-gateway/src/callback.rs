@@ -9,6 +9,7 @@ use axum::extract::{Query, State};
 use axum::response::Redirect;
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
+use tracing::{info, instrument, warn};
 
 use crate::Result;
 use crate::auth_session_data::{LoginSessionData, TokenSessionData};
@@ -23,22 +24,29 @@ pub struct CallbackQuery {
 use anyhow::anyhow;
 
 #[debug_handler]
+#[instrument(skip(state, session, params), fields(session_id = tracing::field::Empty), err(Debug))]
 pub async fn callback(
     State(state): State<Arc<AppState>>,
     Query(params): Query<CallbackQuery>,
     session: Session,
 ) -> Result<Redirect> {
+    tracing::Span::current().record("session_id", tracing::field::debug(session.id()));
     // Retrieve data from the users session
-    let auth_session_data: LoginSessionData = session
-        .remove(LoginSessionData::SESSION_KEY)
-        .await?
-        .ok_or(anyhow!("session expired"))?;
+    let auth_session_data: LoginSessionData =
+        match session.remove(LoginSessionData::SESSION_KEY).await? {
+            Some(auth_session_data) => auth_session_data,
+            None => {
+                warn!("login callback received with no pending login session (session expired)");
+                return Err(anyhow!("session expired").into());
+            }
+        };
 
     // Once the user has been redirected to the redirect URL, you'll have access to the
     // authorization code. For security reasons, your code should verify that the `state`
     // parameter returned by the server matches `csrf_state`.
 
     if auth_session_data.csrf_token != CsrfToken::new(params.state) {
+        warn!("login callback failed CSRF state verification");
         return Err(anyhow!("invalid state").into());
     }
     let redirect_url = Cow::Owned(RedirectUrl::new(state.callback_url.to_string())?);
@@ -51,6 +59,7 @@ pub async fn callback(
         .set_redirect_uri(redirect_url)
         .request_async(&state.http_client)
         .await?;
+    info!("OIDC token exchange succeeded");
 
     // Extract the ID token claims after verifying its authenticity and nonce.
     let id_token = token_response
@@ -76,6 +85,18 @@ pub async fn callback(
         &token_response,
         claims.issuer().clone(),
         claims.subject().clone(),
+        claims
+            .name()
+            .and_then(|name| name.get(None))
+            .map(|n| n.to_string()),
+        claims
+            .preferred_username()
+            .map(|username| username.to_string()),
+        claims
+            .additional_claims()
+            .fedid
+            .as_ref()
+            .map(|fedid| fedid.to_string()),
     )?;
     write_token_to_database(&state.database_connection, &token_data, &state.public_key).await?;
     session

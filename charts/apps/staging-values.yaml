@@ -9,6 +9,10 @@ events:
   extraValueFiles:
     - staging-values.yaml
 
+metacontroller:
+  enabled: true
+  targetRevision: HEAD
+
 groups:
   enabled: true
   targetRevision: HEAD
@@ -81,6 +85,13 @@ otel:
   enabled: true
   targetRevision: HEAD
   extraValuesFiles: []
+  valuesObject: {}
+
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles:
+    - staging-values.yaml
   valuesObject: {}
 
 kueue:

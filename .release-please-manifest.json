@@ -1,20 +1,21 @@
 {
   "+1": "0.0.0",
-  "backend/graph-proxy": "0.1.21",
+  "backend/graph-proxy": "0.2.0",
   "+2": "0.0.0",
   "backend/sessionspaces": "0.1.7",
   "+3": "0.0.0",
-  "frontend/dashboard": "0.1.15",
+  "frontend/dashboard": "0.1.16",
   "+4": "0.0.0",
-  "frontend/relay-workflows-lib": "0.1.9",
+  "frontend/relay-workflows-lib": "0.1.10",
   "+5": "0.0.0",
-  "frontend/workflows-lib": "0.1.7",
+  "frontend/workflows-lib": "0.1.8",
+  "frontend/workflows-lib-shared": "0.1.1",
   "+6": "0.0.0",
   "backend/telemetry": "0.1.2",
   "+7": "0.0.0",
   "workflows-cli": "0.1.1",
   "+8": "0.0.0",
-  "backend/auth-daemon": "0.1.0",
   "backend/identity-mapper": "0.1.1",
-  "backend/auth-gateway": "0.1.0"
+  "backend/auth-gateway": "0.1.1",
+  "backend/auth-broker": "0.1.0"
 }

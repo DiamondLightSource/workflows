@@ -1,11 +1,9 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { Box } from "@mui/material";
-import { visitToText } from "@diamondlightsource/sci-react-ui";
 import { WorkflowAccordion, type WorkflowStatus } from "workflows-lib";
 import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
 import { useSelectedTaskIds } from "../utils/workflowRelayUtils";
-import { useParams, useNavigate } from "react-router-dom";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
 import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
@@ -14,6 +12,7 @@ import TasksFlow from "./TasksFlow";
 export const BaseWorkflowRelayFragment = graphql`
   fragment BaseWorkflowRelayFragment on Workflow {
     name
+    id
     visit {
       proposalCode
       proposalNumber
@@ -24,7 +23,24 @@ export const BaseWorkflowRelayFragment = graphql`
     }
     status {
       __typename
+
+      ... on WorkflowRunningStatus {
+        startTime
+      }
+
+      ... on WorkflowSucceededStatus {
+        startTime
+      }
+
+      ... on WorkflowFailedStatus {
+        startTime
+      }
+
+      ... on WorkflowErroredStatus {
+        startTime
+      }
     }
+
     ...WorkflowTasksFragment
   }
 `;
@@ -55,6 +71,13 @@ export default function BaseWorkflowRelay({
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
 
   const statusText = data.status?.__typename ?? "Unknown";
+  const submittedTime =
+    data.status?.__typename === "WorkflowRunningStatus" ||
+    data.status?.__typename === "WorkflowSucceededStatus" ||
+    data.status?.__typename === "WorkflowFailedStatus" ||
+    data.status?.__typename === "WorkflowErroredStatus"
+      ? data.status.startTime
+      : undefined;
 
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
@@ -110,9 +133,11 @@ export default function BaseWorkflowRelay({
       <WorkflowAccordion
         workflow={{
           name: data.name,
+          id: data.id,
           instrumentSession: data.visit,
           status: statusText as WorkflowStatus,
           creator: data.creator.creatorId,
+          submittedTime,
         }}
         workflowLink={workflowLink}
         expanded={expanded}
@@ -136,7 +161,7 @@ export default function BaseWorkflowRelay({
           }}
         >
           <TasksFlow
-            workflowName={data.name}
+            workflowId={data.id}
             tasksRef={data}
             onNavigate={onNavigate}
             highlightedTaskIds={selectedTaskIds}

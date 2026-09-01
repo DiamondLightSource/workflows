@@ -24,12 +24,12 @@ eventBuses:
         memory: 4Gi
 
 eventSources:
-  - name: example
+  - name: webhook-test
     beamline: test-beamline
     port: 12000
     webhook:
       # event-source can run multiple HTTP servers. Simply define a unique port to start a new HTTP server
-      example:
+      webhook-test:
         # port to run HTTP server on
         port: "12000"
         # endpoint to listen to
@@ -41,12 +41,3 @@ genericServers:
   stomp:
     enabled: true
     logLevel: INFO
-
-metacontroller:
-  enabled: true
-  commandArgs: ["--zap-log-level=2"]
-  hooks:
-    customize:
-      version: v2
-    sync:
-      version: v2

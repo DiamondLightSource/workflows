@@ -27,17 +27,12 @@ const QueryWrappedBaseSingleWorkflowView = () => {
   const data = useLazyLoadQuery<SingleWorkflowViewQueryType>(
     SingleWorkflowViewQuery,
     {
-      visit: {
-        proposalCode: "mg",
-        proposalNumber: 36964,
-        number: 1,
-      },
-      name: "conditional-steps-first",
+      id: "mg36964-1:conditional-steps-first:12345",
     },
   );
   return (
     <BaseSingleWorkflowView
-      fragmentRef={data.workflow ?? null}
+      fragmentRef={data.workflowById ?? null}
       taskIds={taskIds}
       onSelectTask={vi.fn()}
       selectedTaskId={null}

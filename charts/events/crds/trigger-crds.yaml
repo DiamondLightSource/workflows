@@ -24,10 +24,7 @@ spec:
               properties:
                 lifetime:
                   type: string
-                  pattern: '^(\d+[smh]|forever)$' 
-                enabled:
-                  type: boolean
-                  default: true
+                  pattern: '^(\d+[smh]|forever)$'
                 eventName:
                   type: string
                 workflow:
@@ -86,7 +83,7 @@ spec:
               properties:
                 lifetime:
                   type: string
-                  pattern: '^(\d+[smh]|forever)$' 
+                  pattern: '^(\d+[smh]|forever)$'
                   default: 24h
                 templateRef:
                   type: string

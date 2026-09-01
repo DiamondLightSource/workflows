@@ -26,18 +26,19 @@ spec:
 
         - script:
             content: |
+              # overwrite the policy with new mock values
               set -eu
               pwd
               : "${CHART_DIR:=../../}"
 
-              helm template chainsaw-envoy-auth "$CHART_DIR" \
+              helm template workflows "$CHART_DIR" \
                 --namespace "$NAMESPACE" \
                 --values values-chainsaw.yaml \
-                | yq 'select(.kind == "ClusterPolicy" and .metadata.name == "chainsaw-envoy-auth-inject-envoy-sidecar")' | kubectl apply -f -
+                | yq 'select(.kind == "ClusterPolicy" and .metadata.name == "workflows-inject-envoy-sidecar")' | kubectl apply -f -
 
               kubectl wait \
                 --for=condition=Ready \
-                clusterpolicy/chainsaw-envoy-auth-inject-envoy-sidecar \
+                clusterpolicy/workflows-inject-envoy-sidecar \
                 --timeout=60s
 
         - apply:
@@ -120,4 +121,17 @@ spec:
       finally:
         - script:
             content: |
-              kubectl delete clusterpolicy chainsaw-envoy-auth-inject-envoy-sidecar --ignore-not-found
+              # restore the original policy
+              set -eu
+              pwd
+              : "${CHART_DIR:=../../}"
+              kubectl delete clusterpolicy workflows-inject-envoy-sidecar --ignore-not-found
+              helm template workflows "$CHART_DIR" \
+                --namespace "workflows" \
+                --values $CHART_DIR/values.yaml \
+                | yq 'select(.kind == "ClusterPolicy" and .metadata.name == "workflows-inject-envoy-sidecar")' | kubectl apply -f -
+
+              kubectl wait \
+                --for=condition=Ready \
+                clusterpolicy/workflows-inject-envoy-sidecar \
+                --timeout=60s

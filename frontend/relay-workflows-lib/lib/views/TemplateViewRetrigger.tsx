@@ -5,11 +5,8 @@ import { TemplateViewRetriggerQuery as TemplateViewRetriggerQueryType } from "./
 import TemplateView from "./TemplateView";
 
 export const TemplateViewRetriggerQuery = graphql`
-  query TemplateViewRetriggerQuery(
-    $visit: VisitInput!
-    $workflowName: String!
-  ) {
-    workflow(visit: $visit, name: $workflowName) {
+  query TemplateViewRetriggerQuery($id: ID!) {
+    workflowById(id: $id) {
       ...SubmissionFormParametersFragment
     }
   }
@@ -17,18 +14,17 @@ export const TemplateViewRetriggerQuery = graphql`
 
 export default function TemplateViewWithRetrigger({
   templateName,
-  workflowName,
+  workflowId,
   visit,
 }: {
   templateName: string;
-  workflowName: string;
-  visit: Visit;
+  workflowId: string;
+  visit?: Visit;
 }) {
   const retriggerData = useLazyLoadQuery<TemplateViewRetriggerQueryType>(
     TemplateViewRetriggerQuery,
     {
-      visit,
-      workflowName: workflowName,
+      id: workflowId,
     },
   );
 
@@ -36,8 +32,8 @@ export default function TemplateViewWithRetrigger({
     <TemplateView
       templateName={templateName}
       visit={visit}
-      prepopulatedParameters={retriggerData.workflow ?? undefined}
-      workflowName={workflowName}
+      prepopulatedParameters={retriggerData.workflowById ?? undefined}
+      workflowId={workflowId}
     />
   );
 }

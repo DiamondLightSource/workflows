@@ -9,11 +9,12 @@ import {
   WorkflowErrorBoundaryWithRetry,
 } from "workflows-lib";
 import { SingleWorkflowView, WorkflowsNavbar } from "relay-workflows-lib";
+import { tidyPath } from "./utils";
 
 function SingleWorkflowPage() {
-  const { visitid, workflowName } = useParams<{
+  const { visitid, workflowId } = useParams<{
     visitid: string;
-    workflowName: string;
+    workflowId: string;
   }>();
 
   const [searchParams] = useSearchParams();
@@ -39,8 +40,11 @@ function SingleWorkflowPage() {
       <WorkflowsNavbar
         sessionInfo={`Instrument Session ID is ${visitid ?? ""}`}
       />
-      <Breadcrumbs path={window.location.pathname} linkComponent={Link} />
-      {visit && workflowName ? (
+      <Breadcrumbs
+        path={tidyPath(window.location.pathname)}
+        linkComponent={Link}
+      />
+      {visit && workflowId ? (
         <Container maxWidth="lg">
           <Box
             display="flex"
@@ -52,7 +56,7 @@ function SingleWorkflowPage() {
             <WorkflowErrorBoundaryWithRetry>
               {({ fetchKey }) => (
                 <Suspense
-                  key={`workflow-${workflowName}-${JSON.stringify(fetchKey)}`}
+                  key={`workflow-${workflowId}-${JSON.stringify(fetchKey)}`}
                   fallback={
                     <Box>
                       <Typography variant="h6" fontWeight="bold">
@@ -62,8 +66,7 @@ function SingleWorkflowPage() {
                   }
                 >
                   <SingleWorkflowView
-                    visit={visit}
-                    workflowName={workflowName}
+                    workflowId={workflowId}
                     taskIds={taskIds}
                   />
 

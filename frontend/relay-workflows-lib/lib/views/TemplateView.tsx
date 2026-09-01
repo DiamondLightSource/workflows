@@ -30,6 +30,7 @@ const mutation = graphql`
       parameters: $parameters
     ) {
       name
+      id
     }
   }
 `;
@@ -38,12 +39,12 @@ export default function TemplateView({
   templateName,
   visit,
   prepopulatedParameters,
-  workflowName,
+  workflowId,
 }: {
   templateName: string;
   visit?: Visit;
   prepopulatedParameters?: SubmissionFormParametersFragment$key;
-  workflowName?: string;
+  workflowId?: string;
 }) {
   const storedVisit = visitTextToVisit(
     localStorage.getItem("instrumentSessionID") ?? "",
@@ -71,6 +72,7 @@ export default function TemplateView({
               submissionResult: {
                 type: "success",
                 message: `${visitToText(visit)}/${submittedName}`,
+                link: `${visitToText(visit)}/${response.submitWorkflowTemplate.id}`,
               },
               visit,
               workflowName: submittedName,
@@ -96,7 +98,7 @@ export default function TemplateView({
         prepopulatedParameters={prepopulatedParameters}
         visit={visit ?? storedVisit ?? undefined}
         onSubmit={submitWorkflow}
-        workflowName={workflowName}
+        workflowId={workflowId}
       />
       <Box sx={{ width: { xs: "100%", sm: "100%", md: "800px" } }}>
         <SubmittedMessagesList submittedData={submissionData} />

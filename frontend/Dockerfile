@@ -6,13 +6,14 @@ COPY ./yarn.lock ./package.json .
 COPY ./dashboard/package.json ./dashboard/package.json
 COPY ./relay-workflows-lib ./relay-workflows-lib
 COPY ./workflows-lib ./workflows-lib
+COPY ./workflows-lib-shared ./workflows-lib-shared
 RUN yarn install --frozen-lockfile
 
 COPY . .
-COPY ./supergraph.graphql ./relay-workflows-lib/supergraph.graphql
+COPY ./workflows.graphql ./relay-workflows-lib/workflows.graphql
 RUN yarn run --cwd=relay-workflows-lib relay
 
-COPY ./supergraph.graphql ./dashboard/supergraph.graphql
+COPY ./workflows.graphql ./dashboard/workflows.graphql
 RUN yarn run --cwd=dashboard build
 
 FROM docker.io/library/nginx:1.31.3-alpine-slim as nginx

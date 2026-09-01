@@ -111,4 +111,3 @@ spec:
               eventName: test-eventname
               workflow:
                 template: workflow-template
-

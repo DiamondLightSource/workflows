@@ -15,4 +15,3 @@ argo-cd:
 ingress:
   enabled: true
   host: argo-cd.staging.workflows.diamond.ac.uk
-

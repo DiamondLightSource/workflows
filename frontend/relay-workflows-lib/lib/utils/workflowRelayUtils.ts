@@ -69,7 +69,7 @@ function setFetchedTasks(data: WorkflowTasksFragment$data): Task[] {
         parentTaskId: task.id,
         key: `${task.id}-${artifact.name}`,
       })),
-      workflow: data.name,
+      workflow: data.id,
       instrumentSession: data.visit,
       stepType: task.stepType,
     }));

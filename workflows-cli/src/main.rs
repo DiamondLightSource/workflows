@@ -18,9 +18,22 @@ use helm_integration::ManifestType;
 /// Create repository for workflow templates
 mod create;
 
+mod triggers;
+
+mod visit;
+
+mod auth;
+
 use clap::Parser;
+use gql_client::{Client, GraphQLError};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
+
+/// Address for making queries to the GraphQL API
+pub const GRAPH_URL: &str = "https://workflows.diamond.ac.uk/graphql";
 
 /// Workflows Tool
 #[derive(Debug, Parser)]
@@ -34,6 +47,8 @@ enum Cli {
     Submit(SubmitArgs),
     /// Create a new repository to create workflow templates as conventional manifests and/or helm based templates
     Create(CreateArgs),
+    /// Create a new workflow trigger from a trigger template
+    TriggerCreate(triggers::TriggerCreateArgs),
 }
 
 /// Arguments for linting from a configfile
@@ -89,7 +104,8 @@ struct SubmitArgs {
     file_path: PathBuf,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Cli::parse();
 
     if let Err(err) = ensure_cli() {
@@ -110,7 +126,34 @@ fn main() {
         Cli::Create(args) => {
             create::create(args);
         }
+        Cli::TriggerCreate(args) => {
+            triggers::create_trigger(args).await;
+        }
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+enum QueryError {
+    #[error("GraphQL Error: {0}")]
+    GraphQLError(GraphQLError),
+
+    #[error("Authentication Error: {0}")]
+    FailedGetToken(#[from] auth::AuthError),
+}
+
+async fn submit_graph_query<T: Serialize, K: DeserializeOwned>(
+    url: &str,
+    query: &str,
+    args: T,
+) -> Result<K, QueryError> {
+    let token = auth::get_auth_token().await?;
+    let mut headers = HashMap::new();
+    headers.insert("Authorization", format!("Bearer {}", token.secret()));
+    let client = Client::new_with_headers(url, headers);
+    client
+        .query_with_vars_unwrap::<K, T>(query, args)
+        .await
+        .map_err(QueryError::GraphQLError)
 }
 
 /// Checks the underlying argo and helm CLI are present

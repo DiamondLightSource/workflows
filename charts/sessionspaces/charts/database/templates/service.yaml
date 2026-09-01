@@ -16,4 +16,3 @@ spec:
       targetPort: {{ $.Values.dbPort }}
       protocol: TCP
 {{- end }}
-

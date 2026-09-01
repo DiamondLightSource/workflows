@@ -1,0 +1,54 @@
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: ClusterTriggerTemplate
+metadata:
+  name: webhook-test-trigger
+  labels:
+    workflows.diamond.ac.uk/source: webhook
+    workflows.diamond.ac.uk/beamline: test-beamline
+spec:
+  eventName: webhook-test
+  workflow:
+    template: example-template
+    parameters:
+      - name: tif
+        path: parameters.tif
+      - name: tiff
+        path: parameters.tiff
+      - name: png
+        path: parameters.png
+        default: "true"
+---
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: ClusterTriggerTemplate
+metadata:
+  name: i15-1-trigger
+  labels:
+    workflows.diamond.ac.uk/source: message-bus
+    workflows.diamond.ac.uk/beamline: i15-1
+spec:
+  eventName: i15-1-message
+  workflow:
+    template: access-visit-dir
+    triggerOnMessageType: stop
+    parameters:
+      - name: visitdir
+        path: doc.data_session_directory
+
+---
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: ClusterTriggerTemplate
+metadata:
+  name: visr-trigger
+  labels:
+    workflows.diamond.ac.uk/source: message-bus
+    workflows.diamond.ac.uk/beamline: b01-1
+spec:
+  eventName: b01-1-message
+  workflow:
+    template: visr-reconstruction
+    triggerOnMessageType: stop
+    parameters:
+      - name: input-file-name
+        path: doc.scan_file
+      - name: data-collection-dir
+        path: doc.data_session_directory

@@ -11,9 +11,6 @@
       "release-type": "rust",
       "package-name": "workflows-cli"
     },
-    "backend/auth-daemon": {
-      "release-type": "rust"
-    },
     "backend/graph-proxy": {
       "release-type": "rust",
       "extra-files": [
@@ -45,8 +42,18 @@
       "extra-files": [
         {
           "type": "yaml",
-          "path": "/charts/dashboard/staging-values.yaml",
+          "path": "/charts/dashboard/values.yaml",
           "jsonpath": "$.authGateway.image.tag"
+        }
+      ]
+    },
+    "backend/auth-broker": {
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/auth-broker/Chart.yaml",
+          "jsonpath": "$.appVersion"
         }
       ]
     },
@@ -75,6 +82,10 @@
     },
     "frontend/workflows-lib": {
       "release-type": "node"
+    },
+    "frontend/workflows-lib-shared": {
+      "release-type": "node",
+      "component": "workflows-lib-shared"
     },
     "backend/telemetry": {
       "release-type": "rust"

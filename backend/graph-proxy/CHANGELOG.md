@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.21...graph-proxy@v0.2.0) (2026-08-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **graph-proxy:** change type of visit argument to Visit object
+
+### Features
+
+* **graph-proxy:** add mutations to delete and toggle triggers ([02b81d9](https://github.com/DiamondLightSource/workflows/commit/02b81d988f85d6e67ff775fd832cf078069f21b6))
+* **graph-proxy:** added function to strip directives and remmoved extra comments ([07cb0f1](https://github.com/DiamondLightSource/workflows/commit/07cb0f1dd4c54cb7ff8d6eb20aeece158c98acc0))
+* **graph-proxy:** allow toggle for graph to be federated or not ([ba1eaa2](https://github.com/DiamondLightSource/workflows/commit/ba1eaa27144d58ca3b3464f316b5b2a90df774d8))
+
+
+### Bug Fixes
+
+* **graph-proxy:** change type of visit argument to Visit object ([9797cbf](https://github.com/DiamondLightSource/workflows/commit/9797cbfd02df9ff3a27ede7871e6ff68a60e8361))
+
 ## [0.1.21](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.20...graph-proxy@v0.1.21) (2026-07-27)
 
 

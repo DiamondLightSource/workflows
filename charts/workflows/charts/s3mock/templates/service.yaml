@@ -16,4 +16,3 @@ spec:
       targetPort: {{ $.Values.bucketPort }}
       protocol: TCP
 {{- end }}
-

@@ -63,7 +63,7 @@ spec:
                   - /bin/sh
                   - -c
                   # Configure Envoy Proxy for the following behaviour:
-                  # 
+                  #
                   # main container
                   #   POST http://127.0.0.1:6000/graphql
                   #         |
@@ -99,6 +99,13 @@ spec:
                   # GraphQL server
                   - |
                     cat > /etc/envoy/envoy.yaml << 'ENVOYEOF'
+                    admin:
+                      address:
+                        socket_address:
+                          address: 0.0.0.0
+                          port_value: 9901
+                      allow_paths:
+                      - exact: /ready
                     static_resources:
                       listeners:
                       - name: envoy-local-graph-proxy
@@ -320,12 +327,20 @@ spec:
                   - "--log-level"
                   - "{{ .Values.authenticatedWorkflows.envoy.logLevel | default "warn" }}"
                 startupProbe:
-                  tcpSocket:
-                    port: 6000
+                  httpGet:
+                    port: 9901
+                    path: /ready
                   initialDelaySeconds: 1
                   periodSeconds: 1
-                  failureThreshold: 30
+                  failureThreshold: 60
                   timeoutSeconds: 1
+                readinessProbe:
+                  httpGet:
+                    port: 9901
+                    path: /ready
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
                 volumeMounts:
                   - name: workflows-envoy-config
                     mountPath: /etc/envoy

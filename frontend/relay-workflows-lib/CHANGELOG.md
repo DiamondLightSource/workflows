@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.9...relay-workflows-lib@v0.1.10) (2026-08-20)
+
+
+### Features
+
+* **dashboard:** user info is displayed in nav bar when using auth-gateway ([8c7302f](https://github.com/DiamondLightSource/workflows/commit/8c7302fdd1ad72feb9f92a5c15bcca7e00535905))
+* display workflow submission time in the workflows list ([93ad2e5](https://github.com/DiamondLightSource/workflows/commit/93ad2e556d791d937251114b2f21d610d2cc78f8))
+* **frontend:** added boilerplate for shared module ([ac54f57](https://github.com/DiamondLightSource/workflows/commit/ac54f57f06045bb73ef930c75043a1ad0d91d462))
+
+
+### Bug Fixes
+
+* **frontend:** change authGatewayUrl in charts and frontend ([d497e71](https://github.com/DiamondLightSource/workflows/commit/d497e7108a81c9590d0882a89658aa0096e9637c))
+* **frontend:** fix CORS issue running frontend locally with keycloak-js ([93fc38e](https://github.com/DiamondLightSource/workflows/commit/93fc38e5480cfae11f1d4f0a8b067803ff6a29aa))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.8...relay-workflows-lib@v0.1.9) (2026-07-13)
 
 

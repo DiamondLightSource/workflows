@@ -1,0 +1,56 @@
+{
+  "name": "@diamondlightsource/workflows-lib-shared",
+  "private": false,
+  "version": "0.1.1",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "lib/main.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/workflows-lib-shared.cjs",
+    "module": "./dist/workflows-lib-shared.js",
+    "types": "./dist/main.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/main.d.ts",
+        "import": "./dist/workflows-lib-shared.js",
+        "require": "./dist/workflows-lib-shared.cjs"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "rm -rf dist",
+    "build": "tsc --build && vite build && tsc -p tsconfig.build.json",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^5.16.11",
+    "@mui/material": "^6.4.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.2",
+    "@storybook/addon-links": "^10.3.5",
+    "@storybook/builder-vite": "^10.3.5",
+    "@storybook/react-vite": "^10.3.5",
+    "@types/jest": "^30.0.0",
+    "@types/react-resizable": "^3.0.8",
+    "react-resizable": "^3.0.5",
+    "storybook": "^10.3.5",
+    "@storybook/addon-docs": "^10.3.5"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
+  }
+}

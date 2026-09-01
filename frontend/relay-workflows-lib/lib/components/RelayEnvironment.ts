@@ -13,6 +13,10 @@ import { createClient } from "graphql-ws";
 import { AuthState } from "@diamondlightsource/sci-react-ui";
 import { parseJwt } from "../utils/coreUtils";
 import { JSONObject } from "workflows-lib";
+import {
+  buildLoginUrl,
+  baseGatewayUrl,
+} from "@diamondlightsource/workflows-lib-shared";
 import { getUseAuthGateway } from "../utils/useAuthGateway";
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
@@ -59,6 +63,12 @@ if (!USE_AUTH_GATEWAY) {
   };
 }
 
+function redirectToAuthGatewayLogin() {
+  const returnTo = window.location.href;
+  const loginUrl = buildLoginUrl(returnTo, AUTH_GATEWAY_LOGIN_URL);
+  window.location.assign(loginUrl);
+}
+
 const fetchFn: FetchFunction = async (request, variables) => {
   if (!keycloak.authenticated) {
     await ensureKeycloakInit();
@@ -74,18 +84,20 @@ const fetchFn: FetchFunction = async (request, variables) => {
     headers.Authorization = `Bearer ${keycloak.token}`;
   }
 
-  const resp = await fetch(HTTP_ENDPOINT, {
+  const fetchOptions: RequestInit = {
     method: "POST",
     headers,
-    //  credentials: "include",
     body: JSON.stringify({
-      query: request.text, // <-- The GraphQL document composed by Relay
+      query: request.text,
       variables,
     }),
-  });
+  };
+  if (USE_AUTH_GATEWAY) {
+    fetchOptions.credentials = "include";
+  }
+  const resp = await fetch(HTTP_ENDPOINT, fetchOptions);
   if (USE_AUTH_GATEWAY && resp.status === 401) {
-    const returnTo = encodeURIComponent(window.location.href);
-    window.location.assign(`${AUTH_GATEWAY_LOGIN_URL}?returnTo=${returnTo}`);
+    redirectToAuthGatewayLogin();
     return {};
   }
 
@@ -179,6 +191,32 @@ export async function getRelayEnvironment(): Promise<Environment> {
 }
 
 export async function getUser(): Promise<AuthState | null> {
+  if (USE_AUTH_GATEWAY) {
+    try {
+      const userInfoUrl = buildUserInfoUrl(AUTH_GATEWAY_LOGIN_URL);
+      const resp = await fetch(userInfoUrl, {
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      if (resp.status === 401) {
+        redirectToAuthGatewayLogin();
+        return null;
+      }
+      if (!resp.ok) {
+        return null;
+      }
+      const data = (await resp.json()) as JSONObject;
+      const user: AuthState = {
+        name: data.name as string,
+        fedid: data.fedid as string,
+      };
+      return user;
+    } catch (error) {
+      console.error("Failed to fetch user info: ", error);
+      return null;
+    }
+  }
+
   if (!keycloak.authenticated) {
     await ensureKeycloakInit();
   }
@@ -195,4 +233,9 @@ export async function getUser(): Promise<AuthState | null> {
     };
     return user;
   } else return null;
+}
+
+function buildUserInfoUrl(gatewayUrl?: string): string {
+  const userInfoUrl = new URL(`${baseGatewayUrl(gatewayUrl)}/auth/me`);
+  return userInfoUrl.toString();
 }

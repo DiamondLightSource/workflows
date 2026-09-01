@@ -63,3 +63,15 @@ The Argo CD dashboard is available at [https://argo-cd.workflows.diamond.ac.uk](
 The `frontend` directory contains all the react components for the workflows. The `workflows-lib` subdirectory containers all the pure components where as `relay-workflows-lib` contains relay components that fetches the data from a workflows proxy.
 
 Refer to <https://diamondlightsource.github.io/workflows/storybook> to see all the components in storybook.
+
+## Pre-commit hooks
+
+Pre-commit hooks are run with [prek](https://prek.j178.dev/). Requires: `cargo` (with the `rustfmt` component) and `npx`.
+
+Run from this directory:
+
+```sh
+prek install          # install the pre-commit and commit-msg git hooks
+prek run              # run hooks on changed files
+prek run --all-files  # run hooks on the whole workspace
+```

@@ -28,7 +28,7 @@ describe("TaskTable Component", () => {
 
   it("should render without crashing", () => {
     const { getByText } = render(
-      <TasksTable workflowName="mockWorkflowA" onNavigate={() => {}} />,
+      <TasksTable workflowId="mockWorkflowA" onNavigate={() => {}} />,
     );
     expect(getByText("task-1")).toBeInTheDocument();
     expect(getByText("task-2")).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe("TaskTable Component", () => {
   });
 
   it("should call getStatusIcon for each task", () => {
-    render(<TasksTable workflowName="mockWorkflowA" onNavigate={() => {}} />);
+    render(<TasksTable workflowId="mockWorkflowA" onNavigate={() => {}} />);
     expect(getTaskStatusIcon).toHaveBeenCalledWith("Pending");
     expect(getTaskStatusIcon).toHaveBeenCalledWith("Succeeded");
     expect(getTaskStatusIcon).toHaveBeenCalledWith("Running");

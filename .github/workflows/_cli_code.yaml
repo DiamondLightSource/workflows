@@ -26,7 +26,7 @@ jobs:
         working-directory: workflows-cli
         run: >
           cargo fmt
-          --all
+          --package workflows
           --check
 
       - name: Lint with Clippy

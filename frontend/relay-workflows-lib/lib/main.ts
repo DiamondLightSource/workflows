@@ -12,6 +12,7 @@ export {
 export { default as TemplateView } from "./views/TemplateView";
 export { default as TemplateViewRetrigger } from "./views/TemplateViewRetrigger";
 export { default as SingleWorkflowView } from "./views/SingleWorkflowView";
+export { default as TriggersListView } from "./views/TriggersListView";
 export { default as RepositoryLink } from "./query-components/RepositoryLink";
 export { default as WorkflowsNavbar } from "./components/WorkflowsNavbar";
 export {

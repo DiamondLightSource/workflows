@@ -1,4 +1,3 @@
-import { Visit } from "workflows-lib";
 import LiveSingleWorkflowView from "./LiveSingleWorkflowView";
 import { useLazyLoadQuery } from "react-relay";
 import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "./__generated__/SingleWorkflowViewQuery.graphql";
@@ -8,8 +7,8 @@ import { graphql } from "react-relay";
 import { useState } from "react";
 
 export const SingleWorkflowViewQuery = graphql`
-  query SingleWorkflowViewQuery($visit: VisitInput!, $name: String!) {
-    workflow(visit: $visit, name: $name) {
+  query SingleWorkflowViewQuery($id: ID!) {
+    workflowById(id: $id) {
       status {
         __typename
       }
@@ -19,8 +18,7 @@ export const SingleWorkflowViewQuery = graphql`
 `;
 
 export interface SingleWorkflowViewProps {
-  visit: Visit;
-  workflowName: string;
+  workflowId: string;
   taskIds?: string[];
   onNullSubscriptionData?: () => void;
   onSelectTask?: (taskId: string) => void;
@@ -30,8 +28,7 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
   const queryData = useLazyLoadQuery<SingleWorkflowViewQueryType>(
     SingleWorkflowViewQuery,
     {
-      visit: props.visit,
-      name: props.workflowName,
+      id: props.workflowId,
     },
   );
   const workflow = queryData.workflow;

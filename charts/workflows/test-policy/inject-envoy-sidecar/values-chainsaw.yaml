@@ -1,6 +1,4 @@
 authenticatedWorkflows:
-  authDaemon:
-    enabled: false
   envoy:
     enabled: true
     authBrokerServerUri: http://fake-auth-broker.envoy-authz-chainsaw.svc.cluster.local:8080

@@ -232,7 +232,7 @@ struct IntrospectionEndpointProviderMetadata {
 }
 impl AdditionalProviderMetadata for IntrospectionEndpointProviderMetadata {}
 
-/// The concrete type returned by OIDC discovery  
+/// The concrete type returned by OIDC discovery
 type ProviderMetadataWithInstrospectionEndpoint = ProviderMetadata<
     IntrospectionEndpointProviderMetadata,
     CoreAuthDisplay,

@@ -78,12 +78,13 @@ vcluster:
             "/letsencrypt-argo-cd-staging-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-argo-workflows-staging-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
             "/letsencrypt-staging-workflows-diamond-ac-uk": "workflows/dashboard-tls-cert"
+            "/letsencrypt-grafana-staging-workflows-diamond-ac-uk": "monitoring/grafana-tls-cert"
+            "/grafana-oauth": "monitoring/grafana-oauth"
+            "/monitoring-thanos-s3": "monitoring/monitoring-thanos-s3"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
             "/artifact-s3-secret": "graph-proxy/artifact-s3-secret"
             "/s3-artifact": "workflows/artifact-s3"
-            "/auth-gateway-config": "workflows/auth-gateway-config"
-            "/auth-daemon-config": "workflows/auth-daemon-config"
             "/postgres-passwords": "workflows/postgres-passwords"
             "/postgres-argo-workflows-password": "workflows/postgres-argo-workflows-password"
             "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
@@ -104,114 +105,9 @@ authenticationConfiguration:
           - workflows-cluster-staging
           - graph
         audienceMatchPolicy: MatchAny
-      claimMappings:
-        username:
-          expression: >
-            claims.?fedid.hasValue()
-            ? ('oidc:' + claims.fedid)
-            : ('oidc:' + claims.iss + '/' + claims.client_id)
-        uid:
-          expression: "claims.?fedid.orValue(claims.sub)"
-        groups:
-          claim: groups
-          prefix: "oidc:"
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: "string(claims.?posix_uid.orValue(36055))" # use k8s-workflows uid
-        - key: 'workflows.diamond.ac.uk/is-service-account'
-          valueExpression: "claims.?fedid.hasValue() ? '' : 'true'"
-      claimValidationRules:
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          claims.?client_id.hasValue()
-        message: "Invalid access token (no fedid or client_id). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          claims.?preferred_username.orValue('').startsWith('service-account-')
-        message: "Invalid access token (service-account tokens must use service-account-* preferred_username). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          (
-            claims.?client_id.hasValue()
-            &&
-            ['k6Operator'].exists(allowed, allowed == claims.client_id)
-          )
-        message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      userValidationRules:
-      - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
-      - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'
     - issuer:
         url: https://identity-test.diamond.ac.uk/realms/dls
         audiences:
           - workflows-cluster-staging
           - graph
         audienceMatchPolicy: MatchAny
-      claimMappings:
-        username:
-          expression: >
-            claims.?fedid.hasValue()
-            ? ('oidc:' + claims.fedid)
-            : ('oidc:' + claims.iss + '/' + claims.client_id)
-        uid:
-          expression: "claims.?fedid.orValue(claims.sub)"
-        groups:
-          claim: groups
-          prefix: "oidc:"
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: "string(claims.?posix_uid.orValue(36055))" # use k8s-workflows uid
-        - key: 'workflows.diamond.ac.uk/is-service-account'
-          valueExpression: "claims.?fedid.hasValue() ? '' : 'true'"
-      claimValidationRules:
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          claims.?client_id.hasValue()
-        message: "Invalid access token (no fedid or client_id). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          claims.?preferred_username.orValue('').startsWith('service-account-')
-        message: "Invalid access token (service-account tokens must use service-account-* preferred_username). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      - expression: >
-          claims.?fedid.hasValue()
-          ||
-          (
-            claims.?client_id.hasValue()
-            &&
-            ['k6Operator'].exists(allowed, allowed == claims.client_id)
-          )
-        message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      userValidationRules:
-      - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
-      - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'
-    - issuer:
-        url: https://authn.diamond.ac.uk/realms/master
-        audiences:
-          - workflows-cluster-staging
-          - graph
-        audienceMatchPolicy: MatchAny
-      claimMappings:
-        username:
-          claim: fedid
-          prefix: "oidc:"
-        groups:
-          claim: groups
-          prefix: "oidc:"
-        uid:
-          claim: fedid
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: 'string(claims.posix_uid)'
-      userValidationRules:
-      - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
-      - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'

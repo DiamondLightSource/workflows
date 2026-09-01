@@ -18,6 +18,7 @@ export const WorkflowRelayFragment = graphql`
       number
     }
     name
+    id
   }
 `;
 

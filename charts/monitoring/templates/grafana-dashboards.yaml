@@ -3,5 +3,7 @@ kind: ConfigMap
 metadata:
   name: grafana-dashboards
   namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true
 data:
   {{ (.Files.Glob "grafana-dashboards/*.json").AsConfig | nindent 2 }}

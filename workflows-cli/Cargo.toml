@@ -4,12 +4,31 @@ version = "0.1.1"
 edition = "2024"
 
 [dependencies]
+auth-core = { path = "../backend/auth-core" }
+tokio = { version = "1.53.1", features = [
+    "macros",
+    "io-util",
+    "rt-multi-thread",
+] }
 clap = { version = "4.5.49", features = ["derive", "env"] }
 colored = "3.0.0"
+gql_client = "1.1.0"
+openssl = { version = "0.10", features = ["vendored"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 serde_yaml = { version = "0.9.34" }
 yaml-rust2 = "0.10.4"
+anyhow = "1.0.104"
+lazy_static = "1.5.0"
+regex = "1.13.1"
+reqwest = { version = "0.13.4", default-features = false, features = [
+    "json",
+    "form",
+    "rustls",
+] }
+jsonwebtoken = "11.0.0"
+thiserror = "2.0.19"
+mockito = "1.7.2"
 
 [dev-dependencies]
 serial_test = "3.2.0"

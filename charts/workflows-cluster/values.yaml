@@ -4,12 +4,12 @@ secrets:
 
 backup:
   etcd:
-    enabled: false
+    enabled: true
     snapshotDir: /backup/
     snapshotName: etcd-snapshot
     fileExtension: .db
   postgres:
-    enabled: false
+    enabled: true
     snapshotDir: /backup/
     snapshotName: postgres-snapshot
     fileExtension: .pgdump
@@ -28,7 +28,7 @@ vcluster:
             - --authentication-config=/etc/authn-config/authn-config.yaml
         # vCluster documentation recommends keeping this version in sync with the host cluster
         # see: https://www.vcluster.com/docs/vcluster/manage/upgrade/supported_versions#kubernetes-compatibility-matrix
-        version: v1.34.5
+        version: v1.35.7
     backingStore:
       etcd:
         deploy:
@@ -40,7 +40,7 @@ vcluster:
               # difficult or impossible
               tag: 3.6.4-0
             extraArgs:
-              - --quota-backend-bytes=8589934592  # 8Gi
+              - --quota-backend-bytes=8589934592 # 8Gi
             resources:
               requests:
                 cpu: 4000m
@@ -71,7 +71,7 @@ vcluster:
         addVolumes:
           - name: authn-config
             configMap:
-              name: "workflows-cluster-authn-config"  # TODO: Replace with templated value "{{ include "common.names.fullname" $ }}-authn-config"
+              name: "workflows-cluster-authn-config" # TODO: Replace with templated value "{{ include "common.names.fullname" $ }}-authn-config"
         addVolumeMounts:
           - name: authn-config
             mountPath: /etc/authn-config
@@ -134,7 +134,9 @@ vcluster:
         enabled: true
     fromHost:
       nodes:
-        enabled: true
+        enabled: false
+      events:
+        enabled: false
       secrets:
         enabled: true
         mappings:
@@ -142,6 +144,13 @@ vcluster:
             "/letsencrypt-argo-workflows-workflows-diamond-ac-uk": "workflows/workflows-tls-cert"
             "/letsencrypt-argo-cd-workflows-diamond-ac-uk": "argocd/argo-cd-tls-cert"
             "/letsencrypt-otelcollector-workflows-diamond-ac-uk": "monitoring/otelcollector-tls-cert"
+            "/letsencrypt-grafana-workflows-diamond-ac-uk": "monitoring/letsencrypt-grafana-workflows-diamond-ac-uk"
+            "/letsencrypt-thanos-query-workflows-diamond-ac-uk": "monitoring/letsencrypt-thanos-query-workflows-diamond-ac-uk"
+            "/letsencrypt-alertmanager-workflows-diamond-ac-uk": "monitoring/letsencrypt-alertmanager-workflows-diamond-ac-uk"
+            "/letsencrypt-prometheus-workflows-diamond-ac-uk": "monitoring/letsencrypt-prometheus-workflows-diamond-ac-uk"
+            "/slack-alert-webhook": monitoring/slack-alert-webhook"
+            "/grafana-oauth": "monitoring/grafana-oauth"
+            "/monitoring-thanos-s3": "monitoring/monitoring-thanos-s3"
             "/argocd-oauth": "argocd/argocd-oauth"
             "/argo-server-sso": "workflows/argo-server-sso"
             "/sessionspaces-ispyb": "kube-system/sessionspaces-ispyb"
@@ -152,7 +161,6 @@ vcluster:
             "/postgres-auth-service-password": "workflows/postgres-auth-service-password"
             "/rclone-config": "workflows/rclone-config"
             "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
-            "/auth-gateway-config": "workflows/auth-gateway-config"
             "/auth-keys": "workflows/auth-keys"
             "/workflows-cluster-client": "workflows/workflows-cluster-client"
       configMaps:
@@ -163,13 +171,59 @@ vcluster:
   rbac:
     clusterRole:
       enabled: false
+    role:
+      enabled: true
+      overwriteRules:
+        # Overwrite rules due to incompatibility of defaults with host cluster permissions
+        # On upgrading vCluster version compare these rules with the default rules
+        # (cf helm template with overwriteRules disabled) in case the minimum required permissions change
+        # see: https://www.vcluster.com/docs/vcluster/configure/vcluster-yaml/rbac#overwrite-rules
+        - apiGroups: [""]
+          resources:
+            [
+              "configmaps",
+              "secrets",
+              "services",
+              "pods",
+              "pods/attach",
+              "pods/portforward",
+              "pods/exec",
+              "persistentvolumeclaims",
+            ]
+          verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
+        - apiGroups: [""]
+          resources: ["pods/status", "pods/ephemeralcontainers"]
+          verbs: ["patch", "update"]
+        - apiGroups: [""]
+          resources: ["pods/resize"]
+          verbs: ["patch", "update"]
+        - apiGroups: ["apps"]
+          resources: ["statefulsets", "replicasets", "deployments"]
+          verbs: ["get", "list", "watch", "patch", "update"]
+        - apiGroups: [""]
+          resources: ["endpoints", "pods/log"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: [""]
+          resources: ["events"]
+          verbs: ["create", "get", "list", "watch"]
+        - apiGroups: [""]
+          resources: ["endpoints"]
+          verbs: ["create", "delete", "patch", "update"]
+        - apiGroups: ["discovery.k8s.io"]
+          resources: ["endpointslices"]
+          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
+        - apiGroups: ["coordination.k8s.io"]
+          resources: ["leases"]
+          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
+        - apiGroups: ["networking.k8s.io"]
+          resources: ["ingresses"]
+          verbs: ["create", "list", "get", "delete", "patch", "update", "watch"]
 
   integrations:
     metricsServer:
       enabled: true
-      nodes: true
+      nodes: false
       pods: true
-
 
 ingress:
   enabled: true
@@ -178,30 +232,24 @@ ingress:
   pathType: Prefix
 
 authenticationConfiguration:
-  jwt:
-    - issuer:
-        url: https://identity.diamond.ac.uk/realms/dls
-        audiences:
-          - workflows-cluster
-          - graph
-        audienceMatchPolicy: MatchAny
-      claimMappings:
-        username:
-          expression: >
-            claims.?fedid.hasValue()
-            ? ('oidc:' + claims.fedid)
-            : ('oidc:' + claims.iss + '/' + claims.client_id)
-        uid:
-          expression: "claims.?fedid.orValue(claims.sub)"
-        groups:
-          claim: groups
-          prefix: "oidc:"
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: "string(claims.?posix_uid.orValue(36055))"  # use k8s-workflows uid
-        - key: 'workflows.diamond.ac.uk/is-service-account'
+  issuerDefaults:
+    claimMappings:
+      username:
+        expression: >
+          claims.?fedid.hasValue()
+          ? ('oidc:' + claims.fedid)
+          : ('oidc:' + claims.iss + '/' + claims.client_id)
+      uid:
+        expression: "claims.?fedid.orValue(claims.sub)"
+      groups:
+        claim: groups
+        prefix: "oidc:"
+      extra:
+        - key: "workflows.diamond.ac.uk/posixuid"
+          valueExpression: "string(claims.?posix_uid.orValue(36055))" # use k8s-workflows uid
+        - key: "workflows.diamond.ac.uk/is-service-account"
           valueExpression: "claims.?fedid.hasValue() ? '' : 'true'"
-      claimValidationRules:
+    claimValidationRules:
       - expression: >
           claims.?fedid.hasValue()
           ||
@@ -221,31 +269,25 @@ authenticationConfiguration:
             ['k6Operator'].exists(allowed, allowed == claims.client_id)
           )
         message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
-      userValidationRules:
+      - expression: >
+          claims.?posix_uid.hasValue()
+          ||
+          (
+            claims.?client_id.hasValue()
+            &&
+            ['k6Operator'].exists(allowed, allowed == claims.client_id)
+          )
+        message: "Invalid access token (missing posix-uid). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
+    userValidationRules:
       - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
+        message: "username cannot use reserved system: prefix"
       - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'
+        message: "groups cannot use reserved system: prefix"
+
+  jwt:
     - issuer:
-        url: https://authn.diamond.ac.uk/realms/master
+        url: https://identity.diamond.ac.uk/realms/dls
         audiences:
           - workflows-cluster
           - graph
         audienceMatchPolicy: MatchAny
-      claimMappings:
-        username:
-          claim: fedid
-          prefix: "oidc:"
-        groups:
-          claim: groups
-          prefix: "oidc:"
-        uid:
-          claim: fedid
-        extra:
-        - key: 'workflows.diamond.ac.uk/posixuid'
-          valueExpression: 'string(claims.posix_uid)'
-      userValidationRules:
-      - expression: "!user.username.startsWith('system:')"
-        message: 'username cannot use reserved system: prefix'
-      - expression: "user.groups.all(group, !group.startsWith('system:'))"
-        message: 'groups cannot use reserved system: prefix'

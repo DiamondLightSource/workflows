@@ -7,6 +7,7 @@ export const workflowsListViewQueryResponse = {
     nodes: [
       {
         name: "conditional-steps-first",
+        id: "mg36964-1:conditional-steps-first:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -100,6 +101,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "conditional-steps-second",
+        id: "mg36964-1:conditional-steps-second:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -193,6 +195,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "conditional-steps-third",
+        id: "mg36964-1:conditional-steps-third:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -286,6 +289,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "mount-tmpdir-first",
+        id: "mg36964-1:mount-tmpdir-first:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -347,6 +351,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "notebook-first",
+        id: "mg36964-1:notebook-first:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -413,6 +418,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "notebook-second",
+        id: "mg36964-1:notebook-second:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -479,6 +485,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "ptycho-tomo-job-first",
+        id: "mg36964-1:ptycho-tomo-job-first:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -621,6 +628,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "ptycho-tomo-job-second",
+        id: "mg36964-1:ptycho-tomo-job-second:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -763,6 +771,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "ptycho-tomo-job-third",
+        id: "mg36964-1:ptycho-tomo-job-third:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,
@@ -905,6 +914,7 @@ export const workflowsListViewQueryResponse = {
       },
       {
         name: "sin-simulate-artifact-first",
+        id: "mg36964-1:sin-simulate-artifact-first:xyz-123",
         visit: {
           proposalCode: "mg",
           proposalNumber: 36964,

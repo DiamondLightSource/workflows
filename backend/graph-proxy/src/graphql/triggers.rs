@@ -10,7 +10,7 @@ use async_graphql::{
 };
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
-    api::{ListParams, ObjectMeta, PostParams},
+    api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams},
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
@@ -31,8 +31,10 @@ enum TriggerError {
     ConfigInferError,
     #[error(r#"Unable to create Kubernetes config"#)]
     ClientCreationError,
-    #[error(r#"Forbidden from accessing resource"#)]
+    #[error(r#"Permission denied: You may only access your own triggers"#)]
     ForbiddenAccess,
+    #[error(r#"Unable to find trigger {0}"#)]
+    TriggerNotFound(String),
 }
 
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
@@ -99,6 +101,44 @@ async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<String, TriggerError> {
         .ok_or(TriggerError::MissingPosixUid)
 }
 
+/// Uses the provided API to retrieve a Trigger, if the posix uid argument matches the label on the Trigger
+async fn get_trigger(
+    api: &Api<Trigger>,
+    posix_uid: &str,
+    name: &str,
+) -> anyhow::Result<Option<TriggerGQL>> {
+    match api.get(name).await {
+        Ok(trigger) => {
+            if trigger.clone().metadata.labels.is_some_and(|f| {
+                f.get("workflows.diamond.ac.uk/posixuid")
+                    .is_some_and(|l| l == posix_uid)
+            }) {
+                Ok(Some(trigger.into()))
+            } else {
+                Err(TriggerError::ForbiddenAccess.into())
+            }
+        }
+        Err(err) => Err(err.into()),
+    }
+}
+
+/// Sets the value of the `enabled` field of a Trigger to the supplied value
+async fn toggle_trigger(
+    api: &Api<Trigger>,
+    name: &str,
+    enabled: bool,
+) -> anyhow::Result<Option<TriggerGQL>> {
+    let patch = serde_json::json!({
+        "spec": {
+            "enabled": enabled
+        }
+    });
+    let patch = Patch::Merge(&patch);
+    let pp = PatchParams::apply("graph-proxy");
+    let trigger_patched = api.patch(name, &pp, &patch).await?;
+    Ok(Some(trigger_patched.into()))
+}
+
 /// Queries related to [`Trigger`]s
 #[derive(Debug, Clone, Default)]
 pub struct TriggerQuery;
@@ -110,24 +150,13 @@ impl TriggerQuery {
         &self,
         ctx: &Context<'_>,
         name: String,
-        visit: Option<String>,
+        visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
         let posix_uid = get_posix_from_ctx(ctx).await?;
-        let api: Api<Trigger> = Api::namespaced(client, &visit.unwrap_or("events".to_string()));
-        match api.get(&name).await {
-            Ok(trigger) => {
-                if trigger.clone().metadata.labels.is_some_and(|f| {
-                    f.get("workflows.diamond.ac.uk/posixuid")
-                        .is_some_and(|l| l == &posix_uid)
-                }) {
-                    Ok(Some(trigger.into()))
-                } else {
-                    Err(TriggerError::ForbiddenAccess.into())
-                }
-            }
-            Err(err) => Err(err.into()),
-        }
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await
     }
 
     /// Get multiple Triggers across namespaces
@@ -220,6 +249,57 @@ impl TriggerMutation {
             Ok(creation) => Ok(Some(creation.into())),
             Err(err) => Err(err.into()),
         }
+    }
+
+    /// Delete an automated workflow trigger
+    async fn delete_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: VisitInput,
+    ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let api: Api<Trigger> = Api::namespaced(client, &visit.to_string());
+
+        let trigger = get_trigger(&api, &posix_uid, &name)
+            .await?
+            .ok_or(TriggerError::TriggerNotFound(name.clone()))?;
+
+        api.delete(&name, &DeleteParams::default()).await?;
+        Ok(Some(trigger))
+    }
+
+    /// Disable an automated workflow trigger
+    async fn disable_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: Option<VisitInput>,
+    ) -> anyhow::Result<Option<TriggerGQL>> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await?;
+        toggle_trigger(&api, &name, false).await
+    }
+
+    /// Reactivate a disabled automated workflow trigger
+    async fn enable_trigger(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        visit: Option<VisitInput>,
+    ) -> anyhow::Result<Option<TriggerGQL>> {
+        let client = setup_client(ctx).await?;
+        let posix_uid = get_posix_from_ctx(ctx).await?;
+
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &posix_uid, &name).await?;
+        toggle_trigger(&api, &name, true).await
     }
 }
 
@@ -351,19 +431,21 @@ users:
             .await
     }
 
-    async fn mock_get_trigger(
+    async fn mock_single_trigger_op(
         server: &mut ServerGuard,
+        method: &str,
         name: &str,
+        ns: &str,
         response_fixture: &str,
     ) -> mockito::Mock {
         server
             .mock(
-                "GET",
-                &format!(
-                    "/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/events/triggers/{name}"
-                )[..],
+                method,
+                &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{ns}/triggers/{name}")
+                    [..],
             )
             .with_status(200)
+            .match_query(Matcher::Any)
             .with_header("content-type", "application/json")
             .with_body_from_file(asset(response_fixture))
             .create_async()
@@ -379,6 +461,141 @@ users:
             .with_body_from_file(asset(response_fixture))
             .create_async()
             .await
+    }
+
+    #[rstest]
+    #[case(
+        "get-single-trigger.json",
+        "DELETE",
+        "get-single-trigger.json",
+        "deleteTrigger"
+    )]
+    #[case(
+        "get-single-trigger.json",
+        "PATCH",
+        "get-disabled-trigger.json",
+        "disableTrigger"
+    )]
+    #[case(
+        "get-disabled-trigger.json",
+        "PATCH",
+        "get-single-trigger.json",
+        "enableTrigger"
+    )]
+    #[tokio::test]
+    async fn trigger_mutations(
+        #[case] get_result: &str,
+        #[case] method: &str,
+        #[case] mutation_result: &str,
+        #[case] mutation_name: &str,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            get_result,
+        )
+        .await;
+        mock_single_trigger_op(
+            &mut ctx.server,
+            method,
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            mutation_result,
+        )
+        .await;
+        let query = format!(
+            r#"
+            mutation {{
+                {}(name: "example-trigger-mfvpj", visit: {{
+                        proposalCode: "ks",
+                        proposalNumber: 10000,
+                        number: 1
+                }})
+                {{
+                    name
+                }}
+            }}
+        "#,
+            mutation_name
+        );
+
+        let response = ctx.schema.execute(query).await;
+        get_mock.assert();
+        let actual = response.data.into_json()?;
+
+        assert_eq!(
+            actual,
+            json!({
+                mutation_name: {
+                    "name": "example-trigger-mfvpj",
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[rstest]
+    #[case("DELETE", "deleteTrigger")]
+    #[case("PATCH", "disableTrigger")]
+    #[case("PATCH", "enableTrigger")]
+    #[tokio::test]
+    async fn forbidden_trigger_operations(
+        #[case] mutation_http_method: &str,
+        #[case] mutation_name: &str,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            "unauthorised-trigger.json",
+        )
+        .await;
+        let mutation_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            mutation_http_method,
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            "get-single-trigger.json",
+        )
+        .await;
+        let query = format!(
+            r#"
+            mutation {{
+            {}(name: "example-trigger-mfvpj", visit: {{
+                        proposalCode: "ks",
+                        proposalNumber: 10000,
+                        number: 1
+                }})
+                {{
+                    name
+                }}
+            }}
+            "#,
+            mutation_name
+        );
+
+        let response = ctx.schema.execute(query).await;
+        get_mock.assert();
+        mutation_mock.expect(0).assert();
+        let err = response.into_result().unwrap_err();
+        let exp_err = ServerError {
+            message: "Permission denied: You may only access your own triggers".into(),
+            locations: vec![Pos {
+                line: 3,
+                column: 13,
+            }],
+            source: None,
+            path: vec![PathSegment::Field(mutation_name.into())],
+            extensions: None,
+        };
+
+        assert_eq!(err[0], exp_err);
+        Ok(())
     }
 
     #[rstest]
@@ -457,41 +674,71 @@ users:
         Ok(())
     }
 
-    #[tokio::test]
-    async fn get_single_trigger() -> anyhow::Result<()> {
-        let mut ctx = TestContext::new().await?;
-
-        let mock = mock_get_trigger(
-            &mut ctx.server,
-            "example-trigger-mfvpj",
-            "get-single-trigger.json",
-        )
-        .await;
-
-        let actual = execute(
-            &ctx.schema,
-            r#"
+    #[rstest]
+    #[case(
+        "example-trigger-mfvpj",
+        "events",
+        r#"
             query {
                 trigger(name: "example-trigger-mfvpj") {
                     name
                     beamline
                 }
             }
-            "#,
-        )
-        .await?;
+        "#,
+        "get-single-trigger.json",
+        json!({
+            "trigger": {
+                "name": "example-trigger-mfvpj",
+                "beamline": "test-beamline"
+            }
+        })
+    )]
+    #[case(
+        "test-trigger-s6qzl",
+        "mg36964-1",
+        r#"
+            query {
+                trigger(
+                    name: "test-trigger-s6qzl",
+                    visit: {
+                        proposalCode: "mg"
+                        proposalNumber: 36964
+                        number: 1
+                    }
+                ) {
+                    name
+                    beamline
+                }
+            }
+        "#,
+        "namespaced-trigger.json",
+        json!({
+            "trigger": {
+                "name": "test-trigger-s6qzl",
+                "beamline": "b01-1"
+            }
+        })
+    )]
+    #[tokio::test]
+    async fn get_single_trigger(
+        #[case] trigger_name: &str,
+        #[case] ns: &str,
+        #[case] query: &str,
+        #[case] mock_response_file: &str,
+        #[case] expected: Value,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+
+        let mock =
+            mock_single_trigger_op(&mut ctx.server, "GET", trigger_name, ns, mock_response_file)
+                .await;
+
+        let actual = execute(&ctx.schema, query).await?;
 
         mock.assert_async().await;
 
-        assert_eq!(
-            actual,
-            json!({
-                "trigger": {
-                    "name": "example-trigger-mfvpj",
-                    "beamline": "test-beamline"
-                }
-            })
-        );
+        assert_eq!(actual, expected);
         Ok(())
     }
 
@@ -499,9 +746,11 @@ users:
     async fn unauthorised_get_single_trigger() -> anyhow::Result<()> {
         let mut ctx = TestContext::new().await?;
 
-        mock_get_trigger(
+        mock_single_trigger_op(
             &mut ctx.server,
+            "GET",
             "example-trigger-mfvpj",
+            "events",
             "unauthorised-trigger.json",
         )
         .await;
@@ -522,7 +771,7 @@ users:
 
         let err = response.into_result().unwrap_err();
         let exp_err = ServerError {
-            message: "Forbidden from accessing resource".into(),
+            message: "Permission denied: You may only access your own triggers".into(),
             locations: vec![Pos {
                 line: 3,
                 column: 21,

@@ -3,6 +3,7 @@ argo-cd:
   configs:
     cm:
       admin.enabled: "false"
+      application.resourceTrackingMethod: annotation+label
       url: https://argo-cd.workflows.diamond.ac.uk
       oidc.config: |
         name: Keycloak
@@ -13,16 +14,6 @@ argo-cd:
           - openid
           - profile
           - email
-      # Fix: "panic: assignment to entry in nil map from populatePodInfo" in Argo CD 3.4.5
-      # see: https://github.com/argoproj/argo-cd/issues/26529
-      # TODO: Remove when upgrading to Argo CD 3.5
-      # It is safe to exclude Pods as there are no Pods directly deployed by ArgoCD
-      # (only indirectly via deployments, statefulsets, etc)
-      resource.exclusions: |
-        - apiGroups:
-          - ''
-          kinds:
-          - Pod
     rbac:
       create: true
       policy.default: role:readonly
@@ -36,14 +27,13 @@ argo-cd:
         p, role:admin, logs, get, */*, allow
         p, role:admin, settings, *, *, allow
         g, admin, role:admin
-        g, benedikt.daurer@diamond.ac.uk, role:admin
         g, thomas.thomas@diamond.ac.uk, role:admin
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
         g, james.gilbert@diamond.ac.uk, role:admin
         g, victoria.beilsten-edmands@diamond.ac.uk, role:admin
         g, hazem.nureldin@diamond.ac.uk, role:admin
-        g, matthew.carre@diamond.ac.uk, role:admin
+        g, oliver.jones@diamond.ac.uk, role: admin
 
   repoServer:
     podAnnotations:

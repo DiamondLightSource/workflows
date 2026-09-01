@@ -19,4 +19,3 @@ Serves on port `5173` by default (configurable in `config.yaml`).
 | `/auth/logout` | `POST` | Clear session and delete stored tokens |
 | `/healthcheck` | `GET` | Health check (returns 202) |
 | `/*` | any | Authenticated proxy to the GraphQL backend |
-

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.15...dashboard@v0.1.16) (2026-08-21)
+
+
+### Features
+
+* **dashboard:** user info is displayed in nav bar when using auth-gateway ([8c7302f](https://github.com/DiamondLightSource/workflows/commit/8c7302fdd1ad72feb9f92a5c15bcca7e00535905))
+
 ## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.14...dashboard@v0.1.15) (2026-07-13)
 
 

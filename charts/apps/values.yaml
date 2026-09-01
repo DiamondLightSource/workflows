@@ -8,9 +8,15 @@ argocd:
   valuesObject: {}
 
 events:
-  enabled: false
+  enabled: true
   targetRevision: HEAD
   extraValuesFiles: []
+  valuesObject: {}
+
+metacontroller:
+  enabled: true
+  targetRevision: HEAD
+  extraValueFiles: []
   valuesObject: {}
 
 groups:
@@ -21,7 +27,7 @@ groups:
 
 kyverno:
   enabled: true
-  targetRevision: 3.7.1
+  targetRevision: 3.9.0
   extraValuesFiles: []
   valuesObject:
     metricsConfig:
@@ -39,13 +45,16 @@ kyverno:
           enabled: true
         kyverno_policy_execution_duration_seconds:
           enabled: true
-          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+          disabledLabelDimensions:
+            ["resource_namespace", "resource_request_operation"]
         kyverno_validating_policy_execution_duration_seconds:
           enabled: true
-          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+          disabledLabelDimensions:
+            ["resource_namespace", "resource_request_operation"]
         kyverno_image_validating_policy_execution_duration_seconds:
           enabled: true
-          disabledLabelDimensions: ["resource_namespace", "resource_request_operation"]
+          disabledLabelDimensions:
+            ["resource_namespace", "resource_request_operation"]
         kyverno_admission_review_duration_seconds:
           enabled: true
           disabledLabelDimensions: ["resource_namespace"]
@@ -145,6 +154,12 @@ otel:
   extraValuesFiles: []
   valuesObject: {}
 
+monitoring:
+  enabled: true
+  targetRevision: HEAD
+  extraValuesFiles: []
+  valuesObject: {}
+
 kueue:
   enabled: true
   targetRevision: HEAD
@@ -174,7 +189,7 @@ openbao:
   valuesObject: {}
 
 authBroker:
-  enabled: false
+  enabled: true
   targetRevision: HEAD
   extraValuesFiles: []
   valuesObject: {}

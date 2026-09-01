@@ -121,8 +121,9 @@ export const handlers = [
     ({ variables }) => {
       return HttpResponse.json({
         data: {
-          workflow: {
-            templateRef: `template-for-${variables.workflowname}`,
+          workflowById: {
+            id: variables.id,
+            templateRef: `template-for-${variables.id}`,
           },
         },
       });
@@ -143,7 +144,7 @@ export const handlers = [
     TemplateViewRetriggerQuery$variables
   >("TemplateViewRetriggerQuery", ({ variables }) => {
     const response =
-      templateRetriggerResponse[variables.workflowName] ??
+      templateRetriggerResponse[variables.id] ??
       templateFallbackRetriggerResponse;
     return HttpResponse.json({ data: response });
   }),
@@ -176,6 +177,7 @@ export const handlers = [
           data: {
             submitWorkflowTemplate: {
               name: `${variables.visit.proposalCode}-${variables.templateName}`,
+              id: "error-id",
             },
           },
           errors: [{ message: "Mock GraphQL Error" }],
@@ -185,6 +187,7 @@ export const handlers = [
           data: {
             submitWorkflowTemplate: {
               name: `${variables.visit.proposalCode}-${variables.templateName}`,
+              id: "success-id",
             },
           },
         });

@@ -29,7 +29,7 @@ use axum::{
     routing::{get, get_service},
     Router,
 };
-use clap::Parser;
+use clap::{ArgAction, Parser};
 use graphql::{graphql_handler, root_schema_builder, RootSchema};
 use regex::Regex;
 use reqwest::Method;
@@ -112,6 +112,9 @@ struct SchemaArgs {
     /// The file to write the schema to, if not set the schema will be printed to stdout
     #[arg(short, long)]
     path: Option<PathBuf>,
+    /// Export the schema as a subgraph, rather than plain SDL
+    #[arg(long, action = ArgAction::Set, default_value_t = false)]
+    federation: bool,
 }
 
 /// The URL of an Argo Server
@@ -177,7 +180,12 @@ async fn main() {
             let schema = root_schema_builder()
                 .enable_subscription_in_federation()
                 .finish();
-            let schema_string = schema.sdl_with_options(SDLExportOptions::new().federation());
+            let export_options = if args.federation {
+                SDLExportOptions::new().federation()
+            } else {
+                SDLExportOptions::new()
+            };
+            let schema_string = schema.sdl_with_options(export_options);
             if let Some(path) = args.path {
                 let mut file = File::create(&path).unwrap();
                 file.write_all(schema_string.as_bytes()).unwrap();

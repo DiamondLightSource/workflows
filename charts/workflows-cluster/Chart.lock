@@ -4,9 +4,9 @@ dependencies:
   version: 2.23.0
 - name: vcluster
   repository: https://charts.loft.sh
-  version: 0.28.0
+  version: 0.36.1
 - name: secrets
   repository: file://./charts/secrets
-  version: 0.0.17
-digest: sha256:b598a84612c28fe34f0900d89602790c2b2e630b9a3d549f16ff202dc0ea0e90
-generated: "2026-07-17T11:25:55.182284912+01:00"
+  version: 0.0.19
+digest: sha256:ead712260190db517e6d0d1d954c3bb4d32784539fad26c013d7052f06a0e57d
+generated: "2026-08-24T15:01:04.649382122+01:00"

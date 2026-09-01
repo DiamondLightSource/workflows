@@ -29,7 +29,7 @@ class CustomizeRequest(TypedDict):
   controller: dict
   parent: dict
 
-""" 
+"""
 A JSON object representing the desired resource description. A list of these
 constitutes the response expected from the customize hook
 """
@@ -91,7 +91,8 @@ class Controller(BaseHTTPRequestHandler):
       except ValidationError:
         errored_triggers.append(trigger)
         continue
-
+      if not trigger.spec.enabled:
+        continue
       name: str | None = trigger.metadata.name
       namespace: str | None = trigger.metadata.namespace
       source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
@@ -114,22 +115,22 @@ class Controller(BaseHTTPRequestHandler):
             "type": "string",
             "value": [workflow.triggerOnMessageType],
           })
-      
+
       if namespace != "events":
         dataFilters.append({
           "path": "body.doc.instrument_session",
           "type": "string",
           "value": [namespace],
         })
-        
+
       if dataFilters:
         dependency.update({"filters": {"data": dataFilters}})
-      
+
       dependencies.append(dependency)
 
       sensorParams = [{
           "src": {
-            "dependencyName": name, 
+            "dependencyName": name,
             "dataKey": "body.doc.instrument_session"
           },
           "dest": "metadata.namespace"
@@ -190,7 +191,7 @@ class Controller(BaseHTTPRequestHandler):
       "apiVersion": "argoproj.io/v1alpha1",
       "kind": "Sensor",
       "metadata": {
-        "name": f"{beamline}-{eventSourceName}"
+        "name": f"{eventSourceName}"
       },
       "spec": {
         "template":
@@ -214,7 +215,9 @@ class Controller(BaseHTTPRequestHandler):
     sourceTypes: list[str] = list(parent.get("spec", {}).keys())
 
     if not sourceTypes or not beamline:
-      return [] 
+      return []
+
+    sourceTypes = ["message-bus" if x == "generic" else x for x in sourceTypes]
 
     return [{
       "apiVersion": "workflows.diamond.ac.uk/v1alpha1",

@@ -66,7 +66,7 @@ spec:
             fi
             echo "Ensuring LocalQueue default-queue in namespace: $ns"
             cat <<EOF | kubectl apply -f - -n $ns
-          apiVersion: kueue.x-k8s.io/v1beta1
+          apiVersion: kueue.x-k8s.io/v1beta2
           kind: LocalQueue
           metadata:
             name: default-queue

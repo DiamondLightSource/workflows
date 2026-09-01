@@ -3,12 +3,12 @@ name: argocd
 description: ArgoCD, with a few extras
 type: application
 
-version: 0.3.33
+version: 0.3.37
 dependencies:
   - name: common
     version: 2.23.0
     repository: oci://docker.io/bitnamicharts
   - name: argo-cd
     repository: https://argoproj.github.io/argo-helm
-    version: 10.2.1
+    version: 10.4.0
     condition: argo-cd.enabled

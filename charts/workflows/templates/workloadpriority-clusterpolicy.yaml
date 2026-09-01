@@ -12,15 +12,23 @@ spec:
             kinds:
             - argoproj.io/*/Workflow
             operations:
+              # These policies must apply at UPDATE as Argo Workflows may apply metadata after CREATE
+              # see: https://github.com/argoproj/argo-workflows/issues/10138
               - CREATE
+              - UPDATE
       preconditions:
         all:
         - key: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" || 'standard' }}` }}"
           operator: Equals
           value: "standard"
         - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
-          operator: Equals
-          value: ""
+          operator: NotEquals
+          value: "medium"
+        # Do not apply to Running Workflows as they may have created pods whose priority-class should not change
+        # Argo Workflows should have applied all metadata before a Job enters Running phase
+        - key: "{{ `{{ request.oldObject.status.phase || '' }}` }}"
+          operator: NotEquals
+          value: Running
       mutate:
         patchStrategicMerge:
           spec:
@@ -38,11 +46,15 @@ spec:
               workflows.diamond.ac.uk/type: "live"
             operations:
               - CREATE
+              - UPDATE
       preconditions:
         all:
         - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
-          operator: Equals
-          value: ""
+          operator: NotEquals
+          value: "high"
+        - key: "{{ `{{ request.oldObject.status.phase || '' }}` }}"
+          operator: NotEquals
+          value: Running
       mutate:
         patchStrategicMerge:
           spec:
@@ -60,11 +72,15 @@ spec:
               workflows.diamond.ac.uk/type: "test"
             operations:
               - CREATE
+              - UPDATE
       preconditions:
         all:
         - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || '' }}` }}"
-          operator: Equals
-          value: ""
+          operator: NotEquals
+          value: "low"
+        - key: "{{ `{{ request.oldObject.status.phase || '' }}` }}"
+          operator: NotEquals
+          value: Running
       mutate:
         patchStrategicMerge:
           spec:
@@ -80,6 +96,7 @@ spec:
             - argoproj.io/*/Workflow
             operations:
             - CREATE
+            - UPDATE
       validate:
         message: "The annotation workflows.diamond.ac.uk/type must be 'standard', 'live', or 'test'."
         deny:
@@ -106,6 +123,6 @@ spec:
         deny:
           conditions:
             all:
-            - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\"  }}` }}"
+            - key: "{{ `{{ request.object.spec.podMetadata.labels.\"kueue.x-k8s.io/priority-class\" || ''  }}` }}"
               operator: NotEquals
               value: "{{ `{{ request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" == 'live' && 'high' || request.object.metadata.annotations.\"workflows.diamond.ac.uk/type\" == 'test' && 'low' || 'medium'  }}` }}"

@@ -3,15 +3,10 @@ name: events
 description: Data Analysis event triggering
 type: application
 
-version: 0.3.5
+version: 0.3.10
 
 dependencies:
   - name: argo-events
     repository: https://argoproj.github.io/argo-helm
     version: 2.4.9
     condition: argo-events.enabled
-
-  - name: metacontroller-helm
-    alias: metacontroller
-    version: 4.15.0
-    repository: oci://ghcr.io/metacontroller

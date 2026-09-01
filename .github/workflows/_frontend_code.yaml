@@ -19,10 +19,10 @@ jobs:
         working-directory: frontend
         run: yarn --frozen-lockfile
 
-      - name: Download Supergraph Schema Artifact
+      - name: Download Graph Proxy Schema Artifact
         uses: actions/download-artifact@v6.0.0
         with:
-          name: supergraph-schema
+          name: graph-proxy
           path: frontend/relay-workflows-lib
 
       - name: Compile Relay
@@ -52,10 +52,10 @@ jobs:
         working-directory: frontend
         run: yarn --frozen-lockfile
 
-      - name: Download Supergraph Schema Artifact
+      - name: Download Graph Proxy Schema Artifact
         uses: actions/download-artifact@v6.0.0
         with:
-          name: supergraph-schema
+          name: graph-proxy
           path: frontend/relay-workflows-lib
 
       - name: Compile Relay

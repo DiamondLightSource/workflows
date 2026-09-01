@@ -218,14 +218,16 @@ oauth2-proxy:
       injectRequestHeaders:
         - name: Authorization
           values:
-            - claim: access_token
-              prefix: "Bearer "
+            - claimSource:
+                claim: access_token
+                prefix: "Bearer "
           preserveRequestValue: true
 
       injectResponseHeaders:
         - name: Identity
           values:
-            - claim: id_token
+            - claimSource:
+                claim: id_token
 
       providers:
         - provider: oidc
@@ -277,15 +279,10 @@ s3mock:
 allowTriggerUid: false
 
 authenticatedWorkflows:
-  # Enable auth-daemon based authentication method
-  # TODO: switch on these chainsaw tests when switching this to true
-  # charts/workflows/test-policy/authdaemon/chainsaw-test.yaml
-  authDaemon:
-    enabled: false
   # Enables auth-broker + Envoy sidecar injection
   # Requires the auth-broker service to be deployed in the auth-broker namespace
   envoy:
-    enabled: false
+    enabled: true
     authBrokerServerUri: http://auth-broker.auth-broker.svc.cluster.local:8080
     authBrokerServerSocketAddress: auth-broker.auth-broker.svc.cluster.local
     authBrokerServerSocketPort: 8080
@@ -297,8 +294,8 @@ authenticatedWorkflows:
     resources:
       requests:
         cpu: 100m
-        memory: 32Mi
+        memory: 128Mi
       limits:
         # limit range doesn't allow a smaller value
         cpu: 1000m
-        memory: 64Mi
+        memory: 256Mi

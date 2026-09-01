@@ -47,7 +47,7 @@ spec:
       - name: hostpath-mount-example
         container:
           image: docker.io/library/busybox:latest
-          command: 
+          command:
           - tree
           - /dls/session
           volumeMounts:
@@ -126,7 +126,7 @@ spec:
       - name: hostpath-mount-example
         container:
           image: docker.io/library/busybox:latest
-          command: 
+          command:
           - tree
           - /dls/session
           volumeMounts:
@@ -151,4 +151,3 @@ spec:
                   values:
                   - "true"
     ```
-

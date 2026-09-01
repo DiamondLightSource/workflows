@@ -82,12 +82,12 @@ test("useFetchedTasks", async () => {
     ) as SingleWorkflowViewQuery$data;
     const data = useFragment(
       BaseSingleWorkflowViewFragment,
-      queryData.workflow,
+      queryData.workflowById,
     ) as WorkflowTasksFragment$key;
 
     const fetchedTasks = useFetchedTasks(data);
     const originalData =
-      singleWorkflowViewQueryResponse.workflow.status.tasks.map((task) => ({
+      singleWorkflowViewQueryResponse.workflowById.status.tasks.map((task) => ({
         id: task.id,
         name: task.name,
         status: task.status,
@@ -98,8 +98,8 @@ test("useFetchedTasks", async () => {
           parentTaskId: task.id,
           key: `${task.id}-${artifact.name}`,
         })),
-        workflow: singleWorkflowViewQueryResponse.workflow.name,
-        instrumentSession: singleWorkflowViewQueryResponse.workflow.visit,
+        workflow: singleWorkflowViewQueryResponse.workflowById.id,
+        instrumentSession: singleWorkflowViewQueryResponse.workflowById.visit,
         stepType: task.stepType,
       }));
 
@@ -134,7 +134,7 @@ test("mergeParameters", () => {
     "?mib_path=/test/path/&Scan_X=512",
   );
   const mockReusedData =
-    e02Mib2xRetriggerResponse as SubmissionFormParametersFragment$data;
+    e02Mib2xRetriggerResponse as unknown as SubmissionFormParametersFragment$data;
   expect(mergeParameters(mockReusedData, mockSearchParams)).toEqual(
     expect.objectContaining({
       Scan_X: "512",

@@ -1,6 +1,8 @@
 cluster: argus
 
 grafana:
+  testFramework:
+    enabled: false
   rbac:
     create: false
     pspEnabled: false
@@ -22,7 +24,7 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
-          url: "http://{{ .Release.Name }}-thanos-query-frontend:9090"
+          url: "http://{{ .Release.Name }}-thanos-query:9090"
           isDefault: true
   extraSecretMounts:
     - name: oauth-provider
@@ -52,9 +54,9 @@ grafana:
     dashboardproviders.yaml:
       apiVersion: 1
       providers:
-        - name: 'default'
+        - name: "default"
           orgId: 1
-          folder: ''
+          folder: ""
           type: file
           disableDeletion: false
           editable: true
@@ -64,23 +66,34 @@ grafana:
     default: grafana-dashboards
 
 thanos:
-  image:
-    repository: bitnamilegacy/thanos
-  existingObjstoreSecret: '{{ include "common.names.fullname" . }}-s3'
+  global:
+    image:
+      tag: v0.42.2
+      pullPolicy: IfNotPresent
+    objstore:
+      createSecret: false
+      secretName: monitoring-thanos-s3
+      secretKey: objstore.yml
+    thanosRules:
+      enabled: false
   serviceAccount:
     create: true
   query:
     enabled: true
+    replicaCount: 1
     ingress:
-      enabled: true
-      pathType: Prefix
-      hostname: thanos-query.workflows.diamond.ac.uk
-      extraTls:
-        - hosts:
-            - thanos-query.workflows.diamond.ac.uk
-          secretName: letsencrypt-thanos-query-workflows-diamond-ac-uk
-    persistence:
-      enabled: false
+      http:
+        enabled: true
+        className: nginx
+        hosts:
+          - host: thanos-query.workflows.diamond.ac.uk
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - thanos-query.workflows.diamond.ac.uk
+            secretName: letsencrypt-thanos-query-workflows-diamond-ac-uk
     resources:
       limits:
         cpu: 250m
@@ -88,6 +101,7 @@ thanos:
     networkPolicy:
       enabled: false
   queryFrontend:
+    enabled: false
     ingress:
       enabled: false
     resources:
@@ -108,7 +122,9 @@ thanos:
       enabled: false
   receive:
     enabled: true
-    tsdbRetention: 1d
+    replicaCount: 1
+    tsdb:
+      retention: 1d
     persistence:
       enabled: false
     service:
@@ -117,35 +133,33 @@ thanos:
       enabled: false
     resources:
       requests:
-        cpu: '2'
+        cpu: "2"
         memory: 32Gi
       limits:
-        cpu: '4'
+        cpu: "4"
         memory: 64Gi
     networkPolicy:
       enabled: false
   compactor:
     enabled: true
     replicaCount: 1
+    persistence:
+      enabled: false
     retentionResolutionRaw: 30d
     retentionResolution5m: 30d
     retentionResolution1h: 1y
     consistencyDelay: 30m
-    autoscaling:
-      enabled: false
-    persistence:
-      enabled: false
     resources:
       requests:
-        cpu: '1'
-        memory: 16Gi
+        cpu: "1"
         # NOTE: ephemeral-storage is limited in size
         # we may need to migrate to persistent storage
         # if this limit needs to be increased in future
         # see: https://jira.diamond.ac.uk/browse/AP-807
+        memory: 16Gi
         ephemeral-storage: 8Gi
       limits:
-        cpu: '2'
+        cpu: "2"
         memory: 16Gi
         ephemeral-storage: 16Gi
     networkPolicy:
@@ -163,6 +177,15 @@ prometheus:
   rbac:
     create: false
   alertmanager:
+    config:
+      route:
+        receiver: slack-notifications
+      receivers:
+        - name: slack-notifications
+          slack_configs:
+            - api_url_file: /etc/secrets/slack-api-url
+              channel: "#analysis-platform-alerts"
+              send_resolved: true
     serviceAccount:
       create: true
       annotations: {}
@@ -183,6 +206,11 @@ prometheus:
         memory: 2Gi
     extraArgs:
       web.external-url: https://alertmanager.workflows.diamond.ac.uk
+    extraSecretMounts:
+      - name: slack-alert-webhook
+        secretName: slack-alert-webhook
+        mountPath: /etc/secrets
+        readOnly: true
     configmapReload:
       enabled: true
       resources:
@@ -198,13 +226,13 @@ prometheus:
   server:
     baseURL: https://prometheus.workflows.diamond.ac.uk
     remoteWrite:
-      - url: "http://{{ .Release.Name }}-thanos-receive.{{ .Release.Namespace }}.svc.cluster.local:19291/api/v1/receive"
+      - url: "http://{{ .Release.Name }}-thanos-receive.{{ .Release.Namespace }}.svc.cluster.local:10908/api/v1/receive"
     resources:
       requests:
-        cpu: '2'
+        cpu: "2"
         memory: 32Gi
       limits:
-        cpu: '4'
+        cpu: "4"
         memory: 64Gi
     affinity:
       podAntiAffinity:
@@ -243,7 +271,8 @@ prometheus:
           - source_labels: [__meta_kubernetes_namespace]
             regex: <namespace>
             action: keep
-          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+          - source_labels:
+              [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
             regex: <release-name>
             action: keep
           - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]

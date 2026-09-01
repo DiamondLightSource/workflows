@@ -1,3 +1,4 @@
+---
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
@@ -98,3 +99,173 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/priority-class: medium
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: workloadpriorityclass-applies-on-update
+spec:
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-after-create
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: workloadpriorityclass-does-not-modify-running-workflows
+spec:
+  steps:
+    - try:
+        # Test policy does not modify running Workflows
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+              status:
+                phase: Running
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+              status:
+                phase: Running
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+                annotations:
+                  workflows.diamond.ac.uk/type: "test"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+        # Verify that the rejected update has not changed the Workflow.
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: update-while-running
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+              status:
+                phase: Running
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: workloadpriorityclass-handles-simultaneous-update-of-metadata-and-phase
+spec:
+  steps:
+    - try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: simultaneous-metadata-and-phase-update
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: simultaneous-metadata-and-phase-update
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+        # Simulate Argo applying workflowMetadata in the same update that
+        # transitions the Workflow into the Running phase
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: simultaneous-metadata-and-phase-update
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+              status:
+                phase: Running
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: simultaneous-metadata-and-phase-update
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+              status:
+                phase: Running

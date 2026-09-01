@@ -7,26 +7,26 @@ import {
   TemplateViewRetrigger,
   TemplateView,
 } from "relay-workflows-lib";
-import {
-  parseVisitAndTemplate,
-  WorkflowErrorBoundaryWithRetry,
-} from "workflows-lib";
+import { splitWorkflowId, WorkflowErrorBoundaryWithRetry } from "workflows-lib";
+import { tidyPath } from "./utils";
 
 const SingleTemplatePage: React.FC = () => {
   const { templateName, prepopulate } = useParams<{
     templateName: string;
-    prepopulate?: string;
+    prepopulate?: string; // workflowId to use for prepopulation of parameters
   }>();
 
-  const [visit, workflowName] = parseVisitAndTemplate(prepopulate ?? "") ?? [
-    undefined,
-    undefined,
-  ];
+  const { visit, workflowName, uid } = splitWorkflowId(prepopulate) ?? {
+    visit: undefined,
+  };
 
   return (
     <>
       <WorkflowsNavbar />
-      <Breadcrumbs path={window.location.pathname} linkComponent={Link} />
+      <Breadcrumbs
+        path={tidyPath(window.location.pathname, true)}
+        linkComponent={Link}
+      />
       <Container maxWidth="xl">
         <Box
           display="flex"
@@ -39,7 +39,7 @@ const SingleTemplatePage: React.FC = () => {
             <WorkflowErrorBoundaryWithRetry>
               {({ fetchKey }) => (
                 <Suspense
-                  key={`template-${JSON.stringify(workflowName)}-${JSON.stringify(fetchKey)}`}
+                  key={`template-${JSON.stringify(prepopulate)}-${JSON.stringify(fetchKey)}`}
                   fallback={
                     <Box>
                       <Typography variant="h6" fontWeight="bold">
@@ -48,10 +48,10 @@ const SingleTemplatePage: React.FC = () => {
                     </Box>
                   }
                 >
-                  {workflowName ? (
+                  {workflowName && uid && prepopulate ? (
                     <TemplateViewRetrigger
                       templateName={templateName}
-                      workflowName={workflowName}
+                      workflowId={prepopulate}
                       visit={visit}
                     />
                   ) : (

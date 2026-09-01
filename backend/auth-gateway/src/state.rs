@@ -3,6 +3,7 @@ use axum::http::StatusCode;
 use regex::Regex;
 use std::sync::Arc;
 use tower_sessions::Session;
+use tracing::info;
 
 use crate::Result;
 use crate::auth_session_data::TokenSessionData;
@@ -23,11 +24,21 @@ pub struct AppState {
     pub callback_url: String,
     pub callback_default_return_to_url: String,
     pub cors_allow: Option<Vec<Regex>>,
+    pub session_secure: bool,
 }
 
 impl AppState {
     pub async fn new(config: GatewayConfig) -> Result<Self> {
+        info!(
+            provider_url = %config.common.oidc_provider_url,
+            "fetching OIDC provider metadata"
+        );
         let (oidc_client, http_client) = create_oidc_client(&config.common).await?;
+        info!(
+            host = %config.common.postgres_hostname,
+            port = config.common.postgres_port,
+            "connecting to database"
+        );
         let database_connection = create_db_connection(&config.common).await?;
         let public_key = decode_public_key(&config.common.encryption_public_key)?;
         let cors_allow: Option<Vec<Regex>> = config.cors_allow.map(|v| {
@@ -43,6 +54,7 @@ impl AppState {
             callback_url: config.callback_url,
             callback_default_return_to_url: config.callback_default_return_to_url,
             cors_allow,
+            session_secure: config.session_secure.unwrap_or(true),
         })
     }
 }

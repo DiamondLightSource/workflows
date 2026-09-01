@@ -1,10 +1,26 @@
+{{- $auth := .Values.authenticationConfiguration -}}
+{{- $issuerDefaults := $auth.issuerDefaults | default dict -}}
+{{- $jwt := list -}}
+
+{{- range $issuer := $auth.jwt }}
+  {{- $mergedIssuer := mustMergeOverwrite
+        (deepCopy $issuerDefaults)
+        (deepCopy $issuer)
+  -}}
+  {{- $jwt = append $jwt $mergedIssuer -}}
+{{- end -}}
+
+{{- $config := dict
+      "apiVersion" "apiserver.config.k8s.io/v1beta1"
+      "kind" "AuthenticationConfiguration"
+      "jwt" $jwt
+-}}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "common.names.fullname" $ }}-authn-config
+  name: {{ include "common.names.fullname" . }}-authn-config
   namespace: {{ .Release.Namespace }}
 data:
   authn-config.yaml: |
-    apiVersion: apiserver.config.k8s.io/v1beta1
-    kind: AuthenticationConfiguration
-    {{- .Values.authenticationConfiguration | toYaml | nindent 4 }}
+{{ toYaml $config | indent 4 }}

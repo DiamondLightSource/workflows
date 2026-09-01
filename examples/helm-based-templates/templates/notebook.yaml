@@ -53,7 +53,7 @@ spec:
     dag:
       tasks:
       - name: files
-        template: mount-files 
+        template: mount-files
       - name: convert
         template: convert-notebook
         dependencies: [files]

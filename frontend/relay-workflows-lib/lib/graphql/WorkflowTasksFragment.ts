@@ -3,6 +3,7 @@ import { graphql } from "react-relay";
 export const WorkflowTasksFragment = graphql`
   fragment WorkflowTasksFragment on Workflow {
     name
+    id
     visit {
       proposalCode
       proposalNumber

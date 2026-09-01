@@ -13,10 +13,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
 
-      - name: Download Supergraph Schema Artifact
+      - name: Download Graph Proxy Schema Artifact
         uses: actions/download-artifact@v6.0.0
         with:
-          name: supergraph-schema
+          name: graph-proxy
           path: frontend
 
       - name: Generate Image Name
@@ -32,7 +32,7 @@ jobs:
 
       - name: Extract Version from Tag
         id: tags
-        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT 
+        run: echo version=$(echo "${{ github.ref }}" | awk -F '[@v]' '{print $3}') >> $GITHUB_OUTPUT
 
       - name: Docker Metadata
         id: meta

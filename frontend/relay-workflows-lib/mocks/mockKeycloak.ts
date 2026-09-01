@@ -10,7 +10,7 @@ export const mockJwtPayload = {
   email: "mock@diamond.ac.uk",
   exp: Number.MAX_SAFE_INTEGER,
   iat: Number.MIN_SAFE_INTEGER,
-  iss: "https://authn.diamond.ac.uk/realms/master",
+  iss: "https://identity.diamond.ac.uk/realms/dls",
   name: "Mo C. Kuser",
 };
 

@@ -7,7 +7,8 @@ configuration:
   graphWsUrl: wss://staging.workflows.diamond.ac.uk/api/ws
   sourceDir: /usr/share/nginx/html
   useAuthGateway: "true"
-  authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth/login
+  authGatewayLoginUrl: https://staging.workflows.diamond.ac.uk/auth
+  logoutUrl: https://staging.workflows.diamond.ac.uk/auth/logout
 
 ingress:
   hosts:
@@ -33,13 +34,10 @@ ingress:
   host: staging.workflows.diamond.ac.uk
 authGateway:
   enabled: true
-  image:
-    registry: ghcr.io
-    repository: diamondlightsource/workflows-auth-gateway
-    tag: 0.1.0
-    digest: sha256:61fbf15f304ac13a5e8f1a24a65c1f53adae60d20142ff8d88da4510b5a4e9cf
-    pullPolicy: IfNotPresent
-    pullSecrets: []
   graphUrl: https://staging.workflows.diamond.ac.uk/graphql
   configuration:
     secretName: auth-gateway-config
+    config:
+      oidc_provider_url: https://identity-test.diamond.ac.uk/realms/dls
+      callback_url: https://staging.workflows.diamond.ac.uk/auth/callback
+      callback_default_return_to_url: https://staging.workflows.diamond.ac.uk

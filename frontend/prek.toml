@@ -1,0 +1,12 @@
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "prettier",
+    name = "prettier",
+    language = "system",
+    entry = "npx --yes prettier@3.6.2 --config .prettierrc --ignore-path ../.gitignore --check \"**/*.{js,ts,tsx,json}\"",
+    files = "\\.(js|ts|tsx|json)$",
+    pass_filenames = false,
+  },
+]

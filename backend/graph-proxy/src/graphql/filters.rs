@@ -114,7 +114,6 @@ pub enum WorkflowLabelSelectorOperator {
 
 /// Represents a label selector for filtering workflows based on labels
 #[derive(Debug, Clone, InputObject)]
-/// Represents a label selector for filtering workflows based on labels
 pub struct LabelSelector {
     /// The label key to filter on
     key: String,
@@ -137,7 +136,6 @@ pub struct WorkflowFilter {
     template: Option<Template>,
     /// Additional label selectors for filtering workflows
     #[graphql(name = "labelSelectors")]
-    /// Additional label selectors for filtering workflows
     labels: Option<Vec<LabelSelector>>,
 }
 

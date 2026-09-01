@@ -8,18 +8,18 @@ export const templateRetriggerResponse: Record<
   string,
   TemplateViewRetriggerQuery$data
 > = {
-  "mg-template-for-conditional-steps-first": {
-    workflow:
+  "mg:36964-1:mg-template-for-conditional-steps-first:12345": {
+    workflowById:
       conditionalStepsRetrigger as unknown as SubmissionFormParametersFragment$key,
   },
-  "e02-mib2x": {
-    workflow:
+  "mg36964-1:e02-mib2x:54321": {
+    workflowById:
       e02Mib2xRetriggerResponse as unknown as SubmissionFormParametersFragment$key,
   },
 };
 
 export const templateFallbackRetriggerResponse: TemplateViewRetriggerQuery$data =
   {
-    workflow:
+    workflowById:
       fallbackRetriggerResponse as unknown as SubmissionFormParametersFragment$key,
   };

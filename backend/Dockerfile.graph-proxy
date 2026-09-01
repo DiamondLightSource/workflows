@@ -14,7 +14,6 @@ COPY sessionspaces/Cargo.toml sessionspaces/Cargo.toml
 COPY auth-core/Cargo.toml auth-core/
 COPY auth-core/src/lib.rs auth-core/src/lib.rs
 COPY auth-core/migration/Cargo.toml auth-core/migration/
-COPY auth-daemon/Cargo.toml auth-daemon/
 COPY auth-broker/Cargo.toml auth-broker/
 COPY auth-gateway/Cargo.toml auth-gateway/
 COPY graph-proxy/Cargo.toml graph-proxy/
@@ -32,8 +31,6 @@ RUN mkdir -p graph-proxy/src \
     && echo "fn main() {}" > auth-core/src/main.rs \
     && mkdir -p auth-core/migration/src \
     && touch auth-core/migration/src/lib.rs \
-    && mkdir -p auth-daemon/src \
-    && echo "fn prebuild() {}" > auth-daemon/src/main.rs \
     && mkdir -p auth-broker/src \
     && echo "fn main() {}" > auth-broker/src/main.rs \
     && mkdir -p telemetry/src \

@@ -1,6 +1,6 @@
 dependencies:
 - name: kueue
   repository: oci://registry.k8s.io/kueue/charts
-  version: 0.15.0
-digest: sha256:0f6ae1caa1ad14254ff39bbb28546586209a3097bd5dae4c367d5e670e66d951
-generated: "2025-12-12T09:52:10.86260978Z"
+  version: 0.19.0
+digest: sha256:d1bdf0940c55d41cc75edc3df7fbd674d8aafccf8c0e55ec508d1e89ca5d5d2d
+generated: "2026-08-03T14:20:00.436983656+01:00"

@@ -39,7 +39,7 @@ const Wrapper = ({ children }: { children: ReactElement }) => {
     relayData,
   );
   return React.cloneElement(children, {
-    workflowName: data.name,
+    workflowId: data.id,
     tasksRef: data,
   });
 };

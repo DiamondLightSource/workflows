@@ -9,6 +9,10 @@ events:
   extraValueFiles:
     - dev-values.yaml
 
+metacontroller:
+  enabled: true
+  targetRevision: HEAD
+
 groups:
   enabled: false
   targetRevision: HEAD
@@ -70,6 +74,9 @@ dashboard:
   targetRevision: HEAD
   extraValueFiles:
     - dev-values.yaml
+
+monitoring:
+  enabled: false
 
 identityMapper:
   enabled: false

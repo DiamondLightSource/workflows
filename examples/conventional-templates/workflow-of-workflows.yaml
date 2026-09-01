@@ -7,11 +7,13 @@ metadata:
   annotations:
     workflows.argoproj.io/title: Workflow Of Workflows
     workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
-    workflows.diamond.ac.uk/authenticated: "true"
 spec:
   entrypoint: entry
   templates:
     - name: entry
+      metadata:
+        annotations:
+          workflows.diamond.ac.uk/authenticated: "true"
       steps:
         - - name: run-workflow
             template: curl
@@ -19,7 +21,7 @@ spec:
               parameters:
                 - name: cmd
                   value: |
-                    curl -v --request POST ${GRAPH_PROXY_URL} -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"ks\", proposalNumber: 10000, number: 1}, parameters: {}){     name   } }" }'
+                    curl -v --request POST ${GRAPH_URL} -H "Content-Type: application/json" -d '{"query": "mutation{ submitWorkflowTemplate(name: \"conditional-steps\", visit: {proposalCode: \"ks\", proposalNumber: 10000, number: 1}, parameters: {}){     name   } }" }'
 
     - name: curl
       inputs:

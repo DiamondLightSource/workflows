@@ -1,4 +1,3 @@
-{{- if .Values.metacontroller.enabled -}}
 apiVersion: metacontroller.k8s.io/v1alpha1
 kind: CompositeController
 metadata:
@@ -15,11 +14,10 @@ spec:
         method: InPlace
   hooks:
     sync:
-      version: {{ .Values.metacontroller.hooks.sync.version }}
+      version: v2
       webhook:
         url: http://workflows-metacontroller.events/sync
     customize:
-      version: {{ .Values.metacontroller.hooks.customize.version }}
+      version: v2
       webhook:
         url: http://workflows-metacontroller.events/customize
-{{- end }}

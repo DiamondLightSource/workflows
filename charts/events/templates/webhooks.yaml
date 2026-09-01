@@ -1,4 +1,3 @@
-{{- if .Values.metacontroller.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,7 +24,7 @@ spec:
         image: python:3.14-slim
         command: ["/bin/sh", "-c"]
         workingDir: /sync
-        args: 
+        args:
           - |
             pip install pydantic
             python3 /hooks/sync.py
@@ -53,4 +52,3 @@ spec:
     app: workflows-metacontroller
   ports:
   - port: 80
-{{- end }}

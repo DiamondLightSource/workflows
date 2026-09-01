@@ -3,15 +3,15 @@ name: workflows-cluster
 description: A virtual cluster for Data Analysis workflows
 type: application
 
-version: 0.13.18
+version: 0.13.30
 dependencies:
   - name: common
     version: 2.23.0
     repository: oci://docker.io/bitnamicharts
   - name: vcluster
     repository: https://charts.loft.sh
-    version: 0.28.0
+    version: 0.36.1
   - name: secrets
     repository: file://./charts/secrets
-    version: 0.0.17
+    version: 0.0.19
     condition: secrets.enabled

@@ -23,12 +23,12 @@ interface WorkflowProps {
   onChange?: () => void;
   retriggerComponent?: React.ComponentType<{
     instrumentSession: Visit;
-    workflowName: string;
+    workflowId: string;
   }>;
   githubComponent?: React.ComponentType<{
     variant?: "Icon" | "TextIcon";
     instrumentSession: Visit;
-    workflowName: string;
+    workflowId: string;
   }>;
 }
 
@@ -48,14 +48,14 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   githubComponent,
 }) => {
   return (
-    <Accordion key={workflow.name} expanded={expanded} onChange={onChange}>
+    <Accordion key={workflow.id} expanded={expanded} onChange={onChange}>
       <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
         <Box sx={{ display: "flex", flexBasis: 0, flexGrow: 5, gap: 2 }}>
           {getWorkflowStatusIcon(workflow.status)}
           {workflowLink && (
             <Tooltip title="Open workflow in tab">
               <Link
-                to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.name}`}
+                to={`/workflows/${visitToText(workflow.instrumentSession)}/${workflow.id}`}
                 aria-label={`Open workflow ${workflow.name} in tab`}
               >
                 <OpenInNewIcon />
@@ -65,12 +65,12 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
           {retriggerComponent &&
             React.createElement(retriggerComponent, {
               instrumentSession: workflow.instrumentSession,
-              workflowName: workflow.name,
+              workflowId: workflow.id,
             })}
           {githubComponent &&
             React.createElement(githubComponent, {
               instrumentSession: workflow.instrumentSession,
-              workflowName: workflow.name,
+              workflowId: workflow.id,
             })}
           <Typography>{workflow.name}</Typography>
         </Box>
@@ -78,6 +78,12 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
           <Typography color="#757575">
             Creator: {workflow.creator || "Unknown"}
           </Typography>
+
+          {workflow.submittedTime && (
+            <Typography color="#757575">
+              Submitted: {new Date(workflow.submittedTime).toLocaleString()}
+            </Typography>
+          )}
         </Box>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>

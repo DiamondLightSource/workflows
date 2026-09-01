@@ -12,7 +12,7 @@ spec:
     ports:
       - port: {{$eventSource.port }}
         targetPort: {{$eventSource.port }}
-  {{- if $eventSource.webhook }} 
+  {{- if $eventSource.webhook }}
   webhook:
     {{- $eventSource.webhook | toYaml | nindent 6 }}
   {{- end }}
@@ -21,12 +21,12 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
 metadata:
-  name: waffle-generic
+  name: i15-1
   labels:
     workflows.diamond.ac.uk/beamline: i15-1
 spec:
   generic:
-    waffle-example:
+    i15-1-message:
       insecure: true
       jsonBody: true
       url: "stomp-service.events.svc:80"
@@ -40,12 +40,12 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
 metadata:
-  name: visr-generic
+  name: b01-1
   labels:
     workflows.diamond.ac.uk/beamline: b01-1
 spec:
   generic:
-    visr-example:
+    b01-1-message:
       insecure: true
       jsonBody: true
       url: "stomp-service.events.svc:80"

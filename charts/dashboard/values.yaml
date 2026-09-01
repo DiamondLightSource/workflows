@@ -3,11 +3,12 @@ configuration:
   keycloakRealm: dls
   keycloakClient: workflows-dashboard
   keycloakScope: "openid profile posix-uid email"
-  graphUrl: https://workflows.diamond.ac.uk/graphql
-  graphWsUrl: wss://workflows.diamond.ac.uk/graphql/ws
+  graphUrl: https://workflows.diamond.ac.uk/api
+  graphWsUrl: wss://workflows.diamond.ac.uk/api/ws
   sourceDir: "/usr/share/nginx/html"
-  useAuthGateway: "false"
-  authGatewayLoginUrl: https://workflows.diamond.ac.uk/auth/login
+  useAuthGateway: "true"
+  authGatewayLoginUrl: https://workflows.diamond.ac.uk/auth
+  logoutUrl: https://workflows.diamond.ac.uk/auth/logout
 
 image:
   registry: ghcr.io
@@ -76,9 +77,45 @@ authGateway:
   image:
     registry: ghcr.io
     repository: diamondlightsource/workflows-auth-gateway
-    tag: "latest"
+    tag: "0.1.1"
     pullPolicy: IfNotPresent
     pullSecrets: []
   graphUrl: https://workflows.diamond.ac.uk/graphql
   configuration:
     secretName: auth-gateway-config
+    config:
+      oidc_provider_url: https://identity.diamond.ac.uk/realms/dls
+      port: 80
+      postgres_database: auth_service
+      postgres_hostname: workflows-postgresql-ha-pgpool
+      postgres_port: 5432
+      callback_url: https://workflows.diamond.ac.uk/auth/callback
+      callback_default_return_to_url: https://workflows.diamond.ac.uk
+      cors_allow:
+        - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?
+        - ^https?:\/\/localhost(:\d+)?\/?
+
+      client_id:
+        name: workflows-cluster-client
+        key: client-id
+        namespace: workflows
+
+      client_secret:
+        name: workflows-cluster-client
+        key: client-secret
+        namespace: workflows
+
+      postgres_user:
+        name: postgres-auth-service-password
+        key: username
+        namespace: workflows
+
+      postgres_password:
+        name: postgres-auth-service-password
+        key: password
+        namespace: workflows
+
+      encryption_public_key:
+        name: auth-keys
+        key: encryption_public_key
+        namespace: workflows

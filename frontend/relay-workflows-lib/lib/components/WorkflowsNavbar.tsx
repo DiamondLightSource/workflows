@@ -1,8 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { NavLink as Link } from "react-router-dom";
 import {
   Navbar,
-  DiamondTheme,
   NavLinks,
   NavLink,
   User,
@@ -11,18 +10,28 @@ import {
 import { getUser } from "relay-workflows-lib";
 import { useEffect, useState } from "react";
 import { externalRedirect } from "../utils/coreUtils";
+import { getUseAuthGateway } from "../utils/useAuthGateway";
 
 interface WorkflowsNavbarProps {
   sessionInfo?: string;
 }
 
 const handleLogout = () => {
-  externalRedirect(
-    "https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/logout",
-  );
+  const LOGOUT_URL = import.meta.env.VITE_LOGOUT_URL;
+  if (getUseAuthGateway()) {
+    fetch(LOGOUT_URL, { method: "POST", credentials: "include" })
+      .then(() => {
+        externalRedirect("/");
+      })
+      .catch((error: unknown) => {
+        console.error("Logout failed: ", error);
+      });
+  } else {
+    externalRedirect(LOGOUT_URL);
+  }
 };
 
-const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
+const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = () => {
   const [user, setUser] = useState<AuthState | null>(null);
 
   useEffect(() => {
@@ -57,31 +66,14 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = ({ sessionInfo }) => {
             <NavLink to="/templates" linkComponent={Link}>
               Templates
             </NavLink>
+            <NavLink to="/triggers" linkComponent={Link}>
+              Triggers
+            </NavLink>
           </NavLinks>
         </Box>
       }
       rightSlot={
-        <>
-          {sessionInfo && (
-            <Typography
-              sx={{
-                color: DiamondTheme.palette.primary.contrastText,
-                fontSize: {
-                  xs: "0.75rem",
-                  sm: "0.8rem",
-                  md: "0.8rem",
-                  lg: "1rem",
-                },
-                textAlign: "right",
-                ml: 2,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {sessionInfo}
-            </Typography>
-          )}
-          <User colour="white" user={user} onLogout={handleLogout}></User>
-        </>
+        <User colour="white" user={user} onLogout={handleLogout}></User>
       }
     />
   );

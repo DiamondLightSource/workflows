@@ -24,7 +24,7 @@ spec:
 
   templates:
     - name: mount-files
-      script: 
+      script:
         image: pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
         command: [bash]
         source: |
@@ -60,11 +60,11 @@ spec:
             none: {}
 
     - name: workflow-entry
-      dag: 
+      dag:
         tasks:
           - name: mount-files
             template: mount-files
-          
+
           - name: run-notebook
             template: run-notebook
             dependencies: [mount-files]

@@ -9,6 +9,7 @@ import BaseSingleWorkflowView from "./BaseSingleWorkflowView";
 import { BaseSingleWorkflowViewFragment$key } from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
 import { SingleWorkflowViewProps } from "./SingleWorkflowView";
 import { isFinished } from "../utils/coreUtils";
+import { splitWorkflowId } from "workflows-lib";
 
 const LiveSingleWorkflowViewSubscriptionQuery = graphql`
   subscription LiveSingleWorkflowViewSubscription(
@@ -31,8 +32,7 @@ interface LiveWorkflowRelayProps extends SingleWorkflowViewProps {
 }
 
 export default function LiveWorkflowView({
-  visit,
-  workflowName,
+  workflowId,
   taskIds,
   onNullSubscriptionData,
   selectedTaskId,
@@ -43,36 +43,44 @@ export default function LiveWorkflowView({
   const environment = useRelayEnvironment();
   const subscriptionRef = useRef<{ dispose: () => void } | null>(null);
 
+  const { visit, workflowName } = splitWorkflowId(workflowId) ?? {
+    visit: undefined,
+  };
+
   useEffect(() => {
-    const subscription =
-      requestSubscription<LiveSingleWorkflowViewSubscription>(environment, {
-        subscription: LiveSingleWorkflowViewSubscriptionQuery,
-        variables: { visit, name: workflowName },
-        onNext: (response?: LiveSingleWorkflowViewSubscription$data | null) => {
-          if (response?.workflow) {
-            setWorkflowFragmentRef(response.workflow);
-            if (isFinished(response)) {
-              console.log("Workflow finished, unsubscribing.");
-              subscriptionRef.current?.dispose();
+    if (visit && workflowName) {
+      const subscription =
+        requestSubscription<LiveSingleWorkflowViewSubscription>(environment, {
+          subscription: LiveSingleWorkflowViewSubscriptionQuery,
+          variables: { visit, name: workflowName },
+          onNext: (
+            response?: LiveSingleWorkflowViewSubscription$data | null,
+          ) => {
+            if (response?.workflow) {
+              setWorkflowFragmentRef(response.workflow);
+              if (isFinished(response)) {
+                console.log("Workflow finished, unsubscribing.");
+                subscriptionRef.current?.dispose();
+              }
+            } else {
+              onNullSubscriptionData();
+              setWorkflowFragmentRef(null);
             }
-          } else {
-            onNullSubscriptionData();
-            setWorkflowFragmentRef(null);
-          }
-        },
-        onError: (error: unknown) => {
-          console.error("Subscription error:", error);
-        },
-        onCompleted: () => {
-          console.log("Subscription completed");
-        },
-      });
+          },
+          onError: (error: unknown) => {
+            console.error("Subscription error:", error);
+          },
+          onCompleted: () => {
+            console.log("Subscription completed");
+          },
+        });
 
-    subscriptionRef.current = subscription;
+      subscriptionRef.current = subscription;
 
-    return () => {
-      subscriptionRef.current?.dispose();
-    };
+      return () => {
+        subscriptionRef.current?.dispose();
+      };
+    }
   }, [visit, workflowName, environment, onNullSubscriptionData]);
 
   return workflowFragmentRef ? (

@@ -26,7 +26,7 @@ const Wrapper = ({ children }: { children: ReactElement }) => {
     queryData.workflows,
   );
   return React.cloneElement(children, {
-    key: data.nodes[0].name,
+    key: data.nodes[0].id,
     fragmentRef: data.nodes[0],
   });
 };

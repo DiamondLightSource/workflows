@@ -35,7 +35,7 @@ spec:
           parameters:
             - name: command
               value: |
-                echo "Hello world!" 
+                echo "Hello world!"
 ```
 
 In its current state, the container is unable to write to its own filesystem. To enable this, we must mount a temporary volume to the container. This requires two things: a volume claim and a volume mount. For a temporary volume, we add the following below the entrypoint. This provides 1GB of temporary storage to use in this pod, and further pods, which we mount to whatever path is described in the container.
@@ -82,7 +82,7 @@ spec:
       - name: say-hello
         template: bash
         arguments:
-          parameters: 
+          parameters:
           - name: command
             value: |
               echo "This is my message!" > /tmp/my-file.txt
