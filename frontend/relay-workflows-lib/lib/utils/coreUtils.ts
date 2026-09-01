@@ -109,10 +109,8 @@ export function isFinished(
     | LiveSingleWorkflowViewSubscription$data
     | LiveWorkflowRelaySubscription$data,
 ) {
-  return (
-    data.workflow?.status?.__typename &&
-    finishedStatuses.has(data.workflow.status.__typename)
-  );
+  const typename = data.workflow.status?.__typename ?? "";
+  return finishedStatuses.has(typename);
 }
 
 //** An abstraction to allow mocking of window.location.assign in tests */

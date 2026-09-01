@@ -41,8 +41,7 @@ const RetriggerWorkflowBase: React.FC<RetriggerWorkflowProps> = ({
     },
   );
 
-  const templateName = data.workflow?.templateRef;
-
+  const templateName = data.workflow.templateRef;
   return templateName ? (
     <Tooltip title="Rerun workflow">
       <NavLink

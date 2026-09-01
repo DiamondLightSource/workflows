@@ -10,6 +10,7 @@ import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "relay-wo
 import userEvent from "@testing-library/user-event";
 import * as workflowsLib from "workflows-lib";
 import { useMemo } from "react";
+import { BaseSingleWorkflowViewFragment$key } from "relay-workflows-lib/lib/views/__generated__/BaseSingleWorkflowViewFragment.graphql";
 
 const QueryWrappedBaseSingleWorkflowView = () => {
   const [searchParams] = useSearchParams();
@@ -35,10 +36,14 @@ const QueryWrappedBaseSingleWorkflowView = () => {
       name: "conditional-steps-first",
     },
   );
+  // The component expects a fragment ref; tests use the loaded query data as the ref.
+  // Use any to avoid strict typing in the test.
   return (
     <BaseSingleWorkflowView
-      fragmentRef={data.workflow ?? null}
+      fragmentRef={data.workflow}
       taskIds={taskIds}
+      selectedTaskId={null}
+      onSelectTask={() => {}}
     />
   );
 };

@@ -26,11 +26,7 @@ const taskLogViewerSubscription = graphql`
     $workflowName: String!
     $taskId: String!
   ) {
-    logs(
-      visit: $visit
-      workflowName: $workflowName
-      taskId: $taskId
-    ) {
+    logs(visit: $visit, workflowName: $workflowName, taskId: $taskId) {
       content
       podName
     }
@@ -61,62 +57,57 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
   setTaskCompleted,
   setSubscriptionError,
 }) => {
-  const subscriptionConfig =
-    useMemo<GraphQLSubscriptionConfig<TaskLogViewerSubscription>>(
-      () => ({
-        subscription: taskLogViewerSubscription,
+  const subscriptionConfig = useMemo<
+    GraphQLSubscriptionConfig<TaskLogViewerSubscription>
+  >(
+    () => ({
+      subscription: taskLogViewerSubscription,
 
-        variables: {
-          visit,
-          workflowName,
-          taskId,
-        },
-
-        onNext: (payload) => {
-          const line = payload?.logs?.content;
-
-          if (line) {
-            setLogLines((previousLines) => [
-              ...previousLines,
-              line,
-            ]);
-          }
-        },
-
-        onError: (error) => {
-          console.error("Log subscription error:", error);
-
-          const message =
-            error instanceof Error
-              ? error.message
-              : String(error);
-
-          if (
-            message.includes("NoSuchKey") ||
-            message.includes("No logs") ||
-            message.includes("Failed to retrieve archived log artifact")
-          ) {
-            setSubscriptionError("No logs available");
-          } else {
-            setSubscriptionError("Unable to retrieve task logs");
-          }
-
-          setTaskCompleted(true);
-        },
-
-        onCompleted: () => {
-          setTaskCompleted(true);
-        },
-      }),
-      [
+      variables: {
         visit,
         workflowName,
         taskId,
-        setLogLines,
-        setTaskCompleted,
-        setSubscriptionError,
-      ],
-    );
+      },
+
+      onNext: (payload) => {
+        const line = payload?.logs.content;
+
+        if (line) {
+          setLogLines((previousLines) => [...previousLines, line]);
+        }
+      },
+
+      onError: (error) => {
+        console.error("Log subscription error:", error);
+
+        const message = error instanceof Error ? error.message : String(error);
+
+        if (
+          message.includes("NoSuchKey") ||
+          message.includes("No logs") ||
+          message.includes("Failed to retrieve archived log artifact")
+        ) {
+          setSubscriptionError("No logs available");
+        } else {
+          setSubscriptionError("Unable to retrieve task logs");
+        }
+
+        setTaskCompleted(true);
+      },
+
+      onCompleted: () => {
+        setTaskCompleted(true);
+      },
+    }),
+    [
+      visit,
+      workflowName,
+      taskId,
+      setLogLines,
+      setTaskCompleted,
+      setSubscriptionError,
+    ],
+  );
 
   useSubscription(subscriptionConfig);
 
@@ -131,29 +122,20 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
 }) => {
   const [logLines, setLogLines] = useState<string[]>([]);
   const [taskCompleted, setTaskCompleted] = useState(false);
-  const [subscriptionError, setSubscriptionError] =
-    useState<string | null>(null);
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(
+    null,
+  );
   const [expanded, setExpanded] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setLogLines([]);
-    setTaskCompleted(false);
-    setSubscriptionError(null);
     setExpanded(Boolean(selectedTaskId));
-  }, [
-    selectedTaskId,
-    workflowName,
-    visit.proposalCode,
-    visit.proposalNumber,
-    visit.number,
-  ]);
+  }, [selectedTaskId]);
 
   useEffect(() => {
     if (containerRef.current) {
-      containerRef.current.scrollTop =
-        containerRef.current.scrollHeight;
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [logLines]);
 
@@ -184,11 +166,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
         }}
       >
         <AccordionSummary
-          expandIcon={
-            <ArrowDropDownIcon
-              sx={{ color: "#030303" }}
-            />
-          }
+          expandIcon={<ArrowDropDownIcon sx={{ color: "#030303" }} />}
         >
           <Typography
             sx={{
@@ -197,10 +175,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
               fontSize: "1rem",
             }}
           >
-            Logs:{" "}
-            {selectedTaskName ??
-              selectedTaskId ??
-              "No task selected"}
+            Logs: {selectedTaskName ?? selectedTaskId ?? "No task selected"}
           </Typography>
 
           {selectedTaskId && !taskCompleted && (
@@ -254,7 +229,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
               </Typography>
             ) : logLines.length > 0 ? (
               logLines.map((line, index) => (
-                <React.Fragment key={`${line}-${index}`}>
+                <React.Fragment key={`${line}-${String(index)}`}>
                   {line}
                   {index < logLines.length - 1 && "\n"}
                 </React.Fragment>
@@ -267,9 +242,7 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
                   fontSize: "12px",
                 }}
               >
-                {selectedTaskId
-                  ? "Waiting for logs..."
-                  : "No task selected"}
+                {selectedTaskId ? "Waiting for logs..." : "No task selected"}
               </Typography>
             )}
           </Box>
@@ -278,4 +251,3 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
     </>
   );
 };
-        

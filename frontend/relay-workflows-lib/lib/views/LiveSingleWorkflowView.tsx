@@ -38,7 +38,6 @@ export default function LiveWorkflowView({
   selectedTaskId,
   onSelectTask,
 }: LiveWorkflowRelayProps) {
-
   const [workflowFragmentRef, setWorkflowFragmentRef] =
     useState<BaseSingleWorkflowViewFragment$key | null>(null);
   const environment = useRelayEnvironment();

@@ -32,26 +32,18 @@ export default function SingleWorkflowView(props: SingleWorkflowViewProps) {
     {
       visit: props.visit,
       name: props.workflowName,
-      
-      
-
-
     },
   );
-  const finished =
-    queryData.workflow?.status?.__typename &&
-    finishedStatuses.has(queryData.workflow.status.__typename);
+  const finished = finishedStatuses.has(queryData.workflow.status.__typename);
   const [isNull, setIsNull] = useState<boolean>(false);
   const onNullSubscriptionData = () => {
     setIsNull(true);
   };
 
-
-  const [selectedTaskId, setSelectedTaskId] =
-      useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   return finished || isNull ? (
     <BaseSingleWorkflowView
-      fragmentRef={queryData.workflow ?? null}
+      fragmentRef={queryData.workflow}
       taskIds={props.taskIds}
       selectedTaskId={selectedTaskId}
       onSelectTask={setSelectedTaskId}
