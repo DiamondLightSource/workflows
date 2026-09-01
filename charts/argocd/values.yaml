@@ -27,14 +27,13 @@ argo-cd:
         p, role:admin, logs, get, */*, allow
         p, role:admin, settings, *, *, allow
         g, admin, role:admin
-        g, benedikt.daurer@diamond.ac.uk, role:admin
         g, thomas.thomas@diamond.ac.uk, role:admin
         g, vigneshwar.shanmugasundar@diamond.ac.uk, role:admin
         g, david.hadley@diamond.ac.uk, role:admin
         g, james.gilbert@diamond.ac.uk, role:admin
         g, victoria.beilsten-edmands@diamond.ac.uk, role:admin
         g, hazem.nureldin@diamond.ac.uk, role:admin
-        g, matthew.carre@diamond.ac.uk, role:admin
+        g, oliver.jones@diamond.ac.uk, role: admin
 
   repoServer:
     podAnnotations:
