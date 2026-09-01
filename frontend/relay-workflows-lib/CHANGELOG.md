@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.10...relay-workflows-lib@v0.1.11) (2026-09-01)
+
+
+### Features
+
+* **frontend:** add basic trigger list ([e7fac1f](https://github.com/DiamondLightSource/workflows/commit/e7fac1fdae33244e81f509c01969f63dbfe2c18a))
+* **frontend:** remove session ID from navbar ([741480a](https://github.com/DiamondLightSource/workflows/commit/741480a387be5980cb33348953da9ee87eb94d40))
+
 ## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.9...relay-workflows-lib@v0.1.10) (2026-08-20)
 
 
