@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.8...workflows-lib@v0.1.9) (2026-09-01)
+
+
+### Features
+
+* **frontend:** add basic trigger list ([e7fac1f](https://github.com/DiamondLightSource/workflows/commit/e7fac1fdae33244e81f509c01969f63dbfe2c18a))
+
 ## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.7...workflows-lib@v0.1.8) (2026-08-21)
 
 
