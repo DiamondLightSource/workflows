@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.16...dashboard@v0.1.17) (2026-09-03)
+
+
+### Features
+
+* **frontend:** add basic trigger list ([e7fac1f](https://github.com/DiamondLightSource/workflows/commit/e7fac1fdae33244e81f509c01969f63dbfe2c18a))
+
 ## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.15...dashboard@v0.1.16) (2026-08-21)
 
 
