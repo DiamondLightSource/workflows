@@ -373,16 +373,17 @@ impl Artifact<'_> {
             .expires_in(std::time::Duration::from_secs(3600))
             .build()
             .unwrap();
-        s3_client
+        let req = s3_client
             .get_object()
             .bucket(s3_bucket.clone())
             .key(key)
             .presigned(presigning_config)
             .await
-            .map_err(|_| WorkflowParsingError::InvalidPresignedS3Url)
-            .and_then(|req| {
-                Url::parse(req.uri()).map_err(|_| WorkflowParsingError::InvalidPresignedS3Url)
-            })
+            .map_err(|_| WorkflowParsingError::InvalidPresignedS3Url)?;
+
+        tracing::info!("PRESIGNED URL: {}", req.uri());
+
+        Url::parse(req.uri()).map_err(|_| WorkflowParsingError::InvalidPresignedS3Url)
     }
 
     /// The MIME type of the artifact data
