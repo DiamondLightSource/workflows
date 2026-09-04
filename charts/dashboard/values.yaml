@@ -2,22 +2,20 @@ configuration:
   keycloakUrl: https://identity.diamond.ac.uk
   keycloakRealm: dls
   keycloakClient: workflows-dashboard
-  keycloakScope: "openid profile posix-uid email"
+  keycloakScope: openid profile posix-uid email
   graphUrl: https://workflows.diamond.ac.uk/api
   graphWsUrl: wss://workflows.diamond.ac.uk/api/ws
-  sourceDir: "/usr/share/nginx/html"
-  useAuthGateway: "true"
+  sourceDir: /usr/share/nginx/html
+  useAuthGateway: 'true'
   authGatewayLoginUrl: https://workflows.diamond.ac.uk/auth
   logoutUrl: https://workflows.diamond.ac.uk/auth/logout
-
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-dashboard
-  tag: ""
-  digest: ""
+  tag: ''
+  digest: ''
   pullPolicy: IfNotPresent
   pullSecrets: []
-
 deployment:
   replicas: 1
   annotations: []
@@ -32,13 +30,11 @@ deployment:
   nodeSelector: {}
   affinity: {}
   tolerations: []
-
 service:
   create: true
   annotations: []
   type: ClusterIP
   port: 80
-
 ingress:
   create: true
   className: nginx
@@ -62,22 +58,20 @@ ingress:
             port: 80
   tls: false
   annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/hsts: "true"
-    nginx.ingress.kubernetes.io/hsts-max-age: "86400"
-
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/hsts: 'true'
+    nginx.ingress.kubernetes.io/hsts-max-age: '86400'
 serviceAccount:
   create: true
-  name: ""
+  name: ''
   annotations: []
-
 authGateway:
   enabled: true
   image:
     registry: ghcr.io
     repository: diamondlightsource/workflows-auth-gateway
-    tag: "0.1.1"
+    tag: 0.1.2
     pullPolicy: IfNotPresent
     pullSecrets: []
   graphUrl: https://workflows.diamond.ac.uk/graphql
@@ -94,27 +88,22 @@ authGateway:
       cors_allow:
         - ^https:\/\/([a-zA-Z0-9\-]+\.)*diamond\.ac\.uk\/?
         - ^https?:\/\/localhost(:\d+)?\/?
-
       client_id:
         name: workflows-cluster-client
         key: client-id
         namespace: workflows
-
       client_secret:
         name: workflows-cluster-client
         key: client-secret
         namespace: workflows
-
       postgres_user:
         name: postgres-auth-service-password
         key: username
         namespace: workflows
-
       postgres_password:
         name: postgres-auth-service-password
         key: password
         namespace: workflows
-
       encryption_public_key:
         name: auth-keys
         key: encryption_public_key
