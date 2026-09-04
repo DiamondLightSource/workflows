@@ -141,7 +141,6 @@ async fn main() {
             // it's necessary. probably needs a tweak on the telemetry lib.
             let metrics = otlp_guard.meter_provider.as_ref().unwrap();
             let metrics_state = Arc::new(Metrics::new(metrics));
-
             info!(?args, "Starting GraphQL Server");
             let s3_client = Client::from(args.s3_client);
             let schema = root_schema_builder()
