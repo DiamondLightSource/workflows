@@ -9,7 +9,7 @@ metadata:
   name: {{ $eventBus.name }}
 spec:
   jetstream:
-    version: "2.10.10"
+    version: "2.10.29"
     {{- if $eventBus.resources }}
     containerTemplate:
       resources:
