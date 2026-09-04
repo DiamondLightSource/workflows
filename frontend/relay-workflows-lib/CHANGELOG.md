@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.11...relay-workflows-lib@v0.1.12) (2026-09-04)
+
+
+### Features
+
+* **frontend:** add task log viewer ([07a5a36](https://github.com/DiamondLightSource/workflows/commit/07a5a36160914f3078fa69d91ea32bb3004e17cd))
+
 ## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.10...relay-workflows-lib@v0.1.11) (2026-09-01)
 
 
