@@ -47,19 +47,7 @@ function ensureKeycloakInit(): Promise<boolean> {
 
 if (!USE_AUTH_GATEWAY) {
   keycloak.onTokenExpired = () => {
-    console.log("JWT expired");
-    keycloak
-      .updateToken(10)
-      .then((refreshed) => {
-        if (refreshed) {
-          console.log("Fetched new JWT");
-        } else {
-          console.warn("Token still valid");
-        }
-      })
-      .catch((err: unknown) => {
-        console.error("Failed to update JWT", err);
-      });
+    void keycloak.updateToken(10);
   };
 }
 
@@ -92,10 +80,13 @@ const fetchFn: FetchFunction = async (request, variables) => {
       variables,
     }),
   };
+
   if (USE_AUTH_GATEWAY) {
     fetchOptions.credentials = "include";
   }
+
   const resp = await fetch(HTTP_ENDPOINT, fetchOptions);
+
   if (USE_AUTH_GATEWAY && resp.status === 401) {
     redirectToAuthGatewayLogin();
     return {};
@@ -106,15 +97,18 @@ const fetchFn: FetchFunction = async (request, variables) => {
 
 export const wsClient = createClient({
   url: WS_ENDPOINT,
+
   connectionParams: async () => {
     if (!USE_AUTH_GATEWAY && !keycloak.authenticated) {
       await ensureKeycloakInit();
     }
+
     if (!USE_AUTH_GATEWAY) {
       return {
         Authorization: `Bearer ${keycloak.token ?? ""}`,
       };
     }
+
     return {};
   },
 });
@@ -129,20 +123,19 @@ const subscribeFn: SubscribeFunction = (operation, variables) => {
       },
       {
         next: (response) => {
-          const data = response.data;
-          if (data) {
-            sink.next({ data } as GraphQLResponse);
-          } else if (data == null) {
-            console.warn("Data is null:", response);
-          } else {
-            console.error("Subscription error response:", response);
-            sink.error(new Error("Subscription response missing data"));
-          }
+          sink.next(response as GraphQLResponse);
         },
-        error: sink.error.bind(sink),
-        complete: sink.complete.bind(sink),
+
+        error: (error) => {
+          sink.error(error as Error);
+        },
+
+        complete: () => {
+          sink.complete();
+        },
       },
     );
+
     return cleanup;
   });
 };
@@ -157,6 +150,7 @@ export async function getRelayEnvironment(): Promise<Environment> {
       store: new Store(new RecordSource()),
     });
   }
+
   return RelayEnvironment;
 }
 
@@ -168,18 +162,22 @@ export async function getUser(): Promise<AuthState | null> {
         credentials: "include",
         headers: { Accept: "application/json" },
       });
+
       if (resp.status === 401) {
         redirectToAuthGatewayLogin();
         return null;
       }
+
       if (!resp.ok) {
         return null;
       }
+
       const data = (await resp.json()) as JSONObject;
       const user: AuthState = {
         name: data.name as string,
         fedid: data.fedid as string,
       };
+
       return user;
     } catch (error) {
       console.error("Failed to fetch user info: ", error);
@@ -190,17 +188,21 @@ export async function getUser(): Promise<AuthState | null> {
   if (!keycloak.authenticated) {
     await ensureKeycloakInit();
   }
+
   if (keycloak.token) {
     let parsedToken: JSONObject = {};
+
     try {
       parsedToken = parseJwt(keycloak.token);
     } catch (error) {
       console.error("Could not parse JWT: ", error);
     }
+
     const user: AuthState = {
       name: parsedToken.name as string,
       fedid: (parsedToken.preferred_username ?? parsedToken.fedid) as string,
     };
+
     return user;
   } else return null;
 }

@@ -3,12 +3,13 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Suspense, useMemo } from "react";
 import "react-resizable/css/styles.css";
 import { Breadcrumbs } from "@diamondlightsource/sci-react-ui";
-import { SingleWorkflowView, WorkflowsNavbar } from "relay-workflows-lib";
+
 import {
   visitTextToVisit,
   WorkflowErrorBoundaryWithRetry,
 } from "workflows-lib";
 import { tidyPath } from "./utils";
+import { SingleWorkflowView, WorkflowsNavbar } from "relay-workflows-lib";
 
 function SingleWorkflowPage() {
   const { visitid, workflowId } = useParams<{
@@ -68,6 +69,13 @@ function SingleWorkflowPage() {
                     workflowId={workflowId}
                     taskIds={taskIds}
                   />
+
+                  {/* Real-time Task Log Viewer */}
+                  {/* <TaskLogViewer
+                    visit={visit}
+                    workflowName={workflowName}
+                    selectedTaskId={selectedTaskId}
+                  /> */}
                 </Suspense>
               )}
             </WorkflowErrorBoundaryWithRetry>
@@ -82,7 +90,6 @@ function SingleWorkflowPage() {
           mb={4}
         >
           <Typography>No valid workflow selected</Typography>
-          {/* Go to instrumentSession or home page */}
         </Box>
       )}
     </>

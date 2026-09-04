@@ -34,6 +34,8 @@ const QueryWrappedBaseSingleWorkflowView = () => {
     <BaseSingleWorkflowView
       fragmentRef={data.workflowById ?? null}
       taskIds={taskIds}
+      onSelectTask={vi.fn()}
+      selectedTaskId={null}
     />
   );
 };

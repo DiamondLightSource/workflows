@@ -97,7 +97,16 @@ describe("TasksFlow Component", () => {
           y: 0,
           zoom: 1.5,
         },
-        nodes: mockLayoutedNodes,
+        nodes: [
+          {
+            id: "node-1",
+            position: { x: 0, y: 0 },
+            data: {
+              filled: true,
+              highlighted: false,
+            },
+          },
+        ],
         edges: mockLayoutedEdges,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         nodeTypes: { custom: expect.any(Function) },

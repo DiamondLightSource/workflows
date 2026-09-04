@@ -1,4 +1,9 @@
-import React from "react";
+import {
+  useCallback,
+  type Dispatch,
+  type MouseEvent as ReactMouseEvent,
+  type SetStateAction,
+} from "react";
 import { ResizableBox } from "react-resizable";
 import { Box } from "@mui/material";
 import { WorkflowAccordion, type WorkflowStatus } from "workflows-lib";
@@ -6,7 +11,7 @@ import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
 import { useSelectedTaskIds } from "../utils/workflowRelayUtils";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
-import { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
+import type { BaseWorkflowRelayFragment$key } from "./__generated__/BaseWorkflowRelayFragment.graphql";
 import TasksFlow from "./TasksFlow";
 
 export const BaseWorkflowRelayFragment = graphql`
@@ -51,6 +56,7 @@ interface BaseWorkflowRelayProps {
   expanded?: boolean;
   onChange?: () => void;
   fragmentRef: BaseWorkflowRelayFragment$key;
+  onSelectTask?: (taskId: string) => void;
 }
 
 export default function BaseWorkflowRelay({
@@ -59,35 +65,67 @@ export default function BaseWorkflowRelay({
   expanded,
   onChange,
   fragmentRef,
+  onSelectTask,
 }: BaseWorkflowRelayProps) {
   const data = useFragment(BaseWorkflowRelayFragment, fragmentRef);
+
+  const workflowId = data.id;
+
   const statusText = data.status?.__typename ?? "Unknown";
+
   const submittedTime =
-    data.status?.__typename === "WorkflowRunningStatus" ||
-    data.status?.__typename === "WorkflowSucceededStatus" ||
-    data.status?.__typename === "WorkflowFailedStatus" ||
-    data.status?.__typename === "WorkflowErroredStatus"
-      ? data.status.startTime
+    data.status && "startTime" in data.status
+      ? (data.status.startTime as string | undefined)
       : undefined;
 
-  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
+  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds() as [
+    string[],
+    Dispatch<SetStateAction<string[]>>,
+  ];
 
-  const onNavigate = React.useCallback(
-    (taskId: string, event?: React.MouseEvent) => {
-      const isCtrl = event?.ctrlKey || event?.metaKey;
+  /*
+   * IMPORTANT:
+   *
+   * Do not put `selectedTaskIds` in this callback's dependency list.
+   *
+   * The previous implementation did this:
+   *
+   *   [onSelectTask, selectedTaskIds, setSelectedTaskIds]
+   *
+   * Every task click changed selectedTaskIds, which recreated onNavigate.
+   * TasksFlow then received a new onNavigate, ReactFlow recreated its
+   * nodeTypes, and the task node could be replaced while the mouse event
+   * was being processed.
+   *
+   * Using the functional state update means we always receive the latest
+   * selectedTaskIds without making this callback depend on them.
+   */
+  const onNavigate = useCallback(
+    (taskId: string, event?: ReactMouseEvent): void => {
+      event?.preventDefault();
+      event?.stopPropagation();
 
-      let updatedTaskIds: string[];
+      console.log("TASK CLICKED", taskId);
 
-      if (isCtrl) {
-        updatedTaskIds = selectedTaskIds.includes(taskId)
-          ? selectedTaskIds.filter((id) => id !== taskId)
-          : [...selectedTaskIds, taskId];
-      } else {
-        updatedTaskIds = [taskId];
-      }
-      setSelectedTaskIds(updatedTaskIds);
+      const isCtrl: boolean = Boolean(event?.ctrlKey || event?.metaKey);
+
+      setSelectedTaskIds((currentTaskIds: string[]) => {
+        if (isCtrl) {
+          return currentTaskIds.includes(taskId)
+            ? currentTaskIds.filter((id: string): boolean => id !== taskId)
+            : [...currentTaskIds, taskId];
+        }
+
+        return [taskId];
+      });
+
+      /*
+       * The log viewer only needs the task that was clicked.
+       * Keep this separate from the multi-selection state above.
+       */
+      onSelectTask?.(taskId);
     },
-    [selectedTaskIds, setSelectedTaskIds],
+    [onSelectTask, setSelectedTaskIds],
   );
 
   return (
@@ -136,7 +174,7 @@ export default function BaseWorkflowRelay({
           }}
         >
           <TasksFlow
-            workflowId={data.id}
+            workflowId={workflowId}
             tasksRef={data}
             onNavigate={onNavigate}
             highlightedTaskIds={selectedTaskIds}
