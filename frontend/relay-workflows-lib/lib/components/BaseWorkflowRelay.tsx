@@ -105,7 +105,6 @@ export default function BaseWorkflowRelay({
       event?.preventDefault();
       event?.stopPropagation();
 
- 
       const isCtrl: boolean = Boolean(event?.ctrlKey || event?.metaKey);
 
       setSelectedTaskIds((currentTaskIds: string[]) => {
