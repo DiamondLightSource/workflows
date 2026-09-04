@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, ToggleButton } from "@mui/material";
-import {
-  Artifact,
-  Task,
-  TaskNode,
-  TaskInfo,
-  buildTaskTree,
-} from "workflows-lib";
+import { Artifact, Task, TaskInfo, buildTaskTree } from "workflows-lib";
 import {
   useFetchedTasks,
   useSelectedTaskIds,
@@ -15,9 +9,16 @@ import WorkflowInfo from "../components/WorkflowInfo";
 import { graphql, useFragment } from "react-relay";
 import { BaseSingleWorkflowViewFragment$key } from "./__generated__/BaseSingleWorkflowViewFragment.graphql";
 import BaseWorkflowRelay from "../components/BaseWorkflowRelay";
+import { TaskLogViewer } from "./TaskLogViewer";
 
 export const BaseSingleWorkflowViewFragment = graphql`
   fragment BaseSingleWorkflowViewFragment on Workflow @relay(mask: false) {
+    name
+    visit {
+      proposalCode
+      proposalNumber
+      number
+    }
     status {
       __typename
     }
@@ -31,36 +32,56 @@ export const BaseSingleWorkflowViewFragment = graphql`
 interface BaseSingleWorkflowViewProps {
   fragmentRef: BaseSingleWorkflowViewFragment$key | null;
   taskIds?: string[];
+  selectedTaskId: string | null;
+  onSelectTask: (taskId: string | null) => void;
+}
+
+interface TaskTreeNode {
+  id: string;
+  children?: TaskTreeNode[];
 }
 
 export default function BaseSingleWorkflowView({
   taskIds,
   fragmentRef,
+  selectedTaskId,
+  onSelectTask,
 }: BaseSingleWorkflowViewProps) {
   const data = useFragment(BaseSingleWorkflowViewFragment, fragmentRef);
+
   const fetchedTasks = useFetchedTasks(data ?? null);
-  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
+
   const [filledTaskId, setFilledTaskId] = useState<string | null>(null);
+
+  // Resolve task name from id
+  const selectedTask = useMemo(
+    () => fetchedTasks.find((task) => task.id === selectedTaskId),
+    [fetchedTasks, selectedTaskId],
+  );
+
+  const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds();
 
   const taskTree = useMemo(() => buildTaskTree(fetchedTasks), [fetchedTasks]);
 
   const outputTaskIds: string[] = useMemo(() => {
     const newOutputTaskIds: string[] = [];
-    const traverse = (tasks: TaskNode[]) => {
+
+    const traverse = (tasks: TaskTreeNode[]) => {
       const sortedTasks = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
+
       sortedTasks.forEach((taskNode) => {
-        if (
-          taskNode.children &&
-          taskNode.children.length === 0 &&
-          !newOutputTaskIds.includes(taskNode.id)
-        ) {
-          newOutputTaskIds.push(taskNode.id);
+        if (taskNode.children && taskNode.children.length === 0) {
+          if (!newOutputTaskIds.includes(taskNode.id)) {
+            newOutputTaskIds.push(taskNode.id);
+          }
         } else if (taskNode.children && taskNode.children.length > 0) {
           traverse(taskNode.children);
         }
       });
     };
+
     traverse(taskTree);
+
     return newOutputTaskIds;
   }, [taskTree]);
 
@@ -70,14 +91,12 @@ export default function BaseSingleWorkflowView({
 
   const handleSelectClear = () => {
     setSelectedTaskIds([]);
+    onSelectTask(null);
   };
 
-  const onArtifactHover = useCallback(
-    (artifact: Artifact | null) => {
-      setFilledTaskId(artifact ? artifact.parentTaskId : null);
-    },
-    [setFilledTaskId],
-  );
+  const onArtifactHover = useCallback((artifact: Artifact | null) => {
+    setFilledTaskId(artifact ? artifact.parentTaskId : null);
+  }, []);
 
   useEffect(() => {
     setSelectedTaskIds(taskIds ?? []);
@@ -89,6 +108,7 @@ export default function BaseSingleWorkflowView({
           .map((id) => fetchedTasks.find((task) => task.id === id))
           .filter((task): task is Task => !!task)
       : fetchedTasks;
+
     return filteredTasks.flatMap((task) => task.artifacts);
   }, [selectedTaskIds, fetchedTasks]);
 
@@ -120,7 +140,10 @@ export default function BaseSingleWorkflowView({
             display="flex"
             flexDirection="column"
             gap={1}
-            sx={{ position: "absolute", left: "-100px" }}
+            sx={{
+              position: "absolute",
+              left: "-100px",
+            }}
           >
             <ToggleButton
               value="output"
@@ -129,32 +152,44 @@ export default function BaseSingleWorkflowView({
             >
               OUTPUT
             </ToggleButton>
+
             <ToggleButton
-              value="output"
-              aria-label="output"
+              value="clear"
+              aria-label="clear"
               onClick={handleSelectClear}
             >
               CLEAR
             </ToggleButton>
           </Box>
 
-          {fragmentRef && (
-            <BaseWorkflowRelay
-              fragmentRef={data}
-              workflowLink
-              filledTaskId={filledTaskId}
-              expanded={true}
-            />
-          )}
+          <BaseWorkflowRelay
+            fragmentRef={data}
+            workflowLink
+            filledTaskId={filledTaskId}
+            expanded={true}
+            onSelectTask={(taskId) => {
+              setSelectedTaskIds(taskId ? [taskId] : []);
+              onSelectTask(taskId);
+            }}
+          />
         </Box>
       </Box>
+
+      <TaskLogViewer
+        visit={data.visit}
+        workflowName={data.name}
+        selectedTaskId={selectedTaskId}
+        selectedTaskName={selectedTask?.name}
+      />
+
       {taskIds && (
         <TaskInfo
           artifactList={artifactList}
           onArtifactHover={onArtifactHover}
         />
       )}
-      {<WorkflowInfo fragmentRef={data} />}
+
+      <WorkflowInfo fragmentRef={data} />
     </>
   );
 }
