@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.1...workflows-cli@v0.1.2) (2026-09-04)
+
+
+### Features
+
+* **cli:** add command to create triggers ([3571a8a](https://github.com/DiamondLightSource/workflows/commit/3571a8a9d7594f73e9a99f5818e37f525b62784c))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.0...workflows-cli@v0.1.1) (2026-04-14)
 
 
