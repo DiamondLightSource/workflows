@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.1...auth-gateway@v0.1.2) (2026-09-04)
+
+
+### Features
+
+* **auth-gateway:** add option to set cookies to lax ([2f42078](https://github.com/DiamondLightSource/workflows/commit/2f42078c35538378acd4904a95851d84f195ea6a))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.0...auth-gateway@v0.1.1) (2026-08-20)
 
 
