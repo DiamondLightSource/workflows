@@ -163,6 +163,7 @@ vcluster:
             "/graph-proxy-k6-auth": "k6/graph-proxy-k6-auth"
             "/auth-keys": "workflows/auth-keys"
             "/workflows-cluster-client": "workflows/workflows-cluster-client"
+            "/slack-bot-token": "events/slack-bot-token"
       configMaps:
         enabled: true
         mappings:
