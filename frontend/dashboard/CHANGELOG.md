@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.18](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.17...dashboard@v0.1.18) (2026-09-04)
+
+
+### Features
+
+* **frontend:** add task log viewer ([07a5a36](https://github.com/DiamondLightSource/workflows/commit/07a5a36160914f3078fa69d91ea32bb3004e17cd))
+
+
+### Bug Fixes
+
+* **frontend:** update Relay schema path ([ed28e11](https://github.com/DiamondLightSource/workflows/commit/ed28e119e02ff3092926f16b99dcffea04493a1e))
+
 ## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.16...dashboard@v0.1.17) (2026-09-03)
 
 
