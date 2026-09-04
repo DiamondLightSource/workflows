@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.0...graph-proxy@v0.2.1) (2026-09-04)
+
+
+### Features
+
+* **graph-proxy:** get active task logs from Argo ([1a565f6](https://github.com/DiamondLightSource/workflows/commit/1a565f6c609ac82f32a1a17a98dda487a2101b2c))
+
 ## [0.2.0](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.1.21...graph-proxy@v0.2.0) (2026-08-27)
 
 
