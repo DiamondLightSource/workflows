@@ -28,15 +28,19 @@ describe("TasksFlow Component", () => {
   });
 
   const mockTaskTree = vi.hoisted(() => ({}));
+
   const mockNodes = vi.hoisted(() => [
     { id: "node-1", position: { x: 0, y: 0 }, data: {} },
   ]);
+
   const mockEdges = vi.hoisted(() => [
     { id: "edge-1", source: "node-1", target: "node-2" },
   ]);
+
   const mockLayoutedNodes = vi.hoisted(() => [
     { id: "node-1", position: { x: 0, y: 0 }, data: {} },
   ]);
+
   const mockLayoutedEdges = vi.hoisted(() => [
     { id: "edge-1", source: "node-1", target: "node-2" },
   ]);
@@ -60,6 +64,7 @@ describe("TasksFlow Component", () => {
     const { getByText } = render(
       <TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />,
     );
+
     expect(getByText("ReactFlow Mock")).toBeInTheDocument();
   });
 
