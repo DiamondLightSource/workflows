@@ -169,18 +169,18 @@ prometheus:
   kube-state-metrics:
     enabled: false
   serverFiles:
-  alerting_rules.yml:
-    groups:
-      - name: test-alerts
-        rules:
-          - alert: TestAlert
-            expr: vector(1)
-            for: 1m
-            labels:
-              severity: warning
-            annotations:
-              summary: Test alert
-              description: Test alert to verify alerting_rules.yaml is loaded
+    alerting_rules.yml:
+      groups:
+        - name: test-alerts
+          rules:
+            - alert: TestAlert
+              expr: vector(1)
+              for: 1m
+              labels:
+                severity: warning
+              annotations:
+                summary: Test alert
+                description: Test alert to verify alerting_rules.yaml is loaded
   prometheus-node-exporter:
     enabled: false
   prometheus-pushgateway:
