@@ -168,6 +168,24 @@ thanos:
 prometheus:
   kube-state-metrics:
     enabled: false
+  serverFiles:
+    alerting_rules.yml:
+      groups:
+        - name: argo-workflows
+          rules:
+            - alert: ArgoWorkflowControllerFailing
+              expr: |
+                kube_pod_container_status_waiting_reason{
+                  namespace="workflows",
+                  pod=~"workflows-argo-workflows-workflow-controller-.*",
+                  reason="CrashLoopBackOff"
+                } > 0
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Argo Workflow Controller failing
+                description: Workflow controller has been in CrashLoopBackOff for more than 10 minutes.
   prometheus-node-exporter:
     enabled: false
   prometheus-pushgateway:
