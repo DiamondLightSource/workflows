@@ -651,11 +651,16 @@ impl WorkflowsQuery {
             }
         };
 
-        let workflows = workflows_response
-            .items
+        let mut workflow_items = workflows_response.items;
+        if let Some(filter) = &filter {
+            workflow_items.retain(|workflow| filter.matches_parameters(workflow));
+        }
+
+        let workflows = workflow_items
             .into_iter()
             .map(|workflow| Workflow::new(workflow, visit.clone().into()))
             .collect::<Vec<_>>();
+
         let mut connection = Connection::new(
             cursor_index > 0,
             workflows_response.metadata.continue_.is_some(),

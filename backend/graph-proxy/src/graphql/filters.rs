@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow;
 use async_graphql::{
     Enum, InputObject, InputValueError, InputValueResult, Scalar, ScalarType, Value,
 };
@@ -125,18 +126,34 @@ pub struct LabelSelector {
 
 // Workflows--------------------------------------------
 
+/// Represents a workflow parameter filter
+#[derive(Debug, Clone, InputObject)]
+pub struct WorkflowParameterFilter {
+    /// The workflow parameter name
+    key: String,
+
+    /// The workflow parameter value
+    value: String,
+}
+
 /// All the supported Workflows filters
 #[derive(Debug, Default, Clone, InputObject)]
 pub struct WorkflowFilter {
     /// The status of the workflow (e.g., pending, running, succeeded, failed, error)
     workflow_status_filter: Option<WorkflowStatusFilter>,
+
     /// The fedid of the user who created the workflow
     creator: Option<Creator>,
+
     /// The workflow template
     template: Option<Template>,
+
     /// Additional label selectors for filtering workflows
     #[graphql(name = "labelSelectors")]
     labels: Option<Vec<LabelSelector>>,
+
+    /// Workflow parameter key/value filters
+    parameters: Option<Vec<WorkflowParameterFilter>>,
 }
 
 impl WorkflowFilter {
@@ -147,7 +164,7 @@ impl WorkflowFilter {
             .append_pair("listOptions.labelSelector", labels);
     }
 
-    /// Creates a string of all the reqested filters that belong to the
+    /// Creates a string of all the requested filters that belong to the
     /// `labelSelectors` query key in the Workflow API
     fn create_label_selection(&self) -> String {
         let mut label_selectors = Vec::new();
@@ -160,10 +177,28 @@ impl WorkflowFilter {
         self.template.generate_labels(&mut label_selectors);
 
         self.labels.generate_labels(&mut label_selectors);
+
         label_selectors.join(",")
     }
-}
 
+    /// Returns true when the workflow matches all requested parameters.
+    pub fn matches_parameters(&self, workflow: &IoArgoprojWorkflowV1alpha1Workflow) -> bool {
+        let Some(filters) = &self.parameters else {
+            return true;
+        };
+
+        let Some(arguments) = &workflow.spec.arguments else {
+            return false;
+        };
+
+        filters.iter().all(|filter| {
+            arguments.parameters.iter().any(|parameter| {
+                parameter.name == filter.key
+                    && parameter.value.as_deref() == Some(filter.value.as_str())
+            })
+        })
+    }
+}
 /// Represents workflow status filters
 #[allow(clippy::missing_docs_in_private_items)]
 #[derive(Debug, Default, Clone, InputObject)]
@@ -332,15 +367,192 @@ impl LabelSelector {
 mod tests {
     use crate::graphql::filters::{
         Creator, LabelSelector, ScienceGroup, Template, WorkflowFilter,
-        WorkflowLabelSelectorOperator, WorkflowStatusFilter, WorkflowTemplatesFilter,
+        WorkflowLabelSelectorOperator, WorkflowParameterFilter, WorkflowStatusFilter,
+        WorkflowTemplatesFilter,
     };
+
+    use argo_workflows_openapi::{
+        IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
+        IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowSpec,
+    };
+
+    fn workflow_with_parameters(
+        parameters: Vec<(&str, &str)>,
+    ) -> IoArgoprojWorkflowV1alpha1Workflow {
+        IoArgoprojWorkflowV1alpha1Workflow {
+            api_version: None,
+            kind: None,
+            metadata: Default::default(),
+            spec: IoArgoprojWorkflowV1alpha1WorkflowSpec {
+                arguments: Some(IoArgoprojWorkflowV1alpha1Arguments {
+                    parameters: parameters
+                        .into_iter()
+                        .map(|(name, value)| IoArgoprojWorkflowV1alpha1Parameter {
+                            default: None,
+                            description: None,
+                            enum_: vec![],
+                            global_name: None,
+                            name: name.to_string(),
+                            value: Some(value.to_string()),
+                            value_from: None,
+                        })
+                        .collect(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            status: None,
+        }
+    }
+
+    fn parameter_filter(key: &str, value: &str) -> WorkflowParameterFilter {
+        WorkflowParameterFilter {
+            key: key.to_string(),
+            value: value.to_string(),
+        }
+    }
+
+    /// tests ............................
+    ///
+    #[test]
+    fn parameter_filter_matches_workflow_parameter() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+        };
+
+        let workflow = workflow_with_parameters(vec![("scan_number", "12345")]);
+
+        assert!(filter.matches_parameters(&workflow));
+    }
+
+    /// wrong Value
+    #[test]
+    fn parameter_filter_rejects_wrong_value() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+        };
+
+        let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
+
+        assert!(!filter.matches_parameters(&workflow));
+    }
+
+    /// Missing parameter
+    #[test]
+    fn parameter_filter_rejects_missing_parameter() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+        };
+
+        let workflow = workflow_with_parameters(vec![("beamline", "i14")]);
+
+        assert!(!filter.matches_parameters(&workflow));
+    }
+
+    /// No parameter filter
+    ///
+    #[test]
+    fn no_parameter_filter_matches_any_workflow() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+        };
+
+        let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
+
+        assert!(filter.matches_parameters(&workflow));
+    }
+
+    /// Multiple parameter filters
+    ///
+    #[test]
+    fn parameter_filters_require_all_parameters_to_match() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: Some(vec![
+                parameter_filter("scan_number", "12345"),
+                parameter_filter("beamline", "i14"),
+            ]),
+        };
+
+        let workflow =
+            workflow_with_parameters(vec![("scan_number", "12345"), ("beamline", "i14")]);
+
+        assert!(filter.matches_parameters(&workflow));
+    }
+
+    /// One parameter does not match
+    #[test]
+    fn parameter_filters_reject_when_one_parameter_does_not_match() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: Some(vec![
+                parameter_filter("scan_number", "12345"),
+                parameter_filter("beamline", "i14"),
+            ]),
+        };
+
+        let workflow =
+            workflow_with_parameters(vec![("scan_number", "12345"), ("beamline", "i13")]);
+
+        assert!(!filter.matches_parameters(&workflow));
+    }
+
+    /// workflow has no parameters
+    ///
+    #[test]
+    fn parameter_filter_rejects_workflow_without_arguments() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+        };
+
+        let workflow = IoArgoprojWorkflowV1alpha1Workflow {
+            api_version: None,
+            kind: None,
+            metadata: Default::default(),
+            spec: IoArgoprojWorkflowV1alpha1WorkflowSpec {
+                arguments: None,
+                ..Default::default()
+            },
+            status: None,
+        };
+        assert!(!filter.matches_parameters(&workflow));
+    }
+
     // TEMPLATES--------------------------------------------
+
     #[tokio::test]
     async fn science_group_filter() {
         let science_groups = vec![ScienceGroup::Examples];
         let filters = WorkflowTemplatesFilter {
             science_group: Some(science_groups),
         };
+
         let label_selectors = filters.create_label_selection();
         assert_eq!(
             label_selectors,
@@ -351,6 +563,7 @@ mod tests {
         let filters = WorkflowTemplatesFilter {
             science_group: Some(science_groups),
         };
+
         let label_selectors = filters.create_label_selection();
         assert_eq!(
             label_selectors,
@@ -364,6 +577,7 @@ mod tests {
         let filters = WorkflowTemplatesFilter {
             science_group: Some(science_groups),
         };
+
         let label_selectors = filters.create_label_selection();
 
         let output_groups: Vec<&str> = label_selectors.split(",").collect();
@@ -379,6 +593,7 @@ mod tests {
         let filters = WorkflowTemplatesFilter {
             science_group: Some(science_groups),
         };
+
         let label_selectors = filters.create_label_selection();
         assert_eq!(
             label_selectors,
@@ -397,6 +612,7 @@ mod tests {
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
             }]),
+            parameters: None,
         };
 
         assert_eq!(filters.create_label_selection(), "beamline=i14");
@@ -415,6 +631,7 @@ mod tests {
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
             }]),
+            parameters: None,
         };
 
         assert_eq!(
@@ -434,6 +651,7 @@ mod tests {
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
             }]),
+            parameters: None,
         };
 
         assert_eq!(filters.create_label_selection(), "beamline=i14");
@@ -448,6 +666,7 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
+            parameters: None,
         };
 
         let labels = filters.create_label_selection();
@@ -467,15 +686,20 @@ mod tests {
             succeeded: false,
             running: true,
         };
+
         let filters = WorkflowFilter {
             creator: Some(creator),
             template: None,
             workflow_status_filter: Some(phases),
             labels: None,
+            parameters: None,
         };
 
         let labels = filters.create_label_selection();
-        assert_eq!(labels, "workflows.argoproj.io/phase in (Running),workflows.argoproj.io/creator-preferred-username=test");
+        assert_eq!(
+            labels,
+            "workflows.argoproj.io/phase in (Running),workflows.argoproj.io/creator-preferred-username=test"
+        );
     }
 
     #[tokio::test]
@@ -488,15 +712,20 @@ mod tests {
             succeeded: false,
             running: true,
         };
+
         let filters = WorkflowFilter {
             creator: Some(creator),
             template: None,
             workflow_status_filter: Some(phases),
             labels: None,
+            parameters: None,
         };
 
         let labels = filters.create_label_selection();
-        assert_eq!(labels, "workflows.argoproj.io/phase in (Running, Failed),workflows.argoproj.io/creator-preferred-username=test");
+        assert_eq!(
+            labels,
+            "workflows.argoproj.io/phase in (Running, Failed),workflows.argoproj.io/creator-preferred-username=test"
+        );
     }
 
     #[tokio::test]
@@ -516,9 +745,13 @@ mod tests {
             template: Some(template),
             workflow_status_filter: Some(phases),
             labels: None,
+            parameters: None,
         };
 
         let labels = filters.create_label_selection();
-        assert_eq!(labels, "workflows.argoproj.io/phase in (Running),workflows.argoproj.io/creator-preferred-username=test,workflows.argoproj.io/cluster-workflow-template=template-name");
+        assert_eq!(
+            labels,
+            "workflows.argoproj.io/phase in (Running),workflows.argoproj.io/creator-preferred-username=test,workflows.argoproj.io/cluster-workflow-template=template-name"
+        );
     }
 }
