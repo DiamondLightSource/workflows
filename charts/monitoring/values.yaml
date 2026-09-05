@@ -168,7 +168,6 @@ thanos:
 prometheus:
   kube-state-metrics:
     enabled: false
-
   serverFiles:
   alerting_rules.yml:
     groups:
@@ -181,8 +180,7 @@ prometheus:
               severity: warning
             annotations:
               summary: Test alert
-              description: Test alert to verify alerting_rules.yaml is loaded  
-    
+              description: Test alert to verify alerting_rules.yaml is loaded
   prometheus-node-exporter:
     enabled: false
   prometheus-pushgateway:
