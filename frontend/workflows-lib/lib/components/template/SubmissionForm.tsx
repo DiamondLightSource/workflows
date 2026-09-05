@@ -2,6 +2,7 @@ import { materialCells } from "@jsonforms/material-renderers";
 import { JsonSchema, UISchemaElement, createAjv } from "@jsonforms/core";
 import { JsonForms } from "@jsonforms/react";
 import React, { useState } from "react";
+
 import {
   Box,
   Divider,
@@ -44,12 +45,16 @@ const TemplateSubmissionForm: React.FC<TemplateSubmissionFormProps> = ({
   const theme = useTheme();
   const validator = createAjv({ useDefaults: true, coerceTypes: true });
 
-  const [parameters, setParameters] = useState(prepopulatedParameters ?? {});
+  const [parameters, setParameters] = useState<JSONObject>(
+    prepopulatedParameters ?? {},
+  );
   const [errors, setErrors] = useState<ErrorObject[]>([]);
 
   const [submitted, setSubmitted] = useState(false);
 
   const onClick = (visit: Visit, parameters?: object) => {
+    console.log("SUBMIT PARAMETERS", JSON.stringify(parameters, null, 2));
+
     if (errors.length === 0) {
       onSubmit(visit, parameters ?? {});
       setSubmitted(true);
