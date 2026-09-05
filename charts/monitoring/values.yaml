@@ -180,7 +180,8 @@ prometheus:
               labels:
                 severity: warning
               annotations:
-               summary: Test alert  
+                summary: Test alert
+                description: Test alert to verify alerting_rules.yml is loaded  
     
   prometheus-node-exporter:
     enabled: false
