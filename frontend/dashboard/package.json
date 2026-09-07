@@ -18,7 +18,7 @@
     "workflows-lib": "*"
   },
   "devDependencies": {
-    "babel-plugin-relay": "20.1.1",
+    "babel-plugin-relay": "21.0.1",
     "vite-plugin-relay": "2.1.0"
   },
   "peerDependencies": {
