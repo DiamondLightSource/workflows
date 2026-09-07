@@ -1,2 +1,2 @@
-FROM node:26.5-bookworm
+FROM node:26.8-bookworm
 RUN npm install -g corepack@latest && corepack enable
