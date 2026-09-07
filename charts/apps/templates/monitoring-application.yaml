@@ -9,12 +9,12 @@ metadata:
 spec:
   destination:
     namespace: monitoring
-    targetRevision: HEAD
+    server: {{ .Values.destination.server }}
   project: default
   source:
     repoURL: https://github.com/DiamondLightSource/workflows.git
     path: charts/monitoring
-    targetRevision: HEAD
+    targetRevision: {{ .Values.monitoring.targetRevision }}
 
     helm:
       valueFiles:
