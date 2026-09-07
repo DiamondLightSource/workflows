@@ -3,7 +3,7 @@ name: dashboard
 description: A dashboard for Diamond workflows
 type: application
 version: 0.3.34
-appVersion: 0.1.17
+appVersion: 0.1.18
 dependencies:
   - name: common
     version: 2.23.0
