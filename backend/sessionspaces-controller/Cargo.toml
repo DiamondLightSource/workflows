@@ -24,10 +24,10 @@ anyhow = { workspace = true }
 kube = { workspace = true }
 k8s-openapi = { workspace = true }
 dotenvy = { workspace = true }
-ldap3 = { version = "0.11.5", default-features = false, features = ["tls-rustls"] }
-sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio", "tls-rustls", "mysql", "derive", "time"] }
-time = "0.3.47"
-strum = { version = "0.27.2", features = ["derive"] }
+ldap3 = { workspace = true }
+sqlx = { workspace = true, features = ["derive"] }
+time = { workspace = true }
+strum = { workspace = true }
 axum = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

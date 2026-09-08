@@ -48,6 +48,10 @@ tracing-subscriber = { version = "0.3.20" }
 url = { version = "2.5.4" }
 k8s-openapi = { version = "0.28.0", features = ["v1_35"] }
 kube = { version = "4.2.0", features = ["runtime", "derive"] }
+ldap3 = { version = "0.11.5", default-features = false, features = ["tls-rustls"] }
+sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio", "tls-rustls", "mysql", "time"] }
+strum = { version = "0.27.2", features = ["derive"] }
+time = { version = "0.3.47" }
 openidconnect = "4.0.1"
 opentelemetry = { version = "0.31.0" }
 opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }

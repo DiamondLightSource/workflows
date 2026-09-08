@@ -14,20 +14,13 @@ if_chain = "1.0.3"
 itertools = { version = "0.14.0" }
 k8s-openapi = { workspace = true }
 kube = { workspace = true }
-ldap3 = { version = "0.11.5", default-features = false, features = [
-    "tls-rustls",
-] }
+ldap3 = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-sqlx = { version = "0.8.6", features = [
-    "runtime-tokio",
-    "tls-rustls",
-    "mysql",
-    "time",
-] }
-strum = { version = "0.27.2", features = ["derive"] }
+sqlx = { workspace = true, default-features = true }
+strum = { workspace = true }
 telemetry = { path = "../telemetry" }
-time = { version = "0.3.47" }
+time = { workspace = true }
 tokio = { workspace = true }
 tower = { workspace = true, features = ["limit", "util"] }
 tracing = { workspace = true }
