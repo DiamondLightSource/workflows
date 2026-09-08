@@ -9,6 +9,7 @@ RUN cargo install cargo-auditable
 COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY graph-proxy/Cargo.toml graph-proxy/
 COPY sessionspaces/Cargo.toml sessionspaces/
+COPY sessionspaces-controller/Cargo.toml sessionspaces-controller/
 COPY auth-broker/Cargo.toml auth-broker/
 COPY auth-gateway/Cargo.toml auth-gateway/
 COPY auth-core/Cargo.toml auth-core/
@@ -24,6 +25,9 @@ RUN mkdir -p argo-workflows-openapi/src \
     && echo "fn main() {}" > graph-proxy/src/main.rs \
     && mkdir -p sessionspaces/src \
     && echo "fn main() {}" > sessionspaces/src/main.rs \
+    && mkdir -p sessionspaces-controller/src/bin \
+    && touch sessionspaces-controller/src/lib.rs \
+    && echo "fn main() {}" > sessionspaces-controller/src/bin/webhook.rs \
     && mkdir -p auth-broker/src \
     && echo "fn main() {}" > auth-broker/src/main.rs \
     && mkdir -p auth-gateway/src \
