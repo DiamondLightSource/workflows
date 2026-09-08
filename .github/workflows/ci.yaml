@@ -45,6 +45,29 @@ jobs:
       contents: read
       packages: write
 
+  sessionspaces_controller_code:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/_sessionspaces_controller_code.yaml
+
+  sessionspaces_webhook_container:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: sessionspaces_controller_code
+    uses: ./.github/workflows/_sessionspaces_webhook_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
+  sessionspaces_api_container:
+    # Deduplicate jobs from pull requests and branch pushes within the same repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    needs: sessionspaces_controller_code
+    uses: ./.github/workflows/_sessionspaces_api_container.yaml
+    permissions:
+      contents: read
+      packages: write
+
   graph_proxy_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
