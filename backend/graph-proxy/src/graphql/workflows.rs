@@ -617,60 +617,156 @@ impl WorkflowsQuery {
             filter.generate_filters(&mut url);
         }
         let limit = limit.unwrap_or(10);
-        url.query_pairs_mut()
-            .append_pair("listOptions.limit", &limit.to_string());
         let cursor_index = if let Some(cursor) = cursor {
-            let cursor_value = OpaqueCursor::<usize>::decode_cursor(&cursor)
-                .map_err(|_| anyhow::Error::msg("Cursor not valid"))?;
-            url.query_pairs_mut()
-                .append_pair("listOptions.continue", &cursor_value.0.to_string());
-            cursor_value.0
+            OpaqueCursor::<usize>::decode_cursor(&cursor)
+                .map_err(|_| anyhow::Error::msg("Cursor not valid"))?
+                .0
         } else {
             0
         };
-        debug!("Retrieving workflows name from {url}");
-        let request = if let Some(auth_token) = auth_token {
-            CLIENT.get(url).bearer_auth(auth_token.token())
-        } else {
-            CLIENT.get(url)
-        };
 
-        let api_result = request
-            .send()
-            .await?
-            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowList>>()
-            .await?;
+        let has_parameter_filter = filter
+            .as_ref()
+            .is_some_and(WorkflowFilter::has_parameter_filter);
 
-        let workflows_response = match api_result.into_result() {
-            Ok(res) => res,
-            Err(err) => {
-                if err.message.as_deref() == Some("Unauthorized") {
-                    return Err(err.into());
-                }
-                return Ok(Connection::new(false, false));
+        if !has_parameter_filter {
+            url.query_pairs_mut()
+                .append_pair("listOptions.limit", &limit.to_string());
+
+            if cursor_index > 0 {
+                url.query_pairs_mut()
+                    .append_pair("listOptions.continue", &cursor_index.to_string());
             }
-        };
+        }
+        debug!("Retrieving workflows name from {url}");
+        // Keep the existing single-page behaviour unless parameter filtering
+        // is requested. Parameter filtering happens client-side because Argo
+        // cannot filter workflow parameters through listOptions.labelSelector.
+        if !has_parameter_filter {
+            let request = if let Some(auth_token) = auth_token {
+                CLIENT.get(url).bearer_auth(auth_token.token())
+            } else {
+                CLIENT.get(url)
+            };
 
-        let mut workflow_items = workflows_response.items;
-        if let Some(filter) = &filter {
-            workflow_items.retain(|workflow| filter.matches_parameters(workflow));
+            let api_result = request
+                .send()
+                .await?
+                .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowList>>()
+                .await?;
+
+            let workflows_response = match api_result.into_result() {
+                Ok(res) => res,
+                Err(err) => {
+                    if err.message.as_deref() == Some("Unauthorized") {
+                        return Err(err.into());
+                    }
+                    return Ok(Connection::new(false, false));
+                }
+            };
+
+            let workflows = workflows_response
+                .items
+                .into_iter()
+                .map(|workflow| Workflow::new(workflow, visit.clone().into()))
+                .collect::<Vec<_>>();
+
+            let mut connection = Connection::new(
+                cursor_index > 0,
+                workflows_response.metadata.continue_.is_some(),
+            );
+
+            connection
+                .edges
+                .extend(workflows.into_iter().enumerate().map(|(idx, workflow)| {
+                    let cursor = OpaqueCursor(cursor_index + idx + 1);
+                    Edge::new(cursor, workflow)
+                }));
+
+            return Ok(connection);
         }
 
-        let workflows = workflow_items
+        // Parameter filtering is client-side, so continue through Argo pages
+        // until we have collected the requested number of matching workflows.
+        let mut matching_workflows = Vec::with_capacity(cursor_index + limit as usize);
+        let mut argo_continue: Option<String> = None;
+        let mut has_next_page;
+
+        loop {
+            let mut page_url = url.clone();
+
+            page_url
+                .query_pairs_mut()
+                .append_pair("listOptions.limit", &limit.to_string());
+
+            if let Some(continue_token) = &argo_continue {
+                page_url
+                    .query_pairs_mut()
+                    .append_pair("listOptions.continue", continue_token);
+            }
+
+            let request = if let Some(auth_token) = auth_token {
+                CLIENT.get(page_url).bearer_auth(auth_token.token())
+            } else {
+                CLIENT.get(page_url)
+            };
+
+            let api_result = request
+                .send()
+                .await?
+                .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowList>>()
+                .await?;
+
+            let workflows_response = match api_result.into_result() {
+                Ok(res) => res,
+                Err(err) => {
+                    if err.message.as_deref() == Some("Unauthorized") {
+                        return Err(err.into());
+                    }
+                    return Ok(Connection::new(false, false));
+                }
+            };
+
+            has_next_page = workflows_response.metadata.continue_.is_some();
+
+            if let Some(filter) = &filter {
+                matching_workflows.extend(
+                    workflows_response
+                        .items
+                        .into_iter()
+                        .filter(|workflow| filter.matches_parameters(workflow)),
+                );
+            }
+
+            if matching_workflows.len() >= cursor_index + limit as usize || !has_next_page {
+                break;
+            }
+
+            argo_continue = workflows_response.metadata.continue_;
+        }
+
+        // `cursor_index` is the number of matching workflows already consumed.
+        // We refetch from the beginning for parameter-filtered pages, so skip
+        // matching workflows belonging to previous GraphQL pages.
+        let workflows = matching_workflows
             .into_iter()
+            .skip(cursor_index)
+            .take(limit as usize)
             .map(|workflow| Workflow::new(workflow, visit.clone().into()))
             .collect::<Vec<_>>();
 
         let mut connection = Connection::new(
             cursor_index > 0,
-            workflows_response.metadata.continue_.is_some(),
+            has_next_page || workflows.len() == limit as usize,
         );
+
         connection
             .edges
             .extend(workflows.into_iter().enumerate().map(|(idx, workflow)| {
                 let cursor = OpaqueCursor(cursor_index + idx + 1);
                 Edge::new(cursor, workflow)
             }));
+
         Ok(connection)
     }
 }

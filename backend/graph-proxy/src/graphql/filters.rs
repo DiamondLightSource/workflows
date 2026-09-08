@@ -157,6 +157,13 @@ pub struct WorkflowFilter {
 }
 
 impl WorkflowFilter {
+    /// Returns true when workflow parameter filtering is requested.
+    pub fn has_parameter_filter(&self) -> bool {
+        self.parameters
+            .as_ref()
+            .is_some_and(|parameters| !parameters.is_empty())
+    }
+
     /// Generates and applies all the filters
     pub fn generate_filters(&self, url: &mut Url) {
         let labels = &self.create_label_selection();
