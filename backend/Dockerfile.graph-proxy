@@ -11,6 +11,7 @@ COPY argo-workflows-openapi/Cargo.toml argo-workflows-openapi/Cargo.toml
 COPY argo-workflows-openapi/build.rs argo-workflows-openapi/build.rs
 COPY argo-workflows-openapi/src/lib.rs argo-workflows-openapi/src/lib.rs
 COPY sessionspaces/Cargo.toml sessionspaces/Cargo.toml
+COPY sessionspaces-controller/Cargo.toml sessionspaces-controller/Cargo.toml
 COPY auth-core/Cargo.toml auth-core/
 COPY auth-core/src/lib.rs auth-core/src/lib.rs
 COPY auth-core/migration/Cargo.toml auth-core/migration/
@@ -24,6 +25,9 @@ RUN mkdir -p graph-proxy/src \
     && echo "fn main() {}" > graph-proxy/src/main.rs \
     && mkdir -p sessionspaces/src \
     && echo "fn main() {}" > sessionspaces/src/main.rs \
+    && mkdir -p sessionspaces-controller/src/bin \
+    && touch sessionspaces-controller/src/lib.rs \
+    && echo "fn main() {}" > sessionspaces-controller/src/bin/webhook.rs \
     && mkdir -p auth-gateway/src \
     && echo "fn main() {}" > auth-gateway/src/main.rs \
     && mkdir -p auth-core/src \
