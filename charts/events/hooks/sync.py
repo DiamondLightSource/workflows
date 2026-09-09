@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import re
-from typing import TypedDict, NotRequired, Literal
+from typing import TypedDict, NotRequired, Literal, Any
 from pydantic import BaseModel, ValidationError
 
 '''
@@ -47,11 +47,16 @@ class WorkflowParameter(BaseModel):
   path: str | None = None
   default: str | None = None
 
+class RetryBehaviour(BaseModel):
+  numRetries: int
+  alertSlackChannelId: str | None = None
+
 
 class TriggerWorkflow(BaseModel):
   template: str
   triggerOnMessageType: Literal["start", "stop"] | None = None
   parameters: list[WorkflowParameter]
+  retryBehaviour: RetryBehaviour | None = None
 
 
 class TriggerSpec(BaseModel):
@@ -100,6 +105,8 @@ class Controller(BaseHTTPRequestHandler):
       workflow = trigger.spec.workflow
       template = workflow.template
       eventName = trigger.spec.eventName
+      retryBehaviour = workflow.retryBehaviour
+
 
       dependency = {
         "name": name,
@@ -150,38 +157,63 @@ class Controller(BaseHTTPRequestHandler):
 
         templateArgs.append({"name": param_name, "value": ""})
 
-      triggers.append({
+      triggerTemplate: dict[str, Any] = {
         "template": {
-          "name": name,
-          "conditions": name,
-          "argoWorkflow": {
-            "parameters": sensorParams,
-            "operation": "submit",
-            "source": {
-              "resource": {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Workflow",
-                "metadata": {
-                  "generateName": f"{template}-event-",
-                  "labels": {
-                      "workflows.diamond.ac.uk/triggeruid": uid,
+                "name": name,
+                "conditions": name,
+                "argoWorkflow": {
+                  "parameters": sensorParams,
+                  "operation": "submit",
+                  "source": {
+                    "resource": {
+                      "apiVersion": "argoproj.io/v1alpha1",
+                      "kind": "Workflow",
+                      "metadata": {
+                        "generateName": f"{template}-event-",
+                        "labels": {
+                            "workflows.diamond.ac.uk/triggeruid": uid,
+                          }
+                      },
+                      "spec": {
+                        "serviceAccountName": "argo-workflow",
+                        "workflowTemplateRef": {
+                          "name": template,
+                          "clusterScope": True
+                        },
+                        "arguments": {
+                          "parameters": templateArgs
+                        },
+                      },
                     }
-                },
-                "spec": {
-                  "serviceAccountName": "argo-workflow",
-                  "workflowTemplateRef": {
-                    "name": template,
-                    "clusterScope": True
-                  },
-                  "arguments": {
-                    "parameters": templateArgs
-                  },
-                },
-              }
+                  }
+                }
+              }}
+
+      if retryBehaviour and retryBehaviour.numRetries > 0:
+        triggerTemplate.update({"retryStrategy": {"steps": retryBehaviour.numRetries}})
+
+      if retryBehaviour and retryBehaviour.alertSlackChannelId:
+        triggerTemplate.update({"atLeastOnce": True})
+        dlqTrigger = {"template": {
+            "name": f"dlq-{name}",
+            "slack": {
+              "slackToken": {
+                  "key": "token",
+                  "name": "slack-bot-token"
+              },
+              "channel": retryBehaviour.alertSlackChannelId,
+              "message":
+                (f":rotating_light: *An automated workflow created from trigger {name} has failed*.\n"
+                 "This is likely due to a misconfigured workflow template name and/or parameters in the trigger template. "
+                 "Contact the <#C08NYJSGMFD> team for assistance")
             }
-          }
+          },
+          "atLeastOnce": True,
         }
-      })
+        triggerTemplate.update({"dlqTrigger": dlqTrigger})
+
+
+      triggers.append({**triggerTemplate})
 
     if errored_triggers:
       print(f"ERROR: Unable to parse {len(errored_triggers)} trigger(s)")
