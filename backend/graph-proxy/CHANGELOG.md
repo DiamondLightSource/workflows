@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.2](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.1...graph-proxy@v0.2.2) (2026-09-09)
+
+
+### Features
+
+* **graph-proxy:** make enabled field queryable for triggers ([53e431c](https://github.com/DiamondLightSource/workflows/commit/53e431cd6f72d07159a562fa02ffc4b764319e31))
+* parameter filtering ([b3456b4](https://github.com/DiamondLightSource/workflows/commit/b3456b43be176a3ae9f9560fcb9e00c56c420d7c))
+
+
+### Bug Fixes
+
+* correctly determine hasNextPage for parameter filtered workflows ([de0dc5d](https://github.com/DiamondLightSource/workflows/commit/de0dc5da057737d4c5f1061d712fab979f808096))
+* correctly determine hasNextPage for parameter filtered workflows ([75289be](https://github.com/DiamondLightSource/workflows/commit/75289be8308651b1f615211e3fc9ca171a4635ae))
+* workflow list pagination ([acc11fc](https://github.com/DiamondLightSource/workflows/commit/acc11fcfd6e70f65ac29606ef9f9af1c6b0f1ea7))
+
 ## [0.2.1](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.0...graph-proxy@v0.2.1) (2026-09-07)
 
 
