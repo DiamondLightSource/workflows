@@ -13,7 +13,7 @@
   "+6": "0.0.0",
   "backend/telemetry": "0.1.2",
   "+7": "0.0.0",
-  "workflows-cli": "0.1.1",
+  "workflows-cli": "0.1.2",
   "+8": "0.0.0",
   "backend/identity-mapper": "0.1.1",
   "backend/auth-gateway": "0.1.1",
