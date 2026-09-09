@@ -134,8 +134,7 @@ pub struct WorkflowParameterFilter {
     parameter_name: String,
 
     value: String,
-    }
-
+}
 
 /// All the supported Workflows filters
 #[derive(Debug, Default, Clone, InputObject)]
