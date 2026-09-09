@@ -129,10 +129,11 @@ pub struct LabelSelector {
 /// Represents a workflow parameter filter
 #[derive(Debug, Clone, InputObject)]
 pub struct WorkflowParameterFilter {
-    /// The workflow parameter name : parameter_name   
+    /// The workflow parameter name
     #[graphql(name = "parameterName")]
     parameter_name: String,
 
+    /// The workflow parameter value
     value: String,
 }
 
