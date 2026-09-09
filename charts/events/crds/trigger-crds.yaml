@@ -36,6 +36,15 @@ spec:
                     triggerOnMessageType:
                       type: string
                       pattern: "^(start|stop)$"
+                    retryBehaviour:
+                      type: object
+                      properties:
+                        numRetries:
+                          type: integer
+                          default: 0
+                          minimum: 0
+                        alertSlackChannelId:
+                          type: string
                     parameters:
                       type: array
                       default: []
@@ -101,6 +110,15 @@ spec:
                     triggerOnMessageType:
                       type: string
                       pattern: "^(start|stop)$"
+                    retryBehaviour:
+                      type: object
+                      properties:
+                        numRetries:
+                          type: integer
+                          default: 0
+                          minimum: 0
+                        alertSlackChannelId:
+                          type: string
                     parameters:
                       type: array
                       default: []
