@@ -17,6 +17,9 @@ spec:
       - name: png
         path: parameters.png
         default: "true"
+    retryBehaviour:
+      numRetries: 1
+      alertSlackChannelId: analysis-platform-alerts
 ---
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: ClusterTriggerTemplate
