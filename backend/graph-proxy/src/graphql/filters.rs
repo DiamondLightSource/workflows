@@ -129,12 +129,13 @@ pub struct LabelSelector {
 /// Represents a workflow parameter filter
 #[derive(Debug, Clone, InputObject)]
 pub struct WorkflowParameterFilter {
-    /// The workflow parameter name
-    key: String,
+    /// The workflow parameter name : parameter_name   
+    #[graphql(name = "parameterName")]
+    parameter_name: String,
 
-    /// The workflow parameter value
     value: String,
-}
+    }
+
 
 /// All the supported Workflows filters
 #[derive(Debug, Default, Clone, InputObject)]
@@ -200,7 +201,7 @@ impl WorkflowFilter {
 
         filters.iter().all(|filter| {
             arguments.parameters.iter().any(|parameter| {
-                parameter.name == filter.key
+                parameter.name == filter.parameter_name
                     && parameter.value.as_deref() == Some(filter.value.as_str())
             })
         })
@@ -412,13 +413,12 @@ mod tests {
         }
     }
 
-    fn parameter_filter(key: &str, value: &str) -> WorkflowParameterFilter {
+    fn parameter_filter(parameter_name: &str, value: &str) -> WorkflowParameterFilter {
         WorkflowParameterFilter {
-            key: key.to_string(),
+            parameter_name: parameter_name.to_string(),
             value: value.to_string(),
         }
     }
-
     /// tests ............................
     ///
     #[test]
