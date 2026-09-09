@@ -688,9 +688,14 @@ impl WorkflowsQuery {
 
         // Parameter filtering is client-side, so continue through Argo pages
         // until we have collected the requested number of matching workflows.
-        let mut matching_workflows = Vec::with_capacity(cursor_index + limit as usize);
+        // Parameter filtering is client-side, so continue through Argo pages
+        // until we have collected the requested page plus one additional match.
+        // The additional match determines whether another GraphQL page exists.
+        let page_end = cursor_index + limit as usize;
+        let required_matches = page_end + 1;
+
+        let mut matching_workflows = Vec::with_capacity(required_matches);
         let mut argo_continue: Option<String> = None;
-        let mut has_next_page;
 
         loop {
             let mut page_url = url.clone();
@@ -727,7 +732,7 @@ impl WorkflowsQuery {
                 }
             };
 
-            has_next_page = workflows_response.metadata.continue_.is_some();
+            let next_argo_continue = workflows_response.metadata.continue_;
 
             if let Some(filter) = &filter {
                 matching_workflows.extend(
@@ -738,16 +743,26 @@ impl WorkflowsQuery {
                 );
             }
 
-            if matching_workflows.len() >= cursor_index + limit as usize || !has_next_page {
+            // We have enough matches to return the requested page and determine
+            // whether another matching workflow exists.
+            if matching_workflows.len() >= required_matches {
                 break;
             }
 
-            argo_continue = workflows_response.metadata.continue_;
+            let Some(continue_token) = next_argo_continue else {
+                break;
+            };
+
+            argo_continue = Some(continue_token);
         }
 
+        // An additional matching workflow after the requested page proves that
+        // another GraphQL page exists.
+        let has_next_page = matching_workflows.len() > page_end;
+
         // `cursor_index` is the number of matching workflows already consumed.
-        // We refetch from the beginning for parameter-filtered pages, so skip
-        // matching workflows belonging to previous GraphQL pages.
+        // Parameter-filtered requests are fetched from the beginning, so skip
+        // the workflows belonging to previous GraphQL pages.
         let workflows = matching_workflows
             .into_iter()
             .skip(cursor_index)
@@ -755,11 +770,7 @@ impl WorkflowsQuery {
             .map(|workflow| Workflow::new(workflow, visit.clone().into()))
             .collect::<Vec<_>>();
 
-        let mut connection = Connection::new(
-            cursor_index > 0,
-            has_next_page || workflows.len() == limit as usize,
-        );
-
+        let mut connection = Connection::new(cursor_index > 0, has_next_page);
         connection
             .edges
             .extend(workflows.into_iter().enumerate().map(|(idx, workflow)| {
