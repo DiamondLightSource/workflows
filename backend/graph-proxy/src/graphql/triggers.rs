@@ -49,6 +49,8 @@ struct TriggerSpec {
     /// The name of a ClusterTriggerTemplate that the Trigger is created from
     #[serde(rename = "templateRef")]
     template_ref: Option<String>,
+    /// Whether the Trigger is currently active or not
+    enabled: bool,
 }
 
 /// A Trigger for creating automated workflows
@@ -61,6 +63,8 @@ struct TriggerGQL {
     template_ref: Option<String>,
     /// The beamline that the Trigger monitors
     beamline: Option<String>,
+    /// Whether the Trigger is currently active or not
+    enabled: bool,
 }
 
 impl From<Trigger> for TriggerGQL {
@@ -73,6 +77,7 @@ impl From<Trigger> for TriggerGQL {
                 .labels
                 .as_ref()
                 .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
+            enabled: t.spec.enabled,
         }
     }
 }
@@ -242,6 +247,7 @@ impl TriggerMutation {
             },
             spec: TriggerSpec {
                 template_ref: Some(template_ref),
+                enabled: true,
             },
         };
 
@@ -709,6 +715,7 @@ users:
                 ) {
                     name
                     beamline
+                    enabled
                 }
             }
         "#,
@@ -716,7 +723,8 @@ users:
         json!({
             "trigger": {
                 "name": "test-trigger-s6qzl",
-                "beamline": "b01-1"
+                "beamline": "b01-1",
+                "enabled": true
             }
         })
     )]
