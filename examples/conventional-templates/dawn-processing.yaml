@@ -1,0 +1,173 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: dawn-processing
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: DAWN Processing
+    workflows.argoproj.io/description: |
+      Runs the DAWN command-line processing tool from a given config JSON file. All file paths used
+      in the config cannot be in home or scratch directories.
+      (https://diamondlightsource.atlassian.net/wiki/spaces/DT/pages/1378457/Command-line+processing+DAWN+2.1)
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+    workflows.diamond.ac.uk/parameter-schema.confpath : |
+      {
+        "type": "string",
+        "minLength": 1,
+        "default": "/path/to/config.json"
+      }
+    workflows.diamond.ac.uk/ui-schema: |
+      {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "Control",
+            "label": "Path to the config JSON file",
+            "scope": "#/properties/confpath"
+          },
+        ]
+      }
+spec:
+  entrypoint: dag
+  arguments:
+    parameters:
+    - name: confpath
+      value: "/dls/tmp/wvq67617/dawn-processing-workflow-test/dawn_config.json"
+
+  templates:
+  - name: dag
+    dag:
+      tasks:
+      - name: parse-config-path
+        template: parse-config-path
+      - name: read-json
+        dependencies: [parse-config-path]
+        template: read-json
+        arguments:
+          parameters:
+          - name: config-mount-path
+            value: "{{ tasks.parse-config-path.outputs.result }}"
+
+      - name: run-dawn-processing
+        dependencies: [read-json]
+        template: run-dawn-processing
+        arguments:
+          parameters:
+          - name: file-mount-path
+            value: "{{ tasks.read-json.outputs.parameters.file-mount-path }}"
+          - name: processing-mount-path
+            value: "{{ tasks.read-json.outputs.parameters.processing-mount-path }}"
+          - name: output-file-mount-path
+            value: "{{ tasks.read-json.outputs.parameters.output-file-mount-path }}"
+          - name: config-mount-path
+            value: "{{ tasks.parse-config-path.outputs.result }}"
+
+  - name: run-dawn-processing
+    inputs:
+      parameters:
+        - name: file-mount-path
+        - name: processing-mount-path
+        - name: output-file-mount-path
+        - name: config-mount-path
+    container:
+      image: ghcr.io/dawnscience/dawn:latest
+      command: ["/dawn_workspace/dawn"]
+      args: [
+        "-noSplash",
+        "-application",
+        "org.dawnsci.commandserver.processing.processing",
+        "-data",
+        "@none",
+        "-path",
+        "{{ workflow.parameters.confpath }}",
+        "-configuration",
+        "/tmp-dir"
+      ]
+      volumeMounts:
+      - name: work-dir
+        mountPath: "{{ inputs.parameters.config-mount-path }}"
+      - name: file-mount
+        mountPath: "{{ inputs.parameters.file-mount-path }}"
+      - name: processing-mount
+        mountPath: "{{ inputs.parameters.processing-mount-path }}"
+      - name: output-file-mount
+        mountPath: "{{ inputs.parameters.output-file-mount-path }}"
+      - name: tmp-dir
+        mountPath: "/tmp-dir"
+    podSpecPatch: |
+      containers:
+        - name: main
+          resources:
+            requests:
+              memory: 4Gi
+            limits:
+              memory: 4Gi
+    volumes:
+    - name: work-dir
+      hostPath:
+        path: "{{ inputs.parameters.config-mount-path }}"
+        type: Directory
+    - name: file-mount
+      hostPath:
+        path: "{{ inputs.parameters.file-mount-path }}"
+        type: Directory
+    - name: processing-mount
+      hostPath:
+        path: "{{ inputs.parameters.processing-mount-path }}"
+        type: Directory
+    - name: output-file-mount
+      hostPath:
+        path: "{{ inputs.parameters.output-file-mount-path }}"
+        type: Directory
+    - name: tmp-dir
+      emptyDir: {}
+
+  - name: read-json
+    inputs:
+      parameters:
+        - name: config-mount-path
+    script:
+      image: busybox
+      workingDir: "{{ inputs.parameters.config-mount-path }}"
+      command: [/bin/sh]
+      source: |
+        touch /tmp-dir/file-mount-path-from-config.txt
+        cat {{ workflow.parameters.confpath }} | sed -n 's|^ *"filePath": *"|| p' | sed 's/",*$//' > /tmp-dir/file-mount-path-from-config.txt
+        sed -i.bak 's![^/]*$!!' /tmp-dir/file-mount-path-from-config.txt
+        touch /tmp-dir/processing-mount-path-from-config.txt
+        cat {{ workflow.parameters.confpath }} | sed -n 's|^ *"processingPath": *"|| p' | sed 's/",*$//' > /tmp-dir/processing-mount-path-from-config.txt
+        sed -i.bak 's![^/]*$!!' /tmp-dir/processing-mount-path-from-config.txt
+        touch /tmp-dir/output-file-mount-path-from-config.txt
+        cat {{ workflow.parameters.confpath }} | sed -n 's|^ *"outputFilePath": *"|| p' | sed 's/",*$//' > /tmp-dir/output-file-mount-path-from-config.txt
+        sed -i.bak 's![^/]*$!!' /tmp-dir/output-file-mount-path-from-config.txt
+      volumeMounts:
+      - name: work-dir
+        mountPath: "{{ inputs.parameters.config-mount-path }}"
+      - name: tmp-dir
+        mountPath: "/tmp-dir"
+    volumes:
+    - name: work-dir
+      hostPath:
+        path: "{{ inputs.parameters.config-mount-path }}"
+        type: Directory
+    - name: tmp-dir
+      emptyDir: {}
+    outputs:
+      parameters:
+        - name: file-mount-path
+          valueFrom:
+            path: /tmp-dir/file-mount-path-from-config.txt
+        - name: processing-mount-path
+          valueFrom:
+            path: /tmp-dir/processing-mount-path-from-config.txt
+        - name: output-file-mount-path
+          valueFrom:
+            path: /tmp-dir/output-file-mount-path-from-config.txt
+
+  - name: parse-config-path
+    container:
+      image: busybox
+      command: [/bin/sh, "-c"]
+      args:
+      - echo {{ workflow.parameters.confpath }} | sed 's![^/]*$!!'
