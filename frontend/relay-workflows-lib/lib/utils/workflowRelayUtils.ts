@@ -10,6 +10,7 @@ import {
 } from "../graphql/__generated__/WorkflowTasksFragment.graphql";
 import { JSONObject } from "workflows-lib";
 import { SubmissionFormParametersFragment$data } from "../components/__generated__/SubmissionFormParametersFragment.graphql";
+import { JsonSchema } from "@jsonforms/core";
 
 export function updateSearchParamsWithTaskIds(
   updatedTaskIds: string[],
@@ -95,8 +96,96 @@ export function useFetchedTasks(
 export function mergeParameters(
   reusedParameterData: SubmissionFormParametersFragment$data | null | undefined,
   searchParams: URLSearchParams,
+  parametersSchema?: JsonSchema,
 ) {
-  const searchParameterData = Object.fromEntries(searchParams.entries());
+  const searchParameterData: JSONObject = {};
+  if (!parametersSchema) {
+    return {
+      ...reusedParameterData?.parameters,
+      ...Object.fromEntries(searchParams.entries()),
+    } as JSONObject;
+  }
+
+  for (const [key, value] of searchParams.entries()) {
+    const propertySchema = parametersSchema.properties?.[key];
+
+    // Ignore URL parameters that do not exist in the template schema.
+    if (!propertySchema || typeof propertySchema === "boolean") {
+      continue;
+    }
+
+    if (propertySchema.type === "array" || propertySchema.type === "object") {
+      try {
+        const parsedValue: unknown = JSON.parse(value);
+
+        const hasExpectedType =
+          (propertySchema.type === "array" && Array.isArray(parsedValue)) ||
+          (propertySchema.type === "object" &&
+            parsedValue !== null &&
+            typeof parsedValue === "object" &&
+            !Array.isArray(parsedValue));
+
+        if (!hasExpectedType) {
+          console.warn(
+            `Ignoring URL parameter "${key}": expected ${propertySchema.type}.`,
+          );
+          continue;
+        }
+
+        // Argo workflow parameters are passed as strings.
+        searchParameterData[key] = JSON.stringify(parsedValue);
+      } catch {
+        if (key === "multiEdge") {
+          searchParameterData[key] = [
+            ...value
+              .split(",")
+              .filter(Boolean)
+              .map((edge) => {
+                const [edgeElement, edgeTransition] = edge.split("-");
+
+                return {
+                  edgeElement,
+                  edgeTransition,
+                };
+              }),
+          ];
+
+          continue;
+        }
+
+        if (key === "multiScan") {
+          searchParameterData[key] = [
+            ...value
+              .split(",")
+              .filter(Boolean)
+              .map((scan) => {
+                const [start, end] = scan.split("-");
+
+                return {
+                  multiScan: {
+                    start: Number(start),
+                    end: Number(end),
+                    excluded: [],
+                  },
+                };
+              }),
+          ];
+
+          continue;
+        }
+
+        console.warn(
+          `Ignoring URL parameter "${key}": value is not valid JSON.`,
+        );
+      }
+
+      continue;
+    }
+
+    // Preserve existing behaviour for flat parameters.
+    searchParameterData[key] = value;
+  }
+
   return {
     ...reusedParameterData?.parameters,
     ...searchParameterData,
