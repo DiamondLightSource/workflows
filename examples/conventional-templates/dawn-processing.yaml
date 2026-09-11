@@ -25,7 +25,7 @@ metadata:
             "type": "Control",
             "label": "Path to the config JSON file",
             "scope": "#/properties/confpath"
-          },
+          }
         ]
       }
 spec:
