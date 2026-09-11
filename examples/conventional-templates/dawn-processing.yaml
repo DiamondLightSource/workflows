@@ -71,7 +71,7 @@ spec:
         - name: output-file-mount-path
         - name: config-mount-path
     container:
-      image: ghcr.io/dawnscience/dawn:latest
+      image: ghcr.io/dawnscience/dawn:v2.41.0
       command: ["/dawn_workspace/dawn"]
       args: [
         "-noSplash",
