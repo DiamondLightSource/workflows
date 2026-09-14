@@ -37,22 +37,22 @@ spec:
         port: 61613
         destination: /topic/public.worker.event
 ---
-apiVersion: argoproj.io/v1alpha1
-kind: EventSource
-metadata:
-  name: b01-1
-  labels:
-    workflows.diamond.ac.uk/beamline: b01-1
-spec:
-  generic:
-    b01-1-message:
-      insecure: true
-      jsonBody: true
-      url: "stomp-service.events.svc:80"
-      config: |
-        user: guest
-        password: guest
-        host: b01-1-rabbitmq-daq.diamond.ac.uk
-        port: 61613
-        destination: /topic/public.worker.event
+# apiVersion: argoproj.io/v1alpha1
+# kind: EventSource
+# metadata:
+#   name: b01-1
+#   labels:
+#     workflows.diamond.ac.uk/beamline: b01-1
+# spec:
+#   generic:
+#     b01-1-message:
+#       insecure: true
+#       jsonBody: true
+#       url: "stomp-service.events.svc:80"
+#       config: |
+#         user: guest
+#         password: guest
+#         host: b01-1-rabbitmq-daq.diamond.ac.uk
+#         port: 61613
+#         destination: /topic/public.worker.event
 {{- end }}
