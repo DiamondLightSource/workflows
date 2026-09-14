@@ -59,6 +59,9 @@ groups:
         repoURL: https://github.com/DiamondLightSource/crystallography-workflows
         path: I15-1_workflows
         sourceType: helm
+      - name: i15-1-triggers
+        repoURL: https://github.com/DiamondLightSource/crystallography-workflows
+        path: I15-1_workflows/triggertemplates
   - name: test-rig
     enabled: true
     permittedRepos: []
