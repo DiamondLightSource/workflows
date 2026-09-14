@@ -24,23 +24,6 @@ spec:
 apiVersion: workflows.diamond.ac.uk/v1alpha1
 kind: ClusterTriggerTemplate
 metadata:
-  name: i15-1-trigger
-  labels:
-    workflows.diamond.ac.uk/source: message-bus
-    workflows.diamond.ac.uk/beamline: i15-1
-spec:
-  eventName: i15-1-message
-  workflow:
-    template: access-visit-dir
-    triggerOnMessageType: stop
-    parameters:
-      - name: visitdir
-        path: doc.data_session_directory
-
----
-apiVersion: workflows.diamond.ac.uk/v1alpha1
-kind: ClusterTriggerTemplate
-metadata:
   name: visr-trigger
   labels:
     workflows.diamond.ac.uk/source: message-bus
