@@ -276,7 +276,7 @@ bitnamisecret:
 s3mock:
   enabled: false
 
-allowTriggerUid: false
+allowTriggerUid: true
 
 authenticatedWorkflows:
   # Enables auth-broker + Envoy sidecar injection
