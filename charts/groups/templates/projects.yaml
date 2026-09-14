@@ -20,6 +20,8 @@ spec:
   clusterResourceWhitelist:
     - group: argoproj.io
       kind: ClusterWorkflowTemplate
+    - group: workflows.diamond.ac.uk
+      kind: ClusterTriggerTemplate
   namespaceResourceWhitelist:
     - group: argoproj.io
       kind: WorkflowTemplate
