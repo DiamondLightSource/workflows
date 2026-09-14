@@ -9,7 +9,7 @@ metadata:
 spec:
   destination:
     namespace: monitoring
-    targetRevision: {{ .Values.monitoring.targetRevision }}
+    server: {{ .Values.destination.server }}
   project: default
   source:
     repoURL: https://github.com/DiamondLightSource/workflows.git
