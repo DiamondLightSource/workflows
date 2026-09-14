@@ -23,6 +23,8 @@ import { Suspense } from "react";
 import { SubmissionFormParametersFragment$data } from "../../lib/components/__generated__/SubmissionFormParametersFragment.graphql";
 import e02Mib2xRetriggerResponse from "../mocks/responses/templates/e02Mib2xRetriggerResponse.json";
 
+import { JsonSchema } from "@jsonforms/core";
+
 beforeAll(() => {
   server.listen();
 });
@@ -143,4 +145,102 @@ test("mergeParameters", () => {
       mib_path: "/test/path/",
     }),
   );
+});
+
+test("mergeParameters supports a single-item array", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    properties: {
+      multiEdge: {
+        type: "array",
+      },
+    },
+  };
+
+  const multiEdge = [
+    {
+      edgeElement: "Tl",
+      edgeTransition: "La",
+    },
+  ];
+
+  const searchParams = new URLSearchParams({
+    multiEdge: JSON.stringify(multiEdge),
+  });
+
+  expect(mergeParameters(undefined, searchParams, schema)).toEqual({
+    multiEdge,
+  });
+});
+
+test("mergeParameters supports a multi-item array", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    properties: {
+      multiEdge: {
+        type: "array",
+      },
+    },
+  };
+
+  const multiEdge = [
+    {
+      edgeElement: "Tl",
+      edgeTransition: "La",
+    },
+    {
+      edgeElement: "Ga",
+      edgeTransition: "Ka",
+    },
+  ];
+
+  const searchParams = new URLSearchParams({
+    multiEdge: JSON.stringify(multiEdge),
+  });
+
+  expect(mergeParameters(undefined, searchParams, schema)).toEqual({
+    multiEdge,
+  });
+});
+
+test("mergeParameters ignores unknown schema parameters", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    properties: {
+      outputFolder: {
+        type: "string",
+      },
+    },
+  };
+
+  const searchParams = new URLSearchParams({
+    unknownParameter: "test",
+  });
+
+  expect(mergeParameters(undefined, searchParams, schema)).toEqual({});
+});
+
+test("mergeParameters allows URL values to override reused values", () => {
+  const schema: JsonSchema = {
+    type: "object",
+    properties: {
+      outputFolder: {
+        type: "string",
+      },
+    },
+  };
+
+  const reusedData = {
+    parameters: {
+      outputFolder: "old-value",
+    },
+  } as SubmissionFormParametersFragment$data;
+
+  const searchParams = new URLSearchParams({
+    outputFolder: "new-value",
+  });
+
+  expect(mergeParameters(reusedData, searchParams, schema)).toEqual({
+    outputFolder: "new-value",
+  });
 });
