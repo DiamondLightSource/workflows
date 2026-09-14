@@ -40,6 +40,18 @@ def _build_event(payload: str) -> generic_pb2.Event:
     return generic_pb2.Event(name="workflow-trigger", payload=payload.encode())
 
 
+def connect_and_subscribe(conn: stomp.Connection, config: EventSourceConfig):
+    conn.connect(
+        login=config.user,
+        passcode=config.password,
+        wait=True,
+        headers={"host": "/"},
+    )
+    conn.subscribe(
+        destination=config.destination, id="workflows-trigger", ack=config.ack
+    )
+
+
 class ConnectionManager:
     def __init__(self):
         self.connection: stomp.Connection
@@ -53,16 +65,8 @@ class ConnectionManager:
             return
         logging.debug("Using config: %s", config)
         conn = stomp.Connection([(config.host, config.port)], heartbeats=(10000, 10000))
-        conn.set_listener("", _StompListener(self.queue))
-        conn.connect(
-            login=config.user,
-            passcode=config.password,
-            wait=True,
-            headers={"host": "/"},
-        )
-        conn.subscribe(
-            destination=config.destination, id="workflows-trigger", ack=config.ack
-        )
+        conn.set_listener("", _StompListener(self.queue, conn, config))
+        connect_and_subscribe(conn, config)
         self.connection = conn
 
     def get_queue(self) -> queue.SimpleQueue:
@@ -73,9 +77,11 @@ class ConnectionManager:
 
 
 class _StompListener(stomp.ConnectionListener):
-    def __init__(self, q):
+    def __init__(self, q, conn, config):
         self.q: queue.SimpleQueue = q
-        self.start_messages = ExpiringDict(100, 60^2 * 24) # One day expiry
+        self.conn = conn
+        self.config = config
+        self.start_messages = ExpiringDict(100, 60**2 * 24)  # One day expiry
 
     def _add_start_message(self, message: dict) -> None:
         uid: str | None = message.get("doc", {}).get("uid")
@@ -98,8 +104,9 @@ class _StompListener(stomp.ConnectionListener):
     def on_connected(self, frame: stomp.utils.Frame) -> None:
         logging.info("Connected to STOMP broker")
 
-    def on_disconnected(self) -> None:
-        logging.warning("Disconnected from STOMP broker")
+    def on_disconnected(self):
+        logging.warning("Disconnected from broker. Attempting reconnection...")
+        connect_and_subscribe(self.conn, self.config)
 
     def on_error(self, frame: stomp.utils.Frame) -> None:
         logging.error("Broker error: %s", frame.body)
