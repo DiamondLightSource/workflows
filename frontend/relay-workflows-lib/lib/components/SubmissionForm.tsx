@@ -52,20 +52,23 @@ const SubmissionForm = ({
   workflowId?: string;
 }) => {
   const data = useFragment(SubmissionFormFragment, template);
+
   const repositoryUrl =
     data.repository ?? templateSourceToLink(data.templateSource);
   const reusedParameterData = useFragment(
     SubmissionFormParametersFragment,
     prepopulatedParameters,
   );
+
   const [searchParams] = useSearchParams();
+
+  const parametersSchema = data.arguments as JsonSchema;
 
   const autofilledParameters = mergeParameters(
     reusedParameterData,
     searchParams,
+    parametersSchema,
   );
-
-  const parametersSchema = data.arguments as JsonSchema;
 
   const overriddenKeys = Array.from(new Set(searchParams.keys())).filter(
     (key) => {
