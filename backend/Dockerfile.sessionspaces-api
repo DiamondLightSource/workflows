@@ -25,6 +25,7 @@ RUN mkdir -p argo-workflows-openapi/src \
   && mkdir -p sessionspaces-controller/src/bin \
   && touch sessionspaces-controller/src/lib.rs \
   && echo "fn main() {}" > sessionspaces-controller/src/bin/webhook.rs \
+  && echo "fn main() {}" > sessionspaces-controller/src/bin/api.rs \
   && mkdir -p auth-gateway/src \
   && echo "fn main() {}" > auth-gateway/src/main.rs \
   && mkdir -p auth-broker/src \
@@ -37,18 +38,16 @@ RUN mkdir -p argo-workflows-openapi/src \
   && mkdir -p telemetry/src \
   && echo "fn prebuild() {}" > telemetry/src/lib.rs
 
-RUN cargo build --release --package telemetry
-
-RUN touch --date @0 auth-broker/src/main.rs \
-  && cargo build --release --package auth-broker
+RUN touch --date @0 sessionspaces-controller/src/lib.rs sessionspaces-controller/src/bin/api.rs \
+  && cargo build --release --package sessionspaces-controller --no-default-features --features api --bin api
 
 COPY . .
 
-RUN touch auth-broker/src/main.rs \
-  && cargo auditable build --release --package auth-broker
+RUN touch sessionspaces-controller/src/lib.rs sessionspaces-controller/src/bin/api.rs \
+  && cargo auditable build --release --package sessionspaces-controller --no-default-features --features api --bin api
 
 FROM gcr.io/distroless/cc-debian12@sha256:d703b626ba455c4e6c6fbe5f36e6f427c85d51445598d564652a2f334179f96e AS deploy
 
-COPY --from=build /app/target/release/auth-broker /auth-broker
+COPY --from=build /app/target/release/api /api
 
-ENTRYPOINT ["/auth-broker"]
+ENTRYPOINT ["/api"]

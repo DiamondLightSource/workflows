@@ -1,0 +1,38 @@
+{
+  "name": "sessionspaces-controller",
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "rust-analyzer.linkedProjects": [
+          "backend/sessionspaces-controller/Cargo.toml"
+        ],
+        "editor.formatOnSave": true,
+        "[rust]": {
+          "editor.defaultFormatter": "rust-lang.rust-analyzer"
+        }
+      },
+      "extensions": [
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "cweijan.vscode-database-client2"
+      ]
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "containerEnv": {
+    "DATABASE_HOST": "mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb",
+    "DATABASE_USER": "ispyb_ro",
+    "LDAP_URL": "ldap://ldapmaster.diamond.ac.uk",
+    "SESSIONSPACES_API_BIND": "0.0.0.0:8081"
+  },
+  "forwardPorts": [8081],
+  "portsAttributes": {
+    "8081": { "label": "SessionSpaces API" }
+  }
+}
