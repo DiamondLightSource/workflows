@@ -10,6 +10,8 @@ import {
 import { PaginationControls } from "workflows-lib";
 import { TriggersListViewQuery } from "../views/TriggersListView";
 import type { TriggersListViewQuery as TriggersListViewQueryType } from "../views/__generated__/TriggersListViewQuery.graphql";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 
 interface TriggersListContentProps {
   queryRef: PreloadedQuery<TriggersListViewQueryType>;
@@ -54,6 +56,22 @@ export default function TriggersListContent({
                   {node.beamline}
                 </Typography>
                 <Typography>{node.name}</Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexBasis: 0,
+                    gap: 2,
+                    marginLeft: "auto",
+                    marginRight: 0,
+                  }}
+                >
+                  <Typography>Enabled: </Typography>
+                  {node.enabled ? (
+                    <CheckBoxIcon fontSize="medium" />
+                  ) : (
+                    <CheckBoxOutlineBlankIcon />
+                  )}
+                </Box>
               </Box>
             </AccordionSummary>
             <AccordionDetails>
