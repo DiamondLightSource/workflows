@@ -116,7 +116,7 @@ class Controller(BaseHTTPRequestHandler):
 
       dataFilters = []
 
-      if workflow.triggerOnMessageType and source_type == "generic":
+      if workflow.triggerOnMessageType and source_type == "message-bus":
         dataFilters.append({
             "path": "body.name",
             "type": "string",
