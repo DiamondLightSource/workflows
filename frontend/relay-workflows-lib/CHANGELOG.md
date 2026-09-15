@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.12...relay-workflows-lib@v0.1.13) (2026-09-15)
+
+
+### Features
+
+* **trigger:** add enabled icon to list elements ([d8a1d6e](https://github.com/DiamondLightSource/workflows/commit/d8a1d6edc2c7d76fa86375d94013f096137876ac))
+* **trigger:** add enabled to query ([6795dc4](https://github.com/DiamondLightSource/workflows/commit/6795dc4565f2b755118661df3f9a07bcafba5d06))
+
 ## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.11...relay-workflows-lib@v0.1.12) (2026-09-07)
 
 
