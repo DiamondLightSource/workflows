@@ -1,8 +1,6 @@
 use crate::graphql::AuthGuard;
 use argo_workflows_openapi::{
-    APIResult,
-    IoArgoprojWorkflowV1alpha1Workflow,
-    IoArgoprojWorkflowV1alpha1WorkflowWatchEvent,
+    APIResult, IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowWatchEvent,
 };
 use async_graphql::{Context, SimpleObject, Subscription};
 use async_stream::stream;
@@ -78,15 +76,13 @@ async fn is_workflow_completed(
 ) -> anyhow::Result<bool> {
     let mut url = server_url.deref().clone();
 
-    url.path_segments_mut()
-        .expect("Invalid base URL")
-        .extend([
-            "api",
-            "v1",
-            "workflows",
-            namespace,
-            workflow_name,
-        ]);
+    url.path_segments_mut().expect("Invalid base URL").extend([
+        "api",
+        "v1",
+        "workflows",
+        namespace,
+        workflow_name,
+    ]);
 
     let workflow = reqwest::Client::new()
         .get(url)
@@ -205,13 +201,7 @@ impl WorkflowsSubscription {
         // the live Argo log endpoint. The pod may already be gone, and there
         // is nothing left that can produce additional log data.
         let completed_without_log = if initial_archive.is_none() {
-            match is_workflow_completed(
-                &server_url,
-                &auth_token,
-                &namespace,
-                &workflow_name,
-            )
-            .await
+            match is_workflow_completed(&server_url, &auth_token, &namespace, &workflow_name).await
             {
                 Ok(true) => {
                     tracing::info!(
