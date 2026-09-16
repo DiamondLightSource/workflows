@@ -107,7 +107,7 @@ async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<String, TriggerError> {
 }
 
 /// Uses the provided API to retrieve a Trigger, if the posix uid argument matches the label on the Trigger
-async fn get_trigger(
+async fn get_trigger_with_matching_posix(
     api: &Api<Trigger>,
     posix_uid: &str,
     name: &str,
@@ -125,6 +125,13 @@ async fn get_trigger(
         }
         Err(err) => Err(err.into()),
     }
+}
+
+/// Uses the provided API to retrieve a Trigger without checking the posix uid
+async fn get_trigger(api: &Api<Trigger>, name: &str) -> anyhow::Result<Option<TriggerGQL>> {
+    api.get(name)
+        .await
+        .map_or_else(|err| Err(err.into()), |t| Ok(Some(t.into())))
 }
 
 /// Sets the value of the `enabled` field of a Trigger to the supplied value
@@ -158,10 +165,9 @@ impl TriggerQuery {
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
-        let posix_uid = get_posix_from_ctx(ctx).await?;
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        get_trigger(&api, &posix_uid, &name).await
+        get_trigger(&api, &name).await
     }
 
     /// Get multiple Triggers across namespaces
@@ -173,7 +179,6 @@ impl TriggerQuery {
     ) -> anyhow::Result<Connection<OpaqueCursor<String>, TriggerGQL, EmptyFields, EmptyFields>>
     {
         let client = setup_client(ctx).await?;
-        let posix_uid = get_posix_from_ctx(ctx).await?;
         let api: Api<Trigger> = Api::all(client);
 
         let continue_token = cursor
@@ -185,9 +190,7 @@ impl TriggerQuery {
             })
             .transpose()?;
 
-        let mut lp = ListParams::default()
-            .labels(format!("workflows.diamond.ac.uk/posixuid={}", posix_uid).as_str())
-            .limit(limit.unwrap_or(10));
+        let mut lp = ListParams::default().limit(limit.unwrap_or(10));
 
         if let Some(token) = &continue_token {
             lp = lp.continue_token(token);
@@ -268,7 +271,7 @@ impl TriggerMutation {
         let posix_uid = get_posix_from_ctx(ctx).await?;
         let api: Api<Trigger> = Api::namespaced(client, &visit.to_string());
 
-        let trigger = get_trigger(&api, &posix_uid, &name)
+        let trigger = get_trigger_with_matching_posix(&api, &posix_uid, &name)
             .await?
             .ok_or(TriggerError::TriggerNotFound(name.clone()))?;
 
@@ -288,7 +291,7 @@ impl TriggerMutation {
 
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        get_trigger(&api, &posix_uid, &name).await?;
+        get_trigger_with_matching_posix(&api, &posix_uid, &name).await?;
         toggle_trigger(&api, &name, false).await
     }
 
@@ -304,7 +307,7 @@ impl TriggerMutation {
 
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        get_trigger(&api, &posix_uid, &name).await?;
+        get_trigger_with_matching_posix(&api, &posix_uid, &name).await?;
         toggle_trigger(&api, &name, true).await
     }
 }
