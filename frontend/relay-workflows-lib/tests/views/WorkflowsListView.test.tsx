@@ -58,7 +58,7 @@ describe("WorkflowsListView", () => {
       ).not.toBeInTheDocument();
     });
 
-    expect(screen.getAllByText("Creator: abc12345")).toHaveLength(10);
+    expect(screen.getAllByTitle("abc12345")).toHaveLength(10);
     const workflowNameRegex = new RegExp(workflows[0].name, "i");
     expect(
       screen.getByRole("heading", { name: workflowNameRegex }),
