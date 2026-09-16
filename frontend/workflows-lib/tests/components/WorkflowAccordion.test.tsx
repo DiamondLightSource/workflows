@@ -1,4 +1,4 @@
-import { render, fireEvent } from "@testing-library/react";
+import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { TaskStatus, WorkflowAccordion, WorkflowStatus } from "workflows-lib";
@@ -45,14 +45,16 @@ describe("WorkflowAccordion Component", () => {
     ["should display creator name", "abc12345", mockWorkflow],
     ["should display unknown if no creator", "Unknown", mockNoCreatorWorkflow],
   ])("%s", (_, expectedResult, workflow) => {
-    const { getByText } = render(
+    render(
       <MemoryRouter>
         <WorkflowAccordion workflow={workflow}>
           {MockChildComponent}
         </WorkflowAccordion>
       </MemoryRouter>,
     );
-    expect(getByText(`Creator: ${expectedResult}`)).toBeInTheDocument();
+
+    expect(screen.getByText(expectedResult)).toBeInTheDocument();
+    expect(screen.getByTitle(expectedResult)).toBeInTheDocument();
   });
 
   it("should expand the accordion and render children when clicked", () => {
