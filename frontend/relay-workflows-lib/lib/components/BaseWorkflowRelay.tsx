@@ -1,5 +1,7 @@
 import {
   useCallback,
+  useEffect,
+  useRef,
   type Dispatch,
   type MouseEvent as ReactMouseEvent,
   type SetStateAction,
@@ -56,7 +58,7 @@ interface BaseWorkflowRelayProps {
   expanded?: boolean;
   onChange?: () => void;
   fragmentRef: BaseWorkflowRelayFragment$key;
-  onSelectTask?: (taskId: string) => void;
+  onSelectTask?: (taskId: string | null) => void;
 }
 
 export default function BaseWorkflowRelay({
@@ -100,27 +102,49 @@ export default function BaseWorkflowRelay({
    * Using the functional state update means we always receive the latest
    * selectedTaskIds without making this callback depend on them.
    */
+  const selectedTaskIdsRef = useRef(selectedTaskIds);
+
+  useEffect(() => {
+    selectedTaskIdsRef.current = selectedTaskIds;
+  }, [selectedTaskIds]);
+
   const onNavigate = useCallback(
     (taskId: string, event?: ReactMouseEvent): void => {
       event?.preventDefault();
       event?.stopPropagation();
 
       const isCtrl: boolean = Boolean(event?.ctrlKey || event?.metaKey);
+      const currentTaskIds = selectedTaskIdsRef.current;
 
-      setSelectedTaskIds((currentTaskIds: string[]) => {
-        if (isCtrl) {
-          return currentTaskIds.includes(taskId)
-            ? currentTaskIds.filter((id: string): boolean => id !== taskId)
-            : [...currentTaskIds, taskId];
-        }
+      // Normal click on the only currently selected task:
+      // deselect it and restore all workflow logs.
+      if (
+        !isCtrl &&
+        currentTaskIds.length === 1 &&
+        currentTaskIds[0] === taskId
+      ) {
+        setSelectedTaskIds([]);
+        onSelectTask?.(null);
+        return;
+      }
 
-        return [taskId];
-      });
+      // Normal click on a different task:
+      // select only that task and show its logs.
+      if (!isCtrl) {
+        setSelectedTaskIds([taskId]);
+        onSelectTask?.(taskId);
+        return;
+      }
 
-      /*
-       * The log viewer only needs the task that was clicked.
-       * Keep this separate from the multi-selection state above.
-       */
+      // Ctrl/Cmd-click keeps the existing multi-selection behaviour.
+      const isSelected = currentTaskIds.includes(taskId);
+
+      setSelectedTaskIds((currentTaskIds) =>
+        isSelected
+          ? currentTaskIds.filter((id) => id !== taskId)
+          : [...currentTaskIds, taskId],
+      );
+
       onSelectTask?.(taskId);
     },
     [onSelectTask, setSelectedTaskIds],
