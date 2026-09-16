@@ -157,20 +157,6 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   /*
-   * Reset all task-specific log state whenever the selected task changes.
-   *
-   * The parent component also uses a key based on selectedTaskId, but doing
-   * this explicitly makes the component safe if that key behaviour changes.
-   */
-  useEffect(() => {
-    setLogLines([]);
-    setTaskCompleted(false);
-    setSubscriptionError(null);
-    setLogUnavailable(false);
-    setExpanded(Boolean(selectedTaskId));
-  }, [selectedTaskId]);
-
-  /*
    * Keep the log view scrolled to the newest line.
    */
   useEffect(() => {

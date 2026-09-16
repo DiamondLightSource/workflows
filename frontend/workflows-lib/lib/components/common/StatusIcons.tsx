@@ -6,20 +6,52 @@ import ReportProblemTwoToneIcon from "@mui/icons-material/ReportProblemTwoTone";
 import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
 import SkipNextTwoToneIcon from "@mui/icons-material/SkipNextTwoTone";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
-import { Tooltip } from "@mui/material";
+import { keyframes, Tooltip } from "@mui/material";
 import { TaskStatus, WorkflowStatus } from "../../types";
 import React from "react";
 
-export function getTaskStatusIcon(status: TaskStatus, size: number = 25) {
+const pulse = keyframes`
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px currentColor);
+  }
+
+  50% {
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 5px currentColor);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px currentColor);
+  }
+`;
+
+export function getTaskStatusIcon(status: TaskStatus, size: number = 30) {
   const TaskStatusIconMap: { [key in TaskStatus]: React.JSX.Element } = {
     PENDING: (
       <Tooltip title="Pending" data-testid="task-status-icon-pending">
-        <PendingTwoToneIcon color="warning" sx={{ fontSize: size }} />
+        <PendingTwoToneIcon
+          color="warning"
+          sx={{
+            fontSize: size,
+            animation: `${pulse} 2s ease-in-out infinite`,
+            transformOrigin: "center",
+          }}
+        />
       </Tooltip>
     ),
+
     RUNNING: (
       <Tooltip title="Running" data-testid="task-status-icon-running">
-        <HourglassBottomIcon color="info" sx={{ fontSize: size }} />
+        <HourglassBottomIcon
+          color="info"
+          sx={{
+            fontSize: size,
+            animation: `${pulse} 2s ease-in-out infinite`,
+            transformOrigin: "center",
+          }}
+        />
       </Tooltip>
     ),
     SUCCEEDED: (
