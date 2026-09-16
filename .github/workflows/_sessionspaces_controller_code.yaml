@@ -6,6 +6,19 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    services:
+      ispyb:
+        image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: rootpassword
+        options: >-
+          --health-cmd "/usr/local/bin/healthcheck.sh --defaults-file=/ispyb/.my.cnf --connect"
+          --health-interval 1s
+          --health-retries 60
+    env:
+      DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
         uses: actions/checkout@v6
@@ -46,6 +59,19 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    services:
+      ispyb:
+        image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: rootpassword
+        options: >-
+          --health-cmd "/usr/local/bin/healthcheck.sh --defaults-file=/ispyb/.my.cnf --connect"
+          --health-interval 1s
+          --health-retries 60
+    env:
+      DATABASE_URL: mysql://root:rootpassword@localhost/ispyb_build
     steps:
       - name: Checkout source
         uses: actions/checkout@v6

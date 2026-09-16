@@ -108,3 +108,87 @@ impl ProposalSubject {
         Ok(subjects)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::types::SessionName;
+    use super::{BasicInfo, DirectSubject, ProposalSubject};
+    use sqlx::MySqlPool;
+    use std::collections::BTreeSet;
+    use time::{
+        PrimitiveDateTime,
+        macros::{date, time},
+    };
+
+    #[sqlx::test(migrations = "tests/migrations")]
+    async fn basic_info_missing_visit(pool: MySqlPool) {
+        let name = SessionName::parse("mx99999-1").unwrap();
+        assert!(BasicInfo::fetch(&pool, &name).await.unwrap().is_none());
+    }
+
+    #[sqlx::test(
+        migrations = "tests/migrations",
+        fixtures(
+            "../../tests/fixtures/bl_sessions.sql",
+            "../../tests/fixtures/proposals.sql"
+        )
+    )]
+    async fn basic_info_known_visit(pool: MySqlPool) {
+        let name = SessionName::parse("sw10030-1").unwrap();
+        let info = BasicInfo::fetch(&pool, &name).await.unwrap().unwrap();
+        assert_eq!((info.session_id, info.proposal_id), (40, 30));
+        assert_eq!(info.instrument.as_deref(), Some("i03"));
+        assert_eq!(
+            info.start_date,
+            Some(PrimitiveDateTime::new(
+                date!(2009 - 06 - 19),
+                time!(09:00:00)
+            ))
+        );
+        assert_eq!(
+            info.end_date,
+            Some(PrimitiveDateTime::new(
+                date!(2009 - 07 - 19),
+                time!(09:00:00)
+            ))
+        );
+    }
+
+    #[sqlx::test(
+        migrations = "tests/migrations",
+        fixtures(
+            "../../tests/fixtures/persons.sql",
+            "../../tests/fixtures/session_has_person.sql"
+        )
+    )]
+    async fn direct_subjects(pool: MySqlPool) {
+        assert_eq!(
+            DirectSubject::fetch(&pool, 40).await.unwrap(),
+            BTreeSet::from(["foo".to_string()])
+        );
+        assert_eq!(
+            DirectSubject::fetch(&pool, 43).await.unwrap(),
+            BTreeSet::from(["bar".to_string()])
+        );
+        assert!(DirectSubject::fetch(&pool, 999).await.unwrap().is_empty());
+    }
+
+    #[sqlx::test(
+        migrations = "tests/migrations",
+        fixtures(
+            "../../tests/fixtures/persons.sql",
+            "../../tests/fixtures/proposal_has_person.sql"
+        )
+    )]
+    async fn proposal_subjects(pool: MySqlPool) {
+        assert_eq!(
+            ProposalSubject::fetch(&pool, 30).await.unwrap(),
+            BTreeSet::from(["foo".to_string()])
+        );
+        assert_eq!(
+            ProposalSubject::fetch(&pool, 31).await.unwrap(),
+            BTreeSet::from(["bar".to_string(), "foo".to_string()])
+        );
+        assert!(ProposalSubject::fetch(&pool, 999).await.unwrap().is_empty());
+    }
+}
