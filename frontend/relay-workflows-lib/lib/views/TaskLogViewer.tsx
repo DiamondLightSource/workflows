@@ -1,4 +1,3 @@
-
 import React, {
   Dispatch,
   SetStateAction,
@@ -84,8 +83,7 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
       onError: (error) => {
         console.error("Log subscription error:", error);
 
-        const message =
-          error instanceof Error ? error.message : String(error);
+        const message = error instanceof Error ? error.message : String(error);
 
         const logUnavailable =
           message.includes(LOG_NOT_AVAILABLE) ||
@@ -220,17 +218,15 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
             Logs: {selectedTaskName ?? selectedTaskId ?? "No task selected"}
           </Typography>
 
-          {selectedTaskId &&
-            !taskCompleted &&
-            !logUnavailable && (
-              <CircularProgress
-                size={14}
-                sx={{
-                  color: "rgb(253, 251, 251)",
-                  marginLeft: "10px",
-                }}
-              />
-            )}
+          {selectedTaskId && !taskCompleted && !logUnavailable && (
+            <CircularProgress
+              size={14}
+              sx={{
+                color: "rgb(253, 251, 251)",
+                marginLeft: "10px",
+              }}
+            />
+          )}
 
           {selectedTaskId && taskCompleted && !logUnavailable && (
             <Typography
@@ -324,4 +320,3 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
     />
   );
 };
-
