@@ -68,6 +68,8 @@ pub fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
         .ok_or_else(|| WorkflowParsingError::MissingAuthToken.into())
 }
 
+/// Checks whether the specified workflow has completed by querying
+/// the Argo Workflows API and inspecting the workflow phase.
 async fn is_workflow_completed(
     server_url: &ArgoServerUrl,
     auth_token: &str,
