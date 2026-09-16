@@ -68,10 +68,8 @@ describe("BaseWorkflowRelay", () => {
     expect(
       await screen.findByText("conditional-steps-first"),
     ).toBeInTheDocument();
-
     expect(screen.getByTitle("abc12345")).toBeInTheDocument();
   });
-
   it("should display flow box nodes when expanded", async () => {
     const accordionButton = await screen.findByRole("button", {
       name: /conditional-steps-first/i,
