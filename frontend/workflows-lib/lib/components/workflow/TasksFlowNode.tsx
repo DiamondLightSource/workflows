@@ -26,7 +26,6 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
 
   const handleOpenTaskPage = useCallback(
     (event: React.MouseEvent) => {
-      // Do not let React Flow interpret this click as a canvas interaction.
       event.preventDefault();
       event.stopPropagation();
 
@@ -49,15 +48,17 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
 
         border: data.highlighted ? "1px solid #ff9c1a" : "1px solid #ccc",
 
-        boxShadow: data.highlighted ? "0 0 10px #ff9c1a" : theme.shadows[3],
+        boxShadow: data.highlighted
+          ? "0 0 10px #ff9c1a"
+          : theme.shadows[3],
 
         transition: "border 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
 
-        backgroundColor: data.filled ? "rgba(62, 218, 0, 1)" : undefined,
+        backgroundColor: data.filled
+          ? "rgba(62, 218, 0, 1)"
+          : undefined,
 
         cursor: "pointer",
-
-        // Make sure the node itself receives the pointer event.
         pointerEvents: "auto",
       }}
     >
@@ -69,6 +70,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         }}
         data-testid="handle-target"
         onClick={(event) => {
+          event.preventDefault();
           event.stopPropagation();
         }}
       />
@@ -82,7 +84,6 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         height="100%"
         width="100%"
         maxHeight={60}
-        onClick={handleOpenTaskPage}
       >
         <Tooltip title={data.label}>
           <Typography
@@ -111,6 +112,7 @@ const TaskFlowNode: React.FC<TaskFlowNodeProps> = ({ data, onNavigate }) => {
         }}
         data-testid="handle-source"
         onClick={(event) => {
+          event.preventDefault();
           event.stopPropagation();
         }}
       />

@@ -125,6 +125,13 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+<<<<<<< HEAD
+=======
+
+  /*
+   * Keep the log view scrolled to the newest line.
+   */
+>>>>>>> efc856d0 (WIP: current work)
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
