@@ -1,5 +1,7 @@
 {
   "name": "sessionspaces-controller",
+  "dockerComposeFile": "./docker-compose.yml",
+  "service": "sessionspaces-controller",
   "build": {
     "context": ".",
     "dockerfile": "Dockerfile"
@@ -26,8 +28,7 @@
   "workspaceMount": "source=${localWorkspaceFolder}/../..,target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
   "containerEnv": {
-    "DATABASE_HOST": "mysql://ispybdbproxy.diamond.ac.uk:4306/ispyb",
-    "DATABASE_USER": "ispyb_ro",
+    "DATABASE_URL": "mysql://root:rootpassword@ispyb/ispyb_build",
     "LDAP_URL": "ldap://ldapmaster.diamond.ac.uk",
     "SESSIONSPACES_API_BIND": "0.0.0.0:8081"
   },
