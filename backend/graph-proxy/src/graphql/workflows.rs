@@ -1,12 +1,13 @@
 use super::{Visit, VisitInput, CLIENT};
 use crate::{
-    graphql::{auth_guard::AuthGuard, filters::WorkflowFilter},
+    graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, subscription::get_auth_token},
     validate_token::ValidatedAuthToken,
     ArgoServerUrl, S3Bucket,
 };
 use argo_workflows_openapi::{
-    APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
-    IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
+    APIResult, GrpcGatewayRuntimeError, IoArgoprojWorkflowV1alpha1Artifact,
+    IoArgoprojWorkflowV1alpha1NodeStatus, IoArgoprojWorkflowV1alpha1Workflow,
+    IoArgoprojWorkflowV1alpha1WorkflowStatus,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
@@ -15,6 +16,7 @@ use async_graphql::{
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
+use jsonwebtoken::dangerous::insecure_decode;
 use serde_json::{from_str, Value};
 use std::{collections::HashMap, ops::Deref, path::Path};
 use tracing::{debug, instrument};
@@ -812,6 +814,160 @@ async fn get_workflow_from_argo_api(
         .await?
         .into_result()?;
     Ok(Some(Workflow::new(workflow, visit.into())))
+}
+
+/// Mutations related to [`Workflow`]s
+#[derive(Debug, Clone, Default)]
+pub struct WorkflowsMutation;
+
+#[Object(guard = "AuthGuard")]
+impl WorkflowsMutation {
+    /// Stop a single [`Workflow`] by unique ID.
+    pub async fn stop_workflow(&self, ctx: &Context<'_>, id: ID) -> anyhow::Result<Workflow> {
+        let id_str = id.to_string();
+        let parts: Vec<&str> = id_str.split(':').collect();
+        if parts.len() != 3 {
+            return Err(anyhow::anyhow!("Invalid Workflow ID"));
+        }
+        let visit_display = parts[0];
+        let workflow_name = parts[1];
+        let workflow_uid = parts[2];
+
+        // Find workflow with matching ID
+        let potential_workflow = get_workflow_from_argo_api(
+            ctx,
+            visit_display.parse()?,
+            workflow_name,
+            Some(workflow_uid),
+        )
+        .await?;
+        let workflow = match potential_workflow {
+            Some(workflow) => workflow,
+            None => {
+                return Err(GrpcGatewayRuntimeError {
+                    code: Some(5),
+                    details: vec![],
+                    message: Some(format!(
+                        " \
+                    Workflow with ID: {id_str} does not exist
+                "
+                    )),
+                    error: None,
+                }
+                .into())
+            }
+        };
+
+        // Check creator fedid matches fedid of stop command caller
+        if let Ok(creator) = workflow.creator(ctx).await {
+            if let Some(fedid) = fedid_from_context(ctx)? {
+                if creator.creator_id != fedid {
+                    return Err(GrpcGatewayRuntimeError {
+                        code: Some(7),
+                        details: vec![],
+                        message: Some(format!(
+                            " \
+                            User {fedid} has no workflows matching ID {id_str}. \
+                            Workflows may only be terminated by their creator \
+                        "
+                        )),
+                        error: None,
+                    }
+                    .into());
+                }
+            }
+        }
+
+        // Check if workflow has already finished
+        if let Some(workflow_status) = workflow.status(ctx).await? {
+            let already_finished = match workflow_status {
+                WorkflowStatus::Failed(failed_status) => {
+                    if let Ok(Some(message)) = failed_status.status.message(ctx).await {
+                        if message.contains("Stopped") {
+                            return Err(GrpcGatewayRuntimeError {
+                                code: Some(9),
+                                details: Vec::new(),
+                                message: Some(format!(
+                                    " \
+                                        Workflow with ID: {id_str} was already stopped
+                                    "
+                                )),
+                                error: None,
+                            }
+                            .into());
+                        }
+                    }
+                    true
+                }
+                WorkflowStatus::Succeeded(_) => true,
+                WorkflowStatus::Errored(_) => true,
+                _ => false,
+            };
+
+            if already_finished {
+                return Err(GrpcGatewayRuntimeError {
+                    code: Some(9),
+                    details: Vec::new(),
+                    message: Some(format!(
+                        " \
+                        Workflow with ID: {id_str} has already finished
+                    "
+                    )),
+                    error: None,
+                }
+                .into());
+            }
+        };
+
+        let visit_input: VisitInput = visit_display.parse()?;
+
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+        let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+        let mut url = server_url.clone();
+        url.path_segments_mut().unwrap().extend([
+            "api",
+            "v1",
+            "workflows",
+            &visit_input.to_string(),
+            workflow_name,
+            "stop",
+        ]);
+        let request = if let Some(auth_token) = auth_token {
+            CLIENT.put(url).bearer_auth(auth_token.token())
+        } else {
+            CLIENT.put(url)
+        }
+        .json(
+            &argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowStopRequest {
+                message: Some("Workflow stopped by graph request".to_string()),
+                name: None,
+                namespace: None,
+                node_field_selector: None,
+            },
+        );
+
+        let workflow = request
+            .send()
+            .await?
+            .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+            .await?
+            .into_result()?;
+
+        Ok(Workflow::new(workflow, visit_input.into()))
+    }
+}
+
+/// Gets the users fedid from the context reference
+fn fedid_from_context(ctx: &Context<'_>) -> anyhow::Result<Option<String>> {
+    let auth_token = get_auth_token(ctx)?;
+    let claims = insecure_decode::<Value>(auth_token)?.claims;
+
+    match claims.get("fedid") {
+        Some(fedid) => Ok(fedid.as_str().map(str::to_owned)),
+        None => Err(anyhow::Error::msg(
+            "Could not find user fedid in the current context",
+        )),
+    }
 }
 
 /// Information about the creator of a workflow.

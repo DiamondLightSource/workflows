@@ -22,7 +22,7 @@ use self::{
     subscription::WorkflowsSubscription,
     triggers::{TriggerMutation, TriggerQuery},
     workflow_templates::WorkflowTemplatesQuery,
-    workflows::{Workflow, WorkflowsQuery},
+    workflows::{Workflow, WorkflowsMutation, WorkflowsQuery},
 };
 use async_graphql::{
     extensions::Analyzer, parser::parse_query, Context, InputObject, MergedObject,
@@ -82,7 +82,11 @@ impl NodeQuery {
 
 /// The root mutation of the service
 #[derive(Debug, Clone, Default, MergedObject)]
-pub struct Mutation(WorkflowTemplatesMutation, TriggerMutation);
+pub struct Mutation(
+    WorkflowTemplatesMutation,
+    TriggerMutation,
+    WorkflowsMutation,
+);
 
 /// Represents Relay Node types
 #[derive(Union)]
