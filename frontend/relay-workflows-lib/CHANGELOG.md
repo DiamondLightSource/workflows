@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.12...relay-workflows-lib@v0.1.13) (2026-09-17)
+
+
+### Features
+
+* **trigger:** add enabled icon to list elements ([d8a1d6e](https://github.com/DiamondLightSource/workflows/commit/d8a1d6edc2c7d76fa86375d94013f096137876ac))
+* **trigger:** add enabled to query ([6795dc4](https://github.com/DiamondLightSource/workflows/commit/6795dc4565f2b755118661df3f9a07bcafba5d06))
+* **Workflows User Interface:** improve workflow list metadata layout ([2ae8c6a](https://github.com/DiamondLightSource/workflows/commit/2ae8c6a3e3a30154deb5c406e3805e147de64ed9))
+* **Workflows User Interface:** select and deselect a click by cliking on it ([29f09b4](https://github.com/DiamondLightSource/workflows/commit/29f09b4f8fbbc26c0cad863dc7a2f690d269e44a))
+
 ## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.11...relay-workflows-lib@v0.1.12) (2026-09-07)
 
 
