@@ -67,6 +67,16 @@
         }
       ]
     },
+    "backend/sessionspaces-controller": {
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "/charts/sessionspaces-controller/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ]
+    },
     "frontend/dashboard": {
       "release-type": "node",
       "extra-files": [
