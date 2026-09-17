@@ -156,7 +156,6 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-
   /*
    * Keep the log view scrolled to the newest line.
    */
