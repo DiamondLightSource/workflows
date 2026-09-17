@@ -1,0 +1,10 @@
+apiVersion: v2
+name: sessionspaces-controller
+description: SessionSpace preparation API and Metacontroller sync webhook
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+dependencies:
+  - name: common
+    version: 2.41.0
+    repository: oci://docker.io/bitnamicharts
