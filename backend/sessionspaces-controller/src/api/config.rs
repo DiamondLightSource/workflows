@@ -11,19 +11,31 @@ pub(super) struct Config {
 impl Config {
     /// Reads the required `DATABASE_URL` and LDAP URL, plus optional overrides.
     pub fn from_env() -> Result<Self, Box<dyn std::error::Error>> {
-        let database =
-            MySqlConnectOptions::from_str(&required_env("DATABASE_URL")?).map_err(|_| {
-                std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid DATABASE_URL")
-            })?;
-        let database = match env::var("DATABASE_PASSWORD") {
-            Ok(password) => database.password(&password),
-            Err(_) => database,
-        };
+        Self::new(
+            required_env("DATABASE_URL")?,
+            env::var("DATABASE_PASSWORD").ok(),
+            required_env("LDAP_URL")?,
+            env::var("SESSIONSPACES_API_BIND").unwrap_or_else(|_| "0.0.0.0:8081".into()),
+        )
+    }
+
+    fn new(
+        database_url: String,
+        password: Option<String>,
+        ldap_url: String,
+        bind: String,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let mut database = MySqlConnectOptions::from_str(&database_url).map_err(|_| {
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid DATABASE_URL")
+        })?;
+        if let Some(password) = password {
+            database = database.password(password.trim());
+        }
 
         Ok(Self {
             database,
-            ldap_url: required_env("LDAP_URL")?,
-            bind: env::var("SESSIONSPACES_API_BIND").unwrap_or_else(|_| "0.0.0.0:8081".into()),
+            ldap_url,
+            bind,
         })
     }
 }
@@ -38,4 +50,37 @@ fn required_env(name: &str) -> Result<String, std::io::Error> {
                 format!("{name} must be set"),
             )
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::ConnectOptions;
+
+    fn values(password: Option<&str>) -> Config {
+        Config::new(
+            "mysql://ispyb_ro@ispybdbproxy.diamond.ac.uk:4306/ispyb".to_string(),
+            password.map(str::to_string),
+            "ldap://ldapmaster.diamond.ac.uk".to_string(),
+            "0.0.0.0:8081".to_string(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn trims_surrounding_whitespace_from_database_password() {
+        for password in ["secret\n", "  secret  ", "\tsecret\r\n"] {
+            let url = values(Some(password)).database.to_url_lossy();
+            assert_eq!(url.password(), Some("secret"), "{password:?}");
+        }
+    }
+
+    #[test]
+    fn leaves_url_password_and_defaults_intact() {
+        let config = values(None);
+        let url = config.database.to_url_lossy();
+        assert_eq!(url.username(), "ispyb_ro");
+        assert_eq!(url.password(), None);
+        assert_eq!(config.bind, "0.0.0.0:8081");
+    }
 }
