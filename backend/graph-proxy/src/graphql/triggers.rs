@@ -265,11 +265,12 @@ impl TriggerMutation {
         &self,
         ctx: &Context<'_>,
         name: String,
-        visit: VisitInput,
+        visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
         let client = setup_client(ctx).await?;
         let posix_uid = get_posix_from_ctx(ctx).await?;
-        let api: Api<Trigger> = Api::namespaced(client, &visit.to_string());
+        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
 
         let trigger = get_trigger_with_matching_posix(&api, &posix_uid, &name)
             .await?
