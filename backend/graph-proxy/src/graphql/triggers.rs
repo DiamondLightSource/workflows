@@ -37,6 +37,36 @@ enum TriggerError {
     TriggerNotFound(String),
 }
 
+/// Information about the creator of a Trigger.
+#[derive(Debug, Clone, SimpleObject, Eq, PartialEq, Serialize, Deserialize)]
+struct TriggerCreator {
+    /// An identifier unique to the creator of the Trigger.
+    /// Typically this is the creator's Fed-ID.
+    creator_id: String,
+}
+
+impl TriggerCreator {
+    /// Creates a new [`TriggerCreator`] from the given creator ID.
+    fn new(creator_id: impl Into<String>) -> Self {
+        Self {
+            creator_id: creator_id.into(),
+        }
+    }
+
+    /// Builds a [`TriggerCreator`] from Trigger labels.
+    fn from_trigger_labels(labels: &Option<BTreeMap<String, String>>) -> Self {
+        let creator_id = match labels {
+            Some(l) => l
+                .get("workflows.diamond.ac.uk/creator-preferred-username")
+                .or_else(|| l.get("workflows.diamond.ac.uk/creator-fedid"))
+                .cloned()
+                .unwrap_or("Unknown".into()),
+            None => "Unknown".into(),
+        };
+        Self::new(creator_id)
+    }
+}
+
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
 #[derive(CustomResource, Clone, Debug, Deserialize, Serialize, JsonSchema)]
 #[kube(
@@ -65,6 +95,8 @@ struct TriggerGQL {
     beamline: Option<String>,
     /// Whether the Trigger is currently active or not
     enabled: bool,
+    /// Information about the creator of the Trigger
+    creator: TriggerCreator,
 }
 
 impl From<Trigger> for TriggerGQL {
@@ -78,6 +110,7 @@ impl From<Trigger> for TriggerGQL {
                 .as_ref()
                 .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
             enabled: t.spec.enabled,
+            creator: TriggerCreator::from_trigger_labels(&t.metadata.labels),
         }
     }
 }
@@ -92,18 +125,51 @@ async fn setup_client(ctx: &Context<'_>) -> Result<Client, TriggerError> {
     Client::try_from(config).or(Err(TriggerError::ClientCreationError))
 }
 
+/// Claims in a user's keycloak token
+struct UserClaims {
+    /// A user's POSIX uid
+    posix_uid: String,
+    /// A user's preferred username (often equivalent to Fed-ID)
+    preferred_username: Option<String>,
+    /// A user's Fed-ID
+    fedid: Option<String>,
+}
+
+impl UserClaims {
+    /// Creates a new [`UserInfo`] from the provided fields.
+    fn new(
+        posix_uid: impl Into<String>,
+        preferred_username: impl Into<Option<String>>,
+        fedid: impl Into<Option<String>>,
+    ) -> Self {
+        Self {
+            posix_uid: posix_uid.into(),
+            preferred_username: preferred_username.into(),
+            fedid: fedid.into(),
+        }
+    }
+}
+
 /// Decodes the JWT to obtain the user's posix uid
-async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<String, TriggerError> {
+async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<UserClaims, TriggerError> {
     let auth_token = get_auth_token(ctx).map_err(|_| TriggerError::MissingToken)?;
 
     let claims = insecure_decode::<Value>(auth_token)
         .map_err(|_| TriggerError::TokenDecodeError)?
         .claims;
 
-    claims["posix_uid"]
+    let posix_uid = claims["posix_uid"]
         .as_str()
         .map(str::to_owned)
-        .ok_or(TriggerError::MissingPosixUid)
+        .ok_or(TriggerError::MissingPosixUid);
+
+    let preferred_username = claims["preferred_username"].as_str().map(str::to_owned);
+
+    let fedid = claims["fedid"].as_str().map(str::to_owned);
+    match posix_uid {
+        Ok(p) => Ok(UserClaims::new(p, preferred_username, fedid)),
+        Err(e) => Err(e),
+    }
 }
 
 /// Uses the provided API to retrieve a Trigger, if the posix uid argument matches the label on the Trigger
@@ -235,17 +301,27 @@ impl TriggerMutation {
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
-        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let UserClaims {
+            posix_uid,
+            preferred_username,
+            fedid,
+        } = get_posix_from_ctx(ctx).await?;
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        let mut labels =
+            BTreeMap::from([(String::from("workflows.diamond.ac.uk/posixuid"), posix_uid)]);
+        preferred_username.map(|p| {
+            labels.insert(
+                String::from("workflows.diamond.ac.uk/creator-preferred-username"),
+                p,
+            )
+        });
+        fedid.map(|f| labels.insert(String::from("workflows.diamond.ac.uk/creator-fedid"), f));
         let trigger = Trigger {
             metadata: ObjectMeta {
                 generate_name: Some(format!("{}-", template_ref)),
                 name,
-                labels: Some(BTreeMap::from([(
-                    String::from("workflows.diamond.ac.uk/posixuid"),
-                    posix_uid,
-                )])),
+                labels: Some(labels),
                 ..Default::default()
             },
             spec: TriggerSpec {
@@ -268,7 +344,7 @@ impl TriggerMutation {
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
         let client = setup_client(ctx).await?;
-        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
 
@@ -288,7 +364,7 @@ impl TriggerMutation {
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
-        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
 
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
@@ -304,7 +380,7 @@ impl TriggerMutation {
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
         let client = setup_client(ctx).await?;
-        let posix_uid = get_posix_from_ctx(ctx).await?;
+        let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
 
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
