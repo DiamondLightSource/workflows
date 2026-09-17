@@ -24,6 +24,11 @@ import { Visit, visitToText } from "@diamondlightsource/sci-react-ui";
 import { getWorkflowStatusIcon } from "../common/StatusIcons";
 import { Workflow } from "../../types";
 
+import {
+  formatFullDateTime,
+  formatSubmittedDate,
+  formatSubmittedTime,
+} from "../../utils/commonUtils";
 interface WorkflowProps {
   workflow: Workflow;
   children: React.ReactNode;
@@ -40,85 +45,6 @@ interface WorkflowProps {
     workflowId: string;
   }>;
 }
-
-/**
- * Format the submission date.
- *
- * Example:
- * 29 Apr 2026
- */
-const formatSubmittedDate = (
-  submittedTime?: Workflow["submittedTime"],
-): string | null => {
-  if (!submittedTime) {
-    return null;
-  }
-
-  const date = new Date(submittedTime);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
-
-/**
- * Format the submission time.
- *
- * Example:
- * 17:16
- */
-const formatSubmittedTime = (
-  submittedTime?: Workflow["submittedTime"],
-): string | null => {
-  if (!submittedTime) {
-    return null;
-  }
-
-  const date = new Date(submittedTime);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
-
-/**
- * Full date/time used in the tooltip.
- *
- * Example:
- * 29 April 2026, 17:16
- */
-const formatFullDateTime = (
-  submittedTime?: Workflow["submittedTime"],
-): string | null => {
-  if (!submittedTime) {
-    return null;
-  }
-
-  const date = new Date(submittedTime);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
 
 /**
  * Main workflow card.
@@ -233,7 +159,7 @@ const MetadataItem = styled(Box)(({ theme }) => ({
 }));
 
 /**
- * Separator between metadata items only.
+ * Separator between metadata items.
  */
 const MetadataSeparator = styled(Typography)(({ theme }) => ({
   color: theme.palette.divider,
@@ -416,7 +342,6 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
                   }}
                   sx={{
                     color: "text.secondary",
-
                     "&:hover": {
                       color: "primary.main",
                     },
@@ -450,5 +375,4 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
     </WorkflowCard>
   );
 };
-
 export default WorkflowAccordion;

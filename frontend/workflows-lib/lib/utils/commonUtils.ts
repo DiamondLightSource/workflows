@@ -1,5 +1,5 @@
 import { Visit, regexToVisit } from "@diamondlightsource/sci-react-ui";
-import { TemplateSource, ScienceGroup } from "../types";
+import { TemplateSource, ScienceGroup, Workflow } from "../types";
 
 const visitRegex = /^([a-z]{2})([1-9]\d*)-([1-9]\d*)/;
 
@@ -81,3 +81,79 @@ export function convertStringToScienceGroup(
     ? (input as ScienceGroup)
     : undefined;
 }
+
+/**
+ * Format the submission date.
+ *
+ * Example: 29 Apr 2026
+ */
+export const formatSubmittedDate = (
+  submittedTime?: Workflow["submittedTime"],
+): string | null => {
+  if (!submittedTime) {
+    return null;
+  }
+
+  const date = new Date(submittedTime);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+};
+
+/**
+ * Format the submission time.
+ *
+ * Example: 17:16
+ */
+export const formatSubmittedTime = (
+  submittedTime?: Workflow["submittedTime"],
+): string | null => {
+  if (!submittedTime) {
+    return null;
+  }
+
+  const date = new Date(submittedTime);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+/**
+ * Full date/time used in the tooltip.
+ *
+ * Example: 29 April 2026, 17:16
+ */
+export const formatFullDateTime = (
+  submittedTime?: Workflow["submittedTime"],
+): string | null => {
+  if (!submittedTime) {
+    return null;
+  }
+
+  const date = new Date(submittedTime);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
