@@ -1,0 +1,151 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: sessionspaces.workflows.diamond.ac.uk
+  labels:
+    {{- include "common.labels.standard" $ | nindent 4 }}
+spec:
+  group: workflows.diamond.ac.uk
+  scope: Cluster
+
+  names:
+    kind: SessionSpace
+    plural: sessionspaces
+    singular: sessionspace
+    shortNames:
+      - ss
+
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+
+      subresources:
+        status: {}
+
+      additionalPrinterColumns:
+        - name: Desired
+          type: string
+          jsonPath: .spec.desiredState
+
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+
+        - name: Ready
+          type: string
+          jsonPath: .status.conditions[?(@.type=="Ready")].status
+
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+
+      schema:
+        openAPIV3Schema:
+          type: object
+
+          properties:
+            spec:
+              type: object
+              required:
+                - desiredState
+                - session
+
+              properties:
+                desiredState:
+                  type: string
+                  enum:
+                    - Active
+                    - Dormant
+
+                session:
+                  type: object
+                  required:
+                    - proposal
+                    - visit
+                    - instrument
+                    - startDate
+                    - endDate
+
+                  properties:
+                    proposal:
+                      type: string
+
+                    visit:
+                      type: integer
+                      format: int32
+
+                    instrument:
+                      type: string
+
+                    startDate:
+                      type: string
+
+                    endDate:
+                      type: string
+
+                storage:
+                  type: object
+
+                  properties:
+                    dataDirectory:
+                      type: string
+
+                    gid:
+                      type: integer
+                      format: int64
+
+                access:
+                  type: object
+
+                  properties:
+                    members:
+                      type: array
+                      items:
+                        type: string
+
+            status:
+              type: object
+
+              properties:
+                observedGeneration:
+                  type: integer
+                  format: int64
+
+                phase:
+                  type: string
+                  enum:
+                    - Activating
+                    - Active
+                    - Deactivating
+                    - Dormant
+                    - Error
+
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+
+                    properties:
+                      type:
+                        type: string
+
+                      status:
+                        type: string
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+
+                      reason:
+                        type: string
+
+                      message:
+                        type: string
+
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
