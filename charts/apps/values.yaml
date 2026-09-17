@@ -121,6 +121,12 @@ sessionspaces:
   extraValuesFiles: []
   valuesObject: {}
 
+sessionspacesController:
+  enabled: false
+  targetRevision: HEAD
+  extraValueFiles: []
+  valuesObject: {}
+
 sealedsecrets:
   enabled: false
   targetRevision: 2.16.0

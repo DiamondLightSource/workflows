@@ -46,6 +46,9 @@ sessionspaces:
   extraValueFiles:
     - dev-values.yaml
 
+sessionspacesController:
+  enabled: false
+
 sealedsecrets:
   enabled: false
   valuesObject:

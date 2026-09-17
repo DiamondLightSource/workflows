@@ -46,6 +46,12 @@ kyverno:
       replicas: 1
 
 sessionspaces:
+  enabled: false
+  targetRevision: HEAD
+  extraValueFiles:
+    - staging-values.yaml
+
+sessionspacesController:
   enabled: true
   targetRevision: HEAD
   extraValueFiles:
