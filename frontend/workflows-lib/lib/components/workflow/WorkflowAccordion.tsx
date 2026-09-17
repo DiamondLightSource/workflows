@@ -155,12 +155,7 @@ const WorkflowCard = styled(Accordion)(({ theme }) => ({
   "&:hover": {
     borderColor: theme.palette.action.disabled,
   },
-<<<<<<< HEAD
-}));
 
-/**
- * Workflow header.
- */
 const WorkflowHeader = styled(AccordionSummary)(({ theme }) => ({
   minHeight: 76,
 
@@ -276,8 +271,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   minHeight: 250,
 
   boxSizing: "border-box",
-=======
->>>>>>> efc856d0 (WIP: current work)
+
 }));
 
 /**
@@ -411,18 +405,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
   retriggerComponent,
   githubComponent,
 }) => {
-<<<<<<< HEAD
-  const creator = workflow.creator.trim() || "Unknown";
 
-  const submittedDate = formatSubmittedDate(workflow.submittedTime);
-
-  const submittedTime = formatSubmittedTime(workflow.submittedTime);
-
-  const fullSubmittedDateTime = formatFullDateTime(workflow.submittedTime);
-
-  const workflowUrl = `/workflows/${visitToText(
-    workflow.instrumentSession,
-=======
   const creator = workflow.creator?.trim() || "Unknown";
 
   const submittedDate = formatSubmittedDate(
@@ -439,22 +422,19 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
 
   const workflowUrl = `/workflows/${visitToText(
     workflow.instrumentSession
->>>>>>> efc856d0 (WIP: current work)
+
   )}/${workflow.id}`;
 
   const RetriggerComponent = retriggerComponent;
   const GithubComponent = githubComponent;
 
   return (
-<<<<<<< HEAD
-    <WorkflowCard expanded={expanded} onChange={onChange} disableGutters>
-=======
     <WorkflowCard
       expanded={expanded}
       onChange={onChange}
       disableGutters
     >
->>>>>>> efc856d0 (WIP: current work)
+
       <WorkflowHeader
         expandIcon={<ArrowDropDownIcon />}
         aria-controls={`workflow-${workflow.id}-content`}
@@ -523,13 +503,6 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
                 <>
                   <MetadataSeparator>·</MetadataSeparator>
 
-<<<<<<< HEAD
-                  <Tooltip title={fullSubmittedDateTime ?? ""} arrow>
-                    <MetadataItem>
-                      <CalendarTodayOutlinedIcon />
-
-                      <Typography variant="caption" component="span" noWrap>
-=======
                   <Tooltip
                     title={fullSubmittedDateTime ?? ""}
                     arrow
@@ -542,7 +515,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
                         component="span"
                         noWrap
                       >
->>>>>>> efc856d0 (WIP: current work)
+
                         {submittedDate}
                       </Typography>
                     </MetadataItem>
@@ -554,13 +527,7 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
                 <>
                   <MetadataSeparator>·</MetadataSeparator>
 
-<<<<<<< HEAD
-                  <Tooltip title={fullSubmittedDateTime ?? ""} arrow>
-                    <MetadataItem>
-                      <AccessTimeOutlinedIcon />
 
-                      <Typography variant="caption" component="span" noWrap>
-=======
                   <Tooltip
                     title={fullSubmittedDateTime ?? ""}
                     arrow
@@ -573,7 +540,6 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
                         component="span"
                         noWrap
                       >
->>>>>>> efc856d0 (WIP: current work)
                         {submittedTime}
                       </Typography>
                     </MetadataItem>
@@ -585,17 +551,8 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
 
           {/* Actions */}
           <WorkflowActions
-<<<<<<< HEAD
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-            onFocus={(event) => {
-              event.stopPropagation();
-            }}
-=======
             onClick={(event) => event.stopPropagation()}
             onFocus={(event) => event.stopPropagation()}
->>>>>>> efc856d0 (WIP: current work)
           >
             {workflowLink && (
               <Tooltip title="Open workflow in a new tab">
@@ -606,18 +563,9 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
                   rel="noopener noreferrer"
                   size="small"
                   aria-label={`Open workflow ${workflow.name} in a new tab`}
-<<<<<<< HEAD
-                  onClick={(event) => {
-                    event.stopPropagation();
-                  }}
-                  sx={{
-                    color: "text.secondary",
-=======
                   onClick={(event) => event.stopPropagation()}
                   sx={{
                     color: "text.secondary",
-
->>>>>>> efc856d0 (WIP: current work)
                     "&:hover": {
                       color: "primary.main",
                     },
@@ -644,22 +592,14 @@ const WorkflowAccordion: React.FC<WorkflowProps> = ({
           </WorkflowActions>
         </Box>
       </WorkflowHeader>
-
-<<<<<<< HEAD
-      <AccordionDetails id={`workflow-${workflow.id}-content`}>
-=======
       <AccordionDetails
         id={`workflow-${workflow.id}-content`}
       >
->>>>>>> efc856d0 (WIP: current work)
         {children}
       </AccordionDetails>
     </WorkflowCard>
   );
 };
-<<<<<<< HEAD
-export default WorkflowAccordion;
-=======
 
 export default WorkflowAccordion;
->>>>>>> efc856d0 (WIP: current work)
+
