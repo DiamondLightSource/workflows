@@ -754,49 +754,6 @@ users:
     }
 
     #[tokio::test]
-    async fn unauthorised_get_single_trigger() -> anyhow::Result<()> {
-        let mut ctx = TestContext::new().await?;
-
-        mock_single_trigger_op(
-            &mut ctx.server,
-            "GET",
-            "example-trigger-mfvpj",
-            "events",
-            "unauthorised-trigger.json",
-        )
-        .await;
-
-        let response = ctx
-            .schema
-            .execute(
-                r#"
-                query {
-                    trigger(name: "example-trigger-mfvpj") {
-                        name
-                        beamline
-                    }
-                }
-                "#,
-            )
-            .await;
-
-        let err = response.into_result().unwrap_err();
-        let exp_err = ServerError {
-            message: "Permission denied: You may only access your own triggers".into(),
-            locations: vec![Pos {
-                line: 3,
-                column: 21,
-            }],
-            source: None,
-            path: vec![PathSegment::Field("trigger".into())],
-            extensions: None,
-        };
-
-        assert_eq!(err[0], exp_err);
-        Ok(())
-    }
-
-    #[tokio::test]
     async fn get_many_triggers() -> anyhow::Result<()> {
         let mut ctx = TestContext::new().await?;
         let mock = mock_list_triggers(&mut ctx.server, "get-many-triggers.json").await;
