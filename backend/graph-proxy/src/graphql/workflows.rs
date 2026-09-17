@@ -814,6 +814,60 @@ async fn get_workflow_from_argo_api(
     Ok(Some(Workflow::new(workflow, visit.into())))
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct WorkflowsMutation;
+
+#[Object(guard = "AuthGuard")]
+impl WorkflowsMutation {
+    /// Stop a single [`Workflow`] by unique ID.
+    pub async fn stop_workflow(
+        &self,
+        ctx: &Context<'_>,
+        id: ID,
+    ) -> anyhow::Result<Workflow> {
+            let id_str = id.to_string();
+            let parts: Vec<&str> = id_str.split(':').collect();
+            if parts.len() != 3 {
+                return Err(anyhow::anyhow!("Invalid Workflow ID"));
+            }
+            let visit_display = parts[0];
+            let workflow_name = parts[1];
+            // let workflow_uid = parts[2];
+
+            let visit_input: VisitInput = visit_display.parse()?;
+
+            let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
+            let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+            let mut url = server_url.clone();
+            url.path_segments_mut()
+                .unwrap()
+                .extend(["api", "v1", "workflows", &visit_input.to_string(), workflow_name, "stop"]);
+            let request = if let Some(auth_token) = auth_token {
+                CLIENT.put(url).bearer_auth(auth_token.token())
+            } else {
+                CLIENT.put(url)
+            }.json(
+                &argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowStopRequest {
+                    message: Some("Workflow stopped by graph request".to_string()),
+                    name: None,
+                    namespace: None,
+                    node_field_selector: None,
+                },
+            );
+
+            // TODO: MAKE SURE ONLY THE USER THAT SUBMITTED CAN STOP IT!!
+            // TODO: CHECK REQUEST STATUS!!
+
+            let workflow = request
+                .send()
+                .await?
+                .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
+                .await?
+                .into_result()?;
+            Ok(Workflow::new(workflow, visit_input.into()))
+    }
+}
+
 /// Information about the creator of a workflow.
 #[derive(Debug, Clone, SimpleObject, Eq, PartialEq)]
 struct WorkflowCreator {
