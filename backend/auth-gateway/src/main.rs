@@ -93,6 +93,7 @@ fn create_router(state: Arc<AppState>, graph_url: String, same_site: SameSite) -
     let session_layer = SessionManagerLayer::new(session_store)
         .with_same_site(same_site)
         .with_secure(state.session_secure)
+        .with_always_save(true)
         .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
 
     let proxy: Router<()> = ReverseProxy::new("/api", &graph_url).into();
