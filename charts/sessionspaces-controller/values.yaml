@@ -1,0 +1,73 @@
+webhook:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: diamondlightsource/workflows-sessionspaces-webhook
+    tag: ""
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  logLevel: info
+  deployment:
+    replicas: 2
+    annotations: []
+    podAnnotations: []
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  service:
+    create: true
+    annotations: []
+    type: ClusterIP
+    port: 8080
+
+api:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: diamondlightsource/workflows-sessionspaces-api
+    tag: ""
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  logLevel: info
+  deployment:
+    replicas: 1
+    annotations: []
+    podAnnotations: []
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  service:
+    create: true
+    annotations: []
+    type: ClusterIP
+    port: 8081
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: []
+  databaseUrl: mysql://ispyb_ro@ispybdbproxy.diamond.ac.uk:4306/ispyb
+  databasePasswordSecret:
+    name: sessionspaces-ispyb
+    key: password
+  ldapUrl: ldap://ldapmaster.diamond.ac.uk
+
+compositeController:
+  create: true
+  name: sessionspaces
+  syncTimeout: 20s
