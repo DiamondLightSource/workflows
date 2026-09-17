@@ -1,0 +1,46 @@
+{{- if and $.Values.webhook.enabled $.Values.compositeController.create }}
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: {{ $.Values.compositeController.name }}
+  labels:
+    {{- include "sessionspaces-controller.webhook.labels" $ | nindent 4 }}
+spec:
+  generateSelector: true
+
+  parentResource:
+    apiVersion: workflows.diamond.ac.uk/v1alpha1
+    resource: sessionspaces
+
+  childResources:
+    - apiVersion: v1
+      resource: namespaces
+      updateStrategy:
+        method: InPlace
+
+    - apiVersion: v1
+      resource: configmaps
+      updateStrategy:
+        method: InPlace
+
+    - apiVersion: v1
+      resource: serviceaccounts
+      updateStrategy:
+        method: InPlace
+
+    - apiVersion: rbac.authorization.k8s.io/v1
+      resource: rolebindings
+      updateStrategy:
+        method: InPlace
+
+    - apiVersion: kueue.x-k8s.io/v1beta2
+      resource: localqueues
+      updateStrategy:
+        method: InPlace
+
+  hooks:
+    sync:
+      webhook:
+        url: http://{{ include "sessionspaces-controller.webhook.fullname" $ }}.{{ .Release.Namespace }}.svc:{{ $.Values.webhook.service.port }}/sync
+        timeout: {{ $.Values.compositeController.syncTimeout }}
+{{- end }}
