@@ -34,7 +34,10 @@ interface TaskLogSubscriptionProps {
   setLogLines: Dispatch<SetStateAction<string[]>>;
   setTaskCompleted: Dispatch<SetStateAction<boolean>>;
   setSubscriptionError: Dispatch<SetStateAction<string | null>>;
+  setLogUnavailable: Dispatch<SetStateAction<boolean>>;
 }
+
+const LOG_NOT_AVAILABLE = "Log not available";
 
 const taskLogViewerSubscription = graphql`
   subscription TaskLogViewerSubscription(
@@ -56,6 +59,7 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
   setLogLines,
   setTaskCompleted,
   setSubscriptionError,
+  setLogUnavailable,
 }) => {
   const subscriptionConfig = useMemo<
     GraphQLSubscriptionConfig<TaskLogViewerSubscription>
@@ -67,6 +71,7 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
         workflowName,
         taskId,
       },
+
       onNext: (payload) => {
         const line = payload?.logs.content;
 
@@ -74,23 +79,41 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
           setLogLines((previousLines) => [...previousLines, line]);
         }
       },
+
       onError: (error) => {
         console.error("Log subscription error:", error);
 
         const message = error instanceof Error ? error.message : String(error);
 
-        if (
+        const logUnavailable =
+          message.includes(LOG_NOT_AVAILABLE) ||
           message.includes("NoSuchKey") ||
           message.includes("No logs") ||
-          message.includes("Failed to retrieve archived log artifact")
-        ) {
-          setSubscriptionError("No logs available");
-        } else {
-          setSubscriptionError("Unable to retrieve task logs");
+          message.includes("Failed to retrieve archived log artifact");
+
+        if (logUnavailable) {
+          /*
+           * This is a terminal state.
+           *
+           * Do not allow the subscription to remain mounted because Relay
+           * may otherwise reconnect it and repeatedly request the same
+           * unavailable log.
+           */
+          setSubscriptionError(LOG_NOT_AVAILABLE);
+          setLogUnavailable(true);
+          setTaskCompleted(true);
+
+          return;
         }
 
+        /*
+         * Preserve the existing behaviour for non-terminal errors.
+         * These can still happen while a workflow is active.
+         */
+        setSubscriptionError("Unable to retrieve task logs");
         setTaskCompleted(true);
       },
+
       onCompleted: () => {
         setTaskCompleted(true);
       },
@@ -102,6 +125,7 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
       setLogLines,
       setTaskCompleted,
       setSubscriptionError,
+      setLogUnavailable,
     ],
   );
 
@@ -121,10 +145,20 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
   const [subscriptionError, setSubscriptionError] = useState<string | null>(
     null,
   );
+
+  /*
+   * Once the backend tells us that no archived log exists, this prevents
+   * the Relay subscription from being mounted again.
+   */
+  const [logUnavailable, setLogUnavailable] = useState(false);
+
   const [expanded, setExpanded] = useState(Boolean(selectedTaskId));
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  /*
+   * Keep the log view scrolled to the newest line.
+   */
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -133,7 +167,7 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
 
   return (
     <>
-      {selectedTaskId && (
+      {selectedTaskId && !logUnavailable && (
         <TaskLogSubscription
           key={`${workflowName}-${selectedTaskId}`}
           visit={visit}
@@ -142,6 +176,7 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
           setLogLines={setLogLines}
           setTaskCompleted={setTaskCompleted}
           setSubscriptionError={setSubscriptionError}
+          setLogUnavailable={setLogUnavailable}
         />
       )}
 
@@ -169,7 +204,7 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
             Logs: {selectedTaskName ?? selectedTaskId ?? "No task selected"}
           </Typography>
 
-          {selectedTaskId && !taskCompleted && (
+          {selectedTaskId && !taskCompleted && !logUnavailable && (
             <CircularProgress
               size={14}
               sx={{
@@ -179,7 +214,7 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
             />
           )}
 
-          {selectedTaskId && taskCompleted && (
+          {selectedTaskId && taskCompleted && !logUnavailable && (
             <Typography
               sx={{
                 color: "#ff3333",
@@ -208,7 +243,17 @@ const TaskLogViewerContent: React.FC<TaskLogViewerProps> = ({
               whiteSpace: "pre-wrap",
             }}
           >
-            {subscriptionError ? (
+            {logUnavailable ? (
+              <Typography
+                sx={{
+                  color: "#ff3333",
+                  fontFamily: "monospace",
+                  fontSize: "12px",
+                }}
+              >
+                {LOG_NOT_AVAILABLE}
+              </Typography>
+            ) : subscriptionError ? (
               <Typography
                 sx={{
                   color: "#ff3333",
@@ -251,7 +296,9 @@ export const TaskLogViewer: React.FC<TaskLogViewerProps> = ({
 }) => {
   return (
     <TaskLogViewerContent
-      key={`${workflowName}-${selectedTaskId ?? "none"}-${visit.proposalCode}-${String(visit.proposalNumber)}-${String(visit.number)}`}
+      key={`${workflowName}-${selectedTaskId ?? "none"}-${visit.proposalCode}-${String(
+        visit.proposalNumber,
+      )}-${String(visit.number)}`}
       visit={visit}
       workflowName={workflowName}
       selectedTaskId={selectedTaskId}

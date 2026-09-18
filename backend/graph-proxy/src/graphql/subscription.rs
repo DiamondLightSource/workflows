@@ -1,5 +1,7 @@
 use crate::graphql::AuthGuard;
-use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1WorkflowWatchEvent;
+use argo_workflows_openapi::{
+    APIResult, IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowWatchEvent,
+};
 use async_graphql::{Context, SimpleObject, Subscription};
 use async_stream::stream;
 use eventsource_stream::Eventsource;
@@ -66,6 +68,52 @@ pub fn get_auth_token(ctx: &Context<'_>) -> anyhow::Result<String> {
         .ok_or_else(|| WorkflowParsingError::MissingAuthToken.into())
 }
 
+/// Checks whether the specified workflow has completed by querying
+/// the Argo Workflows API and inspecting the workflow phase.
+async fn is_workflow_completed(
+    server_url: &ArgoServerUrl,
+    auth_token: &str,
+    namespace: &str,
+    workflow_name: &str,
+) -> anyhow::Result<bool> {
+    let mut url = server_url.deref().clone();
+
+    url.path_segments_mut().expect("Invalid base URL").extend([
+        "api",
+        "v1",
+        "workflows",
+        namespace,
+        workflow_name,
+    ]);
+
+    let workflow = reqwest::Client::new()
+        .get(url)
+        .bearer_auth(auth_token)
+        .send()
+        .await?
+        .json::<APIResult<IoArgoprojWorkflowV1alpha1Workflow>>()
+        .await?
+        .into_result()?;
+
+    let Some(status) = workflow.status else {
+        return Ok(false);
+    };
+
+    let phase = status.phase.as_deref();
+
+    tracing::info!(
+        "WORKFLOW_STATUS_CHECK namespace={} workflow={} phase={:?}",
+        namespace,
+        workflow_name,
+        phase
+    );
+
+    Ok(matches!(
+        phase,
+        Some("Succeeded") | Some("Failed") | Some("Error")
+    ))
+}
+
 #[Subscription(guard = "AuthGuard")]
 impl WorkflowsSubscription {
     /// Subscribe to logs for a single pod of a workflow.
@@ -82,14 +130,15 @@ impl WorkflowsSubscription {
     ) -> anyhow::Result<impl Stream<Item = Result<LogEntry, String>>> {
         let auth_token = get_auth_token(ctx)?;
 
+        let server_url = ctx.data_unchecked::<ArgoServerUrl>().clone();
+
         if task_id.is_empty() || task_id == "__NO_TASK_SELECTED__" {
             return Err(anyhow::anyhow!(
                 "A valid task ID is required to retrieve task logs"
             ));
         }
 
-        let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref().clone();
-        let mut url = server_url;
+        let mut url = server_url.deref().clone();
 
         let namespace = visit.to_string();
 
@@ -150,9 +199,41 @@ impl WorkflowsSubscription {
             }
         };
 
+        // A terminal workflow with no archived log must never fall back to
+        // the live Argo log endpoint. The pod may already be gone, and there
+        // is nothing left that can produce additional log data.
+        let completed_without_log = if initial_archive.is_none() {
+            match is_workflow_completed(&server_url, &auth_token, &namespace, &workflow_name).await
+            {
+                Ok(true) => {
+                    tracing::info!(
+                        "COMPLETED_WORKFLOW_WITHOUT_LOG task={} workflow={}",
+                        task_id,
+                        workflow_name
+                    );
+                    true
+                }
+
+                Ok(false) => false,
+
+                Err(err) => {
+                    tracing::warn!(
+                        "FAILED_TO_CHECK_WORKFLOW_STATUS task={} workflow={} error={}",
+                        task_id,
+                        workflow_name,
+                        err
+                    );
+                    false
+                }
+            }
+        } else {
+            false
+        };
+
         // Only contact the Argo live-log endpoint when the archived
-        // main.log is not already available in S3.
-        let live_response = if initial_archive.is_none() {
+        // main.log is not already available in S3 and the workflow is still
+        // running.
+        let live_response = if initial_archive.is_none() && !completed_without_log {
             tracing::info!(
                 "STARTING_LIVE_STREAM namespace={} workflow={} task={}",
                 namespace,
@@ -179,6 +260,11 @@ impl WorkflowsSubscription {
         let mut byte_stream = live_response.map(|response| response.bytes_stream());
 
         let log_stream = stream! {
+            if completed_without_log {
+                yield Err("Log not available".to_string());
+                return;
+            }
+
             if let Some(archive_response) = initial_archive {
                 let archive_bytes = match archive_response.body.collect().await {
                     Ok(bytes) => bytes,
@@ -404,7 +490,7 @@ impl WorkflowsSubscription {
                         }
 
                         Err(_err) => {
-                            yield Err("No logs available".to_string());
+                            yield Err("Log not available".to_string());
                             return;
                         }
                     }
