@@ -3,25 +3,18 @@ import "@testing-library/jest-dom";
 import TasksTable from "../../lib/components/TasksFlow";
 import { getTaskStatusIcon, mockTasks } from "workflows-lib";
 
+vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
+  useFetchedTasks: vi.fn(() => mockTasks),
+}));
+
+vi.mock(
+  "workflows-lib/lib/components/common/StatusIcons",
+  async (importOriginal) => ({
+    ...(await importOriginal()),
+    getTaskStatusIcon: vi.fn(),
+  }),
+);
 describe("TaskTable Component", () => {
-  vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
-    useFetchedTasks: vi.fn(() => mockTasks),
-  }));
-
-  beforeEach(() => {
-    vi.mock(
-      "workflows-lib/lib/components/common/StatusIcons",
-      async (importOriginal) => ({
-        ...(await importOriginal()),
-        getTaskStatusIcon: vi
-          .fn()
-          .mockReturnValueOnce(<span>Pending Icon</span>)
-          .mockReturnValueOnce(<span>Completed Icon</span>)
-          .mockReturnValueOnce(<span>In-Progress Icon</span>),
-      }),
-    );
-  });
-
   afterEach(() => {
     vi.clearAllMocks();
   });
