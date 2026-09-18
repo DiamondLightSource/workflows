@@ -409,11 +409,15 @@ mod tests {
     #[derive(Debug, Serialize, Deserialize)]
     struct TestClaims {
         posix_uid: String,
+        preferred_username: String,
+        fedid: String,
     }
 
     fn test_token() -> ValidatedAuthToken {
         let claims = TestClaims {
             posix_uid: "7357".into(),
+            preferred_username: "test-pref-user".into(),
+            fedid: "abc12345".into(),
         };
 
         let token = encode(
@@ -805,6 +809,83 @@ users:
                 "name": "test-trigger-s6qzl",
                 "beamline": "b01-1",
                 "enabled": true
+            }
+        })
+    )]
+    // Fedid is used as creatorId
+    #[case(
+        "test-trigger-s6qzl",
+        "mg36964-1",
+        r#"
+            query {
+                trigger(
+                    name: "test-trigger-s6qzl",
+                    visit: {
+                        proposalCode: "mg"
+                        proposalNumber: 36964
+                        number: 1
+                    }
+                ) {
+                    creator {
+                        creatorId
+                    }
+                }
+            }
+        "#,
+        "namespaced-trigger.json",
+        json!({
+            "trigger": {
+                "creator": {
+                    "creatorId": "abc12345"
+                }
+            }
+        })
+    )]
+    // Preferred username is prioritised above fedid
+    #[case(
+        "custom-name",
+        "events",
+        r#"
+            query {
+                trigger(
+                    name: "custom-name",
+                ) {
+                    creator {
+                        creatorId
+                    }
+                }
+            }
+        "#,
+        "named-trigger.json",
+        json!({
+            "trigger": {
+                "creator": {
+                    "creatorId": "test-preferred-user"
+                }
+            }
+        })
+    )]
+    // missing creator labels returns "Unknown"
+    #[case(
+        "example-trigger-mfvpj",
+        "events",
+        r#"
+            query {
+                trigger(
+                    name: "example-trigger-mfvpj",
+                ) {
+                    creator {
+                        creatorId
+                    }
+                }
+            }
+        "#,
+        "get-single-trigger.json",
+        json!({
+            "trigger": {
+                "creator": {
+                    "creatorId": "Unknown"
+                }
             }
         })
     )]

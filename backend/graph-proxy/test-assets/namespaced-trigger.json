@@ -8,7 +8,8 @@
         "labels": {
             "workflows.diamond.ac.uk/beamline": "b01-1",
             "workflows.diamond.ac.uk/source": "generic",
-            "workflows.diamond.ac.uk/posixuid": "7357"
+            "workflows.diamond.ac.uk/posixuid": "7357",
+            "workflows.diamond.ac.uk/creator-fedid": "abc12345"
         },
         "name": "test-trigger-s6qzl",
         "namespace": "mg36964-1",
