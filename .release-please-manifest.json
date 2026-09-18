@@ -1,6 +1,6 @@
 {
   "+1": "0.0.0",
-  "backend/graph-proxy": "0.2.2",
+  "backend/graph-proxy": "0.2.3",
   "+2": "0.0.0",
   "backend/sessionspaces": "0.1.7",
   "backend/sessionspaces-controller": "0.1.1",
