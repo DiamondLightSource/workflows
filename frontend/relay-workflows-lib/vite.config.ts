@@ -8,11 +8,11 @@ export default defineConfig({
   plugins: [relay, react()],
   build: {
     lib: {
-      entry: resolve(__dirname, "lib/main.ts"),
+      entry: resolve(import.meta.dirname, "lib/main.ts"),
       name: "relay-workflows-lib",
       fileName: "relay-workflows-lib",
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ["react", "react-dom", "react-relay"],
       output: {
         globals: {

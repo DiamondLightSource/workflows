@@ -7,11 +7,11 @@ export default defineConfig({
   plugins: [react()],
   build: {
     lib: {
-      entry: resolve(__dirname, "lib/main.ts"),
+      entry: resolve(import.meta.dirname, "lib/main.ts"),
       name: "workflows-lib",
       fileName: "workflows-lib",
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ["react", "react-dom"],
       output: {
         globals: {
