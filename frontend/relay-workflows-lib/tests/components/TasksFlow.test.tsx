@@ -1,60 +1,47 @@
 import { act, render, renderHook } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import TasksFlow from "../../lib/components/TasksFlow";
-import {
-  applyDagreLayout,
-  buildTaskTree,
-  generateNodesAndEdges,
-  usePersistentViewport,
-  mockTasks,
-} from "workflows-lib";
 import { ReactFlow } from "@xyflow/react";
+import * as workflowsLib from "workflows-lib";
+
+vi.mock("@xyflow/react", () => ({
+  ReactFlow: vi.fn(() => <div>ReactFlow Mock</div>),
+}));
+
+vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
+  useFetchedTasks: vi.fn(() => workflowsLib.mockTasks),
+}));
 
 describe("TasksFlow Component", () => {
-  beforeEach(() => {
-    vi.mock("workflows-lib", async () => ({
-      ...(await vi.importActual("workflows-lib")),
-      TaskFlowNode: vi.fn().mockReturnValue(<div>CustomNode Mock</div>),
-      buildTaskTree: vi.fn().mockReturnValue(mockTaskTree),
-      generateNodesAndEdges: vi.fn().mockReturnValue({
-        nodes: mockNodes,
-        edges: mockEdges,
-      }),
-      applyDagreLayout: vi.fn().mockReturnValue({
-        nodes: mockLayoutedNodes,
-        edges: mockLayoutedEdges,
-      }),
-    }));
-  });
+  const mockNodes = [{ id: "node-1", position: { x: 0, y: 0 }, data: {} }];
 
-  const mockTaskTree = vi.hoisted(() => ({}));
+  const mockEdges = [{ id: "edge-1", source: "node-1", target: "node-2" }];
 
-  const mockNodes = vi.hoisted(() => [
+  const mockLayoutedNodes = [
     { id: "node-1", position: { x: 0, y: 0 }, data: {} },
-  ]);
+  ];
 
-  const mockEdges = vi.hoisted(() => [
+  const mockLayoutedEdges = [
     { id: "edge-1", source: "node-1", target: "node-2" },
-  ]);
+  ];
 
-  const mockLayoutedNodes = vi.hoisted(() => [
-    { id: "node-1", position: { x: 0, y: 0 }, data: {} },
-  ]);
+  const buildTaskTreeSpy = vi
+    .spyOn(workflowsLib, "buildTaskTree")
+    .mockReturnValue([]);
 
-  const mockLayoutedEdges = vi.hoisted(() => [
-    { id: "edge-1", source: "node-1", target: "node-2" },
-  ]);
+  const generateNodesAndEdgesSpy = vi
+    .spyOn(workflowsLib, "generateNodesAndEdges")
+    .mockReturnValue({
+      nodes: mockNodes,
+      edges: mockEdges,
+    });
 
-  vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
-    useFetchedTasks: vi.fn(() => mockTasks),
-  }));
-
-  beforeEach(() => {
-    vi.mock("@xyflow/react", async (importOriginal) => ({
-      ...(await importOriginal()),
-      ReactFlow: vi.fn().mockReturnValue(<div>ReactFlow Mock</div>),
-    }));
-  });
+  const applyDagreLayoutSpy = vi
+    .spyOn(workflowsLib, "applyDagreLayout")
+    .mockReturnValue({
+      nodes: mockLayoutedNodes,
+      edges: mockLayoutedEdges,
+    });
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -71,7 +58,7 @@ describe("TasksFlow Component", () => {
   it("should build the task tree", () => {
     render(<TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />);
 
-    expect(buildTaskTree).toHaveBeenCalledWith(mockTasks);
+    expect(buildTaskTreeSpy).toHaveBeenCalledWith(workflowsLib.mockTasks);
   });
 
   it("should generate nodes and edges based on the task tree", () => {
@@ -83,13 +70,13 @@ describe("TasksFlow Component", () => {
       />,
     );
 
-    expect(generateNodesAndEdges).toHaveBeenCalledWith(mockTaskTree);
+    expect(generateNodesAndEdgesSpy).toHaveBeenCalledWith([]);
   });
 
   it("should apply the dagre layout", () => {
     render(<TasksFlow workflowId="mockWorkflowA" onNavigate={() => {}} />);
 
-    expect(applyDagreLayout).toHaveBeenCalledWith(mockNodes, mockEdges);
+    expect(applyDagreLayoutSpy).toHaveBeenCalledWith(mockNodes, mockEdges);
   });
 
   it("should initialize ReactFlow with the correct nodes and edges", () => {
@@ -140,7 +127,9 @@ describe("usePersistentViewport hook tests", () => {
   const mockViewport = { x: 20, y: 30, zoom: 2.5 };
 
   it("should save viewport to sessionStorage", () => {
-    const { result } = renderHook(() => usePersistentViewport("testWorkflowA"));
+    const { result } = renderHook(() =>
+      workflowsLib.usePersistentViewport("testWorkflowA"),
+    );
 
     act(() => {
       result.current.saveViewport(mockViewport);
@@ -156,7 +145,9 @@ describe("usePersistentViewport hook tests", () => {
       JSON.stringify(mockViewport),
     );
 
-    const { result } = renderHook(() => usePersistentViewport("testWorkflowB"));
+    const { result } = renderHook(() =>
+      workflowsLib.usePersistentViewport("testWorkflowB"),
+    );
 
     let loadedViewport;
     act(() => {
@@ -172,7 +163,9 @@ describe("usePersistentViewport hook tests", () => {
       JSON.stringify(mockViewport),
     );
 
-    const { result } = renderHook(() => usePersistentViewport("testWorkflowC"));
+    const { result } = renderHook(() =>
+      workflowsLib.usePersistentViewport("testWorkflowC"),
+    );
 
     act(() => {
       result.current.clearViewport();

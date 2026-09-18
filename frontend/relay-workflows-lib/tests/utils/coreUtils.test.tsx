@@ -18,7 +18,9 @@ const localStorageMock = {
   length: 10,
   key: () => "key",
 };
-global.localStorage = localStorageMock;
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+});
 
 describe("useVisitInput", () => {
   const user = userEvent.setup();
