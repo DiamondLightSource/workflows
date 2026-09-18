@@ -16,11 +16,11 @@ export default defineConfig({
   plugins: [react()],
   build: {
     lib: {
-      entry: resolve(__dirname, "lib/main.ts"),
+      entry: resolve(import.meta.dirname, "lib/main.ts"),
       fileName: "workflows-lib-shared",
       formats: ["es", "cjs"],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: (id) =>
         externalDeps.some((dep) => id === dep || id.startsWith(`${dep}/`)),
     },
