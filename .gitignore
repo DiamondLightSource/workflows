@@ -11,6 +11,9 @@ kubeconfig.yaml
 __generated__
 workflows.graphql
 
+# Storybook generated
+storybook-static
+
 # File Types
 **/*.tgz # Chart files created when deploying helm dep build
 .DS_Store
