@@ -7,7 +7,9 @@
         "generation": 1,
         "labels": {
             "workflows.diamond.ac.uk/beamline": "b01-1",
-            "workflows.diamond.ac.uk/source": "generic"
+            "workflows.diamond.ac.uk/source": "generic",
+            "workflows.diamond.ac.uk/creator-fedid": "xyz12345",
+            "workflows.diamond.ac.uk/creator-preferred-username": "test-preferred-user"
         },
         "name": "custom-name",
         "namespace": "events",
