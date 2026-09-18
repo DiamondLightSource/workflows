@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.3](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.2...graph-proxy@v0.2.3) (2026-09-18)
+
+
+### Features
+
+* **graph-proxy:** add creator field to trigger query ([9ed919c](https://github.com/DiamondLightSource/workflows/commit/9ed919c234835936e1cd250c69aa2577947dd834))
+* **graph-proxy:** make events-namespaced triggers deleteable ([2756737](https://github.com/DiamondLightSource/workflows/commit/2756737e7ef0f2b037ca0370f2556e4f3282385f))
+* **graph-proxy:** remove posix uid check for trigger query ([bcbf1bb](https://github.com/DiamondLightSource/workflows/commit/bcbf1bb54454381ff83136e3e23e0be37f8f43ff))
+
 ## [0.2.2](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.1...graph-proxy@v0.2.2) (2026-09-14)
 
 
