@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.10](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.9...workflows-lib@v0.1.10) (2026-09-18)
+
+
+### Features
+
+* **frontend:** add task log viewer ([07a5a36](https://github.com/DiamondLightSource/workflows/commit/07a5a36160914f3078fa69d91ea32bb3004e17cd))
+* **Workflows User Interface:** improve workflow list metadata layout ([2ae8c6a](https://github.com/DiamondLightSource/workflows/commit/2ae8c6a3e3a30154deb5c406e3805e147de64ed9))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.8...workflows-lib@v0.1.9) (2026-09-01)
 
 
