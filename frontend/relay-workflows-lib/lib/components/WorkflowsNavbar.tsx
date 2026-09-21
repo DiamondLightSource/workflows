@@ -44,6 +44,7 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = () => {
 
   return (
     <Navbar
+      color={"white"}
       logo="theme"
       leftSlot={
         <Box
@@ -72,9 +73,7 @@ const WorkflowsNavbar: React.FC<WorkflowsNavbarProps> = () => {
           </NavLinks>
         </Box>
       }
-      rightSlot={
-        <User colour="white" user={user} onLogout={handleLogout}></User>
-      }
+      rightSlot={<User user={user} onLogout={handleLogout}></User>}
     />
   );
 };
