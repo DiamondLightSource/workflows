@@ -1,5 +1,8 @@
 import { Meta, StoryObj } from "@storybook/react";
-import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import {
+  ThemeProvider,
+  DiamondDSTheme,
+} from "@diamondlightsource/sci-react-ui";
 import { AuthStatusIndicator } from "../lib/main";
 
 const meta: Meta<typeof AuthStatusIndicator> = {
@@ -7,7 +10,7 @@ const meta: Meta<typeof AuthStatusIndicator> = {
   component: AuthStatusIndicator,
   decorators: [
     (Story) => (
-      <ThemeProvider theme={DiamondTheme}>
+      <ThemeProvider theme={DiamondDSTheme}>
         <Story />
       </ThemeProvider>
     ),

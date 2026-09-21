@@ -1,6 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
-import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import {
+  ThemeProvider,
+  DiamondDSTheme,
+} from "@diamondlightsource/sci-react-ui";
 import React, { ReactElement } from "react";
 import { getRelayEnvironment } from "relay-workflows-lib";
 import SubmissionForm from "../../lib/components/SubmissionForm";
@@ -33,7 +36,7 @@ const meta: Meta<typeof SubmissionForm> = {
   decorators: [
     (Story) => (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={DiamondTheme} defaultMode="light">
+        <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
           <Story />
         </ThemeProvider>
       </RelayEnvironmentProvider>
