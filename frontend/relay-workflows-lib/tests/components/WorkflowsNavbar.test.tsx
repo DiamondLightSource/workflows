@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ThemeProvider } from "@mui/material/styles";
-import { DiamondTheme, AuthState } from "@diamondlightsource/sci-react-ui";
+import { DiamondDSTheme, AuthState } from "@diamondlightsource/sci-react-ui";
 import { BrowserRouter } from "react-router-dom";
 import { getUser } from "relay-workflows-lib";
 import userEvent from "@testing-library/user-event";
@@ -29,7 +29,7 @@ describe("WorkflowsNavbar", () => {
   it("displays the logged in user", async () => {
     vi.mocked(getUser).mockReturnValue(Promise.resolve(testUser));
     render(
-      <ThemeProvider theme={DiamondTheme}>
+      <ThemeProvider theme={DiamondDSTheme}>
         <BrowserRouter>
           <WorkflowsNavbar />
         </BrowserRouter>
@@ -46,7 +46,7 @@ describe("WorkflowsNavbar", () => {
       "https://identity.diamond.ac.uk/realms/dls/protocol/openid-connect/logout";
     vi.stubEnv("VITE_LOGOUT_URL", url);
     render(
-      <ThemeProvider theme={DiamondTheme}>
+      <ThemeProvider theme={DiamondDSTheme}>
         <BrowserRouter>
           <WorkflowsNavbar />
         </BrowserRouter>
@@ -65,7 +65,7 @@ describe("WorkflowsNavbar", () => {
     vi.mocked(getUser).mockReturnValue(Promise.resolve(testUser));
     const redirectSpy = vi.spyOn(coreUtils, "externalRedirect");
     render(
-      <ThemeProvider theme={DiamondTheme}>
+      <ThemeProvider theme={DiamondDSTheme}>
         <BrowserRouter>
           <WorkflowsNavbar />
         </BrowserRouter>
