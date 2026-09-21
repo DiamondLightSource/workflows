@@ -34,4 +34,10 @@ export default defineConfig(
       ],
     },
   },
+  {
+    files: ["relay-workflows-lib/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );
