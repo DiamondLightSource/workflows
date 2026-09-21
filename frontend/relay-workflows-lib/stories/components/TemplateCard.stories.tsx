@@ -1,6 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
-import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import {
+  ThemeProvider,
+  DiamondDSTheme,
+} from "@diamondlightsource/sci-react-ui";
 import { MemoryRouter } from "react-router-dom";
 import React, { ReactElement } from "react";
 import { getRelayEnvironment } from "relay-workflows-lib";
@@ -40,7 +43,7 @@ const meta: Meta<typeof TemplateCard> = {
   decorators: [
     (Story) => (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={DiamondTheme} defaultMode="light">
+        <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
           <MemoryRouter initialEntries={["/"]}>
             <Story />
           </MemoryRouter>

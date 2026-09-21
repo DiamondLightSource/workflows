@@ -1,6 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
-import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import {
+  ThemeProvider,
+  DiamondDSTheme,
+} from "@diamondlightsource/sci-react-ui";
 import React, { ReactElement } from "react";
 import { getRelayEnvironment } from "relay-workflows-lib";
 import { WorkflowListFilterDrawer } from "../../lib/components/WorkflowListFilterDrawer";
@@ -34,7 +37,7 @@ const meta: Meta<typeof WorkflowListFilterDrawer> = {
   decorators: [
     (Story) => (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={DiamondTheme} defaultMode="light">
+        <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
           <Story />
         </ThemeProvider>
       </RelayEnvironmentProvider>
