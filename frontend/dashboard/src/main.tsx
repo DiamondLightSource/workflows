@@ -9,7 +9,10 @@ import TemplatesListPage from "./routes/TemplatesListPage";
 import SingleTemplatePage from "./routes/SingleTemplatePage";
 import SingleWorkflowPage from "./routes/SingleWorkflowPage";
 import ErrorPage from "./ErrorPage";
-import { ThemeProvider, DiamondTheme } from "@diamondlightsource/sci-react-ui";
+import {
+  ThemeProvider,
+  DiamondDSTheme,
+} from "@diamondlightsource/sci-react-ui";
 import TriggersListPage from "./routes/TriggersListPage";
 
 const router = createBrowserRouter([
@@ -66,7 +69,7 @@ void startMockingIfConfigured().then(() => {
     root.render(
       <RelayEnvironmentProvider environment={environment}>
         <StrictMode>
-          <ThemeProvider theme={DiamondTheme} defaultMode="light">
+          <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
             <RouterProvider router={router} />
           </ThemeProvider>
         </StrictMode>
