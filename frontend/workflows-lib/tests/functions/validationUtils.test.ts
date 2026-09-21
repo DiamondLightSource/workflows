@@ -1,4 +1,3 @@
-import { RawScanRange } from "../../lib/components/template/controls/ScanRangeInput";
 import {
   isStrictPositiveInteger,
   parseExcludedScans,
@@ -70,7 +69,7 @@ describe("validateScanRange", () => {
       start: "1",
       end: "10",
       excludedRaw: "3, 4, 5",
-    } as RawScanRange);
+    });
     expect(result.errors).toEqual({ start: "", end: "", excluded: "" });
     expect(result.parsed).toEqual({ start: 1, end: 10, excluded: [3, 4, 5] });
   });
@@ -80,7 +79,7 @@ describe("validateScanRange", () => {
       start: "abc",
       end: "10",
       excludedRaw: "3, 4",
-    } as RawScanRange);
+    });
     expect(result.errors.start).toBe("Start must be a positive integer");
     expect(result.parsed).toBeUndefined();
   });
@@ -90,7 +89,7 @@ describe("validateScanRange", () => {
       start: "1",
       end: "abc",
       excludedRaw: "3, 4",
-    } as RawScanRange);
+    });
     expect(result.errors.end).toBe("End must be a positive integer");
     expect(result.parsed).toBeUndefined();
   });
@@ -100,7 +99,7 @@ describe("validateScanRange", () => {
       start: "10",
       end: "5",
       excludedRaw: "3, 4",
-    } as RawScanRange);
+    });
     expect(result.errors.end).toBe("End cannot be less than start");
     expect(result.parsed).toBeUndefined();
   });
@@ -110,7 +109,7 @@ describe("validateScanRange", () => {
       start: "1",
       end: "5",
       excludedRaw: "2, 6",
-    } as RawScanRange);
+    });
     expect(result.errors.excluded).toBe("Excluded values out of range");
     expect(result.parsed).toBeUndefined();
   });
@@ -120,7 +119,7 @@ describe("validateScanRange", () => {
       start: "1",
       end: "10",
       excludedRaw: "abc",
-    } as RawScanRange);
+    });
     expect(result.errors.excluded).toBe("Must be positive integers or ranges");
     expect(result.parsed).toBeUndefined();
   });
@@ -130,7 +129,7 @@ describe("validateScanRange", () => {
       start: "1",
       end: "10",
       excludedRaw: "",
-    } as RawScanRange);
+    });
     expect(result.errors.excluded).toBe("");
     expect(result.parsed?.excluded).toEqual([]);
   });
@@ -139,7 +138,7 @@ describe("validateScanRange", () => {
       start: "1",
       end: "10",
       excludedRaw: "1, 1, 9",
-    } as RawScanRange);
+    });
     expect(result.errors).toEqual({ start: "", end: "", excluded: "" });
     expect(result.parsed?.excluded).toEqual([1, 9]);
   });

@@ -5,8 +5,7 @@ import { formatErrorMessage } from "workflows-lib";
 interface ErrorBoundaryProps {
   children: (props: { fetchKey: number }) => ReactNode;
   fallback?:
-    | ReactNode
-    | ((props: { error: Error; retry: () => void }) => ReactNode);
+    ReactNode | ((props: { error: Error; retry: () => void }) => ReactNode);
   maxRetries?: 0 | 1 | 2;
 }
 
