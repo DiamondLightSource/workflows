@@ -10,6 +10,12 @@
 	"remoteUser": "vscode",
 	"updateRemoteUserUID": true,
 
+	// testcontainers can't reach a Docker daemon inside the dev container, so
+	// container-based tests skip themselves when this is set.
+	"containerEnv": {
+		"WORKFLOWS_DEV_CONTAINER": "true"
+	},
+
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
