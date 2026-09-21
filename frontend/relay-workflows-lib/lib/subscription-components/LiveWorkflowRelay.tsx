@@ -50,9 +50,7 @@ export default function LiveWorkflowRelay(props: LiveWorkflowRelayProps) {
         },
         onNext: (response?: LiveWorkflowRelaySubscription$data | null) => {
           if (response?.workflow) {
-            setWorkflowFragmentRef(
-              response.workflow as unknown as BaseWorkflowRelayFragment$key,
-            );
+            setWorkflowFragmentRef(response.workflow);
 
             if (isFinished(response)) {
               console.log("Workflow finished, unsubscribing.");

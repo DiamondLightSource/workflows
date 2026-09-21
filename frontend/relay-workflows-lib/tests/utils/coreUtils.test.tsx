@@ -60,7 +60,7 @@ describe("useVisitInput", () => {
       proposalCode: "cd",
       proposalNumber: 4321,
       number: 1,
-    } as Visit;
+    };
 
     render(
       <MemoryRouter initialEntries={["/home"]}>

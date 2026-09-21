@@ -39,7 +39,7 @@ export default function ScienceGroupSelector({
   };
 
   const handleClick = () => {
-    setFilter({ scienceGroup } as WorkflowTemplatesFilter);
+    setFilter({ scienceGroup });
   };
 
   return (

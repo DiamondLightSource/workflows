@@ -2,7 +2,6 @@ import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { TaskStatus, WorkflowAccordion, WorkflowStatus } from "workflows-lib";
-import { Visit } from "@diamondlightsource/sci-react-ui";
 import { vi } from "vitest";
 
 vi.mock("../../lib/components/common/StatusIcons", () => ({
@@ -18,7 +17,7 @@ describe("WorkflowAccordion Component", () => {
       proposalCode: "ab",
       proposalNumber: 7295,
       number: 5,
-    } as Visit,
+    },
     tasks: [
       { id: "Task-1", name: "Task 1", status: "Succeeded" as TaskStatus },
     ],
