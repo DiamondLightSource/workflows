@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.1...sessionspaces-controller@v0.1.2) (2026-09-21)
+
+
+### Bug Fixes
+
+* **ss-controller:** handle whitespaces and newlines in passwords ([6d0faf0](https://github.com/DiamondLightSource/workflows/commit/6d0faf0c4f6f8b379cca6ff5d86881b13eb93faa))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.0...sessionspaces-controller@v0.1.1) (2026-09-17)
 
 
