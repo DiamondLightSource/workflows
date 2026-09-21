@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.1...auth-gateway@v0.1.2) (2026-09-21)
+
+
+### Features
+
+* **auth-gateway:** add option to set cookies to lax ([2f42078](https://github.com/DiamondLightSource/workflows/commit/2f42078c35538378acd4904a95851d84f195ea6a))
+
+
+### Bug Fixes
+
+* **auth-gateway:** session read now resets session inactivity timeout in auth-gateway ([fb1e3b0](https://github.com/DiamondLightSource/workflows/commit/fb1e3b010168a85096691bd3ec6257059cab8544))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.0...auth-gateway@v0.1.1) (2026-08-20)
 
 
