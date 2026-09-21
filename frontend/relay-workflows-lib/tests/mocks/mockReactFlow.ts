@@ -8,7 +8,32 @@ class ResizeObserver {
   }
 
   observe(target: Element) {
-    this.callback([{ target } as globalThis.ResizeObserverEntry], this);
+    setTimeout(() => {
+      this.callback(
+        [
+          {
+            target,
+            contentRect: {
+              x: 0,
+              y: 0,
+              top: 0,
+              left: 0,
+              bottom: 500,
+              right: 500,
+              width: 500,
+              height: 500,
+            },
+            borderBoxSize: [
+              {
+                inlineSize: 500,
+                blockSize: 500,
+              },
+            ],
+          } as unknown as ResizeObserverEntry,
+        ],
+        this,
+      );
+    }, 0);
   }
 
   unobserve() {}
