@@ -35,3 +35,11 @@ tower = { workspace = true }
 tokio-tungstenite = { workspace = true, features = ["rustls-tls-native-roots"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
+
+[dev-dependencies]
+axum-test = { workspace = true }
+mockito = { workspace = true }
+testcontainers = { workspace = true }
+url = { workspace = true }
+sea-orm = { workspace = true, features = ["sqlx-postgres", "sqlx-sqlite"] }
+migration = { version = "0.1.0", path = "../auth-core/migration" }

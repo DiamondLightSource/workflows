@@ -5,6 +5,9 @@ mod login;
 mod state;
 mod userinfo;
 
+#[cfg(test)]
+mod tests;
+
 use auth_core::middleware::inject_token::inject_token_with;
 use clap::Parser;
 use config::GatewayConfig;
@@ -83,18 +86,29 @@ async fn main() -> Result<()> {
         .expect("Failed to install rust TLS cryptography");
     info!("rust TLS cryptography provider installed");
 
-    let router = create_router(appstate, graph_url, same_site);
+    let router = create_router(
+        appstate,
+        graph_url,
+        same_site,
+        MemoryStore::default(),
+        Expiry::OnInactivity(Duration::seconds(600)),
+    );
     info!("router built");
     serve(router, port).await
 }
 
-fn create_router(state: Arc<AppState>, graph_url: String, same_site: SameSite) -> Router {
-    let session_store = MemoryStore::default();
+fn create_router(
+    state: Arc<AppState>,
+    graph_url: String,
+    same_site: SameSite,
+    session_store: MemoryStore,
+    session_expiry: Expiry,
+) -> Router {
     let session_layer = SessionManagerLayer::new(session_store)
         .with_same_site(same_site)
         .with_secure(state.session_secure)
         .with_always_save(true)
-        .with_expiry(Expiry::OnInactivity(Duration::seconds(600)));
+        .with_expiry(session_expiry);
 
     let proxy: Router<()> = ReverseProxy::new("/api", &graph_url).into();
     let proxy = proxy;
