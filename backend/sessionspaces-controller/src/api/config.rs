@@ -1,21 +1,30 @@
 //! Environment-based database, LDAP and HTTP listener configuration.
 
 use sqlx::mysql::MySqlConnectOptions;
-use std::{env, str::FromStr};
+use std::{env, str::FromStr, time::Duration};
 /// Connection settings and bind address for the private API.
 pub(super) struct Config {
     pub database: MySqlConnectOptions,
     pub ldap_url: String,
     pub bind: String,
+    pub opa_url: String,
+    pub opa_timeout: Duration,
 }
 impl Config {
-    /// Reads the required `DATABASE_URL` and LDAP URL, plus optional overrides.
+    /// Reads the required `DATABASE_URL`, LDAP URL and OPA URL, plus optional overrides.
     pub fn from_env() -> Result<Self, Box<dyn std::error::Error>> {
         Self::new(
             required_env("DATABASE_URL")?,
             env::var("DATABASE_PASSWORD").ok(),
             required_env("LDAP_URL")?,
             env::var("SESSIONSPACES_API_BIND").unwrap_or_else(|_| "0.0.0.0:8081".into()),
+            required_env("OPA_URL")?,
+            Duration::from_secs(
+                env::var("OPA_TIMEOUT_SECS")
+                    .ok()
+                    .and_then(|value| value.parse().ok())
+                    .unwrap_or(10),
+            ),
         )
     }
 
@@ -24,6 +33,8 @@ impl Config {
         password: Option<String>,
         ldap_url: String,
         bind: String,
+        opa_url: String,
+        opa_timeout: Duration,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let mut database = MySqlConnectOptions::from_str(&database_url).map_err(|_| {
             std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid DATABASE_URL")
@@ -36,6 +47,8 @@ impl Config {
             database,
             ldap_url,
             bind,
+            opa_url,
+            opa_timeout,
         })
     }
 }
@@ -63,6 +76,8 @@ mod tests {
             password.map(str::to_string),
             "ldap://ldapmaster.diamond.ac.uk".to_string(),
             "0.0.0.0:8081".to_string(),
+            "https://authorisation.diamond.ac.uk".to_string(),
+            Duration::from_secs(10),
         )
         .unwrap()
     }
@@ -82,5 +97,6 @@ mod tests {
         assert_eq!(url.username(), "ispyb_ro");
         assert_eq!(url.password(), None);
         assert_eq!(config.bind, "0.0.0.0:8081");
+        assert_eq!(config.opa_url, "https://authorisation.diamond.ac.uk");
     }
 }

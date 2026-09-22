@@ -12,6 +12,7 @@ services:
       DATABASE_URL: mysql://root:rootpassword@ispyb/ispyb_build
       LDAP_URL: ldap://ldapmaster.diamond.ac.uk
       SESSIONSPACES_API_BIND: 0.0.0.0:8081
+      OPA_URL: https://authorisation-test.diamond.ac.uk
 
   ispyb:
     image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0

@@ -1,5 +1,6 @@
 //! Private HTTP API for resolving metadata and preparing on-demand SessionSpaces.
 
+mod authz;
 mod config;
 mod handler;
 mod health;
@@ -22,6 +23,7 @@ struct AppState {
     database: MySqlPool,
     ldap_url: String,
     sessionspaces: Api<DynamicObject>,
+    authz: authz::OpaClient,
 }
 
 /// Loads configuration, initializes tracing and serves health and preparation routes.
@@ -35,6 +37,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
             .connect_lazy_with(config.database),
         ldap_url: config.ldap_url,
         sessionspaces: prepare::session_spaces(Client::try_default().await?),
+        authz: authz::OpaClient::new(&config.opa_url, config.opa_timeout)?,
     };
     let app = Router::new()
         .route("/healthz", get(|| async { "ok" }))
