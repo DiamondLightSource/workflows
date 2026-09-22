@@ -26,3 +26,5 @@ api:
       limits:
         cpu: 400m
         memory: 512Mi
+  opa:
+    url: https://authorisation-test.diamond.ac.uk

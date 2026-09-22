@@ -48,6 +48,12 @@ spec:
               value: {{ $.Values.api.ldapUrl }}
             - name: SESSIONSPACES_API_BIND
               value: 0.0.0.0:8081
+            {{- with $.Values.api.opa.url }}
+            - name: OPA_URL
+              value: {{ . }}
+            {{- end }}
+            - name: OPA_TIMEOUT_SECS
+              value: {{ $.Values.api.opa.timeoutSecs | quote }}
           ports:
             - name: http
               containerPort: 8081

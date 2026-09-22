@@ -66,6 +66,9 @@ api:
     name: sessionspaces-ispyb
     key: password
   ldapUrl: ldap://ldapmaster.diamond.ac.uk
+  opa:
+    url: https://authorisation.diamond.ac.uk
+    timeoutSecs: 10
 
 compositeController:
   create: true
