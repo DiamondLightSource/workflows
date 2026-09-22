@@ -7,6 +7,7 @@ COPY ./dashboard/package.json ./dashboard/package.json
 COPY ./relay-workflows-lib ./relay-workflows-lib
 COPY ./workflows-lib ./workflows-lib
 COPY ./workflows-lib-shared ./workflows-lib-shared
+RUN npm install -g corepack@latest && corepack enable
 RUN yarn install --frozen-lockfile
 
 COPY . .
