@@ -37,7 +37,7 @@ pub(super) async fn apply_and_wait(
     let applied = api
         .patch(
             name,
-            &PatchParams::apply("sessionspaces-api"),
+            &PatchParams::apply("sessionspaces-api").force(),
             &Patch::Apply(&desired),
         )
         .await
@@ -101,6 +101,7 @@ mod tests {
                 if index == 0 {
                     assert_eq!(request.method(), "PATCH");
                     assert!(request.uri().query().unwrap().contains("fieldManager=sessionspaces-api"));
+                    assert!(request.uri().query().unwrap().contains("force=true"));
                     assert_eq!(request.headers()["content-type"], "application/apply-patch+yaml");
                     let body = axum::body::to_bytes(request.into_body(), 10000).await.unwrap();
                     let body: Value = serde_json::from_slice(&body).unwrap();
