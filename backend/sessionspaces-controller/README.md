@@ -6,7 +6,8 @@ cluster-scoped `SessionSpace` resource model.
 
 ```mermaid
 flowchart LR
-    Client -->|prepare mx12345-1| API[SessionSpaces API]
+    Client -->|prepare mx12345-1 + bearer token| API[SessionSpaces API]
+    API -->|session/access| OPA[Diamond AuthZ]
     API --> ISPyB
     API --> LDAP
     API -->|apply desired spec| CR[SessionSpace CR]
@@ -20,13 +21,21 @@ flowchart LR
 ## API
 
 The `api` binary accepts a namespace through `POST /prepare`, for example
-`{"namespace":"mx12345-1"}`. It validates the name, resolves authoritative visit,
-storage and membership data from ISPyB and LDAP, and creates or refreshes an
-Active SessionSpace.
+`{"namespace":"mx12345-1"}` with an `Authorization: Bearer <Keycloak JWT>`
+header. It validates the name, checks `session/access` on Diamond AuthZ for
+the caller, then resolves authoritative visit, storage and membership data
+from ISPyB and LDAP, and creates or refreshes an Active SessionSpace.
+
+The access check runs before any metadata lookup: missing credentials return
+`401`, policy denial returns `403`, and an unreachable policy server fails
+closed. Denials are deliberately opaque, the policy answers `false` both for
+missing visits and unauthorized callers, so the API never reveals which case
+applied.
 
 Preparation succeeds only when the current generation is observed and reports
 `Ready=True`. Existing and dormant SessionSpaces are refreshed and reactivated
-through the same operation.
+through the same operation. The apply takes ownership of the whole `spec`,
+so a previous manual edit cannot block reactivation with a 409 conflict.
 
 ## Webhook
 
