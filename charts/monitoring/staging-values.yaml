@@ -61,4 +61,4 @@ prometheus:
       scrape_timeout: 15s
       static_configs:
         - targets:
-          - "otel-collector-opentelemetry-collector-x-monitoring--b8f7839a3b:9090"
+          - "otel-collector-opentelemetry-collector:9090"
