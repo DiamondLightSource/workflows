@@ -50,6 +50,8 @@ grafana:
       email_attribute_path: id
       allow_assign_grafana_admin: true
       role_attribute_path: (email=='thomas.thomas@diamond.ac.uk' || email=='vigneshwar.shanmugasundar@diamond.ac.uk' || email=='david.hadley@diamond.ac.uk' || email=='james.gilbert@diamond.ac.uk' || email=='victoria.beilsten-edmands@diamond.ac.uk') && 'GrafanaAdmin' || 'Viewer'
+    plugins:
+      preinstall_auto_update: false
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
