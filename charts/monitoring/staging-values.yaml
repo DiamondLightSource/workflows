@@ -38,6 +38,8 @@ thanos:
     enabled: true
     ingress:
       enabled: false
+    service:
+      type: ClusterIP
   compactor:
     enabled: false
   ruler:
