@@ -193,7 +193,7 @@ prometheus:
   podSecurityPolicy:
     enabled: false
   rbac:
-    create: false
+    create: true
   alertmanager:
     config:
       route:
