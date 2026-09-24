@@ -7,6 +7,7 @@ use crate::{
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
     IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowStatus,
+    GrpcGatewayRuntimeError,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
@@ -856,14 +857,40 @@ impl WorkflowsMutation {
             );
 
             // TODO: MAKE SURE ONLY THE USER THAT SUBMITTED CAN STOP IT!!
-            // TODO: CHECK REQUEST STATUS!!
 
-            let workflow = request
+            let api_result = request
                 .send()
                 .await?
                 .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
-                .await?
-                .into_result()?;
+                .await?;
+
+            let workflow = match api_result.into_result() {
+                Ok(res) => res,
+                Err(err) => {
+
+                    // Just makes the error messages a bit more helpful
+                    let return_error: anyhow::Result<Workflow> = match err.code {
+                        Some(5) => Err(GrpcGatewayRuntimeError{
+                            message: Some(format!(" \
+                                Workflow with ID: {id_str} could not be found. \
+                                Either there is no workflow with that ID or the \
+                                workflow already finished over 5 minutes ago \
+                            ")),
+                            ..err
+                        }.into()),
+                        Some(13) => Err(GrpcGatewayRuntimeError{
+                            message: Some(format!(" \
+                                Workflow with ID: {id_str} has already finished. \
+                                This may be because it has already been stopped \
+                            ")),
+                            ..err
+                        }.into()),
+                        _ => Err(err.into()),
+                    };
+                    return return_error;
+                }
+            };
+
             Ok(Workflow::new(workflow, visit_input.into()))
     }
 }
