@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.10...workflows-lib@v0.1.11) (2026-09-24)
+
+
+### Features
+
+* display workflow submission time in the workflows list ([93ad2e5](https://github.com/DiamondLightSource/workflows/commit/93ad2e556d791d937251114b2f21d610d2cc78f8))
+* **frontend:** add basic trigger list ([e7fac1f](https://github.com/DiamondLightSource/workflows/commit/e7fac1fdae33244e81f509c01969f63dbfe2c18a))
+* **frontend:** add logout button ([d07e285](https://github.com/DiamondLightSource/workflows/commit/d07e2857db89caaeb5ce84f641e2b9fe38d791fb))
+* **frontend:** add task log viewer ([07a5a36](https://github.com/DiamondLightSource/workflows/commit/07a5a36160914f3078fa69d91ea32bb3004e17cd))
+* **frontend:** added authenticated component ([3cf299d](https://github.com/DiamondLightSource/workflows/commit/3cf299d6f544e5d2a8bc62c15affd56c3019e9b4))
+* **frontend:** added story for authenticated component ([d2b75ca](https://github.com/DiamondLightSource/workflows/commit/d2b75ca6fa9d70ff33e6f43f13aa32526ee120a9))
+* **frontend:** auth status component and logic and hooks ([a076281](https://github.com/DiamondLightSource/workflows/commit/a0762810cc2e85b60ced97d17cebf88c287c7e09))
+* **frontend:** story for AuthStatusIndicator ([bcfa2af](https://github.com/DiamondLightSource/workflows/commit/bcfa2af34b53cb19061924b9e3a0b509c66af5cb))
+* **Workflows User Interface:** improve workflow list metadata layout ([2ae8c6a](https://github.com/DiamondLightSource/workflows/commit/2ae8c6a3e3a30154deb5c406e3805e147de64ed9))
+
+
+### Bug Fixes
+
+* **frontend:** change authGatewayUrl in charts and frontend ([d497e71](https://github.com/DiamondLightSource/workflows/commit/d497e7108a81c9590d0882a89658aa0096e9637c))
+* **Workflows User Interface:** proper handling of task logs that has no archieve ([de1aff9](https://github.com/DiamondLightSource/workflows/commit/de1aff93e9728f5376f476a711e2f59f97692356))
+
+
+### Reverts
+
+* bump the minor group across 1 directory with 23 updates ([6236a65](https://github.com/DiamondLightSource/workflows/commit/6236a6525b9661df22d2baf80fae154ad51aec31))
+
 ## [0.1.9](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.8...workflows-lib@v0.1.9) (2026-09-01)
 
 
