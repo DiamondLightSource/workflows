@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.19](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.18...dashboard@v0.1.19) (2026-09-24)
+
+
+### Features
+
+* **frontend:** use new Diamond theme from SRU ([4b46b87](https://github.com/DiamondLightSource/workflows/commit/4b46b8763b4859c45c8ade7a8cc584836c6ab2f2))
+
 ## [0.1.18](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.17...dashboard@v0.1.18) (2026-09-07)
 
 
