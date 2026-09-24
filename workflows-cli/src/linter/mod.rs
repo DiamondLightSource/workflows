@@ -1,13 +1,14 @@
 #![allow(clippy::missing_docs_in_private_items)]
 
 mod base_linting;
+mod config_linting;
+mod helm;
 mod linter_argocli;
 mod linter_labels;
+mod linter_parameter_values;
 
 use base_linting::lint_from_manifest;
-mod helm;
 use helm::lint_from_helm;
-mod config_linting;
 
 use crate::{
     LintArgs, LintConfigArgs, helm_integration::ManifestType,
