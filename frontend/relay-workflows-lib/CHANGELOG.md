@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.14...relay-workflows-lib@v0.1.15) (2026-09-24)
+
+
+### Features
+
+* **dashboard:** user info is displayed in nav bar when using auth-gateway ([8c7302f](https://github.com/DiamondLightSource/workflows/commit/8c7302fdd1ad72feb9f92a5c15bcca7e00535905))
+* display workflow submission time in the workflows list ([93ad2e5](https://github.com/DiamondLightSource/workflows/commit/93ad2e556d791d937251114b2f21d610d2cc78f8))
+* **frontend:** add basic trigger list ([e7fac1f](https://github.com/DiamondLightSource/workflows/commit/e7fac1fdae33244e81f509c01969f63dbfe2c18a))
+* **frontend:** add feature flag for dashboard to connect via auth-gateway ([79cfa5d](https://github.com/DiamondLightSource/workflows/commit/79cfa5d81be71932c5e36b23bc7c1ac48b63b74f))
+* **frontend:** add task log viewer ([07a5a36](https://github.com/DiamondLightSource/workflows/commit/07a5a36160914f3078fa69d91ea32bb3004e17cd))
+* **frontend:** added boilerplate for shared module ([ac54f57](https://github.com/DiamondLightSource/workflows/commit/ac54f57f06045bb73ef930c75043a1ad0d91d462))
+* **frontend:** remove session ID from navbar ([741480a](https://github.com/DiamondLightSource/workflows/commit/741480a387be5980cb33348953da9ee87eb94d40))
+* **graph-proxy:** add workflowById field ([e761aea](https://github.com/DiamondLightSource/workflows/commit/e761aea32e03041c180d9a6ee5a2adcc835364b7))
+* **trigger:** add enabled icon to list elements ([d8a1d6e](https://github.com/DiamondLightSource/workflows/commit/d8a1d6edc2c7d76fa86375d94013f096137876ac))
+* **trigger:** add enabled to query ([6795dc4](https://github.com/DiamondLightSource/workflows/commit/6795dc4565f2b755118661df3f9a07bcafba5d06))
+* **Workflows User Interface:** improve workflow list metadata layout ([2ae8c6a](https://github.com/DiamondLightSource/workflows/commit/2ae8c6a3e3a30154deb5c406e3805e147de64ed9))
+* **Workflows User Interface:** select and deselect a click by cliking on it ([29f09b4](https://github.com/DiamondLightSource/workflows/commit/29f09b4f8fbbc26c0cad863dc7a2f690d269e44a))
+
+
+### Bug Fixes
+
+* **dashboard:** fix dead-code elimination bug breaking USE_AUTH_GATEWAY flag ([8df18af](https://github.com/DiamondLightSource/workflows/commit/8df18af9292e8cc6afc763f425d7e3e3fcdd1b36))
+* **frontend:** change authGatewayUrl in charts and frontend ([d497e71](https://github.com/DiamondLightSource/workflows/commit/d497e7108a81c9590d0882a89658aa0096e9637c))
+* **frontend:** fix CORS issue running frontend locally with keycloak-js ([93fc38e](https://github.com/DiamondLightSource/workflows/commit/93fc38e5480cfae11f1d4f0a8b067803ff6a29aa))
+* **frontend:** move SubmittedMessagesList to relay-workflows-lib ([9ee038b](https://github.com/DiamondLightSource/workflows/commit/9ee038b7c87c3d6f9b4a55f779a452e09468e588))
+* msg for tasks without a log ([885ae85](https://github.com/DiamondLightSource/workflows/commit/885ae858920603be9868fe6808765de5d2fa86e0))
+* **Workflows User Interface:** proper handling of task logs that has no archieve ([de1aff9](https://github.com/DiamondLightSource/workflows/commit/de1aff93e9728f5376f476a711e2f59f97692356))
+
+
+### Reverts
+
+* bump the minor group across 1 directory with 23 updates ([6236a65](https://github.com/DiamondLightSource/workflows/commit/6236a6525b9661df22d2baf80fae154ad51aec31))
+
 ## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.12...relay-workflows-lib@v0.1.13) (2026-09-17)
 
 
