@@ -3,6 +3,7 @@ use serde_yaml::Value;
 
 use crate::linter::linter_argocli::ArgoCLI;
 use crate::linter::linter_labels::LabelChecker;
+use crate::linter::linter_parameter_values::ParameterValueChecker;
 
 use super::LintResult;
 use std::fs::{read_dir, read_to_string};
@@ -62,8 +63,11 @@ fn get_template_name(path: &Path) -> Result<String, String> {
 
 fn lint_template(target: &Path) -> Result<Vec<String>, String> {
     let mut errors = vec![];
+
     errors.extend(ArgoCLI::lint(target)?);
     errors.extend(LabelChecker::lint(target)?);
+    errors.extend(ParameterValueChecker::lint(target)?);
+
     Ok(errors)
 }
 
