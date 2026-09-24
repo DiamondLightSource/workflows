@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.1...workflows-cli@v0.1.2) (2026-09-24)
+
+
+### Features
+
+* **cli:** add command to create triggers ([3571a8a](https://github.com/DiamondLightSource/workflows/commit/3571a8a9d7594f73e9a99f5818e37f525b62784c))
+* **workflows cli:** lint non-string parameter values in workflow templates ([c006c22](https://github.com/DiamondLightSource/workflows/commit/c006c2210b9dcd863c576faf456c84c652bc91b3))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.0...workflows-cli@v0.1.1) (2026-04-14)
 
 
