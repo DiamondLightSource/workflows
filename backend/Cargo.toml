@@ -53,10 +53,10 @@ sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio
 strum = { version = "0.27.2", features = ["derive"] }
 time = { version = "0.3.47" }
 openidconnect = "4.0.1"
-opentelemetry = { version = "0.31.0" }
-opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.31.0", features = ["metrics", "grpc-tonic"] }
-opentelemetry-semantic-conventions = "0.31.0"
+opentelemetry = { version = "0.32.0" }
+opentelemetry_sdk = { version = "0.32.1", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.32.0", features = ["metrics", "grpc-tonic"] }
+opentelemetry-semantic-conventions = "0.32.0"
 tracing-opentelemetry = { version = "0.33.0" }
 axum = { version = "0.8.6" }
 regex = "1.12.2"
