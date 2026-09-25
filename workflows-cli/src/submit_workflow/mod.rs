@@ -8,23 +8,12 @@ use crate::helm_integration::{ManifestType, helm_to_manifest};
 
 pub fn submit(args: SubmitArgs) {
     let result = match args.manifest_type {
-        ManifestType::Manifest => submit_manifest(
-            &args.file_path,
-            &args.session,
-            &args.parameters,
-            )
-        ManifestType::Helm => submit_helm(
-            &args.file_path,
-            &args.session,
-            &args.parameters,
-            )
+        ManifestType::Manifest => submit_manifest(&args.file_path, &args.session, &args.parameters),
+        ManifestType::Helm => submit_helm(&args.file_path, &args.session, &args.parameters),
     };
 
     if let Ok(workflow_name) = result {
-        println!(
-            "Submitted Workflow {} to https://workflows.diamond.ac.uk/workflows/{}/{}",
-            workflow_name, args.session, workflow_name
-        );
+        println!("Submitted workflow {}", workflow_name);
         std::process::exit(0);
     } else if let Err(e) = result {
         if e.contains("authentication error") {
@@ -41,11 +30,7 @@ pub fn submit(args: SubmitArgs) {
     }
 }
 
-fn submit_helm(
-    target: &Path,
-    session: &str,
-    parameters: &[String],
-    ) -> Result<String, String> {
+fn submit_helm(target: &Path, session: &str, parameters: &[String]) -> Result<String, String> {
     let manifest = helm_to_manifest(target, false)?;
 
     if manifest.len() > 1 {
@@ -60,11 +45,7 @@ fn submit_helm(
     submit_from_str(raw_manifest, session, parameters)
 }
 
-fn submit_manifest(
-    target: &Path,
-    session: &str,
-    parameters: &[String],
-) -> Result<String, String> {
+fn submit_manifest(target: &Path, session: &str, parameters: &[String]) -> Result<String, String> {
     let raw_manifest = read_manifest(target)?;
     submit_from_str(&raw_manifest, session, parameters)
 }
@@ -98,24 +79,17 @@ fn submit_from_str(
     };
 
     let yaml = serde_json::to_string(&parsed).unwrap();
-    let mut command = get_command_factory()
-        .new_command("argo");
+    let mut command = get_command_factory().new_command("argo");
 
-    command
-        .arg("submit")
-        .arg("-")
-        .arg("-n")
-        .arg(session);
+    command.arg("submit").arg("-").arg("-n").arg(session);
 
     for parameter in parameters {
-        command
-            .arg("-p")
-            .arg(parameter);
+        command.arg("-p").arg(parameter);
     }
 
-    let response = command.output_with_stdin(yaml.as_bytes());
-
-    let response = command.map_err(|e| format!("Failed to run argo command: {e}"))?;
+    let response = command
+        .output_with_stdin(yaml.as_bytes())
+        .map_err(|e| format!("Failed to run argo command: {e}"))?;
 
     if !response.status.success() {
         let error = String::from_utf8_lossy(&response.stderr);
@@ -173,7 +147,7 @@ mod tests {
             env::set_var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING", "submit_workflow");
         }
         let path = Path::new("./tests/manifests/workflow1.yaml");
-        let result = submit_manifest(path, "SESSION").unwrap();
+        let result = submit_manifest(path, "SESSION", &[]).unwrap();
         assert_eq!(result, "conditional-steps-40");
     }
 
@@ -184,7 +158,21 @@ mod tests {
             env::set_var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING", "submit_workflow");
         }
         let path = Path::new("./tests/charts/templates/workflow1.yaml");
-        let result = submit_helm(path, "SESSION").unwrap();
+        let result = submit_helm(path, "SESSION", &[]).unwrap();
+        assert_eq!(result, "conditional-steps-40");
+    }
+
+    #[test]
+    #[serial]
+    fn test_submit_manifest_with_parameter() {
+        unsafe {
+            env::set_var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING", "submit_workflow");
+        }
+
+        let path = Path::new("./tests/manifests/workflow1.yaml");
+
+        let result = submit_manifest(path, "SESSION", &["message=hello".to_string()]).unwrap();
+
         assert_eq!(result, "conditional-steps-40");
     }
 
@@ -198,7 +186,7 @@ mod tests {
             );
         }
         let path = Path::new("./tests/charts/templates/workflow1.yaml");
-        let result = submit_helm(path, "SESSION").err();
+        let result = submit_helm(path, "SESSION", &[]).err();
 
         let expected_err = Some("Found more than one template in ./tests/charts/templates/workflow1.yaml. Templates can only be tested one at a time.".to_string());
         assert_eq!(expected_err, result);
