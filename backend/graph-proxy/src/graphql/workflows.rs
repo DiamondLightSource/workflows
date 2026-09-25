@@ -20,6 +20,7 @@ use serde_json::{from_str, Value};
 use std::{collections::HashMap, ops::Deref, path::Path};
 use tracing::{debug, instrument};
 use url::Url;
+use jsonwebtoken::dangerous::insecure_decode;
 
 /// An error encountered when parsing the Argo Server API Workflow response
 #[derive(Debug, thiserror::Error)]
@@ -893,6 +894,14 @@ impl WorkflowsMutation {
 
             Ok(Workflow::new(workflow, visit_input.into()))
     }
+}
+
+fn fedid_from_context(ctx: &Context<'_>) -> anyhow::Result<Option<String>> {
+    let auth_token = get_auth_token(ctx)?;
+    let claims = insecure_decode::<Value>(auth_token)?
+        .claims;
+
+    Ok(claims["fedid"].as_str().map(str::to_owned))
 }
 
 /// Information about the creator of a workflow.
