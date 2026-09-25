@@ -74,31 +74,25 @@ jobs:
             --write-out "HTTP status: %{http_code}\n" \
             -L https://gitlab.diamond.ac.uk/
 
-      # - name: Check gitlab API access
-      #   shell: bash
-      #   run: |
-      #     set -euo pipefail
+      - name: Trigger graph federation pipeline
+        shell: bash
+        env:
+          GITLAB_TRIGGER_TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
+          GITLAB_PROJECT_ID: ${{ vars.GITLAB_PROJECT_ID }}
+        run: |
+          set -euo pipefail
 
-      #     curl \
-      #       --fail \
-      #       --silent \
-      #       --show-error \
-      #       --connect-timeout 10 \
-      #       --max-time 30 \
-      #       --output /dev/null \
-      #       --write-out "HTTP status: %{http_code}\n" \
-      #       -L
-      #       https://gitlab.diamond.ac.uk/api/v4/version
-
-      # - name: Trigger internal GitLab pipeline
-      #   env:
-      #     GITLAB_TRIGGER_TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
-      #     GITLAB_PROJECT_ID: ${{ secrets.GITLAB_PROJECT_ID }}
-      #     SCHEMA_ID: ${{ github.sha }}
-      #   run: |
-      #     curl --fail-with-body \
-      #       --request POST \
-      #       --form "token=${GITLAB_TRIGGER_TOKEN}" \
-      #       --form "ref=main" \
-      #       --form "variables[SCHEMA_ID]=${SCHEMA_ID}" \
-      #       "https://gitlab.diamond.ac.uk/api/v4/projects/${GITLAB_PROJECT_ID}/trigger/pipeline"
+          curl \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --request POST \
+            --form "token=${GITLAB_TRIGGER_TOKEN}" \
+            --form "ref=main" \
+            --form "variables[PIPELINE_TASK]=graph-federation" \
+            --form "variables[GITHUB_SHA]=${GITHUB_SHA}" \
+            --form "variables[GITHUB_REPOSITORY]=${GITHUB_REPOSITORY}" \
+            --form "variables[GITHUB_RUN_ID]=${GITHUB_RUN_ID}" \
+            "https://gitlab.diamond.ac.uk/api/v4/projects/${GITLAB_PROJECT_ID}/trigger/pipeline"
