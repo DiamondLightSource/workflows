@@ -5,14 +5,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-1:
-    runs-on: ["iris-cpu"]
-    container:
-      image: summerwind/actions-runner:latest
-      options: --user 1000:1000
-    steps:
-      - uses: actions/checkout@v4
-
   test-internal-runner:
     name: Test internal connectivity
     runs-on: ["iris-cpu"]
@@ -80,7 +72,23 @@ jobs:
             --max-time 30 \
             --output /dev/null \
             --write-out "HTTP status: %{http_code}\n" \
-            https://gitlab.diamond.ac.uk/api/v4/version
+            -L https://gitlab.diamond.ac.uk/
+
+      # - name: Check gitlab API access
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
+
+      #     curl \
+      #       --fail \
+      #       --silent \
+      #       --show-error \
+      #       --connect-timeout 10 \
+      #       --max-time 30 \
+      #       --output /dev/null \
+      #       --write-out "HTTP status: %{http_code}\n" \
+      #       -L
+      #       https://gitlab.diamond.ac.uk/api/v4/version
 
       # - name: Trigger internal GitLab pipeline
       #   env:
