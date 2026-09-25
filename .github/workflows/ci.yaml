@@ -8,7 +8,7 @@ jobs:
   build-1:
     runs-on: ["iris-cpu"]
     container:
-      image: summerwind/actions-runner:latest
+      image: nvidia/cuda:11.6.2-devel-ubi8
       options: --user 1000:1000
     steps:
       - uses: actions/checkout@v4
