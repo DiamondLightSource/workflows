@@ -59,20 +59,20 @@ jobs:
 
           getent hosts gitlab.diamond.ac.uk
 
-      - name: Check gitlab HTTPS connectivity
-        shell: bash
-        run: |
-          set -euo pipefail
+      # - name: Check gitlab HTTPS connectivity
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
 
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            --connect-timeout 10 \
-            --max-time 30 \
-            --output /dev/null \
-            --write-out "HTTP status: %{http_code}\n" \
-            -L https://gitlab.diamond.ac.uk/
+      #     curl \
+      #       --fail \
+      #       --silent \
+      #       --show-error \
+      #       --connect-timeout 10 \
+      #       --max-time 30 \
+      #       --output /dev/null \
+      #       --write-out "HTTP status: %{http_code}\n" \
+      #       -L https://gitlab.diamond.ac.uk/
 
       - name: Trigger graph federation pipeline
         shell: bash
