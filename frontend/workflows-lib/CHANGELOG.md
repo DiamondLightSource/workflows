@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.11...workflows-lib@v0.1.12) (2026-09-25)
+
+
+### Features
+
+* **forms:** support schema-driven template parameter autofill from URL ([1938922](https://github.com/DiamondLightSource/workflows/commit/1938922cd7ed706aefcd38363bad7b528e5c18a9))
+
 ## [0.1.11](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.10...workflows-lib@v0.1.11) (2026-09-24)
 
 
