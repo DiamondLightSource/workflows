@@ -1,8 +1,6 @@
 use super::{Visit, VisitInput, CLIENT};
 use crate::{
-    graphql::{auth_guard::AuthGuard, filters::WorkflowFilter},
-    validate_token::ValidatedAuthToken,
-    ArgoServerUrl, S3Bucket,
+    ArgoServerUrl, S3Bucket, graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, subscription::get_auth_token}, validate_token::ValidatedAuthToken,
 };
 use argo_workflows_openapi::{
     APIResult, IoArgoprojWorkflowV1alpha1Artifact, IoArgoprojWorkflowV1alpha1NodeStatus,
@@ -834,7 +832,78 @@ impl WorkflowsMutation {
             }
             let visit_display = parts[0];
             let workflow_name = parts[1];
-            // let workflow_uid = parts[2];
+            let workflow_uid = parts[2];
+
+            // Find workflow with matching ID
+            let potential_workflow = get_workflow_from_argo_api(
+                ctx, visit_display.parse()?, workflow_name, Some(workflow_uid))
+                .await?;
+            let workflow = match potential_workflow {
+                Some(workflow) => workflow,
+                None => return Err(GrpcGatewayRuntimeError{
+                    code: Some(5),
+                    details: vec![],
+                    message: Some(format!(" \
+                        Workflow with ID: {id_str} does not exist
+                    ")),
+                    error: None,
+                }.into()),
+            };
+
+            // Check creator fedid matches fedid of stop command caller
+            if let Ok(creator) = workflow.creator(ctx).await {
+                if let Some(fedid) = fedid_from_context(ctx)? {
+                    if creator.creator_id != fedid {
+                        return Err(GrpcGatewayRuntimeError{
+                            code: Some(7),
+                            details: vec![],
+                            message: Some(format!(" \
+                                Workflow with ID: {id_str} was created by someone else \
+                                Stopping other users' workflows is forbidden
+                            ")),
+                            error: None,
+                        }.into())
+                    }
+                }
+            }
+
+            // Check if workflow has already finished
+            if let Some(workflow_status) = workflow.status(ctx).await? 
+            {
+                // Could do something smarter here with trying to fund out if the
+                // status field is of type WorkflowCompleteStatus
+                let already_finished = match workflow_status {
+                    WorkflowStatus::Failed(failed_status) => {
+                        if let Ok(Some(message)) = failed_status.status.message(ctx).await {
+                            if message.contains("Stopped") {
+                                return Err(GrpcGatewayRuntimeError{
+                                        code: Some(13),
+                                        details: Vec::new(),
+                                        message: Some(format!(" \
+                                            Workflow with ID: {id_str} was already stopped
+                                        ")),
+                                        error: None,
+                                    }.into());
+                            }
+                        }
+                        true
+                    },
+                    WorkflowStatus::Succeeded(_) => true,
+                    WorkflowStatus::Errored(_) => true,
+                    _ => false,
+                };
+
+                if already_finished {
+                    return Err(GrpcGatewayRuntimeError{
+                        code: Some(13),
+                        details: Vec::new(),
+                        message: Some(format!(" \
+                            Workflow with ID: {id_str} has already finished
+                        ")),
+                        error: None,
+                    }.into());
+                }
+            };
 
             let visit_input: VisitInput = visit_display.parse()?;
 
@@ -857,40 +926,12 @@ impl WorkflowsMutation {
                 },
             );
 
-            // TODO: MAKE SURE ONLY THE USER THAT SUBMITTED CAN STOP IT!!
-
-            let api_result = request
+            let workflow = request
                 .send()
                 .await?
                 .json::<APIResult<argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow>>()
-                .await?;
-
-            let workflow = match api_result.into_result() {
-                Ok(res) => res,
-                Err(err) => {
-
-                    // Just makes the error messages a bit more helpful
-                    let return_error: anyhow::Result<Workflow> = match err.code {
-                        Some(5) => Err(GrpcGatewayRuntimeError{
-                            message: Some(format!(" \
-                                Workflow with ID: {id_str} could not be found. \
-                                Either there is no workflow with that ID or the \
-                                workflow already finished over 5 minutes ago \
-                            ")),
-                            ..err
-                        }.into()),
-                        Some(13) => Err(GrpcGatewayRuntimeError{
-                            message: Some(format!(" \
-                                Workflow with ID: {id_str} has already finished. \
-                                This may be because it has already been stopped \
-                            ")),
-                            ..err
-                        }.into()),
-                        _ => Err(err.into()),
-                    };
-                    return return_error;
-                }
-            };
+                .await?
+                .into_result()?;
 
             Ok(Workflow::new(workflow, visit_input.into()))
     }
