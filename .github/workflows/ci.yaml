@@ -8,7 +8,54 @@ jobs:
   build-1:
     runs-on: ["iris-cpu"]
     container:
-      image: nvidia/cuda:11.6.2-devel-ubi8
+      image: summerwind/actions-runner:latest
       options: --user 1000:1000
     steps:
       - uses: actions/checkout@v4
+
+  test-internal-runner:
+    name: Test internal connectivity
+    runs-on: ["iris-cpu"]
+    container:
+      image: summerwind/actions-runner:latest
+      options: --user 1000:1000
+    steps:
+      - name: Show runner information
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Runner name: $RUNNER_NAME"
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner architecture: $RUNNER_ARCH"
+          echo "Hostname: $(hostname)"
+          echo "User: $(id -un)"
+
+      - name: Check internal DNS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          getent hosts argo-cd.workflows.diamond.ac.uk
+
+      - name: Check Argo CD HTTPS connectivity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --output /dev/null \
+            --write-out "HTTP status: %{http_code}\n" \
+            https://argo-cd.workflows.diamond.ac.uk/api/version
+
+      - name: Check Argo CD CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          argocd version --client
