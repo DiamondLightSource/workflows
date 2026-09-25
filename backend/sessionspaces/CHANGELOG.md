@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.8](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.7...sessionspaces@v0.1.8) (2026-09-25)
+
+
+### Features
+
+* **auth-gateway:** enable auth-gateway support for dashboard ([f227b36](https://github.com/DiamondLightSource/workflows/commit/f227b366bfee45eb77949ad104c43df26fc49144))
+* **ss-controller:** add tests for ispyb lookup ([e75b000](https://github.com/DiamondLightSource/workflows/commit/e75b00055d2294b08b644c984d87b5cb8dbb704e))
+
+
+### Bug Fixes
+
+* **sessionspaces:** remove matching on error status code ([26b90dd](https://github.com/DiamondLightSource/workflows/commit/26b90dd424c977bce4ab522fa2965b1919857855))
+* **ss-controller:** move common dep to workspace ([7e46979](https://github.com/DiamondLightSource/workflows/commit/7e469799cd2afd45c4d81325f7161ffa57c7e3ee))
+
 ## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/sessionspaces@v0.1.6...sessionspaces@v0.1.7) (2026-07-02)
 
 
