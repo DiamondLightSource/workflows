@@ -125,6 +125,12 @@ submit_workflow:
       Created:             Thu Jul 10 16:05:20 +0100 (now)
       Progress:
     code: 0
+
+  - command: argo submit - -n SESSION -p message=hello
+    response: |
+      Name: conditional-steps-40
+    code: 0
+
   - command: helm template ././tests/charts -s templates/workflow1.yaml
     response: |
       ---
