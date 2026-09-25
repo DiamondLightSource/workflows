@@ -100,6 +100,10 @@ struct SubmitArgs {
     #[arg(long, short)]
     session: String,
 
+    /// Workflow parameters in the form name=value
+    #[arg(short = 'p', long = "parameter")]
+    parameters: Vec<String>,
+
     /// Path to workflow template being linted
     file_path: PathBuf,
 }
