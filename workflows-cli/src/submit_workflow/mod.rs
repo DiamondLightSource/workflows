@@ -8,8 +8,16 @@ use crate::helm_integration::{ManifestType, helm_to_manifest};
 
 pub fn submit(args: SubmitArgs) {
     let result = match args.manifest_type {
-        ManifestType::Manifest => submit_manifest(&args.file_path, &args.session),
-        ManifestType::Helm => submit_helm(&args.file_path, &args.session),
+        ManifestType::Manifest => submit_manifest(
+            &args.file_path,
+            &args.session,
+            &args.parameters,
+            )
+        ManifestType::Helm => submit_helm(
+            &args.file_path,
+            &args.session,
+            &args.parameters,
+            )
     };
 
     if let Ok(workflow_name) = result {
@@ -33,7 +41,11 @@ pub fn submit(args: SubmitArgs) {
     }
 }
 
-fn submit_helm(target: &Path, session: &str) -> Result<String, String> {
+fn submit_helm(
+    target: &Path,
+    session: &str,
+    parameters: &[String],
+    ) -> Result<String, String> {
     let manifest = helm_to_manifest(target, false)?;
 
     if manifest.len() > 1 {
@@ -45,15 +57,23 @@ fn submit_helm(target: &Path, session: &str) -> Result<String, String> {
     }
 
     let raw_manifest = manifest.first().ok_or("No manifests returned")?;
-    submit_from_str(raw_manifest, session)
+    submit_from_str(raw_manifest, session, parameters)
 }
 
-fn submit_manifest(target: &Path, session: &str) -> Result<String, String> {
+fn submit_manifest(
+    target: &Path,
+    session: &str,
+    parameters: &[String],
+) -> Result<String, String> {
     let raw_manifest = read_manifest(target)?;
-    submit_from_str(&raw_manifest, session)
+    submit_from_str(&raw_manifest, session, parameters)
 }
 
-fn submit_from_str(raw_manifest: &str, session: &str) -> Result<String, String> {
+fn submit_from_str(
+    raw_manifest: &str,
+    session: &str,
+    parameters: &[String],
+) -> Result<String, String> {
     let mut parsed: Value = serde_yaml::from_str(raw_manifest)
         .map_err(|e| format!("Could not parse the manifest {e}"))?;
 
@@ -78,13 +98,22 @@ fn submit_from_str(raw_manifest: &str, session: &str) -> Result<String, String> 
     };
 
     let yaml = serde_json::to_string(&parsed).unwrap();
-    let command = get_command_factory()
-        .new_command("argo")
+    let mut command = get_command_factory()
+        .new_command("argo");
+
+    command
         .arg("submit")
         .arg("-")
         .arg("-n")
-        .arg(session)
-        .output_with_stdin(yaml.as_bytes());
+        .arg(session);
+
+    for parameter in parameters {
+        command
+            .arg("-p")
+            .arg(parameter);
+    }
+
+    let response = command.output_with_stdin(yaml.as_bytes());
 
     let response = command.map_err(|e| format!("Failed to run argo command: {e}"))?;
 
