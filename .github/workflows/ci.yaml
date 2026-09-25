@@ -9,6 +9,6 @@ jobs:
     runs-on: ["iris-cpu"]
     container:
       image: summerwind/actions-runner:latest
-      options: --user root
+      options: --user 1000:1000
     steps:
       - uses: actions/checkout@v4
