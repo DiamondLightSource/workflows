@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.15...relay-workflows-lib@v0.1.16) (2026-09-25)
+
+
+### Features
+
+* **forms:** support schema-driven template parameter autofill from URL ([1938922](https://github.com/DiamondLightSource/workflows/commit/1938922cd7ed706aefcd38363bad7b528e5c18a9))
+
 ## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.14...relay-workflows-lib@v0.1.15) (2026-09-24)
 
 
