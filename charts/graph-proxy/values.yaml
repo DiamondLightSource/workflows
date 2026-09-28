@@ -1,12 +1,13 @@
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-graph-proxy
-  tag: ""
+  tag: "0.2.3"
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
 
 argoServerUrl: https://argo-workflows.workflows.diamond.ac.uk
+sessionspacesApiUrl: http://sessionspaces-controller-api.kube-system.svc:8081
 kubernetesApiUrl: https://kubernetes.default
 oidcIssuerUrl: https://identity.diamond.ac.uk/realms/dls
 oidcAudiences: "workflows-cluster,graph"
