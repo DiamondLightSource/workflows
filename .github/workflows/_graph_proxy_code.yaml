@@ -73,6 +73,10 @@ jobs:
 
       - name: Run Tests
         working-directory: backend/graph-proxy
+        # Submission tests build very large debug futures; the default test-thread
+        # stack overflows. 16 MiB leaves headroom for future growth.
+        env:
+          RUST_MIN_STACK: "16777216"
         run: >
           cargo test
           --all-targets
