@@ -743,4 +743,100 @@ mod tests {
         assert_eq!(expected, actual);
         Ok(())
     }
+
+    #[tokio::test]
+    #[rstest]
+    async fn submission_does_not_submit_when_prepare_fails(
+        #[values(false, true)] template: bool,
+        #[values(400, 401, 403, 502, 504)] status: usize,
+    ) -> anyhow::Result<()> {
+        use super::WorkflowTemplatesMutation;
+        use async_graphql::{Request, Variables};
+        use mockito::Matcher;
+
+        let mut server = mockito::Server::new_async().await;
+
+        let prepare_endpoint = server
+            .mock("POST", "/prepare")
+            .match_body(Matcher::PartialJson(json!({ "namespace": "mg36964-1" })))
+            .match_header("authorization", "Bearer test-token")
+            .with_status(status)
+            .with_header("content-type", "application/json")
+            .with_body(json!({ "error": "Session access denied" }).to_string())
+            .create_async()
+            .await;
+        let submit_endpoint = server
+            .mock(
+                "POST",
+                if template {
+                    "/api/v1/workflows/mg36964-1/submit"
+                } else {
+                    "/api/v1/workflows/mg36964-1"
+                },
+            )
+            .expect(0)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body("{}")
+            .create_async()
+            .await;
+
+        let manifest = concat!(
+            "apiVersion: argoproj.io/v1alpha1\n",
+            "kind: WorkflowTemplate\n",
+            "metadata:\n",
+            "  name: test-workflow\n",
+            "spec:\n",
+            "  entrypoint: main\n",
+        );
+
+        let sessionspaces_api_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(
+            WorkflowTemplatesQuery,
+            WorkflowTemplatesMutation,
+            EmptySubscription,
+        )
+        .data(crate::ArgoServerUrl(url::Url::parse(&server.url())?))
+        .data(crate::SessionSpacesApiUrl(sessionspaces_api_url))
+        .data(test_token())
+        .finish();
+
+        let query = r#"
+            mutation ($manifest: String!) {
+                submitWorkflow(
+                    visit: { proposalCode: "mg", proposalNumber: 36964, number: 1 },
+                    manifest: $manifest
+                ) {
+                    name
+                }
+            }
+        "#;
+        let request = if template {
+            Request::new(
+                r#"mutation {
+                submitWorkflowTemplate(
+                    name: "test-workflow",
+                    visit: { proposalCode: "mg", proposalNumber: 36964, number: 1 },
+                    parameters: {}
+                ) { name }
+            }"#,
+            )
+        } else {
+            Request::new(query).variables(Variables::from_json(json!({ "manifest": manifest })))
+        };
+        let response = schema.execute(request).await;
+
+        prepare_endpoint.assert_async().await;
+        submit_endpoint.assert_async().await;
+        assert_eq!(response.data.into_json().unwrap(), json!(null));
+        assert_eq!(response.errors.len(), 1);
+        let message = &response.errors[0].message;
+        let expected = if matches!(status, 401 | 403) {
+            "Not authorized for session mg36964-1"
+        } else {
+            "Could not submit workflow for session mg36964-1; please try again shortly"
+        };
+        assert_eq!(message, expected);
+        Ok(())
+    }
 }
