@@ -13,7 +13,12 @@ pub fn submit(args: SubmitArgs) {
     };
 
     if let Ok(workflow_name) = result {
-        println!("Submitted workflow {}", workflow_name);
+        println!(
+            "Submitted Workflow {} to https://workflows.diamond.ac.uk/workflows/{}/{}",
+            workflow_name,
+            args.session,
+            workflow_name
+        );
         std::process::exit(0);
     } else if let Err(e) = result {
         if e.contains("authentication error") {
