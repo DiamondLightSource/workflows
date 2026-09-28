@@ -1,0 +1,16 @@
+workflow:
+  rules:
+    - when: always
+
+stages:
+  - test
+
+mirror-test:
+  image: alpine:3.22
+  tags:
+    - argus
+  stage: test
+  script:
+    - echo "Commit ${CI_COMMIT_SHA}"
+    - echo "Branch ${CI_COMMIT_BRANCH}"
+    - echo "Pipeline source ${CI_PIPELINE_SOURCE}"
