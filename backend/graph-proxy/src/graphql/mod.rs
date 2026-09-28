@@ -187,7 +187,7 @@ pub async fn graphql_handler(
 }
 
 lazy_static! {
-    pub(self) static ref CLIENT: reqwest::Client = reqwest::Client::new();
+    pub(crate) static ref CLIENT: reqwest::Client = reqwest::Client::new();
 }
 
 /// A visit to an instrument as part of a session
