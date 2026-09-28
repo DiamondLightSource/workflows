@@ -20,7 +20,7 @@ describe("WorkflowsNavbar", () => {
     fedid: "ab12345",
   };
 
-  const theme = createTheme(DiamondTheme ?? {});
+  const theme = createTheme(DiamondTheme);
 
   afterEach(() => {
     delete window.__USE_AUTH_GATEWAY__;
