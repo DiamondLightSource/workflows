@@ -13,10 +13,9 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@types/relay-test-utils": "^19.0.0",
+    "@diamondlightsource/workflows-lib-shared": "*",
     "react-relay": "^20.1.1",
     "relay-test-utils": "^21.0.1",
-    "@diamondlightsource/workflows-lib-shared": "*",
     "workflows-lib": "*"
   },
   "devDependencies": {
