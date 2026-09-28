@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type Dispatch,
   type MouseEvent as ReactMouseEvent,
   type SetStateAction,
@@ -61,6 +62,9 @@ interface BaseWorkflowRelayProps {
   onSelectTask?: (taskId: string | null) => void;
 }
 
+const MIN_HEIGHT = 50;
+const INITIAL_HEIGHT = 200;
+
 export default function BaseWorkflowRelay({
   workflowLink,
   filledTaskId,
@@ -86,21 +90,11 @@ export default function BaseWorkflowRelay({
   ];
 
   /*
-   * IMPORTANT:
+   * Keep the latest selected task IDs without making onNavigate
+   * depend on selectedTaskIds.
    *
-   * Do not put `selectedTaskIds` in this callback's dependency list.
-   *
-   * The previous implementation did this:
-   *
-   *   [onSelectTask, selectedTaskIds, setSelectedTaskIds]
-   *
-   * Every task click changed selectedTaskIds, which recreated onNavigate.
-   * TasksFlow then received a new onNavigate, ReactFlow recreated its
-   * nodeTypes, and the task node could be replaced while the mouse event
-   * was being processed.
-   *
-   * Using the functional state update means we always receive the latest
-   * selectedTaskIds without making this callback depend on them.
+   * This prevents TasksFlow/ReactFlow from unnecessarily recreating
+   * its node types whenever the selection changes.
    */
   const selectedTaskIdsRef = useRef(selectedTaskIds);
 
@@ -113,7 +107,7 @@ export default function BaseWorkflowRelay({
       event?.preventDefault();
       event?.stopPropagation();
 
-      const isCtrl: boolean = Boolean(event?.ctrlKey || event?.metaKey);
+      const isCtrl = Boolean(event?.ctrlKey || event?.metaKey);
       const currentTaskIds = selectedTaskIdsRef.current;
 
       // Normal click on the only currently selected task:
@@ -150,6 +144,41 @@ export default function BaseWorkflowRelay({
     [onSelectTask, setSelectedTaskIds],
   );
 
+  /*
+   * The graph reports its intrinsic content height through
+   * onContentHeightChange.
+   *
+   * `contentHeight` becomes the maximum height allowed by
+   * ResizableBox.
+   */
+  const [contentHeight, setContentHeight] = useState(INITIAL_HEIGHT);
+
+  const [height, setHeight] = useState(INITIAL_HEIGHT);
+
+  const handleContentHeightChange = useCallback(
+    (newContentHeight: number) => {
+      const nextContentHeight = Math.max(
+        MIN_HEIGHT,
+        Math.ceil(newContentHeight),
+      );
+
+      setContentHeight(nextContentHeight);
+
+      /*
+       * If the graph becomes smaller than the current pane,
+       * immediately bring the pane back within the new maximum.
+       *
+       * If the graph becomes larger, leave the user's current
+       * height unchanged. They can then resize the pane further
+       * up to the new maximum.
+       */
+      setHeight((currentHeight) =>
+        Math.min(currentHeight, nextContentHeight),
+      );
+    },
+    [],
+  );
+
   return (
     <Box
       sx={{
@@ -181,8 +210,13 @@ export default function BaseWorkflowRelay({
       >
         <ResizableBox
           width={Infinity}
-          height={200}
-          resizeHandles={["se"]}
+          height={height}
+          minConstraints={[300, MIN_HEIGHT]}
+          maxConstraints={[Infinity, contentHeight]}
+          resizeHandles={["s"]}
+          onResize={(_, { size }) => {
+            setHeight(size.height);
+          }}
           style={{
             width: "100%",
             maxWidth: "1150px",
@@ -201,9 +235,11 @@ export default function BaseWorkflowRelay({
             onNavigate={onNavigate}
             highlightedTaskIds={selectedTaskIds}
             filledTaskId={filledTaskId}
+            onContentHeightChange={handleContentHeightChange}
           />
         </ResizableBox>
       </WorkflowAccordion>
     </Box>
   );
 }
+

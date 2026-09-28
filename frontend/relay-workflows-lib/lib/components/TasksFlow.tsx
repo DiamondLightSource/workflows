@@ -36,6 +36,7 @@ interface TasksFlowProps {
   highlightedTaskIds?: string[];
   filledTaskId?: string | null;
   isDynamic?: boolean;
+  onContentHeightChange?: (height: number) => void;
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
@@ -45,6 +46,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   highlightedTaskIds,
   filledTaskId,
   isDynamic,
+  onContentHeightChange,
 }) => {
   const tasks = useFetchedTasks(tasksRef ?? null);
 
@@ -172,18 +174,31 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
 
   useEffect(() => {
     const handleResizeAndOverflow = () => {
-      if (containerRef.current && reactFlowInstance.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect();
-
-        const nodeLookup = reactFlowInstance.current.getNodes();
-
-        const boundingBox = getNodesBounds(nodeLookup);
-
-        setIsOverflow(boundingBox.width > width || boundingBox.height > height);
+      if (!containerRef.current) {
+        return;
       }
+
+      const { width, height } =
+        containerRef.current.getBoundingClientRect();
+
+      const boundingBox = getNodesBounds(layoutedNodes);
+
+      const requiredHeight = Math.max(
+        50,
+        Math.ceil(boundingBox.height + 20),
+      );
+
+      onContentHeightChange?.(requiredHeight);
+
+      setIsOverflow(
+        boundingBox.width > width ||
+          boundingBox.height > height,
+      );
     };
 
-    const resizeObserver = new ResizeObserver(handleResizeAndOverflow);
+    const resizeObserver = new ResizeObserver(
+      handleResizeAndOverflow,
+    );
 
     const currentContainerRef = containerRef.current;
 
@@ -193,7 +208,10 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
 
     handleResizeAndOverflow();
 
-    window.addEventListener("resize", handleResizeAndOverflow);
+    window.addEventListener(
+      "resize",
+      handleResizeAndOverflow,
+    );
 
     return () => {
       if (currentContainerRef) {
@@ -201,9 +219,13 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
       }
 
       resizeObserver.disconnect();
-      window.removeEventListener("resize", handleResizeAndOverflow);
+
+      window.removeEventListener(
+        "resize",
+        handleResizeAndOverflow,
+      );
     };
-  }, [layoutedNodes, layoutedEdges]);
+  }, [layoutedNodes, onContentHeightChange]);
 
   return (
     <Box ref={containerRef} display="flex" height="100%" width="100%">
