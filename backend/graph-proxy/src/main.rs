@@ -7,6 +7,8 @@
 mod graphql;
 /// S3 client
 mod s3client;
+/// SessionSpace preparation gate for workflow submission
+mod sessionspaces;
 
 /// Graph-proxy-specific metrics
 mod metrics;
@@ -64,6 +66,9 @@ struct ServeArgs {
     /// The base URL of the Argo Server from which data is to be retrieved
     #[arg(long, env = "ARGO_SERVER_URL")]
     argo_server_url: Url,
+    /// The base URL of the SessionSpaces API
+    #[arg(long, env = "SESSIONSPACES_API_URL")]
+    sessionspaces_api_url: Url,
     /// The URL of the kubernetes API hosting the workflows
     #[arg(long, env = "KUBERNETES_API_URL")]
     kubernetes_api_url: Uri,
@@ -121,6 +126,10 @@ struct SchemaArgs {
 #[derive(Debug, Clone, derive_more::Deref)]
 pub struct ArgoServerUrl(Url);
 
+/// The URL of the SessionSpaces preparation API
+#[derive(Debug, Clone, derive_more::Deref)]
+pub struct SessionSpacesApiUrl(Url);
+
 /// The URL of the kubernetes API
 #[derive(Debug, Clone, derive_more::Deref)]
 pub struct KubernetesApiUrl(Uri);
@@ -145,6 +154,7 @@ async fn main() {
             let s3_client = Client::from(args.s3_client);
             let schema = root_schema_builder()
                 .data(ArgoServerUrl(args.argo_server_url))
+                .data(SessionSpacesApiUrl(args.sessionspaces_api_url))
                 .data(KubernetesApiUrl(args.kubernetes_api_url))
                 .data(s3_client)
                 .data(args.s3_bucket)

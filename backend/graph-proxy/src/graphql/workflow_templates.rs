@@ -5,7 +5,7 @@ use super::{
     VisitInput, CLIENT,
 };
 use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidatedAuthToken};
-use crate::{graphql::filters::WorkflowTemplatesFilter, ArgoServerUrl};
+use crate::{graphql::filters::WorkflowTemplatesFilter, ArgoServerUrl, SessionSpacesApiUrl};
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
 use async_graphql::{
@@ -274,8 +274,8 @@ impl WorkflowTemplatesMutation {
     ) -> anyhow::Result<Workflow> {
         let server_url = ctx.data_unchecked::<ArgoServerUrl>().deref();
         let auth_token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+        let namespace = prepare_namespace(ctx, &visit).await?;
         let mut url = server_url.clone();
-        let namespace = visit.to_string();
         url.path_segments_mut()
             .unwrap()
             .extend(["api", "v1", "workflows", &namespace, "submit"]);
@@ -350,7 +350,7 @@ impl WorkflowTemplatesMutation {
             workflow.metadata.generate_name = Some(format!("{name}-"));
         }
 
-        let namespace = visit.to_string();
+        let namespace = prepare_namespace(ctx, &visit).await?;
         let mut url = server_url.clone();
         url.path_segments_mut()
             .unwrap()
@@ -378,6 +378,19 @@ impl WorkflowTemplatesMutation {
             .into_result()?;
         Ok(Workflow::new(workflow, visit.into()))
     }
+}
+
+/// Prepare the visit's session namespace, returning the normalised name to submit to.
+async fn prepare_namespace(ctx: &Context<'_>, visit: &VisitInput) -> anyhow::Result<String> {
+    let api_url = ctx.data::<SessionSpacesApiUrl>().map_err(|_| {
+        tracing::warn!("SessionSpaces API URL not configured");
+        anyhow!("Workflow submission is temporarily unavailable; please try again shortly")
+    })?;
+    let token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
+    let namespace = visit.to_string().to_ascii_lowercase();
+    crate::sessionspaces::prepare_session(api_url, &namespace, token.map(|token| token.token()))
+        .await?;
+    Ok(namespace)
 }
 
 /// Convert a paramter into the format expected by the Argo Workflows API
@@ -651,7 +664,19 @@ mod tests {
 
         // The input is a WorkflowTemplate manifest; assert it is coerced into a one-off
         // Workflow (kind overridden, `name` -> `generateName`) and that the request lands
-        // on the visit's namespaced workflow-create endpoint.
+        // on the visit's namespaced workflow-create endpoint. The uppercase visit code is
+        // normalised to the lowercase session namespace shared by preparation and Argo.
+        let prepare_endpoint = server
+            .mock("POST", "/prepare")
+            .match_header("authorization", "Bearer test-token")
+            .match_body(Matcher::PartialJson(json!({ "namespace": "mg36964-1" })))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                json!({ "namespace": "mg36964-1", "generation": 1, "prepared": true }).to_string(),
+            )
+            .create_async()
+            .await;
         let submit_endpoint = server
             .mock("POST", "/api/v1/workflows/mg36964-1")
             .match_body(Matcher::PartialJson(json!({
@@ -679,19 +704,21 @@ mod tests {
         );
 
         let argo_server_url = url::Url::parse(&server.url())?;
+        let sessionspaces_api_url = url::Url::parse(&server.url())?;
         let schema = Schema::build(
             WorkflowTemplatesQuery,
             WorkflowTemplatesMutation,
             EmptySubscription,
         )
         .data(crate::ArgoServerUrl(argo_server_url))
+        .data(crate::SessionSpacesApiUrl(sessionspaces_api_url))
         .data(test_token())
         .finish();
 
         let query = r#"
             mutation ($manifest: String!) {
                 submitWorkflow(
-                    visit: { proposalCode: "mg", proposalNumber: 36964, number: 1 },
+                    visit: { proposalCode: "MG", proposalNumber: 36964, number: 1 },
                     manifest: $manifest
                 ) {
                     name
@@ -703,6 +730,7 @@ mod tests {
         let response = schema.execute(request).await;
 
         println!("Errors: {:#?}", response.errors);
+        prepare_endpoint.assert_async().await;
         submit_endpoint.assert_async().await;
         let response = response.into_result().expect("Invalid response");
 
