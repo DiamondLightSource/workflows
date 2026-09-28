@@ -101,6 +101,9 @@ mod tests {
     use mockito::Matcher;
     use rstest::rstest;
 
+    const RETRY: &str = "Could not submit workflow for session mg36964-1; please try again shortly";
+    const DENIED: &str = "Not authorized for session mg36964-1";
+
     #[tokio::test]
     #[rstest]
     #[case(
@@ -108,17 +111,23 @@ mod tests {
         r#"{"namespace":"mg36964-1","prepared":true,"generation":1}"#,
         None
     )]
-    #[case(200, r#"{"namespace":"mg36964-1","prepared":false}"#, Some(502))]
     #[case(200, r#"{"namespace":"MG36964-1","prepared":true}"#, None)]
-    #[case(200, r#"{"namespace":"mg36964-2","prepared":true}"#, Some(502))]
-    #[case(200, "not JSON", Some(502))]
-    #[case(200, "{}", Some(502))]
-    #[case(503, "upstream unavailable", Some(503))]
-    #[case(403, "{}", Some(403))]
+    #[case(200, r#"{"namespace":"mg36964-1","prepared":false}"#, Some(RETRY))]
+    #[case(200, r#"{"namespace":"mg36964-2","prepared":true}"#, Some(RETRY))]
+    #[case(200, "not JSON", Some(RETRY))]
+    #[case(200, "{}", Some(RETRY))]
+    #[case(
+        502,
+        r#"{"error":"Session metadata lookup or Kubernetes operation failed"}"#,
+        Some(RETRY)
+    )]
+    #[case(503, "upstream unavailable", Some(RETRY))]
+    #[case(403, r#"{"error":"Caller is not authorized"}"#, Some(DENIED))]
+    #[case(401, "{}", Some(DENIED))]
     async fn validates_response(
         #[case] status: usize,
         #[case] body: &str,
-        #[case] expected_status: Option<u16>,
+        #[case] expected_error: Option<&str>,
     ) {
         let mut server = mockito::Server::new_async().await;
         let endpoint = server
@@ -132,11 +141,8 @@ mod tests {
         let url = Url::parse(&format!("{}/api/", server.url())).unwrap();
         let result = prepare_session(&url, "mg36964-1", Some("test-token")).await;
         endpoint.assert_async().await;
-        match expected_status {
-            Some(status) => assert!(result
-                .unwrap_err()
-                .to_string()
-                .contains(&format!("({status} "))),
+        match expected_error {
+            Some(expected) => assert_eq!(result.unwrap_err().to_string(), expected),
             None => assert!(result.is_ok(), "{result:?}"),
         }
     }
@@ -146,9 +152,9 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let url = Url::parse(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
         drop(listener);
-        for (token, status) in [(None, 401u16), (Some(""), 401), (Some("token"), 502)] {
+        for (token, expected) in [(None, DENIED), (Some(""), DENIED), (Some("token"), RETRY)] {
             let error = prepare_session(&url, "mg36964-1", token).await.unwrap_err();
-            assert!(error.to_string().contains(&format!("({status} ")));
+            assert_eq!(error.to_string(), expected);
         }
     }
 }
