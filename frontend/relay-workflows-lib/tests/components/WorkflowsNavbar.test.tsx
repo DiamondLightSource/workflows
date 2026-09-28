@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import { DiamondTheme, AuthState } from "@diamondlightsource/sci-react-ui";
 import { BrowserRouter } from "react-router-dom";
 import { getUser } from "relay-workflows-lib";
@@ -20,8 +20,6 @@ describe("WorkflowsNavbar", () => {
     fedid: "ab12345",
   };
 
-  const theme = createTheme(DiamondTheme);
-
   afterEach(() => {
     delete window.__USE_AUTH_GATEWAY__;
     vi.unstubAllGlobals();
@@ -33,7 +31,7 @@ describe("WorkflowsNavbar", () => {
     vi.mocked(getUser).mockReturnValue(Promise.resolve(testUser));
 
     render(
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={DiamondTheme}>
         <BrowserRouter>
           <WorkflowsNavbar />
         </BrowserRouter>
@@ -55,7 +53,7 @@ describe("WorkflowsNavbar", () => {
     vi.stubEnv("VITE_LOGOUT_URL", url);
 
     render(
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={DiamondTheme}>
         <BrowserRouter>
           <WorkflowsNavbar />
         </BrowserRouter>
@@ -84,7 +82,7 @@ describe("WorkflowsNavbar", () => {
     const redirectSpy = vi.spyOn(coreUtils, "externalRedirect");
 
     render(
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={DiamondTheme}>
         <BrowserRouter>
           <WorkflowsNavbar />
         </BrowserRouter>
