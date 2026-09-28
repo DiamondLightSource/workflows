@@ -203,14 +203,7 @@
   dependencies:
     "@babel/types" "^7.29.8"
 
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.25.0", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.7":
-  version "7.26.10"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.26.10.tgz#a07b4d8fa27af131a633d7b3524db803eb4764c2"
-  integrity sha512-2WJMeRQPHKSPemqk/awGrAiuFfzBmOIPXKizAsVhWH9YJqLZ0H+HS4c8loHGgW6utJ3E/ejXQUsiGaQy2NZ9Fw==
-  dependencies:
-    regenerator-runtime "^0.14.0"
-
-"@babel/runtime@^7.28.4", "@babel/runtime@^7.28.6":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.25.0", "@babel/runtime@^7.28.4", "@babel/runtime@^7.28.6", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.7":
   version "7.29.7"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.29.7.tgz#12022450c45a4da6d8d8287b18a4ff2ddb23f768"
   integrity sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==
@@ -5251,11 +5244,6 @@ reflect.getprototypeof@^1.0.6, reflect.getprototypeof@^1.0.9:
     get-proto "^1.0.1"
     which-builtin-type "^1.2.1"
 
-regenerator-runtime@^0.14.0:
-  version "0.14.1"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz#356ade10263f685dda125100cd862c1db895327f"
-  integrity sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==
-
 regexp.prototype.flags@^1.5.3:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/regexp.prototype.flags/-/regexp.prototype.flags-1.5.3.tgz#b3ae40b1d2499b8350ab2c3fe6ef3845d3a96f42"
@@ -5280,15 +5268,24 @@ relay-runtime@20.1.1, relay-runtime@^20.0.0:
     fbjs "^3.0.2"
     invariant "^2.2.4"
 
-relay-test-utils@^20.1.1:
-  version "20.1.1"
-  resolved "https://registry.yarnpkg.com/relay-test-utils/-/relay-test-utils-20.1.1.tgz#7dbb7cdd3439ad1278ee1ce217ebdfbe75e9568a"
-  integrity sha512-9E6+smojY43XmBi7un5l+8xWpqq1AgJtNEJZHDOLbdF8NIOzxI1n/HF2zZeGbqVQWjpvl/EyqegL6LLrIIJpcA==
+relay-runtime@21.0.1:
+  version "21.0.1"
+  resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-21.0.1.tgz#06583e227d155dfd9d93fc5b5c79e3bfa0ab4da5"
+  integrity sha512-OS+We56sp6gkGVEcce9VCNOeg/sMbxT9unEoerQPgNAICHowSWrXNc6LJxF2OqjypxYF7kaLDSPPiaPii2Pw1g==
   dependencies:
     "@babel/runtime" "^7.25.0"
     fbjs "^3.0.2"
     invariant "^2.2.4"
-    relay-runtime "20.1.1"
+
+relay-test-utils@^21.0.1:
+  version "21.0.1"
+  resolved "https://registry.yarnpkg.com/relay-test-utils/-/relay-test-utils-21.0.1.tgz#eddb5a24ce3c07434256d9ac7e9fd79f9b54bd09"
+  integrity sha512-Or9qrzdGpiNMMXCZ/eKbVeMiBNijILdyFIuf2/FYnV+7YvDkxFq+oE/g4/gZhYqd1G5/Cejjjavv/xqs86MrzA==
+  dependencies:
+    "@babel/runtime" "^7.25.0"
+    fbjs "^3.0.2"
+    invariant "^2.2.4"
+    relay-runtime "21.0.1"
 
 require-directory@^2.1.1:
   version "2.1.1"
