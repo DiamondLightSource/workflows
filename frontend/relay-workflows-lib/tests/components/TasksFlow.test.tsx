@@ -6,6 +6,12 @@ import * as workflowsLib from "workflows-lib";
 
 vi.mock("@xyflow/react", () => ({
   ReactFlow: vi.fn(() => <div>ReactFlow Mock</div>),
+  getNodesBounds: vi.fn(() => ({
+    x: 0,
+    y: 0,
+    width: 500,
+    height: 300,
+  })),
 }));
 
 vi.mock("relay-workflows-lib/lib/utils/workflowRelayUtils", () => ({
