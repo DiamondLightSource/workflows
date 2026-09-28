@@ -1,0 +1,42 @@
+version: "3.10"
+
+services:
+  graph-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../../..:/workspace:cached,z
+    command: sleep infinity
+    environment:
+      ARGO_SERVER_URL: https://argo-workflows.workflows.diamond.ac.uk/
+      KUBERNETES_API_URL: https://kubernetes.workflows.diamond.ac.uk/
+      ARGO_SERVER_SCHEMA_URL: https://argo-workflows.workflows.diamond.ac.uk/assets/openapi-spec/swagger.json
+      SESSIONSPACES_API_URL: http://sessionspaces-api:8081
+      S3_BUCKET: k8s-workflows-test
+      S3_ENDPOINT_URL: https://sci-nas-s3.diamond.ac.uk
+      METRICS_ENDPOINT: http://localhost:4318/v1/metrics
+      WORKFLOWS_DEV_CONTAINER: "true"
+
+  sessionspaces-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../../..:/workspace:cached,z
+    working_dir: /workspace/backend
+    command: cargo run -p sessionspaces-controller --bin api
+    restart: unless-stopped
+    depends_on:
+      - ispyb
+    environment:
+      DATABASE_URL: mysql://root:rootpassword@ispyb/ispyb_build
+      LDAP_URL: ldap://ldapmaster.diamond.ac.uk
+      SESSIONSPACES_API_BIND: 0.0.0.0:8081
+      OPA_URL: https://authorisation-test.diamond.ac.uk
+
+  ispyb:
+    image: ghcr.io/diamondlightsource/ispyb-database:v4.9.0
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
