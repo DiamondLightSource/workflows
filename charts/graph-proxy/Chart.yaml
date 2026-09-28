@@ -2,7 +2,7 @@ apiVersion: v2
 name: graph-proxy
 description: A GraphQL proxy for the Argo Workflows Server
 type: application
-version: 0.2.48
+version: 0.2.49
 appVersion: 0.2.3
 dependencies:
   - name: common
