@@ -178,27 +178,18 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         return;
       }
 
-      const { width, height } =
-        containerRef.current.getBoundingClientRect();
+      const { width, height } = containerRef.current.getBoundingClientRect();
 
       const boundingBox = getNodesBounds(layoutedNodes);
 
-      const requiredHeight = Math.max(
-        50,
-        Math.ceil(boundingBox.height + 20),
-      );
+      const requiredHeight = Math.max(50, Math.ceil(boundingBox.height + 20));
 
       onContentHeightChange?.(requiredHeight);
 
-      setIsOverflow(
-        boundingBox.width > width ||
-          boundingBox.height > height,
-      );
+      setIsOverflow(boundingBox.width > width || boundingBox.height > height);
     };
 
-    const resizeObserver = new ResizeObserver(
-      handleResizeAndOverflow,
-    );
+    const resizeObserver = new ResizeObserver(handleResizeAndOverflow);
 
     const currentContainerRef = containerRef.current;
 
@@ -208,10 +199,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
 
     handleResizeAndOverflow();
 
-    window.addEventListener(
-      "resize",
-      handleResizeAndOverflow,
-    );
+    window.addEventListener("resize", handleResizeAndOverflow);
 
     return () => {
       if (currentContainerRef) {
@@ -220,10 +208,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
 
       resizeObserver.disconnect();
 
-      window.removeEventListener(
-        "resize",
-        handleResizeAndOverflow,
-      );
+      window.removeEventListener("resize", handleResizeAndOverflow);
     };
   }, [layoutedNodes, onContentHeightChange]);
 

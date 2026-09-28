@@ -155,29 +155,21 @@ export default function BaseWorkflowRelay({
 
   const [height, setHeight] = useState(INITIAL_HEIGHT);
 
-  const handleContentHeightChange = useCallback(
-    (newContentHeight: number) => {
-      const nextContentHeight = Math.max(
-        MIN_HEIGHT,
-        Math.ceil(newContentHeight),
-      );
+  const handleContentHeightChange = useCallback((newContentHeight: number) => {
+    const nextContentHeight = Math.max(MIN_HEIGHT, Math.ceil(newContentHeight));
 
-      setContentHeight(nextContentHeight);
+    setContentHeight(nextContentHeight);
 
-      /*
-       * If the graph becomes smaller than the current pane,
-       * immediately bring the pane back within the new maximum.
-       *
-       * If the graph becomes larger, leave the user's current
-       * height unchanged. They can then resize the pane further
-       * up to the new maximum.
-       */
-      setHeight((currentHeight) =>
-        Math.min(currentHeight, nextContentHeight),
-      );
-    },
-    [],
-  );
+    /*
+     * If the graph becomes smaller than the current pane,
+     * immediately bring the pane back within the new maximum.
+     *
+     * If the graph becomes larger, leave the user's current
+     * height unchanged. They can then resize the pane further
+     * up to the new maximum.
+     */
+    setHeight((currentHeight) => Math.min(currentHeight, nextContentHeight));
+  }, []);
 
   return (
     <Box
@@ -242,4 +234,3 @@ export default function BaseWorkflowRelay({
     </Box>
   );
 }
-
