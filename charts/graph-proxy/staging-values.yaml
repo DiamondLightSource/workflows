@@ -1,3 +1,6 @@
+image:
+  tag: "0.2.3"
+
 argoServerUrl: https://argo-workflows.staging.workflows.diamond.ac.uk
 oidcIssuerUrl: https://identity-test.diamond.ac.uk/realms/dls
 oidcAudiences: "workflows-cluster-staging,graph"
