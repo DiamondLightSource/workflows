@@ -820,6 +820,8 @@ pub struct WorkflowsMutation;
 #[Object(guard = "AuthGuard")]
 impl WorkflowsMutation {
     /// Stop a single [`Workflow`] by unique ID.
+    // Not sure what this does / if its necessary???
+    #[instrument(name = "graph_proxy_stop_workflow", skip(self, ctx))]
     pub async fn stop_workflow(
         &self,
         ctx: &Context<'_>,
@@ -2182,5 +2184,103 @@ mod tests {
             .expect("invalid json");
         let expected_value = json!(AuthErrorCode::Unauthenticated.to_string());
         assert_eq!(error_code, expected_value);
+    }
+
+    #[tokio::test]
+    async fn test_test() -> anyhow::Result<()> {
+        use mockito::Matcher;
+        use async_graphql::{EmptySubscription, Schema, Request, Variables};
+        use super::WorkflowsQuery;
+        use super::WorkflowsMutation;
+        println!("testing!!");
+
+        let workflow_name = "numpy-benchmark-kc7pf";
+        // Check this
+        let workflow_uid = "9aa7ef6e-3e9a-4fdb-a5a2-6125f6a98fca";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let full_workflow_id = format!("{visit}:{workflow_name}:{workflow_uid}");
+
+        let mut server = mockito::Server::new_async().await;
+        // The file path to the json the server will send as a response to the mocked mutation
+        // Need to copy this as its used twice
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-kc7pf-running.json");
+
+        server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .match_query(mockito::Matcher::UrlEncoded(
+                "uid".into(),
+                workflow_uid.into(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path.clone())
+            .create_async()
+            .await;
+
+        /* let stop_endpoint = */ server
+            .mock(
+                "PUT",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}/stop")[..],
+            )
+            .match_body(Matcher::PartialJson(json!({
+                "message": Some("Workflow stopped by graph request".to_string()),
+                "name": None::<String>,
+                "namespace": None::<String>,
+                "node_field_selector": None::<String>,
+            })))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(
+            WorkflowsQuery,
+            WorkflowsMutation,
+            EmptySubscription,
+        )
+        .data(crate::ArgoServerUrl(argo_server_url))
+        .data(test_token())
+        .finish();
+
+        // Using this one instead works
+        // let query = format!(
+        //     r#"
+        //     query {{
+        //         workflowById(id: "{}") {{
+        //             id
+        //         }}
+        //     }}
+        // "#,
+        //     full_workflow_id
+        // );
+        let query = r#"
+            mutation ($full_id: String!) {
+                stopWorkflow(
+                    id: $full_id
+                ) {
+                    id
+                }
+            }
+        "#;
+        let request = Request::new(query).variables(Variables::from_json(json!({ "full_id": full_workflow_id })));
+        let response = schema.execute(request).await; 
+        let response = response.into_result().expect("Invalid response");
+        let data = response.data.into_json().unwrap();
+
+        println!("{data}");
+
+        assert_eq!(0, 1);
+        Ok(())
     }
 }
