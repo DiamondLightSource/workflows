@@ -150,6 +150,74 @@ postgresql-ha:
         cpu: 1000m
         memory: 4Gi
 
+    sidecars:
+      - name: pgpool-exporter
+        image: pgpool/pgpool2_exporter:1.2.2
+        imagePullPolicy: IfNotPresent
+
+        ports:
+          - name: pgpool-metrics
+            containerPort: 9719
+            protocol: TCP
+
+        env:
+          - name: POSTGRES_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-argo-workflows-password
+                key: username
+
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-argo-workflows-password
+                key: password
+
+          - name: POSTGRES_DATABASE
+            value: "postgres"
+
+          - name: PGPOOL_SERVICE
+            value: "127.0.0.1"
+
+          - name: PGPOOL_SERVICE_PORT
+            value: "5432"
+
+          - name: SSLMODE
+            value: "disable"
+
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: pgpool-metrics
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: pgpool-metrics
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+  service:
+    extraPorts:
+      - name: pgpool-metrics
+        port: 9719
+        targetPort: pgpool-metrics
+        protocol: TCP
+
   persistence:
     storageClass: db-nvme-storage
     size: 50Gi

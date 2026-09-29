@@ -92,6 +92,7 @@ postgresql-ha:
       limits:
         cpu: 200m
         memory: 512Mi
+    sidecars: []
   persistence:
     storageClass: netapp
     size: 5Gi
