@@ -849,7 +849,7 @@ impl WorkflowsMutation {
                     details: vec![],
                     message: Some(format!(
                         " \
-                    Workflow with ID: {id_str} does not exist
+                    Workflow with ID: {id_str} does not exist \
                 "
                     )),
                     error: None,
@@ -860,8 +860,9 @@ impl WorkflowsMutation {
 
         // Check creator fedid matches fedid of stop command caller
         if let Ok(creator) = workflow.creator(ctx).await {
+            let creator_id = creator.creator_id;
             if let Some(fedid) = fedid_from_context(ctx)? {
-                if creator.creator_id != fedid {
+                if creator_id != fedid {
                     return Err(GrpcGatewayRuntimeError {
                         code: Some(7),
                         details: vec![],
@@ -889,7 +890,7 @@ impl WorkflowsMutation {
                                 details: Vec::new(),
                                 message: Some(format!(
                                     " \
-                                        Workflow with ID: {id_str} was already stopped
+                                        Workflow with ID: {id_str} was already stopped \
                                     "
                                 )),
                                 error: None,
@@ -910,7 +911,7 @@ impl WorkflowsMutation {
                     details: Vec::new(),
                     message: Some(format!(
                         " \
-                        Workflow with ID: {id_str} has already finished
+                        Workflow with ID: {id_str} has already finished \
                     "
                     )),
                     error: None,
@@ -1004,7 +1005,9 @@ mod tests {
     use crate::graphql::{root_schema_builder, Authorization, Visit};
     use crate::validate_token::ValidatedAuthToken;
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
+    use jsonwebtoken::{encode, EncodingKey, Header};
     use rstest::rstest;
+    use serde::{Deserialize, Serialize};
     use serde_json::json;
     use std::path::PathBuf;
     use url::Url;
@@ -1012,6 +1015,36 @@ mod tests {
     fn test_token() -> ValidatedAuthToken {
         let token = Authorization::bearer("test-token").expect("token always valid");
         ValidatedAuthToken::Valid(token)
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct TestClaims {
+        posix_uid: String,
+        preferred_username: String,
+        fedid: String,
+    }
+
+    fn advanced_test_token(
+        posix_uid: Option<&str>,
+        preferred_username: Option<&str>,
+        fedid: Option<&str>,
+    ) -> ValidatedAuthToken {
+        let claims = TestClaims {
+            posix_uid: posix_uid.unwrap_or("7357").into(),
+            preferred_username: preferred_username.unwrap_or("test-pref-user").into(),
+            fedid: fedid.unwrap_or("abc12345").into(),
+        };
+
+        let token = encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(b"test-secret"),
+        )
+        .expect("failed to create jwt");
+
+        let auth = Authorization::bearer(&token).unwrap();
+
+        ValidatedAuthToken::Valid(auth)
     }
 
     #[tokio::test]
@@ -2207,5 +2240,253 @@ mod tests {
             .expect("invalid json");
         let expected_value = json!(AuthErrorCode::Unauthenticated.to_string());
         assert_eq!(error_code, expected_value);
+    }
+
+    #[tokio::test]
+    async fn stop_workflow_mutation() -> anyhow::Result<()> {
+        use super::WorkflowsMutation;
+        use super::WorkflowsQuery;
+        use async_graphql::{EmptySubscription, Request, Schema};
+
+        let workflow_name = "numpy-benchmark-kc7pf";
+        // Check this
+        let workflow_uid = "9aa7ef6e-3e9a-4fdb-a5a2-6125f6a98fca";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let full_workflow_id = format!("{visit}:{workflow_name}:{workflow_uid}");
+
+        let mut server = mockito::Server::new_async().await;
+        // The file path to the json the server will send as a response to the mocked mutation
+        // Need to copy this as its used twice
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-kc7pf-running.json");
+
+        server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .match_query(mockito::Matcher::UrlEncoded(
+                "uid".into(),
+                workflow_uid.into(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path.clone())
+            .create_async()
+            .await;
+
+        let workflow_endpoint = server
+            .mock(
+                "PUT",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}/stop")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowsQuery, WorkflowsMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(advanced_test_token(None, None, Some("twi18192")))
+            .finish();
+
+        let query = format!(
+            r#"
+            mutation {{
+                stopWorkflow(id: "{}") {{
+                    id
+                }}
+            }}
+        "#,
+            full_workflow_id
+        );
+        let request = Request::new(query);
+        let response = schema.execute(request).await;
+        let response = response.into_result().expect("Invalid response");
+
+        workflow_endpoint.assert_async().await;
+
+        let expected_data = json!({
+            "stopWorkflow": {
+                "id": full_workflow_id,
+            }
+        });
+        let recieved_data = response.data.into_json().unwrap();
+        assert_eq!(recieved_data, expected_data);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn stop_workflow_already_finished() -> anyhow::Result<()> {
+        use super::WorkflowsMutation;
+        use super::WorkflowsQuery;
+        use async_graphql::{EmptySubscription, Request, Schema};
+
+        let workflow_name = "numpy-benchmark-wdkwj";
+        // Check this
+        let workflow_uid = "bed157b2-ecf2-4423-9945-8ecfa767a151";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        let full_workflow_id = format!("{visit}:{workflow_name}:{workflow_uid}");
+
+        let mut server = mockito::Server::new_async().await;
+        // The file path to the json the server will send as a response to the mocked mutation
+        // Need to copy this as its used twice
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-wdkwj.json");
+
+        server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .match_query(mockito::Matcher::UrlEncoded(
+                "uid".into(),
+                workflow_uid.into(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path.clone())
+            .create_async()
+            .await;
+
+        server
+            .mock(
+                "PUT",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}/stop")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowsQuery, WorkflowsMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(advanced_test_token(None, None, Some("enu43627")))
+            .finish();
+
+        let query = format!(
+            r#"
+            mutation {{
+                stopWorkflow(id: "{}") {{
+                    id
+                }}
+            }}
+        "#,
+            full_workflow_id
+        );
+        let request = Request::new(query);
+        let response = schema.execute(request).await;
+        match response.into_result() {
+            Ok(_) => panic!(),
+            Err(message) => assert_eq!(
+                message[0].message,
+                format!(
+                    " \
+                        Workflow with ID: {full_workflow_id} has already finished \
+                "
+                )
+            ),
+        }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn stop_workflow_wrong_user() -> anyhow::Result<()> {
+        use super::WorkflowsMutation;
+        use super::WorkflowsQuery;
+        use async_graphql::{EmptySubscription, Request, Schema};
+
+        let workflow_name = "numpy-benchmark-kc7pf";
+        // Check this
+        let workflow_uid = "9aa7ef6e-3e9a-4fdb-a5a2-6125f6a98fca";
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+        // This is set in JSON file and value is copied here
+        let stop_request_fedid = "wvq67167";
+        let full_workflow_id = format!("{visit}:{workflow_name}:{workflow_uid}");
+
+        let mut server = mockito::Server::new_async().await;
+        // The file path to the json the server will send as a response to the mocked mutation
+        // Need to copy this as its used twice
+        let mut response_file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("get-workflow-kc7pf-running.json");
+
+        server
+            .mock(
+                "GET",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}")[..],
+            )
+            .match_query(mockito::Matcher::UrlEncoded(
+                "uid".into(),
+                workflow_uid.into(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path.clone())
+            .create_async()
+            .await;
+
+        server
+            .mock(
+                "PUT",
+                &format!("/api/v1/workflows/{visit}/{workflow_name}/stop")[..],
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let argo_server_url = url::Url::parse(&server.url())?;
+        let schema = Schema::build(WorkflowsQuery, WorkflowsMutation, EmptySubscription)
+            .data(crate::ArgoServerUrl(argo_server_url))
+            .data(advanced_test_token(None, None, Some(stop_request_fedid)))
+            .finish();
+
+        let query = format!(
+            r#"
+            mutation {{
+                stopWorkflow(id: "{}") {{
+                    id
+                }}
+            }}
+        "#,
+            full_workflow_id
+        );
+        let request = Request::new(query);
+        let response = schema.execute(request).await;
+        match response.into_result() {
+            Ok(_) => panic!(),
+            Err(message) => assert_eq!(
+                message[0].message,
+                format!(
+                    " \
+                    User {stop_request_fedid} has no workflows matching ID {full_workflow_id}. \
+                    Workflows may only be terminated by their creator \
+                    "
+                )
+            ),
+        }
+
+        Ok(())
     }
 }
