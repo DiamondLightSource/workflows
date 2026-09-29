@@ -88,7 +88,7 @@ include:
       publish: "true"
 
     rules:
-      - if: '$CI_COMMIT_TAG =~ /^graph-proxy@v[0-9]+\.[0-9]+\.[0-9]+$/'
+      - if: '$CI_COMMIT_TAG =~ /^test-gitlab-ci@v[0-9]+\.[0-9]+\.[0-9]+$/'
   # see: https://gitlab.diamond.ac.uk/scisoft/graph-federation/-/blob/main/templates/update-supergraph.yml?ref_type=heads
   - component: gitlab.diamond.ac.uk/scisoft/graph-federation/update-supergraph@main
     inputs:
