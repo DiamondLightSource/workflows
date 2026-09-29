@@ -172,6 +172,33 @@ opentelemetry-collector:
                 - source_labels: [__name__]
                   regex: kueue_local_queue_(status|resource_usage|resource_reservation|pending_workloads)
                   action: drop
+            - job_name: "pgpool"
+              scrape_interval: 30s
+
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names:
+                      - workflows
+
+              relabel_configs:
+                - source_labels:
+                    - __meta_kubernetes_pod_label_app_kubernetes_io_component
+                  regex: pgpool
+                  action: keep
+
+                - source_labels:
+                    - __meta_kubernetes_pod_container_port_name
+                  regex: pgpool-metrics
+                  action: keep
+
+                - source_labels:
+                    - __meta_kubernetes_namespace
+                  target_label: namespace
+
+                - source_labels:
+                    - __meta_kubernetes_pod_name
+                  target_label: pod
       otlp:
         protocols:
           grpc:
