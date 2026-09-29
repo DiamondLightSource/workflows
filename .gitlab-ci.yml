@@ -1,0 +1,115 @@
+workflow:
+  rules:
+    # Graph Proxy release tags
+    - if: '$CI_COMMIT_TAG =~ /^graph-proxy@v[0-9]+\.[0-9]+\.[0-9]+$/'
+
+    # Mirrored branch updates
+    - if: "$CI_COMMIT_BRANCH"
+
+    # Manual pipelines started through the GitLab UI
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+    # Ignore other tags and pipeline sources
+    - when: never
+
+default:
+  tags:
+    - argus
+
+stages:
+  - build
+  - graphfederation
+
+build-workflows-graph-schema:
+  image: rust:1
+  stage: build
+
+  variables:
+    ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/refs/tags/v4.0.6/api/jsonschema/schema.json
+    CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+    CARGO_TARGET_DIR: "$CI_PROJECT_DIR/.cargo-target"
+
+  script:
+    - |
+      set -euo pipefail
+
+      rustup component add rustfmt
+
+      echo "Generating schema from commit ${CI_COMMIT_SHA}"
+
+      cd "$CI_PROJECT_DIR/backend/graph-proxy"
+
+      cargo run --locked -- \
+        schema \
+        --federation false \
+        --path workflows.graphql
+
+      test -s workflows.graphql
+
+      mkdir -p "$CI_PROJECT_DIR/generated-schema"
+
+      cp workflows.graphql "$CI_PROJECT_DIR/generated-schema/workflows.graphql"
+  cache:
+    key:
+      files:
+        - backend/Cargo.lock
+      prefix: backend-rust
+    paths:
+      - .cargo/registry/
+      - .cargo/git/
+      - .cargo-target/
+    policy: pull-push
+
+  artifacts:
+    name: "graph-proxy-schema-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - generated-schema/workflows.graphql
+    expire_in: 7 days
+
+include:
+  # see: https://gitlab.diamond.ac.uk/scisoft/graph-federation/-/blob/main/templates/update-supergraph.yml?ref_type=heads
+  - component: gitlab.diamond.ac.uk/scisoft/graph-federation/update-supergraph@main
+    inputs:
+      # should match ref after @ include.component above
+      implementation-ref: main
+
+      job-name: update-supergraph-and-publish
+      stage: graphfederation
+
+      schema-job: build-workflows-graph-schema
+      schema-file: generated-schema/workflows.graphql
+
+      name: workflows
+      routing-url: https://workflows.diamond.ac.uk/graphql
+
+      subscription-url: wss://workflows.diamond.ac.uk/graphql/ws
+      subscription-protocol: ws
+
+      publish: "true"
+
+    rules:
+      - if: '$CI_COMMIT_TAG =~ /^graph-proxy@v[0-9]+\.[0-9]+\.[0-9]+$/'
+
+  - component: gitlab.diamond.ac.uk/scisoft/graph-federation/update-supergraph@main
+    inputs:
+      # should match ref after @ include.component above
+      implementation-ref: main
+
+      job-name: update-supergraph-without-publish
+      stage: graphfederation
+
+      schema-job: build-workflows-graph-schema
+      schema-file: generated-schema/workflows.graphql
+
+      name: workflows
+      routing-url: https://workflows.diamond.ac.uk/graphql
+
+      subscription-url: wss://workflows.diamond.ac.uk/graphql/ws
+      subscription-protocol: ws
+
+      publish: "false"
+
+    rules:
+      - if: '$CI_COMMIT_TAG =~ /^graph-proxy@v[0-9]+\.[0-9]+\.[0-9]+$/'
+        when: never
+      - when: always
