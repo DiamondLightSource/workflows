@@ -6,6 +6,7 @@ mod helm;
 mod linter_argocli;
 mod linter_labels;
 mod linter_parameter_values;
+mod trigger_linting;
 
 use base_linting::lint_from_manifest;
 use helm::lint_from_helm;
@@ -308,5 +309,94 @@ mod tests {
         println!("Response: {result:?}");
         assert!(have_same_elements(&mut result, &mut expected_result));
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn lint_trigger_template_ok() {
+        let path = Path::new("./tests/trigger_templates/trigger_correct.yaml").to_path_buf();
+        let mut result = lint_from_manifest(&path, false).unwrap();
+
+        let mut expected_result = vec![LintResult::new("test-trigger".to_string(), vec![])];
+
+        println!("Response: {result:?}");
+        assert!(have_same_elements(&mut result, &mut expected_result));
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn lint_trigger_template_with_extra_fields() {
+        let path = Path::new("./tests/trigger_templates/trigger_extra_fields.yaml").to_path_buf();
+        let mut result = lint_from_manifest(&path, false).unwrap();
+
+        let mut expected_result = vec![LintResult::new(
+            "test-trigger-extra".to_string(),
+            vec![
+                "/spec/workflow/parameters/0: Unknown fields: abc, def".to_string(),
+                "/spec: Unknown field: extraField".to_string(),
+            ],
+        )];
+
+        println!("Response: {result:?}");
+        assert!(have_same_elements(&mut result, &mut expected_result));
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn lint_trigger_template_with_incorrect_types() {
+        let path = Path::new("./tests/trigger_templates/trigger_wrong_types.yaml").to_path_buf();
+        let mut result = lint_from_manifest(&path, false).unwrap();
+
+        let mut expected_result = vec![LintResult::new(
+            "test-trigger-wrong-types".to_string(),
+            vec![
+                "/spec/eventName: 123 is not of type \"string\"".to_string(),
+                "/spec/workflow/parameters/2/default: true is not of type \"string\"".to_string(),
+            ],
+        )];
+
+        println!("Response: {result:?}");
+        assert!(have_same_elements(&mut result, &mut expected_result));
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn lint_trigger_template_with_missing_required() {
+        let path =
+            Path::new("./tests/trigger_templates/trigger_missing_required.yaml").to_path_buf();
+        let mut result = lint_from_manifest(&path, false).unwrap();
+
+        let mut expected_result = vec![LintResult::new(
+            "test-trigger-missing-required".to_string(),
+            vec![
+                "/spec: \"eventName\" is a required property".to_string(),
+                "/spec/workflow: \"template\" is a required property".to_string(),
+            ],
+        )];
+
+        println!("Response: {result:?}");
+        assert!(have_same_elements(&mut result, &mut expected_result));
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn lint_trigger_template_with_any_of_not_met() {
+        let path = Path::new("./tests/trigger_templates/trigger_any_of.yaml").to_path_buf();
+        let result = lint_from_manifest(&path, false).unwrap();
+
+        assert_eq!(result.len(), 1);
+
+        let errors = &result[0].errors;
+
+        assert_eq!(errors.len(), 1);
+
+        assert!(
+            errors[0]
+                .contains("the contents of this field must adhere to one or more of the following")
+        );
+
+        assert!(errors[0].contains("required"));
+        assert!(errors[0].contains("name"));
+        assert!(errors[0].contains("path"));
+        assert!(errors[0].contains("default"));
     }
 }

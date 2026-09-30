@@ -1,0 +1,19 @@
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: ClusterTriggerTemplate
+metadata:
+  name: test-trigger-missing-required
+  labels:
+    workflows.diamond.ac.uk/source: webhook
+    workflows.diamond.ac.uk/beamline: test-beamline
+  annotations:
+    workflows.diamond.ac.uk/repository: www.test.com
+spec:
+  workflow:
+    parameters:
+      - name: tif
+        path: parameters.tif
+      - name: tiff
+        path: parameters.tiff
+      - name: png
+        path: parameters.png
+        default: "true"
