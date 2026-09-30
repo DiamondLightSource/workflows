@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.4](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.3...graph-proxy@v0.2.4) (2026-09-30)
+
+
+### Features
+
+* **graph-proxy:** add function to generate more complex tokens ([931dc95](https://github.com/DiamondLightSource/workflows/commit/931dc95523c7376006dd8229a06d2093440d8d2c))
+* **graph-proxy:** add sessionspaces preparation gate ([93eb11a](https://github.com/DiamondLightSource/workflows/commit/93eb11a10d86220b1ace22b5f5808c926df7b06f))
+* **graph-proxy:** add stop workflows mutation ([8007527](https://github.com/DiamondLightSource/workflows/commit/80075272c149a7d388d4d335e0e1c4ed7a63fe9b))
+
+
+### Bug Fixes
+
+* **graph-proxy:** add submission test when prepare fails ([198b696](https://github.com/DiamondLightSource/workflows/commit/198b696cf85c38f75f8a9881a74e897cbb3e54e2))
+* **graph-proxy:** skip test namespaces from automated namespaces provisioning ([714f79d](https://github.com/DiamondLightSource/workflows/commit/714f79dd588bab317730f5b460d73a58b88facad))
+* **graph-proxy:** tidy stop workflow error messages ([931dc95](https://github.com/DiamondLightSource/workflows/commit/931dc95523c7376006dd8229a06d2093440d8d2c))
+* **grpah-proxy:** update devcontainer config with sessinspaces api ([59df8df](https://github.com/DiamondLightSource/workflows/commit/59df8dfe38320bf38097cf99c9786c64e9a9ab91))
+
 ## [0.2.3](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.2...graph-proxy@v0.2.3) (2026-09-22)
 
 
