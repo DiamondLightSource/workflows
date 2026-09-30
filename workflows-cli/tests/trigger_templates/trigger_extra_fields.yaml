@@ -1,0 +1,24 @@
+apiVersion: workflows.diamond.ac.uk/v1alpha1
+kind: ClusterTriggerTemplate
+metadata:
+  name: test-trigger-extra
+  labels:
+    workflows.diamond.ac.uk/source: webhook
+    workflows.diamond.ac.uk/beamline: test-beamline
+  annotations:
+    workflows.diamond.ac.uk/repository: www.test.com
+spec:
+  eventName: test
+  extraField: true
+  workflow:
+    template: example-template
+    parameters:
+      - name: tif
+        path: parameters.tif
+        abc: 123
+        def: ghi
+      - name: tiff
+        path: parameters.tiff
+      - name: png
+        path: parameters.png
+        default: "true"
