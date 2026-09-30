@@ -195,7 +195,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     };
   }, [layoutedNodes, layoutedEdges]);
 
-    return (
+  return (
     <Box ref={containerRef} display="flex" height="100%" width="100%">
       <Box
         sx={{
@@ -206,11 +206,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         }}
       >
         <Tooltip title="Reset View">
-          <IconButton
-            size="small"
-            onClick={resetView}
-            aria-label="Reset View"
-          >
+          <IconButton size="small" onClick={resetView} aria-label="Reset View">
             <AspectRatio fontSize="small" />
           </IconButton>
         </Tooltip>
