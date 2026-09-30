@@ -380,14 +380,30 @@ impl WorkflowTemplatesMutation {
     }
 }
 
+/// Test namespaces exempt from SessionSpace preparation.
+const PREPARATION_EXEMPT_NAMESPACES: &[&str] = &[
+    "ks10000-1",
+    "ks10000-2",
+    "ks10000-3",
+    "ks10000-4",
+    "ks10000-5",
+];
+
 /// Prepare the visit's session namespace, returning the normalised name to submit to.
 async fn prepare_namespace(ctx: &Context<'_>, visit: &VisitInput) -> anyhow::Result<String> {
+    let namespace = visit.to_string().to_ascii_lowercase();
+    if PREPARATION_EXEMPT_NAMESPACES.contains(&namespace.as_str()) {
+        debug!(
+            namespace,
+            "Skipping SessionSpace preparation for exempt namespace"
+        );
+        return Ok(namespace);
+    }
     let api_url = ctx.data::<SessionSpacesApiUrl>().map_err(|_| {
         tracing::warn!("SessionSpaces API URL not configured");
         anyhow!("Workflow submission is temporarily unavailable; please try again shortly")
     })?;
     let token = ctx.data_unchecked::<ValidatedAuthToken>().as_token();
-    let namespace = visit.to_string().to_ascii_lowercase();
     crate::sessionspaces::prepare_session(api_url, &namespace, token.map(|token| token.token()))
         .await?;
     Ok(namespace)
@@ -837,6 +853,102 @@ mod tests {
             "Could not submit workflow for session mg36964-1; please try again shortly"
         };
         assert_eq!(message, expected);
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[rstest]
+    async fn submission_skips_prepare_for_exempt_namespaces(
+        #[values(false, true)] template: bool,
+    ) -> anyhow::Result<()> {
+        use super::WorkflowTemplatesMutation;
+        use async_graphql::{Request, Variables};
+        use mockito::Matcher;
+
+        let mut server = mockito::Server::new_async().await;
+        let mut response_file_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        response_file_path.push("test-assets");
+        response_file_path.push("submit-workflow.json");
+
+        let prepare_endpoint = server
+            .mock("POST", "/prepare")
+            .expect(0)
+            .create_async()
+            .await;
+        let submit_endpoint = server
+            .mock(
+                "POST",
+                if template {
+                    "/api/v1/workflows/ks10000-3/submit"
+                } else {
+                    "/api/v1/workflows/ks10000-3"
+                },
+            )
+            .match_body(Matcher::PartialJson(json!({ "namespace": "ks10000-3" })))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(response_file_path)
+            .create_async()
+            .await;
+
+        let manifest = concat!(
+            "apiVersion: argoproj.io/v1alpha1\n",
+            "kind: WorkflowTemplate\n",
+            "metadata:\n",
+            "  name: test-workflow\n",
+            "spec:\n",
+            "  entrypoint: main\n",
+        );
+
+        let schema = Schema::build(
+            WorkflowTemplatesQuery,
+            WorkflowTemplatesMutation,
+            EmptySubscription,
+        )
+        .data(crate::ArgoServerUrl(url::Url::parse(&server.url())?))
+        .data(test_token())
+        .finish();
+
+        let request = if template {
+            Request::new(
+                r#"mutation {
+                submitWorkflowTemplate(
+                    name: "test-workflow",
+                    visit: { proposalCode: "KS", proposalNumber: 10000, number: 3 },
+                    parameters: {}
+                ) { name }
+            }"#,
+            )
+        } else {
+            Request::new(
+                r#"mutation ($manifest: String!) {
+                submitWorkflow(
+                    visit: { proposalCode: "KS", proposalNumber: 10000, number: 3 },
+                    manifest: $manifest
+                ) { name }
+            }"#,
+            )
+            .variables(Variables::from_json(json!({ "manifest": manifest })))
+        };
+        let response = schema.execute(request).await;
+
+        println!("Errors: {:#?}", response.errors);
+        prepare_endpoint.assert_async().await;
+        submit_endpoint.assert_async().await;
+        let response = response.into_result().expect("Invalid response");
+
+        let actual = response.data.into_json().unwrap();
+        if template {
+            assert_eq!(
+                actual,
+                json!({ "submitWorkflowTemplate": { "name": "test-workflow-abcde" } })
+            );
+        } else {
+            assert_eq!(
+                actual,
+                json!({ "submitWorkflow": { "name": "test-workflow-abcde" } })
+            );
+        }
         Ok(())
     }
 }
