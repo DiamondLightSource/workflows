@@ -36,6 +36,7 @@ interface TasksFlowProps {
   highlightedTaskIds?: string[];
   filledTaskId?: string | null;
   isDynamic?: boolean;
+  onResetViewReady?: (resetView: () => void) => void;
 }
 
 const TasksFlow: React.FC<TasksFlowProps> = ({
@@ -45,6 +46,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   highlightedTaskIds,
   filledTaskId,
   isDynamic,
+  onResetViewReady,
 }) => {
   const tasks = useFetchedTasks(tasksRef ?? null);
 
@@ -56,23 +58,12 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
   const previousTaskCount = useRef<number>(tasks.length);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  /*
-   * Keep the latest onNavigate without making nodeTypes change whenever
-   * the parent recreates its callback.
-   */
   const onNavigateRef = useRef(onNavigate);
 
   useEffect(() => {
     onNavigateRef.current = onNavigate;
   }, [onNavigate]);
 
-  /*
-   * Keep the node type itself stable.
-   *
-   * Previously this depended directly on `onNavigate`, which can change
-   * whenever the selected task changes. That can cause React Flow to
-   * recreate the custom nodes while the user is clicking them.
-   */
   const nodeTypes = useMemo(
     () => ({
       custom: (props: { data: TaskFlowNodeData }) => (
@@ -109,11 +100,6 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     [nodes, edges],
   );
 
-  /*
-   * Highlights are derived from the layouted nodes and the current
-   * selection, so calculate them directly instead of storing them in
-   * state and updating them from an effect.
-   */
   const nodesWithHighlights = useMemo(
     () =>
       addHighlightsAndFills(layoutedNodes, highlightedTaskIds, filledTaskId),
@@ -145,6 +131,10 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     clearViewport();
     void reactFlowInstance.current?.fitView();
   }, [clearViewport]);
+
+  useEffect(() => {
+    onResetViewReady?.(resetView);
+  }, [onResetViewReady, resetView]);
 
   useEffect(() => {
     const currentCount = tasks.length;
@@ -205,7 +195,7 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
     };
   }, [layoutedNodes, layoutedEdges]);
 
-  return (
+    return (
     <Box ref={containerRef} display="flex" height="100%" width="100%">
       <Box
         sx={{
@@ -216,7 +206,11 @@ const TasksFlow: React.FC<TasksFlowProps> = ({
         }}
       >
         <Tooltip title="Reset View">
-          <IconButton size="small" onClick={resetView} aria-label="Reset View">
+          <IconButton
+            size="small"
+            onClick={resetView}
+            aria-label="Reset View"
+          >
             <AspectRatio fontSize="small" />
           </IconButton>
         </Tooltip>

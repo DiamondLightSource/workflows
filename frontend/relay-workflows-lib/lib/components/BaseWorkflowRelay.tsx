@@ -85,23 +85,8 @@ export default function BaseWorkflowRelay({
     Dispatch<SetStateAction<string[]>>,
   ];
 
-  /*
-   * IMPORTANT:
-   *
-   * Do not put `selectedTaskIds` in this callback's dependency list.
-   *
-   * The previous implementation did this:
-   *
-   *   [onSelectTask, selectedTaskIds, setSelectedTaskIds]
-   *
-   * Every task click changed selectedTaskIds, which recreated onNavigate.
-   * TasksFlow then received a new onNavigate, ReactFlow recreated its
-   * nodeTypes, and the task node could be replaced while the mouse event
-   * was being processed.
-   *
-   * Using the functional state update means we always receive the latest
-   * selectedTaskIds without making this callback depend on them.
-   */
+  const resetViewRef = useRef<(() => void) | null>(null);
+
   const selectedTaskIdsRef = useRef(selectedTaskIds);
 
   useEffect(() => {
@@ -116,8 +101,6 @@ export default function BaseWorkflowRelay({
       const isCtrl: boolean = Boolean(event?.ctrlKey || event?.metaKey);
       const currentTaskIds = selectedTaskIdsRef.current;
 
-      // Normal click on the only currently selected task:
-      // deselect it and restore all workflow logs.
       if (
         !isCtrl &&
         currentTaskIds.length === 1 &&
@@ -128,15 +111,12 @@ export default function BaseWorkflowRelay({
         return;
       }
 
-      // Normal click on a different task:
-      // select only that task and show its logs.
       if (!isCtrl) {
         setSelectedTaskIds([taskId]);
         onSelectTask?.(taskId);
         return;
       }
 
-      // Ctrl/Cmd-click keeps the existing multi-selection behaviour.
       const isSelected = currentTaskIds.includes(taskId);
 
       setSelectedTaskIds((currentTaskIds) =>
@@ -183,6 +163,9 @@ export default function BaseWorkflowRelay({
           width={Infinity}
           height={200}
           resizeHandles={["se"]}
+          onResizeStop={() => {
+            resetViewRef.current?.();
+          }}
           style={{
             width: "100%",
             maxWidth: "1150px",
@@ -201,6 +184,9 @@ export default function BaseWorkflowRelay({
             onNavigate={onNavigate}
             highlightedTaskIds={selectedTaskIds}
             filledTaskId={filledTaskId}
+            onResetViewReady={(resetView) => {
+              resetViewRef.current = resetView;
+            }}
           />
         </ResizableBox>
       </WorkflowAccordion>
