@@ -29,6 +29,8 @@ reqwest = { version = "0.13.4", default-features = false, features = [
 jsonwebtoken = "11.0.0"
 thiserror = "2.0.19"
 mockito = "1.7.2"
+jsonschema = "0.57.0"
+json-colorizer = "0.1.2"
 
 [dev-dependencies]
 serial_test = "3.2.0"

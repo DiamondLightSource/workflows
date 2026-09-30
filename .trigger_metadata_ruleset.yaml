@@ -1,0 +1,4 @@
+critical:
+  - type: requiredKey
+    key: workflows.diamond.ac.uk/repository
+    location: annotation

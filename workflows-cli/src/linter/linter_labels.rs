@@ -7,7 +7,13 @@ use std::{
     vec,
 };
 
-const RULES_YAML: &str = include_str!("../../../.workflow_metadata_ruleset.yaml");
+const WORKFLOW_RULES_YAML: &str = include_str!("../../../.workflow_metadata_ruleset.yaml");
+const TRIGGER_RULES_YAML: &str = include_str!("../../../.trigger_metadata_ruleset.yaml");
+
+enum TemplateKind {
+    Workflow,
+    Trigger,
+}
 
 pub struct LabelChecker {
     rules: Rules,
@@ -16,30 +22,44 @@ pub struct LabelChecker {
 impl Linter for LabelChecker {
     fn lint(target: &Path) -> Result<Vec<String>, String> {
         let manifest = get_manifest(target)?;
-        let label_checker = LabelChecker::new()?;
-
-        let metadata = manifest
-            .as_mapping()
-            .ok_or("Invalid manifest: expected a YAML object (key-value pairs), but got a different type.")?
+        let manifest_obj = manifest.as_mapping().ok_or(
+            "Invalid manifest: expected a YAML object (key-value pairs), but got a different type.",
+        )?;
+        let kind = manifest_obj
+            .get("kind")
+            .ok_or("Invalid manifest: missing 'kind' field")?;
+        let metadata = manifest_obj
             .get("metadata")
             .ok_or("Invalid manifest: metadata is missing. Metadata must be an object containing fields like name, labels and annotations. The metadata format is described at https://diamondlightsource.github.io/workflows/docs")?;
 
         let labels = metadata.get("labels").ok_or("Invalid labels: Labels are missing. The labels format is described at https://diamondlightsource.github.io/workflows/docs")?;
+
         let annotations = metadata
             .get("annotations")
             .ok_or("Invalid annotations: Annotations are missing. The annotations format is described at https://diamondlightsource.github.io/workflows/docs")?;
 
-        label_checker.validate(labels, annotations)
+        if kind.eq("ClusterTriggerTemplate") {
+            let label_checker = LabelChecker::new(TemplateKind::Trigger)?;
+            label_checker.validate(labels, annotations)
+        } else {
+            let label_checker = LabelChecker::new(TemplateKind::Workflow)?;
+            label_checker.validate(labels, annotations)
+        }
     }
 }
 
 impl LabelChecker {
-    fn build_rules() -> Result<Rules, String> {
-        serde_yaml::from_str(RULES_YAML).map_err(|e| format!("Failed to parse rules: {e}"))
+    fn build_rules(kind: TemplateKind) -> Result<Rules, String> {
+        match kind {
+            TemplateKind::Trigger => serde_yaml::from_str(TRIGGER_RULES_YAML)
+                .map_err(|e| format!("Failed to parse rules: {e}")),
+            TemplateKind::Workflow => serde_yaml::from_str(WORKFLOW_RULES_YAML)
+                .map_err(|e| format!("Failed to parse rules: {e}")),
+        }
     }
 
-    fn new() -> Result<LabelChecker, String> {
-        let rules = Self::build_rules()?;
+    fn new(template_kind: TemplateKind) -> Result<LabelChecker, String> {
+        let rules = Self::build_rules(template_kind)?;
         Ok(LabelChecker { rules })
     }
 
@@ -178,7 +198,7 @@ impl RuleChecker for Stem {
 mod tests {
     use serde_yaml::Value;
 
-    use crate::linter::linter_labels::LabelChecker;
+    use crate::linter::linter_labels::{LabelChecker, TemplateKind};
 
     fn yaml_from_str(yaml: &str) -> Value {
         serde_yaml::from_str(yaml).expect("YAML parsing failed")
@@ -200,7 +220,7 @@ mod tests {
         let labels = metadata.get("labels").unwrap();
         let annotations = metadata.get("annotations").unwrap();
 
-        let checker = LabelChecker::new().unwrap();
+        let checker = LabelChecker::new(TemplateKind::Workflow).unwrap();
         let result = checker.validate(labels, annotations).unwrap();
 
         assert!(result.is_empty())
@@ -222,7 +242,7 @@ mod tests {
         let labels = metadata.get("labels").unwrap();
         let annotations = metadata.get("annotations").unwrap();
 
-        let checker = LabelChecker::new().unwrap();
+        let checker = LabelChecker::new(TemplateKind::Workflow).unwrap();
         let result = checker.validate(labels, annotations).unwrap();
 
         assert_eq!(
@@ -249,7 +269,7 @@ mod tests {
         let labels = metadata.get("labels").unwrap();
         let annotations = metadata.get("annotations").unwrap();
 
-        let checker = LabelChecker::new().unwrap();
+        let checker = LabelChecker::new(TemplateKind::Workflow).unwrap();
         let result = checker.validate(labels, annotations).unwrap();
 
         assert_eq!(
@@ -274,7 +294,7 @@ mod tests {
         let labels = metadata.get("labels").unwrap();
         let annotations = metadata.get("annotations").unwrap();
 
-        let checker = LabelChecker::new().unwrap();
+        let checker = LabelChecker::new(TemplateKind::Workflow).unwrap();
         let result = checker.validate(labels, annotations).unwrap();
 
         assert_eq!(
@@ -301,7 +321,7 @@ mod tests {
         let labels = metadata.get("labels").unwrap();
         let annotations = metadata.get("annotations").unwrap();
 
-        let checker = LabelChecker::new().unwrap();
+        let checker = LabelChecker::new(TemplateKind::Workflow).unwrap();
         let result = checker.validate(labels, annotations).unwrap();
 
         assert_eq!(result.len(), 2);
@@ -330,7 +350,7 @@ mod tests {
         let labels = metadata.get("labels").unwrap();
         let annotations = metadata.get("annotations").unwrap();
 
-        let checker = LabelChecker::new().unwrap();
+        let checker = LabelChecker::new(TemplateKind::Workflow).unwrap();
         let result = checker.validate(labels, annotations).unwrap();
 
         assert_eq!(result, vec!["Expected values to be 'true' or 'false'. The following tags failed: workflows.diamond.ac.uk/science-group-examples".to_string()]);
