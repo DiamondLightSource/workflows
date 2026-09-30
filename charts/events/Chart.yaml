@@ -3,7 +3,7 @@ name: events
 description: Data Analysis event triggering
 type: application
 
-version: 0.3.14
+version: 0.3.15
 
 dependencies:
   - name: argo-events
