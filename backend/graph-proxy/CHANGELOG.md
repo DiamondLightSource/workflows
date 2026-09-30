@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.3.0](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.4...graph-proxy@v0.3.0) (2026-09-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **graph-proxy:** change type of visit argument to Visit object
+
+### Features
+
+* **auth-gateway:** enable auth-gateway support for dashboard ([f227b36](https://github.com/DiamondLightSource/workflows/commit/f227b366bfee45eb77949ad104c43df26fc49144))
+* **graph-proxy:** add creator field to trigger query ([9ed919c](https://github.com/DiamondLightSource/workflows/commit/9ed919c234835936e1cd250c69aa2577947dd834))
+* **graph-proxy:** add function to generate more complex tokens ([931dc95](https://github.com/DiamondLightSource/workflows/commit/931dc95523c7376006dd8229a06d2093440d8d2c))
+* **graph-proxy:** add mutation to create Triggers ([2326c49](https://github.com/DiamondLightSource/workflows/commit/2326c4911315b3c6b60a538f6c1fd51412db487c))
+* **graph-proxy:** add mutations to delete and toggle triggers ([02b81d9](https://github.com/DiamondLightSource/workflows/commit/02b81d988f85d6e67ff775fd832cf078069f21b6))
+* **graph-proxy:** add queries to get live triggers ([460b6ad](https://github.com/DiamondLightSource/workflows/commit/460b6ad5f9d4f28f12096b904054c923d37af92e))
+* **graph-proxy:** add sessionspaces preparation gate ([93eb11a](https://github.com/DiamondLightSource/workflows/commit/93eb11a10d86220b1ace22b5f5808c926df7b06f))
+* **graph-proxy:** add stop workflows mutation ([8007527](https://github.com/DiamondLightSource/workflows/commit/80075272c149a7d388d4d335e0e1c4ed7a63fe9b))
+* **graph-proxy:** add workflowById field ([e761aea](https://github.com/DiamondLightSource/workflows/commit/e761aea32e03041c180d9a6ee5a2adcc835364b7))
+* **graph-proxy:** add yaml submission to the graph ([5d7df02](https://github.com/DiamondLightSource/workflows/commit/5d7df0283c577071d162be8c49ff7f6c88443b27))
+* **graph-proxy:** added function to strip directives and remmoved extra comments ([07cb0f1](https://github.com/DiamondLightSource/workflows/commit/07cb0f1dd4c54cb7ff8d6eb20aeece158c98acc0))
+* **graph-proxy:** allow toggle for graph to be federated or not ([ba1eaa2](https://github.com/DiamondLightSource/workflows/commit/ba1eaa27144d58ca3b3464f316b5b2a90df774d8))
+* **graph-proxy:** attach creator posixuid to trigger ([3a29c88](https://github.com/DiamondLightSource/workflows/commit/3a29c88ad18af72d396149b2b5279e673d6f3c04))
+* **graph-proxy:** get active task logs from Argo ([1a565f6](https://github.com/DiamondLightSource/workflows/commit/1a565f6c609ac82f32a1a17a98dda487a2101b2c))
+* **graph-proxy:** make enabled field queryable for triggers ([53e431c](https://github.com/DiamondLightSource/workflows/commit/53e431cd6f72d07159a562fa02ffc4b764319e31))
+* **graph-proxy:** make events-namespaced triggers deleteable ([2756737](https://github.com/DiamondLightSource/workflows/commit/2756737e7ef0f2b037ca0370f2556e4f3282385f))
+* **graph-proxy:** remove posix uid check for trigger query ([bcbf1bb](https://github.com/DiamondLightSource/workflows/commit/bcbf1bb54454381ff83136e3e23e0be37f8f43ff))
+* parameter filtering ([b3456b4](https://github.com/DiamondLightSource/workflows/commit/b3456b43be176a3ae9f9560fcb9e00c56c420d7c))
+
+
+### Bug Fixes
+
+* add missing documentation for GraphQL filter types ([caad783](https://github.com/DiamondLightSource/workflows/commit/caad78309adcf2393fe0f7593c19ca8c4c26d40c))
+* correctly determine hasNextPage for parameter filtered workflows ([de0dc5d](https://github.com/DiamondLightSource/workflows/commit/de0dc5da057737d4c5f1061d712fab979f808096))
+* correctly determine hasNextPage for parameter filtered workflows ([75289be](https://github.com/DiamondLightSource/workflows/commit/75289be8308651b1f615211e3fc9ca171a4635ae))
+* did the changes required in the PR ([5ac2404](https://github.com/DiamondLightSource/workflows/commit/5ac2404f2d17255a8928b2c196635853be2e4596))
+* **graph-proxy:** add submission test when prepare fails ([198b696](https://github.com/DiamondLightSource/workflows/commit/198b696cf85c38f75f8a9881a74e897cbb3e54e2))
+* **graph-proxy:** change type of visit argument to Visit object ([9797cbf](https://github.com/DiamondLightSource/workflows/commit/9797cbfd02df9ff3a27ede7871e6ff68a60e8361))
+* **graph-proxy:** make Trigger templateRef optional ([8a6da40](https://github.com/DiamondLightSource/workflows/commit/8a6da40cafd6acd0d3dcdaa7d172f4d0f282cf6b))
+* **graph-proxy:** pin CI swagger.json to deployed version of Argo Workflows & fix graph build error ([c47f197](https://github.com/DiamondLightSource/workflows/commit/c47f197b089aa5c28dce0d1f1e9302b7d61319a8))
+* **graph-proxy:** skip test namespaces from automated namespaces provisioning ([714f79d](https://github.com/DiamondLightSource/workflows/commit/714f79dd588bab317730f5b460d73a58b88facad))
+* **graph-proxy:** subscriptions enforces authentication with AuthGuard ([a17a16f](https://github.com/DiamondLightSource/workflows/commit/a17a16f894b53fce6392c39d7d68c34cae4cc5c3))
+* **graph-proxy:** tidy stop workflow error messages ([931dc95](https://github.com/DiamondLightSource/workflows/commit/931dc95523c7376006dd8229a06d2093440d8d2c))
+* **graph-proxy:** update for Argo workflow submit API changes ([622da4d](https://github.com/DiamondLightSource/workflows/commit/622da4d8f6ccdfd95b9bb16547c5c1a25f90d513))
+* **grpah-proxy:** update devcontainer config with sessinspaces api ([59df8df](https://github.com/DiamondLightSource/workflows/commit/59df8dfe38320bf38097cf99c9786c64e9a9ab91))
+* msg for tasks without a log ([885ae85](https://github.com/DiamondLightSource/workflows/commit/885ae858920603be9868fe6808765de5d2fa86e0))
+* the label filter working as expected ([fed6569](https://github.com/DiamondLightSource/workflows/commit/fed65695010a2738fa0dfec3756b21aa016fb764))
+* use singular labelSelector for Argo workflow queries ([b3e9ba0](https://github.com/DiamondLightSource/workflows/commit/b3e9ba07e1d137adc84fb88b7ef5c30aeecec3ab))
+* workflow list pagination ([acc11fc](https://github.com/DiamondLightSource/workflows/commit/acc11fcfd6e70f65ac29606ef9f9af1c6b0f1ea7))
+
 ## [0.2.4](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.2.3...graph-proxy@v0.2.4) (2026-09-30)
 
 
