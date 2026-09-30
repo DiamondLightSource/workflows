@@ -33,7 +33,10 @@ use std::path::PathBuf;
 use std::process::Command;
 
 /// Address for making queries to the GraphQL API
-pub const GRAPH_URL: &str = "https://workflows.diamond.ac.uk/graphql";
+const GRAPH_URL: &str = "https://workflows.diamond.ac.uk/graphql";
+
+/// The path to the ClusterTriggerTemplate custom resource definition
+const TRIGGER_TEMPLATE_CRD: &str = include_str!("../../charts/events/crds/ctt-crd.yaml");
 
 /// Workflows Tool
 #[derive(Debug, Parser)]
