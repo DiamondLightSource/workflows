@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.15...relay-workflows-lib@v0.1.16) (2026-10-01)
+
+
+### Features
+
+* **forms:** support schema-driven template parameter autofill from URL ([1938922](https://github.com/DiamondLightSource/workflows/commit/1938922cd7ed706aefcd38363bad7b528e5c18a9))
+
+
+### Bug Fixes
+
+* **workflow user interface:** reset task flow view after panel resize ([b00b4b4](https://github.com/DiamondLightSource/workflows/commit/b00b4b4636278d7b8cccc90f40ed0c5b786bcc88))
+* **workflow user interface:** reset task flow view after panel resize ([1d9eb1a](https://github.com/DiamondLightSource/workflows/commit/1d9eb1a836982e01ddebaa9512ad675542de692d))
+
 ## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.14...relay-workflows-lib@v0.1.15) (2026-09-24)
 
 
