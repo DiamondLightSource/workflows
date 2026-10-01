@@ -142,6 +142,8 @@ postgresql-ha:
     existingSecret: pgpool-passwords
     customUsersSecret: postgres-application-passwords
 
+    numInitChildren: 64
+
     resources:
       requests:
         cpu: 500m
