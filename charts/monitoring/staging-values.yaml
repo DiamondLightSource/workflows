@@ -52,6 +52,13 @@ prometheus:
     ingress:
       enabled: false
     extraArgs: {}
+    config:
+      receivers:
+        - name: slack-notifications
+          slack_configs:
+            - api_url_file: /etc/secrets/slack-api-url
+              channel: "#analysis-platform-staging-alerts"
+              send_resolved: true
   server:
     ingress:
       enabled: false
