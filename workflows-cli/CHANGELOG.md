@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.2...workflows-cli@v0.1.3) (2026-10-02)
+
+
+### Features
+
+* **cli:** add linting for trigger templates ([9346a2e](https://github.com/DiamondLightSource/workflows/commit/9346a2ef8b0993111b394d3f05ed0663379918dc))
+* **cli:** support workflow parameters in submit command ([cf94a26](https://github.com/DiamondLightSource/workflows/commit/cf94a26cd693f5d3611cac2a2e47ab24d330fa8a))
+* **workflow cli:** add CLI submit parameters ([c6210ff](https://github.com/DiamondLightSource/workflows/commit/c6210ffbdbca5e1ca8f5ae3d8c386ebc77365f63))
+
+
+### Bug Fixes
+
+* **workflows cli:** restore workflow URL in submit output ([b83b8ac](https://github.com/DiamondLightSource/workflows/commit/b83b8ac9872d01633c0b0008e943614a6475859f))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.1...workflows-cli@v0.1.2) (2026-09-24)
 
 
