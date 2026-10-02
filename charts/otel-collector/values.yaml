@@ -199,6 +199,24 @@ opentelemetry-collector:
                 - source_labels:
                     - __meta_kubernetes_pod_name
                   target_label: pod
+            - job_name: "vcluster-apiserver"
+              scrape_interval: 30s
+              scrape_timeout: 15s
+              scheme: https
+              metrics_path: /metrics
+
+              bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+              tls_config:
+                ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                server_name: kubernetes.default.svc
+
+              static_configs:
+                - targets:
+                    - kubernetes.default.svc:443
+                  labels:
+                    cluster: vcluster
+                    component: kube-apiserver
       otlp:
         protocols:
           grpc:
