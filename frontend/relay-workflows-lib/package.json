@@ -13,10 +13,10 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@diamondlightsource/workflows-lib-shared": "*",
+    "@diamondlightsource/workflows-lib-shared": "^0.1.1",
     "react-relay": "^20.1.1",
     "relay-test-utils": "^21.0.1",
-    "workflows-lib": "*"
+    "workflows-lib": "^0.1.13"
   },
   "devDependencies": {
     "@jsonforms/core": "^3.8.0",
