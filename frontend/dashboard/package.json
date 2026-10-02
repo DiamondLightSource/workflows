@@ -14,8 +14,8 @@
     "keycloak-js": "^26.2.4",
     "msw": "^2.15.0",
     "react-router-dom": "^7.18.4",
-    "relay-workflows-lib": "*",
-    "workflows-lib": "*"
+    "relay-workflows-lib": "^0.1.17",
+    "workflows-lib": "^0.1.13"
   },
   "devDependencies": {
     "babel-plugin-relay": "21.0.1",
