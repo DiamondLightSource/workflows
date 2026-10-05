@@ -217,6 +217,37 @@ opentelemetry-collector:
                   labels:
                     cluster: vcluster
                     component: kube-apiserver
+
+              metric_relabel_configs:
+                - source_labels: [__name__]
+                  target_label: __name__
+                  regex: (.+)
+                  replacement: vcluster_apiserver_$1
+
+            - job_name: "vcluster-syncer"
+              scrape_interval: 30s
+              scrape_timeout: 15s
+              scheme: https
+              metrics_path: /metrics/syncer
+
+              bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+              tls_config:
+                ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                server_name: kubernetes.default.svc
+
+              static_configs:
+                - targets:
+                    - kubernetes.default.svc:443
+                  labels:
+                    cluster: vcluster
+                    component: vcluster-syncer
+
+              metric_relabel_configs:
+                - source_labels: [__name__]
+                  target_label: __name__
+                  regex: (.+)
+                  replacement: vcluster_syncer_$1
       otlp:
         protocols:
           grpc:
