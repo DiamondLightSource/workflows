@@ -270,6 +270,28 @@ prometheus:
               annotations:
                 summary: "Argo Workflow success rate is 0%"
                 description: "At least 5 workflows completed in the last 15 minutes and none of them succeeded for 15 minutes."
+            - alert: ProbeNotStarted
+              expr: |
+                k6_workflow_succeeded{
+                  k8s_namespace_name="k6",
+                } != 0
+              for: 2h
+              labels:
+                severity: warning
+              annotations:
+                summary: Probe workflow did not start
+                description: A probe workflow is created every hour (in ks10000-1). One has not started for 2 hours
+            - alert: ProbeUnsuccessful
+              expr: |
+                k6_workflow_succeeded{
+                  k8s_namespace_name="k6",
+                } == 0
+              for: 2h
+              labels:
+                severity: warning
+              annotations:
+                summary: Probe workflow did not succeed
+                description: A probe workflow is created every hour (in ks10000-1). One has not succeeded for 2 hours
   prometheus-node-exporter:
     enabled: false
   prometheus-pushgateway:
