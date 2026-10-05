@@ -3,13 +3,14 @@ import { check, fail } from 'k6';
 import { Options } from 'k6/options';
 import * as ws from 'k6/ws';
 export { setup } from './common.ts';
-import { Rate } from 'k6/metrics';
+import { Rate, Gauge } from 'k6/metrics';
 
 const graphUrl = __ENV.GRAPH_URL;
 const graphWsUrl = __ENV.GRAPH_WS_URL;
 const timeoutSeconds = 1800;
 
 const probeSuccess = new Rate('synthetic_probe_success')
+const workflowSucceeded = new Gauge('workflow_succeeded')
 
 interface VisitInput {
   proposalCode: string;
@@ -52,6 +53,7 @@ export default function(data: { token: string }): void {
   const parameters = {}
 
   console.log(`submitting workflow template=${templateName} visit=${JSON.stringify(visit)} graphUrl=${graphUrl}`);
+  workflowSucceeded.add(0);
   const submitResponse = http.post(
     graphUrl,
     JSON.stringify({
@@ -149,6 +151,9 @@ export default function(data: { token: string }): void {
         if (frame.type === 'next') {
           nextCount += 1;
           terminalStatus = frame.payload?.data?.workflow?.status?.__typename || null;
+          if(terminalStatus === 'WorkflowSucceededStatus') {
+            workflowSucceeded.add(1);
+          }
           console.log(`websocket next count=${nextCount} terminalStatus=${terminalStatus}`);
           probeSuccess.add(terminalStatus === 'WorkflowSucceededStatus', { probe: 'ws-subscription' });
           probeSuccess.add(terminalStatus === 'WorkflowRunningStatus', { probe: 'ws-subscription' });
