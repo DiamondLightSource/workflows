@@ -272,10 +272,9 @@ prometheus:
                 description: "At least 5 workflows completed in the last 15 minutes and none of them succeeded for 15 minutes."
             - alert: ProbeNotStarted
               expr: |
-                k6_workflow_succeeded{
+                absent_over_time(k6_workflow_succeeded{
                   k8s_namespace_name="k6",
-                } != 0
-              for: 2h
+                }[2h]) == 1
               labels:
                 severity: warning
               annotations:
