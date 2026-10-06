@@ -23,9 +23,21 @@ vcluster:
     distro:
       k8s:
         enabled: true
+        # vCluster request limits
+        # see: https://www.vcluster.com/docs/vcluster/deploy/control-plane/sizing-and-performance
+        controllerManager:
+          extraArgs:
+            - --kube-api-qps=20
+            - --kube-api-burst=30
+        scheduler:
+          extraArgs:
+            - --kube-api-qps=50
+            - --kube-api-burst=100
         apiServer:
           extraArgs:
             - --authentication-config=/etc/authn-config/authn-config.yaml
+            - --max-requests-inflight=400
+            - --max-mutating-requests-inflight=200
         # vCluster documentation recommends keeping this version in sync with the host cluster
         # see: https://www.vcluster.com/docs/vcluster/manage/upgrade/supported_versions#kubernetes-compatibility-matrix
         version: v1.35.7
@@ -85,6 +97,13 @@ vcluster:
         limits:
           cpu: 12000m
           memory: 40Gi
+      env:
+        # limit requests from the vCluster syncer to the host cluster API server
+        # see: https://www.vcluster.com/docs/vcluster/deploy/control-plane/sizing-and-performance
+        - name: VCLUSTER_PHYSICAL_CLIENT_QPS
+          value: "10"
+        - name: VCLUSTER_PHYSICAL_CLIENT_BURST
+          value: "20"
   experimental:
     deploy:
       vcluster:
