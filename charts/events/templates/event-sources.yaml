@@ -1,58 +1,38 @@
 {{- if index .Values "argo-events" "enabled" }}
-  {{- range $eventSource := $.Values.eventSources }}
+  {{- range $webhookEventSource := $.Values.eventSources.webhook }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
 metadata:
-  name: {{ $eventSource.name }}
+  name: {{ $webhookEventSource.name }}
   labels:
-    workflows.diamond.ac.uk/beamline: {{ $eventSource.beamline }}
+    workflows.diamond.ac.uk/beamline: {{ $webhookEventSource.beamline }}
 spec:
   service:
     ports:
-      - port: {{$eventSource.port }}
-        targetPort: {{$eventSource.port }}
-  {{- if $eventSource.webhook }}
+      - port: {{$webhookEventSource.port }}
+        targetPort: {{$webhookEventSource.port }}
+  {{- if $webhookEventSource.webhook }}
   webhook:
-    {{- $eventSource.webhook | toYaml | nindent 6 }}
+    {{- $webhookEventSource.webhook | toYaml | nindent 6 }}
   {{- end }}
   {{- end }}
+
+  {{- range $genericEventSource := $.Values.eventSources.generic }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
 metadata:
-  name: i15-1
+  name: {{ $genericEventSource.beamline }}
   labels:
-    workflows.diamond.ac.uk/beamline: i15-1
+    workflows.diamond.ac.uk/beamline: {{ $genericEventSource.beamline }}
 spec:
   generic:
-    i15-1-message:
+    {{- default (printf "%s-message" $genericEventSource.beamline) $genericEventSource.eventName | nindent 4 }}:
       insecure: true
       jsonBody: true
       url: "stomp-service.events.svc:80"
       config: |
-        user: guest
-        password: guest
-        host: i15-1-rabbitmq-daq.diamond.ac.uk
-        port: 61613
-        destination: /queue/public.worker.event.workflows
----
-apiVersion: argoproj.io/v1alpha1
-kind: EventSource
-metadata:
-  name: b01-1
-  labels:
-    workflows.diamond.ac.uk/beamline: b01-1
-spec:
-  generic:
-    b01-1-message:
-      insecure: true
-      jsonBody: true
-      url: "stomp-service.events.svc:80"
-      config: |
-        user: guest
-        password: guest
-        host: b01-1-rabbitmq-daq.diamond.ac.uk
-        port: 61613
-        destination: /topic/public.worker.event
+      {{- $genericEventSource.stompConfig | toYaml | nindent 8 }}
+  {{- end }}
 {{- end }}
