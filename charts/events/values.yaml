@@ -24,18 +24,30 @@ eventBuses:
         memory: 4Gi
 
 eventSources:
-  - name: webhook-test
-    beamline: test-beamline
-    port: 12000
-    webhook:
-      # event-source can run multiple HTTP servers. Simply define a unique port to start a new HTTP server
-      webhook-test:
-        # port to run HTTP server on
-        port: "12000"
-        # endpoint to listen to
-        endpoint: /example
-        # HTTP request method to allow. In this case, only POST requests are accepted
-        method: POST
+  generic:
+    - beamline: i15-1
+      stompConfig:
+        user: guest
+        password: guest
+        host: i15-1-rabbitmq-daq.diamond.ac.uk
+        port: 61613
+        destination: /topic/public.worker.event
+    - beamline: b01-1
+      stompConfig:
+        user: guest
+        password: guest
+        host: b01-1-rabbitmq-daq.diamond.ac.uk
+        port: 61613
+        destination: /topic/public.worker.event
+  webhook:
+    - name: webhook-test
+      beamline: test-beamline
+      port: 12000
+      webhook:
+        webhook-test:
+          port: "12000"
+          endpoint: /example
+          method: POST
 
 genericServers:
   stomp:
