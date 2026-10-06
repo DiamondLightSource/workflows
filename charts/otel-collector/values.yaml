@@ -211,18 +211,37 @@ opentelemetry-collector:
                 ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
                 server_name: kubernetes.default.svc
 
-              static_configs:
-                - targets:
-                    - kubernetes.default.svc:443
-                  labels:
-                    cluster: vcluster
-                    component: kube-apiserver
+              kubernetes_sd_configs:
+                - role: endpointslice
+                  namespaces:
+                    names:
+                      - default
+
+              relabel_configs:
+                - source_labels:
+                    - __meta_kubernetes_namespace
+                    - __meta_kubernetes_service_name
+                    - __meta_kubernetes_endpointslice_port_name
+                  separator: ";"
+                  regex: "default;kubernetes;https"
+                  action: keep
+
+                - source_labels:
+                    - __address__
+                  target_label: vcluster_replica
+
+                - target_label: cluster
+                  replacement: vcluster
+
+                - target_label: component
+                  replacement: kube-apiserver
 
               metric_relabel_configs:
-                - source_labels: [__name__]
+                - source_labels:
+                    - __name__
                   target_label: __name__
-                  regex: (.+)
-                  replacement: vcluster_apiserver_$1
+                  regex: "(.+)"
+                  replacement: "vcluster_apiserver_$1"
 
             - job_name: "vcluster-syncer"
               scrape_interval: 30s
@@ -236,18 +255,38 @@ opentelemetry-collector:
                 ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
                 server_name: kubernetes.default.svc
 
-              static_configs:
-                - targets:
-                    - kubernetes.default.svc:443
-                  labels:
-                    cluster: vcluster
-                    component: vcluster-syncer
+              kubernetes_sd_configs:
+                - role: endpointslice
+                  namespaces:
+                    names:
+                      - default
+
+              relabel_configs:
+                - source_labels:
+                    - __meta_kubernetes_namespace
+                    - __meta_kubernetes_service_name
+                    - __meta_kubernetes_endpointslice_port_name
+                  separator: ";"
+                  regex: "default;kubernetes;https"
+                  action: keep
+
+                - source_labels:
+                    - __address__
+                  target_label: vcluster_replica
+
+                - target_label: cluster
+                  replacement: vcluster
+
+                - target_label: component
+                  replacement: vcluster-syncer
 
               metric_relabel_configs:
-                - source_labels: [__name__]
+                - source_labels:
+                    - __name__
                   target_label: __name__
-                  regex: (.+)
-                  replacement: vcluster_syncer_$1
+                  regex: "(.+)"
+                  replacement: "vcluster_syncer_$1"
+
       otlp:
         protocols:
           grpc:
