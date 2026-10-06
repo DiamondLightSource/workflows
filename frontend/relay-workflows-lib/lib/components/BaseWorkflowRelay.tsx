@@ -10,6 +10,7 @@ import { ResizableBox } from "react-resizable";
 import { Box } from "@mui/material";
 import { WorkflowAccordion, type WorkflowStatus } from "workflows-lib";
 import RetriggerWorkflow from "../query-components/RetriggerWorkflow";
+import StopWorkflow from "../mutation-components/StopWorkflow";
 import { useSelectedTaskIds } from "../utils/workflowRelayUtils";
 import { graphql } from "relay-runtime";
 import { useFragment } from "react-relay";
@@ -79,6 +80,14 @@ export default function BaseWorkflowRelay({
     data.status && "startTime" in data.status
       ? (data.status.startTime as string | undefined)
       : undefined;
+
+  const stoppable =
+    data.status?.__typename == undefined ||
+    ![
+      "WorkflowSucceededStatus",
+      "WorkflowErroredStatus",
+      "WorkflowFailedStatus",
+    ].includes(data.status.__typename);
 
   const [selectedTaskIds, setSelectedTaskIds] = useSelectedTaskIds() as [
     string[],
@@ -189,6 +198,7 @@ export default function BaseWorkflowRelay({
             }}
           />
         </ResizableBox>
+        {stoppable && <StopWorkflow workflowId={workflowId} />}
       </WorkflowAccordion>
     </Box>
   );
