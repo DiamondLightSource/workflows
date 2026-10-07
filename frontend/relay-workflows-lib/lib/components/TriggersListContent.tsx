@@ -1,17 +1,12 @@
 import { useEffect } from "react";
 import { PreloadedQuery, usePreloadedQuery } from "react-relay";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
-  Typography,
 } from "@mui/material";
 import { PaginationControls } from "workflows-lib";
 import { TriggersListViewQuery } from "../views/TriggersListView";
 import type { TriggersListViewQuery as TriggersListViewQueryType } from "../views/__generated__/TriggersListViewQuery.graphql";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import { TriggerAccordion } from "workflows-lib"
 
 interface TriggersListContentProps {
   queryRef: PreloadedQuery<TriggersListViewQueryType>;
@@ -49,37 +44,13 @@ export default function TriggersListContent({
     >
       <Box sx={{ overflowY: "auto", maxHeight: "80vh", width: "100%" }}>
         {nodes.map((node, index) => (
-          <Accordion key={index}>
-            <AccordionSummary>
-              <Box sx={{ display: "flex", flexBasis: 0, flexGrow: 5, gap: 2 }}>
-                <Typography sx={{ fontWeight: "bold" }}>
-                  {node.beamline}
-                </Typography>
-                <Typography>{node.name}</Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexBasis: 0,
-                    gap: 2,
-                    marginLeft: "auto",
-                    marginRight: 0,
-                  }}
-                >
-                  <Typography>Enabled: </Typography>
-                  {node.enabled ? (
-                    <CheckBoxIcon fontSize="medium" />
-                  ) : (
-                    <CheckBoxOutlineBlankIcon />
-                  )}
-                </Box>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                Created from the <i>{node.templateRef}</i> template
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+          <TriggerAccordion 
+            index={index}
+            name={node.name}
+            beamline={node.beamline}
+            enabled={node.enabled}
+            templateRef={node.templateRef}
+          />
         ))}
       </Box>
       <PaginationControls
