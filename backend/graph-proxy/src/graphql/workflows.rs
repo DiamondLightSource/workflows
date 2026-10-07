@@ -627,11 +627,12 @@ impl WorkflowsQuery {
             0
         };
 
-        let has_parameter_filter = filter
-            .as_ref()
-            .is_some_and(WorkflowFilter::has_parameter_filter);
+        let has_client_side_filter = filter.as_ref().is_some_and(|filter| {
+            WorkflowFilter::has_parameter_filter(filter)
+                || WorkflowFilter::has_annotation_filter(filter)
+        });
 
-        if !has_parameter_filter {
+        if !has_client_side_filter {
             url.query_pairs_mut()
                 .append_pair("listOptions.limit", &limit.to_string());
 
@@ -641,10 +642,10 @@ impl WorkflowsQuery {
             }
         }
         debug!("Retrieving workflows name from {url}");
-        // Keep the existing single-page behaviour unless parameter filtering
-        // is requested. Parameter filtering happens client-side because Argo
-        // cannot filter workflow parameters through listOptions.labelSelector.
-        if !has_parameter_filter {
+        // Keep the existing single-page behaviour unless client-side filtering
+        // is requested. Parameter and annotation filtering happen client-side
+        // because Argo cannot filter them through listOptions.labelSelector.
+        if !has_client_side_filter {
             let request = if let Some(auth_token) = auth_token {
                 CLIENT.get(url).bearer_auth(auth_token.token())
             } else {
@@ -688,10 +689,9 @@ impl WorkflowsQuery {
             return Ok(connection);
         }
 
-        // Parameter filtering is client-side, so continue through Argo pages
-        // until we have collected the requested number of matching workflows.
-        // Parameter filtering is client-side, so continue through Argo pages
-        // until we have collected the requested page plus one additional match.
+        // Client-side filtering is required for parameters and annotations, so
+        // continue through Argo pages until we have collected the requested page
+        // plus one additional match.
         // The additional match determines whether another GraphQL page exists.
         let page_end = cursor_index + limit as usize;
         let required_matches = page_end + 1;
@@ -737,12 +737,11 @@ impl WorkflowsQuery {
             let next_argo_continue = workflows_response.metadata.continue_;
 
             if let Some(filter) = &filter {
-                matching_workflows.extend(
-                    workflows_response
-                        .items
-                        .into_iter()
-                        .filter(|workflow| filter.matches_parameters(workflow)),
-                );
+                matching_workflows.extend(workflows_response.items.into_iter().filter(
+                    |workflow| {
+                        filter.matches_parameters(workflow) && filter.matches_annotations(workflow)
+                    },
+                ));
             }
 
             // We have enough matches to return the requested page and determine
@@ -1973,6 +1972,104 @@ mod tests {
         );
         schema.execute(query2).await.into_result().unwrap();
         workflows_endpoint2.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn multiple_workflows_query_with_annotation_filter() {
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+
+        let workflows_endpoint = server
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
+            .match_query(mockito::Matcher::UrlEncoded(
+                "listOptions.limit".to_string(),
+                "10".to_string(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                serde_json::json!({
+                    "metadata": {
+                        "resourceVersion": "160444177"
+                    },
+                    "items": [
+                        {
+                            "metadata": {
+                                "name": "numpy-benchmark-wdkwj",
+                                "uid": "test-uid-1",
+                                "annotations": {
+                                    "workflows.argoproj.io/pod-name-format": "v2"
+                                }
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        },
+                        {
+                            "metadata": {
+                                "name": "numpy-benchmark-n6jsg",
+                                "uid": "test-uid-2",
+                                "annotations": {
+                                    "workflows.argoproj.io/pod-name-format": "v1"
+                                }
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        }
+                    ]
+                })
+                .to_string(),
+            )
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(test_token())
+            .finish();
+
+        let query = format!(
+            r#"
+            query {{
+                workflows(
+                    visit: {{proposalCode: "{}", proposalNumber: {}, number: {}}},
+                    filter: {{
+                        annotations: [
+                            {{ key: "workflows.argoproj.io/pod-name-format", value: "v2" }}
+                        ]
+                    }}
+                ) {{
+                    nodes {{
+                        name
+                    }}
+                }}
+            }}
+        "#,
+            visit.proposal_code, visit.proposal_number, visit.number,
+        );
+
+        let response = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert_async().await;
+
+        let expected = json!({
+            "workflows": {
+                "nodes": [
+                    {
+                        "name": "numpy-benchmark-wdkwj"
+                    }
+                ]
+            }
+        });
+
+        assert_eq!(response.data.into_json().unwrap(), expected);
     }
 
     #[tokio::test]

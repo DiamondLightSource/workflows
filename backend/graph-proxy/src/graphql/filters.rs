@@ -4,6 +4,7 @@ use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow;
 use async_graphql::{
     Enum, InputObject, InputValueError, InputValueResult, Scalar, ScalarType, Value,
 };
+
 use url::Url;
 
 /// Build labels to apply query to workflows API
@@ -129,11 +130,21 @@ pub struct LabelSelector {
 /// Represents a workflow parameter filter
 #[derive(Debug, Clone, InputObject)]
 pub struct WorkflowParameterFilter {
-    /// The workflow parameter name
+    /// The workflow parameter name : parameter_name
     #[graphql(name = "parameterName")]
     parameter_name: String,
 
-    /// The workflow parameter value
+    /// The annotation value to match
+    value: String,
+}
+
+/// Represents a workflow annotation filter
+#[derive(Debug, Clone, InputObject)]
+pub struct WorkflowAnnotationFilter {
+    /// The workflow annotation name
+    key: String,
+
+    /// The annotation value to match
     value: String,
 }
 
@@ -155,6 +166,9 @@ pub struct WorkflowFilter {
 
     /// Workflow parameter key/value filters
     parameters: Option<Vec<WorkflowParameterFilter>>,
+
+    /// Workflow annotation key/value filters
+    annotations: Option<Vec<WorkflowAnnotationFilter>>,
 }
 
 impl WorkflowFilter {
@@ -163,6 +177,13 @@ impl WorkflowFilter {
         self.parameters
             .as_ref()
             .is_some_and(|parameters| !parameters.is_empty())
+    }
+
+    /// Returns true when workflow annotation filtering is requested.
+    pub fn has_annotation_filter(&self) -> bool {
+        self.annotations
+            .as_ref()
+            .is_some_and(|annotations| !annotations.is_empty())
     }
 
     /// Generates and applies all the filters
@@ -206,7 +227,24 @@ impl WorkflowFilter {
             })
         })
     }
+
+    /// Returns true when the workflow matches all requested annotations.
+    #[allow(dead_code)]
+    pub fn matches_annotations(&self, workflow: &IoArgoprojWorkflowV1alpha1Workflow) -> bool {
+        let Some(filters) = &self.annotations else {
+            return true;
+        };
+
+        filters.iter().all(|filter| {
+            workflow
+                .metadata
+                .annotations
+                .get(&filter.key)
+                .is_some_and(|value| value == &filter.value)
+        })
+    }
 }
+
 /// Represents workflow status filters
 #[allow(clippy::missing_docs_in_private_items)]
 #[derive(Debug, Default, Clone, InputObject)]
@@ -374,14 +412,16 @@ impl LabelSelector {
 #[cfg(test)]
 mod tests {
     use crate::graphql::filters::{
-        Creator, LabelSelector, ScienceGroup, Template, WorkflowFilter,
+        Creator, LabelSelector, ScienceGroup, Template, WorkflowAnnotationFilter, WorkflowFilter,
         WorkflowLabelSelectorOperator, WorkflowParameterFilter, WorkflowStatusFilter,
         WorkflowTemplatesFilter,
     };
 
+    #[allow(unused_imports)]
     use argo_workflows_openapi::{
         IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
         IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowSpec,
+        IoK8sApimachineryPkgApisMetaV1ObjectMeta,
     };
 
     fn workflow_with_parameters(
@@ -413,6 +453,32 @@ mod tests {
         }
     }
 
+    fn workflow_with_annotations(
+        annotations: Vec<(&str, &str)>,
+    ) -> IoArgoprojWorkflowV1alpha1Workflow {
+        let workflow_metadata = IoK8sApimachineryPkgApisMetaV1ObjectMeta {
+            annotations: annotations
+                .into_iter()
+                .map(|(key, value)| (key.to_string(), value.to_string()))
+                .collect(),
+            ..Default::default()
+        };
+        IoArgoprojWorkflowV1alpha1Workflow {
+            api_version: None,
+            kind: None,
+            metadata: workflow_metadata,
+            spec: Default::default(),
+            status: None,
+        }
+    }
+
+    fn annotation_filter(key: &str, value: &str) -> WorkflowAnnotationFilter {
+        WorkflowAnnotationFilter {
+            key: key.to_string(),
+            value: value.to_string(),
+        }
+    }
+
     fn parameter_filter(parameter_name: &str, value: &str) -> WorkflowParameterFilter {
         WorkflowParameterFilter {
             parameter_name: parameter_name.to_string(),
@@ -427,6 +493,7 @@ mod tests {
             creator: None,
             template: None,
             workflow_status_filter: None,
+            annotations: None,
             labels: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
@@ -443,6 +510,7 @@ mod tests {
             creator: None,
             template: None,
             workflow_status_filter: None,
+            annotations: None,
             labels: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
@@ -460,6 +528,7 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
+            annotations: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
         };
 
@@ -478,6 +547,7 @@ mod tests {
             workflow_status_filter: None,
             labels: None,
             parameters: None,
+            annotations: None,
         };
 
         let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
@@ -494,6 +564,7 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
+            annotations: None,
             parameters: Some(vec![
                 parameter_filter("scan_number", "12345"),
                 parameter_filter("beamline", "i14"),
@@ -514,6 +585,7 @@ mod tests {
             template: None,
             workflow_status_filter: None,
             labels: None,
+            annotations: None,
             parameters: Some(vec![
                 parameter_filter("scan_number", "12345"),
                 parameter_filter("beamline", "i14"),
@@ -536,8 +608,8 @@ mod tests {
             workflow_status_filter: None,
             labels: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+            annotations: None,
         };
-
         let workflow = IoArgoprojWorkflowV1alpha1Workflow {
             api_version: None,
             kind: None,
@@ -549,6 +621,98 @@ mod tests {
             status: None,
         };
         assert!(!filter.matches_parameters(&workflow));
+    }
+
+    #[test]
+    fn annotation_filter_matches_workflow_annotation() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: Some(vec![annotation_filter("example.com/foo", "bar")]),
+        };
+
+        let workflow = workflow_with_annotations(vec![("example.com/foo", "bar")]);
+
+        assert!(filter.matches_annotations(&workflow));
+    }
+
+    #[test]
+    fn annotation_filter_rejects_wrong_value() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: Some(vec![annotation_filter("example.com/foo", "bar")]),
+        };
+
+        let workflow = workflow_with_annotations(vec![("example.com/foo", "different")]);
+
+        assert!(!filter.matches_annotations(&workflow));
+    }
+
+    #[test]
+    fn annotation_filter_rejects_missing_annotation() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: Some(vec![annotation_filter("example.com/foo", "bar")]),
+        };
+
+        let workflow = workflow_with_annotations(vec![("example.com/other", "bar")]);
+
+        assert!(!filter.matches_annotations(&workflow));
+    }
+
+    #[test]
+    fn annotation_filters_require_all_annotations_to_match() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: Some(vec![
+                annotation_filter("example.com/foo", "bar"),
+                annotation_filter("example.com/beamline", "i14"),
+            ]),
+        };
+
+        let workflow = workflow_with_annotations(vec![
+            ("example.com/foo", "bar"),
+            ("example.com/beamline", "i14"),
+        ]);
+
+        assert!(filter.matches_annotations(&workflow));
+    }
+
+    #[test]
+    fn annotation_filters_reject_when_one_annotation_does_not_match() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: Some(vec![
+                annotation_filter("example.com/foo", "bar"),
+                annotation_filter("example.com/beamline", "i14"),
+            ]),
+        };
+
+        let workflow = workflow_with_annotations(vec![
+            ("example.com/foo", "bar"),
+            ("example.com/beamline", "i13"),
+        ]);
+
+        assert!(!filter.matches_annotations(&workflow));
     }
 
     // TEMPLATES--------------------------------------------
@@ -613,6 +777,7 @@ mod tests {
         let filters = WorkflowFilter {
             creator: None,
             template: None,
+            annotations: None,
             workflow_status_filter: None,
             labels: Some(vec![LabelSelector {
                 key: "beamline".to_string(),
@@ -632,6 +797,7 @@ mod tests {
         let filters = WorkflowFilter {
             creator: Some(creator),
             template: None,
+            annotations: None,
             workflow_status_filter: None,
             labels: Some(vec![LabelSelector {
                 key: "beamline".to_string(),
@@ -652,6 +818,7 @@ mod tests {
         let filters = WorkflowFilter {
             creator: None,
             template: None,
+            annotations: None,
             workflow_status_filter: None,
             labels: Some(vec![LabelSelector {
                 key: "beamline".to_string(),
@@ -674,6 +841,7 @@ mod tests {
             workflow_status_filter: None,
             labels: None,
             parameters: None,
+            annotations: None,
         };
 
         let labels = filters.create_label_selection();
@@ -700,6 +868,7 @@ mod tests {
             workflow_status_filter: Some(phases),
             labels: None,
             parameters: None,
+            annotations: None,
         };
 
         let labels = filters.create_label_selection();
@@ -726,6 +895,7 @@ mod tests {
             workflow_status_filter: Some(phases),
             labels: None,
             parameters: None,
+            annotations: None,
         };
 
         let labels = filters.create_label_selection();
@@ -753,6 +923,7 @@ mod tests {
             workflow_status_filter: Some(phases),
             labels: None,
             parameters: None,
+            annotations: None,
         };
 
         let labels = filters.create_label_selection();
