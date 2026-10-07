@@ -7,5 +7,6 @@ is to visit the [Diamond Argo Workflow dashboard](https://workflows.diamond.ac.u
 and submit a workflow task under the workflows tab.
 
 You can also find a list of how-tos about
-[Submitting a workflow](how-tos/submit-workflow.md) and
-[Mounting the filesystem](how-tos/mount-filesystem.md).
+[Submitting a workflow](how-tos/submit-workflow.md),
+[Mounting the filesystem](how-tos/mount-filesystem.md), and
+[Filtering workflows by annotation](how-tos/filter-workflows-by-annotation.md).
