@@ -134,7 +134,7 @@ pub struct WorkflowParameterFilter {
     #[graphql(name = "parameterName")]
     parameter_name: String,
 
-    /// The annotation value to match
+    /// The annotation parameter to match
     value: String,
 }
 
@@ -229,7 +229,6 @@ impl WorkflowFilter {
     }
 
     /// Returns true when the workflow matches all requested annotations.
-    #[allow(dead_code)]
     pub fn matches_annotations(&self, workflow: &IoArgoprojWorkflowV1alpha1Workflow) -> bool {
         let Some(filters) = &self.annotations else {
             return true;
@@ -417,7 +416,6 @@ mod tests {
         WorkflowTemplatesFilter,
     };
 
-    #[allow(unused_imports)]
     use argo_workflows_openapi::{
         IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
         IoArgoprojWorkflowV1alpha1Workflow, IoArgoprojWorkflowV1alpha1WorkflowSpec,
