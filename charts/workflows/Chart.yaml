@@ -6,7 +6,7 @@ version: 0.13.72
 dependencies:
   - name: argo-workflows
     repository: https://argoproj.github.io/argo-helm
-    version: 1.0.15
+    version: 2.0.11
     condition: argo-workflows.enabled
   - name: postgresql-ha
     repository: https://charts.bitnami.com/bitnami
