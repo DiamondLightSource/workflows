@@ -57,6 +57,16 @@ argo-workflows:
       spec:
         serviceAccountName: argo-workflow
 
+        # Maximum lifetime of the complete workflow:
+        # including queuing, pending tasks, retries and execution.
+        activeDeadlineSeconds: 1209600 # 14 days
+
+        templateDefaults:
+          # Maximum time a task can wait in Pending
+          pendingTimeout: 24h
+          # Maximum elapsed lifetime of a task, including Pending time.
+          timeout: 168h # 7 days
+
         ttlStrategy:
           secondsAfterCompletion: 300
           secondsAfterFailure: 60
