@@ -6,7 +6,7 @@ import {
 import { PaginationControls } from "workflows-lib";
 import { TriggersListViewQuery } from "../views/TriggersListView";
 import type { TriggersListViewQuery as TriggersListViewQueryType } from "../views/__generated__/TriggersListViewQuery.graphql";
-import { TriggerAccordion } from "workflows-lib"
+import TriggerRelay from "./TriggerRelay"
 
 interface TriggersListContentProps {
   queryRef: PreloadedQuery<TriggersListViewQueryType>;
@@ -44,8 +44,8 @@ export default function TriggersListContent({
     >
       <Box sx={{ overflowY: "auto", maxHeight: "80vh", width: "100%" }}>
         {nodes.map((node, index) => (
-          <TriggerAccordion 
-            index={index}
+          <TriggerRelay 
+            key={index}
             name={node.name}
             beamline={node.beamline}
             enabled={node.enabled}
