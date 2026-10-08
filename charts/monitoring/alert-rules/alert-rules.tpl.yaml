@@ -120,3 +120,32 @@ groups:
         annotations:
           summary: Probe workflow did no succeed
           description: A probe workflow is created every hour (in ks10000-1). One has not succeeded for 2 hours
+      - alert: K6 Probe Failure
+        expr: |
+          k6_synthetic_probe_failing{
+              k8s_namespace_name="k6"
+          } == 1
+        keep_firing_for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: Probe {{`{{ $labels.probe }}`}} failed
+          description: >
+              The `{{`{{ $labels.probe }}`}}` probe which started at {{`{{ $labels.k8s_pod_start_time }}`}} failed because
+              {{`{{ $labels.reason }}`}}
+      {{ range .Values.k6.probes }}
+      - alert: K6 Probe Did Not Run
+        expr: |
+          absent(
+            k6_synthetic_probe_failing{
+              k8s_namespace_name="k6",
+              probe="{{ . }}"
+            }
+          ) == 1
+        for: 75m
+        labels:
+          severity: warning
+        annotations:
+          summary: Probe `{{ . }}` is offline
+          description: No metrics are being received from probe `{{ . }}`, suggesting that it is not running
+      {{ end }}
