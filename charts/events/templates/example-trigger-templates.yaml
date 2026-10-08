@@ -8,15 +8,10 @@ metadata:
 spec:
   eventName: webhook-test
   workflow:
-    template: example-template
+    template: echo-input
     parameters:
-      - name: tif
-        path: parameters.tif
-      - name: tiff
-        path: parameters.tiff
-      - name: png
-        path: parameters.png
-        default: "true"
+      - name: input
+        path: parameters.input
     retryBehaviour:
       numRetries: 1
       alertSlackChannelId: analysis-platform-alerts
