@@ -1,0 +1,11 @@
+{
+  "name": "k6-ts-tests",
+  "version": "0.1.0",
+  "devDependencies": {
+    "@types/k6": "^0.54.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  }
+}
