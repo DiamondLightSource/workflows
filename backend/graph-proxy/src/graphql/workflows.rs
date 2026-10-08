@@ -22,6 +22,9 @@ use std::{collections::HashMap, ops::Deref, path::Path};
 use tracing::{debug, instrument};
 use url::Url;
 
+/// Number of workflows to request from Argo at a time when client-side filtering.
+const ARGO_WORKFLOW_PAGE_SIZE: usize = 1000;
+
 /// An error encountered when parsing the Argo Server API Workflow response
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::missing_docs_in_private_items)]
@@ -704,8 +707,7 @@ impl WorkflowsQuery {
 
             page_url
                 .query_pairs_mut()
-                .append_pair("listOptions.limit", &limit.to_string());
-
+                .append_pair("listOptions.limit", &ARGO_WORKFLOW_PAGE_SIZE.to_string());
             if let Some(continue_token) = &argo_continue {
                 page_url
                     .query_pairs_mut()
@@ -1988,7 +1990,7 @@ mod tests {
             .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
             .match_query(mockito::Matcher::UrlEncoded(
                 "listOptions.limit".to_string(),
-                "10".to_string(),
+                "1000".to_string(),
             ))
             .with_status(200)
             .with_header("content-type", "application/json")
