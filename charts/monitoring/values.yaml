@@ -309,6 +309,11 @@ prometheus:
             - api_url_file: /etc/secrets/slack-api-url
               channel: "#analysis-platform-alerts"
               send_resolved: true
+              title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+              text: |
+                *Severity:* `{{ .CommonLabels.severity }}`
+                *Summary:* {{ .CommonAnnotations.summary }}
+                *Description:* {{ .CommonAnnotations.description }}
     serviceAccount:
       create: true
       annotations: {}

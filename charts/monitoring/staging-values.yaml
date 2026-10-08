@@ -59,6 +59,13 @@ prometheus:
             - api_url_file: /etc/secrets/slack-api-url
               channel: "#analysis-platform-staging-alerts"
               send_resolved: true
+              title: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}"
+              text: |
+                {{ range .Alerts }}
+                *Severity:* `{{ .Labels.severity }}`
+                *Summary:* {{ .Annotations.summary }}
+                *Description:* {{ .Annotations.description }}
+                {{ end }}
   server:
     ingress:
       enabled: false
