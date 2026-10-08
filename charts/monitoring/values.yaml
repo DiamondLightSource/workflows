@@ -171,126 +171,9 @@ prometheus:
   kube-state-metrics:
     enabled: false
   serverFiles:
-    alerting_rules.yml:
-      groups:
-        - name: argo-workflows
-          rules:
-            - alert: ArgoWorkflowControllerFailing
-              expr: |
-                kube_pod_container_status_waiting_reason{
-                  namespace="workflows",
-                  pod=~"workflows-argo-workflows-workflow-controller-.*",
-                  reason="CrashLoopBackOff"
-                } > 0
-              for: 10m
-              labels:
-                severity: warning
-                priority: P1
-              annotations:
-                summary: "Argo Workflow Controller failing"
-                description: "Workflow controller has been in CrashLoopBackOff for more than 10 minutes."
-
-            - alert: ArgoWorkflowsPending
-              expr: |
-                sum(
-                  argo_workflows_gauge{
-                    phase="Pending"
-                  }
-                ) > 5
-              for: 15m
-              labels:
-                severity: warning
-                priority: P1
-              annotations:
-                summary: "Argo Workflows are accumulating in Pending"
-                description: "More than 5 Argo workflows have remained Pending continuously for 15 minutes."
-
-            - alert: ArgoWorkflowSuccessRateLow
-              expr: |
-                (
-                  100 *
-                  sum(
-                    increase(
-                      argo_workflows_count_total{
-                        phase="Succeeded"
-                      }[15m]
-                    )
-                  )
-                  /
-                  clamp_min(
-                    sum(
-                      increase(
-                        argo_workflows_count_total{
-                          phase=~"Succeeded|Failed|Error"
-                        }[15m]
-                      )
-                    ),
-                    1
-                  )
-                ) < 50
-                and
-                sum(
-                  increase(
-                    argo_workflows_count_total{
-                      phase=~"Succeeded|Failed|Error"
-                    }[15m]
-                  )
-                ) >= 5
-              for: 15m
-              labels:
-                severity: warning
-                priority: P1
-              annotations:
-                summary: "Argo Workflow success rate is below 50%"
-                description: "At least 5 workflows completed in the last 15 minutes and the success rate has remained below 50% for 15 minutes."
-
-            - alert: ArgoWorkflowSuccessRateCritical
-              expr: |
-                (
-                  sum(
-                    increase(
-                      argo_workflows_count_total{
-                        phase="Succeeded"
-                      }[15m]
-                    )
-                  ) == 0
-                )
-                and
-                sum(
-                  increase(
-                    argo_workflows_count_total{
-                      phase=~"Succeeded|Failed|Error"
-                    }[15m]
-                  )
-                ) >= 5
-              for: 15m
-              labels:
-                severity: critical
-                priority: P1
-              annotations:
-                summary: "Argo Workflow success rate is 0%"
-                description: "At least 5 workflows completed in the last 15 minutes and none of them succeeded for 15 minutes."
-            - alert: ProbeNotStarted
-              expr: |
-                absent_over_time(k6_workflow_succeeded{
-                  k8s_namespace_name="k6",
-                }[2h]) == 1
-              labels:
-                severity: warning
-              annotations:
-                summary: Probe workflow did not start
-                description: A probe workflow is created every hour (in ks10000-1). One has not started for 2 hours
-            - alert: ProbeUnsuccessful
-              expr: |
-                k6_workflow_succeeded{
-                  k8s_namespace_name="k6",
-                } == 0
-              for: 2h
-              labels:
-                severity: warning
-              annotations:
-                summary: Probe workflow did not succeed
-                description: A probe workflow is created every hour (in ks10000-1). One has not succeeded for 2 hours
+    prometheus.yml:
+      rule_files:
+        - /etc/config/rules/*.yaml
   prometheus-node-exporter:
     enabled: false
   prometheus-pushgateway:
@@ -309,7 +192,7 @@ prometheus:
             - api_url_file: /etc/secrets/slack-api-url
               channel: "#analysis-platform-alerts"
               send_resolved: true
-              title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+              title: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}"
               text: |
                 *Severity:* `{{ .CommonLabels.severity }}`
                 *Summary:* {{ .CommonAnnotations.summary }}
@@ -381,6 +264,11 @@ prometheus:
         - hosts:
             - prometheus.workflows.diamond.ac.uk
           secretName: letsencrypt-prometheus-workflows-diamond-ac-uk
+    extraConfigmapMounts:
+      - name: alert-rules
+        mountPath: /etc/config/rules
+        configMap: alert-rules
+        readOnly: true
     persistentVolume:
       enabled: false
     replicaCount: 1
@@ -439,3 +327,8 @@ prometheus:
       static_configs:
         - targets:
           - "otelcollector.workflows.diamond.ac.uk"
+
+# A list of probe label values used in k6 synthetic probes
+k6:
+  probes:
+    - events-submission

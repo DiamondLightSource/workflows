@@ -11,7 +11,7 @@ hooks = [
   { id = "check-added-large-files" },
   { id = "check-json", exclude = "(\\.devcontainer/|tsconfig\\.(app|node)\\.json$|grafana-dashboards/)" },
   { id = "check-toml" },
-  { id = "check-yaml", args = ["--allow-multiple-documents"], exclude = "(^|/)templates/" },
+  { id = "check-yaml", args = ["--allow-multiple-documents"], exclude = "(^|/)templates/|\\.tpl\\.ya?ml$" },
 ]
 
 [[repos]]

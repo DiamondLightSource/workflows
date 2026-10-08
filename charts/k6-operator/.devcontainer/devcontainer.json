@@ -18,8 +18,14 @@
         "tamasfe.even-better-toml",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
-        "YoavBls.pretty-ts-errors"
-      ]
+        "YoavBls.pretty-ts-errors",
+        "Tim-Koehler.helm-intellisense"
+      ],
+      "settings": {
+        "files.associations": {
+          "*.tpl.yaml": "helm-template"
+        }
+      }
     }
   },
   "runArgs": ["--security-opt=label=type:container_runtime_t"],
