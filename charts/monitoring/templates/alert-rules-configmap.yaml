@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alert-rules
+  namespace: {{ .Release.Namespace}}
+data:
+{{- range $path, $_ := .Files.Glob "alert-rules/*.yaml.gotmpl" }}
+  {{ replace ".tml.yaml" ".yaml" (base $path) }}: |
+{{ tpl ($.Files.Get $path) $ | indent 4 }}
+{{- end }}
