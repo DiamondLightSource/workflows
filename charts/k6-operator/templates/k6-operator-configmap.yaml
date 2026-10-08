@@ -4,4 +4,4 @@ metadata:
   name: k6-configmap
   namespace: {{ .Release.Namespace}}
 data:
-{{(.Files.Glob "tests/*.ts").AsConfig| indent 2}}
+{{(.Files.Glob "tests/src/*.ts").AsConfig| indent 2}}
