@@ -1,12 +1,10 @@
 import { useEffect } from "react";
 import { PreloadedQuery, usePreloadedQuery } from "react-relay";
-import {
-  Box,
-} from "@mui/material";
+import { Box } from "@mui/material";
 import { PaginationControls } from "workflows-lib";
 import { TriggersListViewQuery } from "../views/TriggersListView";
 import type { TriggersListViewQuery as TriggersListViewQueryType } from "../views/__generated__/TriggersListViewQuery.graphql";
-import TriggerRelay from "./TriggerRelay"
+import TriggerRelay from "./TriggerRelay";
 
 interface TriggersListContentProps {
   queryRef: PreloadedQuery<TriggersListViewQueryType>;
@@ -44,7 +42,7 @@ export default function TriggersListContent({
     >
       <Box sx={{ overflowY: "auto", maxHeight: "80vh", width: "100%" }}>
         {nodes.map((node, index) => (
-          <TriggerRelay 
+          <TriggerRelay
             key={index}
             name={node.name}
             beamline={node.beamline}
