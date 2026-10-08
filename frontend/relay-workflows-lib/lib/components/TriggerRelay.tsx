@@ -1,8 +1,7 @@
-
-import { useCallback } from "react"
+import { useCallback } from "react";
 import { graphql } from "relay-runtime";
 import { useMutation } from "react-relay";
-import { TriggerAccordion } from "workflows-lib"
+import { TriggerAccordion } from "workflows-lib";
 
 const enableTriggerMutation = graphql`
   mutation TriggerRelayEnableMutation($name: String!) {
@@ -28,25 +27,26 @@ interface TriggerProps {
 }
 
 function TriggerRelay(props: TriggerProps) {
-    const [commitEnableTrigger] = useMutation(enableTriggerMutation);
-    const [commitDisableTrigger] = useMutation(disableTriggerMutation);
+  const [commitEnableTrigger] = useMutation(enableTriggerMutation);
+  const [commitDisableTrigger] = useMutation(disableTriggerMutation);
 
-    const toggleTrigger = useCallback(() => {
-        console.log("calling");
-        const mutationConfig = {
-            variables: {name: props.name },
-            onCompleted: () => { console.log("working!!"); },
-            onError: (err: Error) => { console.log("error :("); console.log(err); }
-        }
-        if(props.enabled) {
-            commitDisableTrigger(mutationConfig)
-        }
-        else {
-            commitEnableTrigger(mutationConfig)
-        }
-    }, [props.enabled])
+  const toggleTrigger = useCallback(() => {
+    let errorMessage = "";
+    const mutationConfig = {
+      variables: { name: props.name },
+      onError: (err: Error) => {
+        errorMessage = err.message;
+      },
+    };
+    if (props.enabled) {
+      commitDisableTrigger(mutationConfig);
+    } else {
+      commitEnableTrigger(mutationConfig);
+    }
+    return errorMessage;
+  }, [props.enabled]);
 
-    return ( <TriggerAccordion toggleEnabled={toggleTrigger} {...props} /> )
+  return <TriggerAccordion toggleEnabled={toggleTrigger} {...props} />;
 }
 
-export default TriggerRelay
+export default TriggerRelay;
