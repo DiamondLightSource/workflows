@@ -1,0 +1,7 @@
+clusterQueue:
+  quotas:
+    cpu: "30"
+    memory: 100Gi
+    ephemeralStorage: 10Gi
+    pods: "30"
+    gpu: "2"

@@ -103,7 +103,8 @@ monitoring:
 kueue:
   enabled: true
   targetRevision: HEAD
-  extraValuesFiles: []
+  extraValueFiles:
+    - staging-values.yaml
   valuesObject: {}
 
 k6Operator:
