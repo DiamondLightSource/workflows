@@ -1,22 +1,33 @@
+{{- if .Values.clusterQueue.enabled }}
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: ClusterQueue
 metadata:
-  name: default-queue
+  name: {{ .Values.clusterQueue.name | quote }}
   annotations:
     argocd.argoproj.io/hook: PostSync
 spec:
   namespaceSelector: {}
   resourceGroups:
-  - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
-    flavors:
-    - name: default-flavor
-      resources:
-      - name: cpu
-        nominalQuota: 750
-      - name: memory
-        nominalQuota: 2000Gi
-      - name: nvidia.com/gpu
-        nominalQuota: 16
+    - coveredResources:
+        - cpu
+        - memory
+        - ephemeral-storage
+        - pods
+        - nvidia.com/gpu
+      flavors:
+        - name: {{ .Values.clusterQueue.resourceFlavor | quote }}
+          resources:
+            - name: cpu
+              nominalQuota: {{ .Values.clusterQueue.quotas.cpu | quote }}
+            - name: memory
+              nominalQuota: {{ .Values.clusterQueue.quotas.memory | quote }}
+            - name: ephemeral-storage
+              nominalQuota: {{ .Values.clusterQueue.quotas.ephemeralStorage | quote }}
+            - name: pods
+              nominalQuota: {{ .Values.clusterQueue.quotas.pods | quote }}
+            - name: nvidia.com/gpu
+              nominalQuota: {{ .Values.clusterQueue.quotas.gpu | quote }}
   preemption:
-    reclaimWithinCohort: Any
-    withinClusterQueue: LowerPriority
+    reclaimWithinCohort: {{ .Values.clusterQueue.preemption.reclaimWithinCohort }}
+    withinClusterQueue: {{ .Values.clusterQueue.preemption.withinClusterQueue }}
+{{- end }}
