@@ -10,5 +10,7 @@ You can also find a list of how-tos about
 [Submitting a workflow](how-tos/submit-workflow.md),
 [Mounting the filesystem](how-tos/mount-filesystem.md), and
 [Filtering workflows by annotation](how-tos/filter-workflows-by-annotation.md).
-### GraphQL documentation
+
+## GraphQL documentation
+
 [Workflow submission time filtering](docs/graphql/workflow-submission-time-filtering.md)
