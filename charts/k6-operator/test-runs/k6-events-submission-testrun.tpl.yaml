@@ -32,8 +32,6 @@ spec:
       {{- end}}
       - name: GRAPH_URL
         value: http://graph-proxy.graph-proxy.svc.cluster.local:80/graphql
-      - name: GRAPH_WS_URL
-        value: ws://graph-proxy.graph-proxy.svc.cluster.local:80/graphql/ws
       - name: K6_OTEL_SERVICE_NAME
         value: k6
       - name: K6_OTEL_METRIC_PREFIX
