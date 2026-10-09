@@ -1,4 +1,5 @@
 export { default as WorkflowAccordion } from "./components/workflow/WorkflowAccordion";
+export { default as TriggerAccordion } from "./components/triggers/TriggerAccordion";
 export { default as TasksTable } from "./components/workflow/TasksTable";
 export {
   default as TaskFlowNode,
