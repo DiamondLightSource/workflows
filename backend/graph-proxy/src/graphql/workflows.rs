@@ -633,6 +633,7 @@ impl WorkflowsQuery {
         let has_client_side_filter = filter.as_ref().is_some_and(|filter| {
             WorkflowFilter::has_parameter_filter(filter)
                 || WorkflowFilter::has_annotation_filter(filter)
+                || WorkflowFilter::has_submitted_time_filter(filter)
         });
 
         if !has_client_side_filter {
@@ -646,8 +647,9 @@ impl WorkflowsQuery {
         }
         debug!("Retrieving workflows name from {url}");
         // Keep the existing single-page behaviour unless client-side filtering
-        // is requested. Parameter and annotation filtering happen client-side
-        // because Argo cannot filter them through listOptions.labelSelector.
+        // is requested. Parameter, annotation, and submission-time filtering
+        // happen client-side because Argo cannot filter them through
+        // listOptions.labelSelector.
         if !has_client_side_filter {
             let request = if let Some(auth_token) = auth_token {
                 CLIENT.get(url).bearer_auth(auth_token.token())
@@ -692,7 +694,8 @@ impl WorkflowsQuery {
             return Ok(connection);
         }
 
-        // Client-side filtering is required for parameters and annotations, so
+        // Client-side filtering is required for parameters, annotations, and
+        // submission time, so
         // continue through Argo pages until we have collected the requested page
         // plus one additional match.
         // The additional match determines whether another GraphQL page exists.
@@ -741,7 +744,9 @@ impl WorkflowsQuery {
             if let Some(filter) = &filter {
                 matching_workflows.extend(workflows_response.items.into_iter().filter(
                     |workflow| {
-                        filter.matches_parameters(workflow) && filter.matches_annotations(workflow)
+                        filter.matches_parameters(workflow)
+                            && filter.matches_annotations(workflow)
+                            && filter.matches_submitted_time(workflow)
                     },
                 ));
             }
@@ -1977,6 +1982,105 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn multiple_workflows_query_with_submitted_time_filter() {
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+
+        let workflows_endpoint = server
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
+            .match_query(mockito::Matcher::UrlEncoded(
+                "listOptions.limit".to_string(),
+                "1000".to_string(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                serde_json::json!({
+                    "metadata": {
+                        "resourceVersion": "160444177"
+                    },
+                    "items": [
+                        {
+                            "metadata": {
+                                "name": "old-workflow",
+                                "uid": "test-uid-1",
+                                "creationTimestamp": "2025-12-01T10:00:00Z"
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        },
+                        {
+                            "metadata": {
+                                "name": "new-workflow",
+                                "uid": "test-uid-2",
+                                "creationTimestamp": "2026-01-15T10:00:00Z"
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        }
+                    ]
+                })
+                .to_string(),
+            )
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(test_token())
+            .finish();
+
+        let query = format!(
+            r#"
+            query {{
+                workflows(
+                    visit: {{
+                        proposalCode: "{}",
+                        proposalNumber: {},
+                        number: {}
+                    }},
+                    filter: {{
+                        submittedTime: {{
+                            gt: "2026-01-01T00:00:00Z"
+                        }}
+                    }}
+                ) {{
+                    nodes {{
+                        name
+                    }}
+                }}
+            }}
+            "#,
+            visit.proposal_code, visit.proposal_number, visit.number,
+        );
+
+        let response = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert_async().await;
+
+        let expected = json!({
+            "workflows": {
+                "nodes": [
+                    {
+                        "name": "new-workflow"
+                    }
+                ]
+            }
+        });
+
+        assert_eq!(response.data.into_json().unwrap(), expected);
+    }
+
+    #[tokio::test]
     async fn multiple_workflows_query_with_annotation_filter() {
         let visit = Visit {
             proposal_code: "mg".to_string(),
@@ -2066,6 +2170,116 @@ mod tests {
                 "nodes": [
                     {
                         "name": "numpy-benchmark-wdkwj"
+                    }
+                ]
+            }
+        });
+
+        assert_eq!(response.data.into_json().unwrap(), expected);
+    }
+
+    #[tokio::test]
+    async fn multiple_workflows_query_with_submitted_time_range_filter() {
+        let visit = Visit {
+            proposal_code: "mg".to_string(),
+            proposal_number: 36964,
+            number: 1,
+        };
+
+        let mut server = mockito::Server::new_async().await;
+
+        let workflows_endpoint = server
+            .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
+            .match_query(mockito::Matcher::UrlEncoded(
+                "listOptions.limit".to_string(),
+                "1000".to_string(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                serde_json::json!({
+                    "metadata": {
+                        "resourceVersion": "160444177"
+                    },
+                    "items": [
+                        {
+                            "metadata": {
+                                "name": "before-range",
+                                "uid": "test-uid-1",
+                                "creationTimestamp": "2025-12-20T10:00:00Z"
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        },
+                        {
+                            "metadata": {
+                                "name": "inside-range",
+                                "uid": "test-uid-2",
+                                "creationTimestamp": "2026-01-15T10:00:00Z"
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        },
+                        {
+                            "metadata": {
+                                "name": "after-range",
+                                "uid": "test-uid-3",
+                                "creationTimestamp": "2026-02-15T10:00:00Z"
+                            },
+                            "spec": {
+                                "templates": []
+                            }
+                        }
+                    ]
+                })
+                .to_string(),
+            )
+            .create_async()
+            .await;
+
+        let argo_server_url = Url::parse(&server.url()).unwrap();
+
+        let schema = root_schema_builder()
+            .data(ArgoServerUrl(argo_server_url))
+            .data(test_token())
+            .finish();
+
+        let query = format!(
+            r#"
+            query {{
+                workflows(
+                    visit: {{
+                        proposalCode: "{}",
+                        proposalNumber: {},
+                        number: {}
+                    }},
+                    filter: {{
+                        submittedTime: {{
+                            gt: "2026-01-01T00:00:00Z",
+                            lt: "2026-02-01T00:00:00Z"
+                        }}
+                    }}
+                ) {{
+                    nodes {{
+                        name
+                    }}
+                }}
+            }}
+            "#,
+            visit.proposal_code, visit.proposal_number, visit.number,
+        );
+
+        let response = schema.execute(query).await.into_result().unwrap();
+
+        workflows_endpoint.assert_async().await;
+
+        let expected = json!({
+            "workflows": {
+                "nodes": [
+                    {
+                        "name": "inside-range"
                     }
                 ]
             }
