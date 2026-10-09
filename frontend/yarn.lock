@@ -5337,7 +5337,7 @@ relay-compiler@^20.1.1:
   resolved "https://registry.yarnpkg.com/relay-compiler/-/relay-compiler-20.1.1.tgz#91914a1f6386f2e20b35c22516a0c6d80dfa630d"
   integrity sha512-J/FFFLS/3vnbDkyQMw8l3Ev7dNHXMgC1RAs0fITz4Q63TFPOw142knKxY1Mm5ZZBABkAs9g2JghXaqM+phwTxw==
 
-relay-runtime@20.1.1, relay-runtime@^20.0.0:
+relay-runtime@20.1.1:
   version "20.1.1"
   resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-20.1.1.tgz#e1217a56af7739c8ae8d67db811ed471fd9af895"
   integrity sha512-N98ZkkyuIHdXmHaPuljihM1QbFYXATF0gxA0CESFphszsQzXs9A/zZloVfzdOI/xg3B3CfM/5nozvIoeTDIcfw==
@@ -5346,7 +5346,7 @@ relay-runtime@20.1.1, relay-runtime@^20.0.0:
     fbjs "^3.0.2"
     invariant "^2.2.4"
 
-relay-runtime@21.0.1:
+relay-runtime@21.0.1, relay-runtime@^21.0.1:
   version "21.0.1"
   resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-21.0.1.tgz#06583e227d155dfd9d93fc5b5c79e3bfa0ab4da5"
   integrity sha512-OS+We56sp6gkGVEcce9VCNOeg/sMbxT9unEoerQPgNAICHowSWrXNc6LJxF2OqjypxYF7kaLDSPPiaPii2Pw1g==
