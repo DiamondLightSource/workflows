@@ -62,3 +62,19 @@ kueue:
           afterDeactivatedByKueue: "30s"
 
 createDefaultLocalQueues: true
+
+clusterQueue:
+  enabled: true
+  name: default-queue
+  resourceFlavor: default-flavor
+
+  quotas:
+    cpu: "750"
+    memory: 2000Gi
+    ephemeralStorage: 60Gi
+    pods: "700"
+    gpu: "16"
+
+  preemption:
+    reclaimWithinCohort: Any
+    withinClusterQueue: LowerPriority
