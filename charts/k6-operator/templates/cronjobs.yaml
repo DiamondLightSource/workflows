@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: k6-ws-cron
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: k6-probe-runner
+          containers:
+            - name: kubectl
+              image: alpine/kubectl
+              volumeMounts:
+                - name: k6-yaml
+                  mountPath: /tmp/
+              command:
+                - /bin/bash
+              args:
+                - -c
+                - "kubectl delete -f /tmp/k6-ws-subscription-testrun.yaml --ignore-not-found=true; kubectl apply -f /tmp/k6-ws-subscription-testrun.yaml"
+          restartPolicy: OnFailure
+          volumes:
+            - name: k6-yaml
+              configMap:
+                name: k6-testruns
+                file: k6-ws-subscription-testrun.yaml
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: k6-events-submission-cron
+spec:
+  schedule: "30 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: k6-probe-runner
+          containers:
+            - name: kubectl
+              image: alpine/kubectl
+              volumeMounts:
+                - name: k6-yaml
+                  mountPath: /tmp/
+              command:
+                - /bin/sh
+              args:
+                - -c
+                - "kubectl delete -f /tmp/k6-events-submission-testrun.yaml --ignore-not-found=true; kubectl apply -f /tmp/k6-events-submission-testrun.yaml"
+          restartPolicy: OnFailure
+          volumes:
+            - name: k6-yaml
+              configMap:
+                name: k6-testruns
+                file: k6-events-submission-testrun.yaml
