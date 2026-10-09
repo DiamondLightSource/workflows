@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.16...relay-workflows-lib@v0.1.17) (2026-10-09)
+
+
+### Features
+
+* **workflows user interface:** add button to stop workflows ([7d07a4e](https://github.com/DiamondLightSource/workflows/commit/7d07a4ee6d8c8cb874e4c1fc5a7d419cde79e405))
+
+
+### Bug Fixes
+
+* **worfklows user interface:** clear error on successful cancellation ([7d07a4e](https://github.com/DiamondLightSource/workflows/commit/7d07a4ee6d8c8cb874e4c1fc5a7d419cde79e405))
+* **workflows user interface:** set loading on request ([7d07a4e](https://github.com/DiamondLightSource/workflows/commit/7d07a4ee6d8c8cb874e4c1fc5a7d419cde79e405))
+
 ## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.15...relay-workflows-lib@v0.1.16) (2026-10-01)
 
 
