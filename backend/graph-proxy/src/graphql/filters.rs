@@ -5,6 +5,8 @@ use async_graphql::{
     Enum, InputObject, InputValueError, InputValueResult, Scalar, ScalarType, Value,
 };
 
+use chrono::{DateTime, Utc};
+
 use url::Url;
 
 /// Build labels to apply query to workflows API
@@ -148,6 +150,16 @@ pub struct WorkflowAnnotationFilter {
     value: String,
 }
 
+/// Filters a date/time using optional exclusive lower and upper bounds.
+#[derive(Debug, Clone, InputObject)]
+pub struct DatetimeOperatorInput {
+    /// Match timestamps strictly after this date/time.
+    pub gt: Option<DateTime<Utc>>,
+
+    /// Match timestamps strictly before this date/time.
+    pub lt: Option<DateTime<Utc>>,
+}
+
 /// All the supported Workflows filters
 #[derive(Debug, Default, Clone, InputObject)]
 pub struct WorkflowFilter {
@@ -169,6 +181,10 @@ pub struct WorkflowFilter {
 
     /// Workflow annotation key/value filters
     annotations: Option<Vec<WorkflowAnnotationFilter>>,
+
+    /// Workflow submission date/time filter
+    #[graphql(name = "submittedTime")]
+    submitted_time: Option<DatetimeOperatorInput>,
 }
 
 impl WorkflowFilter {
@@ -184,6 +200,11 @@ impl WorkflowFilter {
         self.annotations
             .as_ref()
             .is_some_and(|annotations| !annotations.is_empty())
+    }
+
+    /// Returns true when workflow submission time filtering is requested.
+    pub fn has_submitted_time_filter(&self) -> bool {
+        self.submitted_time.is_some()
     }
 
     /// Generates and applies all the filters
@@ -226,6 +247,22 @@ impl WorkflowFilter {
                     && parameter.value.as_deref() == Some(filter.value.as_str())
             })
         })
+    }
+
+    /// Returns true when the workflow matches the requested submission time.
+    pub fn matches_submitted_time(&self, workflow: &IoArgoprojWorkflowV1alpha1Workflow) -> bool {
+        let Some(filter) = &self.submitted_time else {
+            return true;
+        };
+
+        let Some(creation_time) = &workflow.metadata.creation_timestamp else {
+            return false;
+        };
+
+        let submitted_time = **creation_time;
+
+        filter.gt.as_ref().is_none_or(|gt| submitted_time > *gt)
+            && filter.lt.as_ref().is_none_or(|lt| submitted_time < *lt)
     }
 
     /// Returns true when the workflow matches all requested annotations.
@@ -410,10 +447,10 @@ impl LabelSelector {
 
 #[cfg(test)]
 mod tests {
-    use crate::graphql::filters::{
-        Creator, LabelSelector, ScienceGroup, Template, WorkflowAnnotationFilter, WorkflowFilter,
-        WorkflowLabelSelectorOperator, WorkflowParameterFilter, WorkflowStatusFilter,
-        WorkflowTemplatesFilter,
+    use super::{
+        Creator, DatetimeOperatorInput, LabelSelector, ScienceGroup, Template,
+        WorkflowAnnotationFilter, WorkflowFilter, WorkflowLabelSelectorOperator,
+        WorkflowParameterFilter, WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
 
     use argo_workflows_openapi::{
@@ -470,6 +507,16 @@ mod tests {
         }
     }
 
+    fn workflow_with_creation_timestamp(timestamp: &str) -> IoArgoprojWorkflowV1alpha1Workflow {
+        serde_json::from_value(serde_json::json!({
+            "metadata": {
+                "creationTimestamp": timestamp
+            },
+            "spec": {}
+        }))
+        .unwrap()
+    }
+
     fn annotation_filter(key: &str, value: &str) -> WorkflowAnnotationFilter {
         WorkflowAnnotationFilter {
             key: key.to_string(),
@@ -494,6 +541,7 @@ mod tests {
             annotations: None,
             labels: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_parameters(vec![("scan_number", "12345")]);
@@ -511,6 +559,7 @@ mod tests {
             annotations: None,
             labels: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
@@ -528,6 +577,7 @@ mod tests {
             labels: None,
             annotations: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_parameters(vec![("beamline", "i14")]);
@@ -546,6 +596,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: None,
+            submitted_time: None,
         };
 
         let workflow = workflow_with_parameters(vec![("scan_number", "99999")]);
@@ -567,6 +618,7 @@ mod tests {
                 parameter_filter("scan_number", "12345"),
                 parameter_filter("beamline", "i14"),
             ]),
+            submitted_time: None,
         };
 
         let workflow =
@@ -588,6 +640,7 @@ mod tests {
                 parameter_filter("scan_number", "12345"),
                 parameter_filter("beamline", "i14"),
             ]),
+            submitted_time: None,
         };
 
         let workflow =
@@ -607,6 +660,7 @@ mod tests {
             labels: None,
             parameters: Some(vec![parameter_filter("scan_number", "12345")]),
             annotations: None,
+            submitted_time: None,
         };
         let workflow = IoArgoprojWorkflowV1alpha1Workflow {
             api_version: None,
@@ -630,6 +684,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: Some(vec![annotation_filter("example.com/foo", "bar")]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_annotations(vec![("example.com/foo", "bar")]);
@@ -646,6 +701,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: Some(vec![annotation_filter("example.com/foo", "bar")]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_annotations(vec![("example.com/foo", "different")]);
@@ -662,6 +718,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: Some(vec![annotation_filter("example.com/foo", "bar")]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_annotations(vec![("example.com/other", "bar")]);
@@ -681,6 +738,7 @@ mod tests {
                 annotation_filter("example.com/foo", "bar"),
                 annotation_filter("example.com/beamline", "i14"),
             ]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_annotations(vec![
@@ -703,6 +761,7 @@ mod tests {
                 annotation_filter("example.com/foo", "bar"),
                 annotation_filter("example.com/beamline", "i14"),
             ]),
+            submitted_time: None,
         };
 
         let workflow = workflow_with_annotations(vec![
@@ -711,6 +770,114 @@ mod tests {
         ]);
 
         assert!(!filter.matches_annotations(&workflow));
+    }
+
+    /// after timestamp
+    #[test]
+    fn submitted_time_filter_matches_after_timestamp() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: None,
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: None,
+            }),
+        };
+
+        let workflow = workflow_with_creation_timestamp("2026-01-15T00:00:00Z");
+
+        assert!(filter.matches_submitted_time(&workflow));
+    }
+
+    /// reject before timestamp
+    #[test]
+    fn submitted_time_filter_rejects_before_timestamp() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: None,
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: None,
+            }),
+        };
+
+        let workflow = workflow_with_creation_timestamp("2025-12-31T23:59:59Z");
+
+        assert!(!filter.matches_submitted_time(&workflow));
+    }
+
+    /// range filter
+    #[test]
+    fn submitted_time_filter_matches_range() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: None,
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: Some("2026-02-01T00:00:00Z".parse().unwrap()),
+            }),
+        };
+
+        let workflow = workflow_with_creation_timestamp("2026-01-15T00:00:00Z");
+
+        assert!(filter.matches_submitted_time(&workflow));
+    }
+
+    /// reject outside range
+    #[test]
+    fn submitted_time_filter_rejects_after_range() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: None,
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: Some("2026-02-01T00:00:00Z".parse().unwrap()),
+            }),
+        };
+
+        let workflow = workflow_with_creation_timestamp("2026-02-15T00:00:00Z");
+
+        assert!(!filter.matches_submitted_time(&workflow));
+    }
+
+    /// reject missing timestamp
+    #[test]
+    fn submitted_time_filter_rejects_missing_timestamp() {
+        let filter = WorkflowFilter {
+            creator: None,
+            template: None,
+            workflow_status_filter: None,
+            labels: None,
+            parameters: None,
+            annotations: None,
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: None,
+            }),
+        };
+
+        let workflow = serde_json::from_value(serde_json::json!({
+            "metadata": {},
+            "spec": {}
+        }))
+        .unwrap();
+        assert!(!filter.matches_submitted_time(&workflow));
     }
 
     // TEMPLATES--------------------------------------------
@@ -783,6 +950,7 @@ mod tests {
                 values: Some(vec!["i14".to_string()]),
             }]),
             parameters: None,
+            submitted_time: None,
         };
 
         assert_eq!(filters.create_label_selection(), "beamline=i14");
@@ -803,6 +971,7 @@ mod tests {
                 values: Some(vec!["i14".to_string()]),
             }]),
             parameters: None,
+            submitted_time: None,
         };
 
         assert_eq!(
@@ -824,6 +993,7 @@ mod tests {
                 values: Some(vec!["i14".to_string()]),
             }]),
             parameters: None,
+            submitted_time: None,
         };
 
         assert_eq!(filters.create_label_selection(), "beamline=i14");
@@ -840,6 +1010,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: None,
+            submitted_time: None,
         };
 
         let labels = filters.create_label_selection();
@@ -867,6 +1038,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: None,
+            submitted_time: None,
         };
 
         let labels = filters.create_label_selection();
@@ -894,6 +1066,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: None,
+            submitted_time: None,
         };
 
         let labels = filters.create_label_selection();
@@ -922,6 +1095,7 @@ mod tests {
             labels: None,
             parameters: None,
             annotations: None,
+            submitted_time: None,
         };
 
         let labels = filters.create_label_selection();
