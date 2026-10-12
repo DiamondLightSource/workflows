@@ -136,6 +136,7 @@ postgresql-ha:
     existingSecret: postgres-passwords
     initdbScriptsSecret: postgres-initdb-script
     podAntiAffinityPreset: hard
+    maxConnections: 200
 
     resources:
       requests:
@@ -153,6 +154,7 @@ postgresql-ha:
     customUsersSecret: postgres-application-passwords
 
     numInitChildren: 64
+    maxPool: 4
 
     resources:
       requests:
