@@ -160,6 +160,8 @@ postgresql-ha:
 
     numInitChildren: 64
     maxPool: 4
+    clientIdleLimit: 1800
+    connectionLifeTime: 900
 
     resources:
       requests:
