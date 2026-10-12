@@ -49,6 +49,7 @@ function TriggerRelay(props: TriggerProps) {
       commitEnableTrigger(mutationConfig);
     }
   }, [
+    props.name,
     props.enabled,
     commitDisableTrigger,
     commitEnableTrigger,

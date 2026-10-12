@@ -25,7 +25,6 @@ const TriggerAccordion: React.FC<TriggerProps> = ({
   errorMessage,
   templateRef,
 }) => {
-
   return (
     <Accordion>
       <AccordionSummary>
@@ -40,24 +39,28 @@ const TriggerAccordion: React.FC<TriggerProps> = ({
         <Box
           sx={{
             display: "flex",
-            "justifyContent": "space-between",
-            "alignItems": "center",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <Typography>
             Created from the <i>{templateRef}</i> template
           </Typography>
-          <Box sx={{ display: "flex", "alignItems": "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography>Enabled: </Typography>
             <Checkbox
               checked={enabled}
-              onChange={() => {toggleEnabled();}}
+              onChange={() => {
+                toggleEnabled();
+              }}
             />
           </Box>
         </Box>
-          { errorMessage !== undefined && ( <Alert severity="error">
+        {errorMessage !== undefined && (
+          <Alert severity="error">
             Toggle enabled status unsucessful: {errorMessage}
-          </Alert> ) }
+          </Alert>
+        )}
       </AccordionDetails>
     </Accordion>
   );
