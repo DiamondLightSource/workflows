@@ -4,7 +4,7 @@ metadata:
   name: alert-rules
   namespace: {{ .Release.Namespace}}
 data:
-{{- range $path, $_ := .Files.Glob "alert-rules/*.yaml.gotmpl" }}
-  {{ replace ".tml.yaml" ".yaml" (base $path) }}: |
+{{- range $path, $_ := .Files.Glob "alert-rules/*.tpl.yaml" }}
+  {{ replace ".tpl.yaml" ".yaml" (base $path) }}: |
 {{ tpl ($.Files.Get $path) $ | indent 4 }}
 {{- end }}
