@@ -245,6 +245,30 @@ vcluster:
       nodes: false
       pods: true
 
+  policies:
+    limitRange:
+      enabled: true
+      # mirror the host namespace limitrange
+      # see: kubectl describe limitrange
+      # this should be updated when the host limitrange is updated
+      defaultRequest:
+        cpu: 500m
+        memory: 2Gi
+        ephemeral-storage: 100Mi
+
+      default:
+        cpu: "1"
+        memory: 4Gi
+        ephemeral-storage: 2Gi
+
+      max:
+        memory: 350Gi
+        ephemeral-storage: "61847529062400m"
+
+      maxLimitRequestRatio:
+        cpu: "10"
+        memory: "10"
+
 ingress:
   enabled: true
   host: kubernetes.workflows.diamond.ac.uk
