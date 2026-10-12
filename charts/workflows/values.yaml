@@ -53,6 +53,11 @@ argo-workflows:
           name: postgres-argo-workflows-password
           key: password
 
+      connectionPool:
+        maxIdleConns: 20
+        maxOpenConns: 40
+        connMaxLifetime: 30m
+
     workflowDefaults:
       spec:
         serviceAccountName: argo-workflow
