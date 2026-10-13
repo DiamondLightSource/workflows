@@ -23,6 +23,7 @@ const renderComponent = (enabled: boolean) => {
         enabled={enabled}
         name="frontend-test-trigger"
         templateRef="webhook-test-trigger"
+        creatorName=""
       />
     </RelayEnvironmentProvider>,
   );

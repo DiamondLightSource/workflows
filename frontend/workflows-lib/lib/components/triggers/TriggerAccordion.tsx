@@ -9,21 +9,23 @@ import {
 } from "@mui/material";
 
 interface TriggerProps {
-  beamline: string | null | undefined;
-  enabled: boolean;
   toggleEnabled: () => void;
   errorMessage: string | undefined;
+  beamline: string | null | undefined;
   name: string | null | undefined;
+  enabled: boolean;
   templateRef: string | null | undefined;
+  creatorName: string | null;
 }
 
 const TriggerAccordion: React.FC<TriggerProps> = ({
+  toggleEnabled,
+  errorMessage,
   beamline,
   name,
   enabled,
-  toggleEnabled,
-  errorMessage,
   templateRef,
+  creatorName,
 }) => {
   return (
     <Accordion>
@@ -43,10 +45,19 @@ const TriggerAccordion: React.FC<TriggerProps> = ({
             alignItems: "center",
           }}
         >
-          <Typography>
-            Created from the <i>{templateRef}</i> template
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box>
+            <Typography>
+              Created from the <i>{templateRef}</i> template
+            </Typography>
+            {creatorName !== null && (
+              <Typography color="textSecondary" sx={{ marginTop: "5px" }}>
+                Created by: {creatorName}
+              </Typography>
+            )}
+          </Box>
+          <Box
+            sx={{ display: "flex", alignItems: "center", marginLeft: "20px" }}
+          >
             <Typography>Enabled: </Typography>
             <Checkbox
               checked={enabled}

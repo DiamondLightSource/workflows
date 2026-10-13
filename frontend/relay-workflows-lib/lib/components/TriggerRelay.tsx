@@ -24,6 +24,7 @@ interface TriggerProps {
   enabled: boolean;
   name: string | null | undefined;
   templateRef: string | null | undefined;
+  creatorName: string | null;
 }
 
 function TriggerRelay(props: TriggerProps) {

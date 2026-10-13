@@ -48,6 +48,7 @@ export default function TriggersListContent({
             beamline={node.beamline}
             enabled={node.enabled}
             templateRef={node.templateRef}
+            creatorName={node.creator.creatorId}
           />
         ))}
       </Box>
