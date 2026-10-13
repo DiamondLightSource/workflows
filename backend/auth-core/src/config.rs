@@ -16,6 +16,12 @@ pub struct CommonConfig {
     pub postgres_port: u16,
     pub encryption_public_key: String,
     pub cors_allow: Option<Vec<String>>,
+    pub postgres_pool_max_connections: Option<u32>,
+    pub postgres_pool_min_connections: Option<u32>,
+    pub postgres_pool_idle_timeout: Option<u64>,
+    pub postgres_pool_max_lifetime: Option<u64>,
+    pub postgres_pool_connect_timeout: Option<u64>,
+    pub postgres_pool_acquire_timeout: Option<u64>,
 }
 
 /// Generic config loader - works for any struct that immplements Deserialize
