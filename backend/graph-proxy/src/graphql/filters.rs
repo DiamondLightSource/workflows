@@ -202,16 +202,26 @@ impl WorkflowFilter {
             .is_some_and(|annotations| !annotations.is_empty())
     }
 
-    /// Returns true when workflow submission time filtering is requested.
-    pub fn has_submitted_time_filter(&self) -> bool {
-        self.submitted_time.is_some()
-    }
-
     /// Generates and applies all the filters
     pub fn generate_filters(&self, url: &mut Url) {
         let labels = &self.create_label_selection();
-        url.query_pairs_mut()
-            .append_pair("listOptions.labelSelector", labels);
+        let mut query = url.query_pairs_mut();
+        query.append_pair("listOptions.labelSelector", labels);
+
+        if let Some(gt) = self
+            .submitted_time
+            .as_ref()
+            .and_then(|filter| filter.gt.as_ref())
+        {
+            query.append_pair("createdAfter", &gt.to_rfc3339());
+        }
+    }
+
+    /// Returns true when submission-time filtering needs client-side evaluation.
+    pub fn has_client_side_submitted_time_filter(&self) -> bool {
+        self.submitted_time
+            .as_ref()
+            .is_some_and(|filter| filter.lt.is_some())
     }
 
     /// Creates a string of all the requested filters that belong to the
@@ -452,6 +462,7 @@ mod tests {
         WorkflowAnnotationFilter, WorkflowFilter, WorkflowLabelSelectorOperator,
         WorkflowParameterFilter, WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
+    use url::Url;
 
     use argo_workflows_openapi::{
         IoArgoprojWorkflowV1alpha1Arguments, IoArgoprojWorkflowV1alpha1Parameter,
@@ -514,7 +525,7 @@ mod tests {
             },
             "spec": {}
         }))
-        .unwrap()
+        .expect("failed to deserialize test workflow")
     }
 
     fn annotation_filter(key: &str, value: &str) -> WorkflowAnnotationFilter {
@@ -880,6 +891,32 @@ mod tests {
         assert!(!filter.matches_submitted_time(&workflow));
     }
 
+    #[test]
+    fn detects_gt_submitted_time_filter() {
+        let filter = WorkflowFilter {
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: None,
+            }),
+            ..Default::default()
+        };
+
+        assert!(!filter.has_client_side_submitted_time_filter());
+    }
+
+    #[test]
+    fn detects_lt_submitted_time_filter() {
+        let filter = WorkflowFilter {
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: None,
+                lt: Some("2026-02-01T00:00:00Z".parse().unwrap()),
+            }),
+            ..Default::default()
+        };
+
+        assert!(filter.has_client_side_submitted_time_filter());
+    }
+
     // TEMPLATES--------------------------------------------
 
     #[tokio::test]
@@ -1076,6 +1113,51 @@ mod tests {
         );
     }
 
+    #[test]
+    fn submitted_time_gt_generates_created_after_query_parameter() {
+        let filter = WorkflowFilter {
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: Some("2026-01-01T00:00:00Z".parse().unwrap()),
+                lt: None,
+            }),
+            ..Default::default()
+        };
+
+        let mut url = Url::parse("https://argo.example/api/v1/workflows/ns").unwrap();
+
+        filter.generate_filters(&mut url);
+
+        let query: std::collections::HashMap<_, _> = url.query_pairs().into_owned().collect();
+
+        assert_eq!(
+            query.get("createdAfter").map(String::as_str),
+            Some("2026-01-01T00:00:00+00:00")
+        );
+
+        assert_eq!(
+            query.get("listOptions.labelSelector").map(String::as_str),
+            Some("")
+        );
+    }
+
+    #[test]
+    fn submitted_time_lt_does_not_generate_argo_query_parameter() {
+        let filter = WorkflowFilter {
+            submitted_time: Some(DatetimeOperatorInput {
+                gt: None,
+                lt: Some("2026-02-01T00:00:00Z".parse().unwrap()),
+            }),
+            ..Default::default()
+        };
+
+        let mut url = Url::parse("https://argo.example/api/v1/workflows/ns").unwrap();
+
+        filter.generate_filters(&mut url);
+
+        let query: std::collections::HashMap<_, _> = url.query_pairs().into_owned().collect();
+
+        assert!(!query.contains_key("createdAfter"));
+    }
     #[tokio::test]
     async fn creator_phase_template() {
         let creator = Creator("test".to_string());

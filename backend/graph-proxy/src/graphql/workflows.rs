@@ -631,9 +631,9 @@ impl WorkflowsQuery {
         };
 
         let has_client_side_filter = filter.as_ref().is_some_and(|filter| {
-            WorkflowFilter::has_parameter_filter(filter)
-                || WorkflowFilter::has_annotation_filter(filter)
-                || WorkflowFilter::has_submitted_time_filter(filter)
+            filter.has_parameter_filter()
+                || filter.has_annotation_filter()
+                || filter.has_client_side_submitted_time_filter()
         });
 
         if !has_client_side_filter {
@@ -1993,10 +1993,17 @@ mod tests {
 
         let workflows_endpoint = server
             .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
-            .match_query(mockito::Matcher::UrlEncoded(
-                "listOptions.limit".to_string(),
-                "1000".to_string(),
-            ))
+            .match_query(mockito::Matcher::AllOf(vec![
+                mockito::Matcher::UrlEncoded(
+                    "listOptions.labelSelector".to_string(),
+                    "".to_string(),
+                ),
+                mockito::Matcher::UrlEncoded(
+                    "createdAfter".to_string(),
+                    "2026-01-01T00:00:00+00:00".to_string(),
+                ),
+                mockito::Matcher::UrlEncoded("listOptions.limit".to_string(), "10".to_string()),
+            ]))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(
@@ -2005,16 +2012,6 @@ mod tests {
                         "resourceVersion": "160444177"
                     },
                     "items": [
-                        {
-                            "metadata": {
-                                "name": "old-workflow",
-                                "uid": "test-uid-1",
-                                "creationTimestamp": "2025-12-01T10:00:00Z"
-                            },
-                            "spec": {
-                                "templates": []
-                            }
-                        },
                         {
                             "metadata": {
                                 "name": "new-workflow",
@@ -2190,10 +2187,17 @@ mod tests {
 
         let workflows_endpoint = server
             .mock("GET", &format!("/api/v1/workflows/{visit}")[..])
-            .match_query(mockito::Matcher::UrlEncoded(
-                "listOptions.limit".to_string(),
-                "1000".to_string(),
-            ))
+            .match_query(mockito::Matcher::AllOf(vec![
+                mockito::Matcher::UrlEncoded(
+                    "listOptions.labelSelector".to_string(),
+                    "".to_string(),
+                ),
+                mockito::Matcher::UrlEncoded(
+                    "createdAfter".to_string(),
+                    "2026-01-01T00:00:00+00:00".to_string(),
+                ),
+                mockito::Matcher::UrlEncoded("listOptions.limit".to_string(), "1000".to_string()),
+            ]))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(
@@ -2202,16 +2206,6 @@ mod tests {
                         "resourceVersion": "160444177"
                     },
                     "items": [
-                        {
-                            "metadata": {
-                                "name": "before-range",
-                                "uid": "test-uid-1",
-                                "creationTimestamp": "2025-12-20T10:00:00Z"
-                            },
-                            "spec": {
-                                "templates": []
-                            }
-                        },
                         {
                             "metadata": {
                                 "name": "inside-range",
