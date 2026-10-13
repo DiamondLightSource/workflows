@@ -17,7 +17,7 @@ spec:
                 - name: k6-yaml
                   mountPath: /tmp/
               command:
-                - /bin/bash
+                - /bin/sh
               args:
                 - -c
                 - "kubectl delete -f /tmp/k6-ws-subscription-testrun.yaml --ignore-not-found=true; kubectl apply -f /tmp/k6-ws-subscription-testrun.yaml"
@@ -26,7 +26,9 @@ spec:
             - name: k6-yaml
               configMap:
                 name: k6-testruns
-                file: k6-ws-subscription-testrun.yaml
+                items:
+                  - key: k6-ws-subscription-testrun.yaml
+                    path: k6-ws-subscription-testrun.yaml
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -56,4 +58,6 @@ spec:
             - name: k6-yaml
               configMap:
                 name: k6-testruns
-                file: k6-events-submission-testrun.yaml
+                items:
+                  - key: k6-events-submission-testrun.yaml
+                    path: k6-events-submission-testrun.yaml
