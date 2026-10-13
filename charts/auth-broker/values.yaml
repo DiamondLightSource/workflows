@@ -47,6 +47,12 @@ authBrokerConfig:
     postgres_database: auth_service
     postgres_hostname: workflows-postgresql-ha-pgpool.workflows.svc.cluster.local
     postgres_port: 5432
+    postgres_pool_max_connections: 20
+    postgres_pool_min_connections: 1
+    postgres_pool_idle_timeout: 300
+    postgres_pool_max_lifetime: 1800
+    postgres_pool_connect_timeout: 10
+    postgres_pool_acquire_timeout: 10
 
     postgres_user:
       name: postgres-auth-service-password
