@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.2...auth-gateway@v0.1.3) (2026-10-13)
+
+
+### Features
+
+* **auth-broker,auth-gateway:** postgres pool options set from config ([91ab51c](https://github.com/DiamondLightSource/workflows/commit/91ab51cc85c7cd4ab030139436e3c1d666600a4a))
+
 ## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.1...auth-gateway@v0.1.2) (2026-09-21)
 
 
