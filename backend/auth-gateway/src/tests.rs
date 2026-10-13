@@ -54,6 +54,12 @@ fn test_common_config(oidc_provider_url: String) -> CommonConfig {
         postgres_port: 5432,
         encryption_public_key: TEST_PUBLIC_KEY_B64.to_string(),
         cors_allow: None,
+        postgres_pool_max_connections: None,
+        postgres_pool_min_connections: None,
+        postgres_pool_idle_timeout: None,
+        postgres_pool_max_lifetime: None,
+        postgres_pool_connect_timeout: None,
+        postgres_pool_acquire_timeout: None,
     }
 }
 

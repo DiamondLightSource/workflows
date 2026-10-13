@@ -61,6 +61,12 @@ async fn use_refresh_token(
         postgres_port: 0,
         encryption_public_key: "".to_string(),
         cors_allow: None,
+        postgres_pool_max_connections: None,
+        postgres_pool_min_connections: None,
+        postgres_pool_idle_timeout: None,
+        postgres_pool_max_lifetime: None,
+        postgres_pool_connect_timeout: None,
+        postgres_pool_acquire_timeout: None,
     };
     let (oidc_client, http_client) = create_oidc_client(&config)
         .await

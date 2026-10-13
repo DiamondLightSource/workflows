@@ -8,7 +8,7 @@ use chrono::{DateTime, Utc};
 use oauth2::{ClientId, ClientSecret, reqwest};
 use openidconnect::core::CoreProviderMetadata;
 use openidconnect::{IssuerUrl, RefreshToken, SubjectIdentifier};
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
 
 use crate::Result;
@@ -27,7 +27,26 @@ pub async fn create_db_connection(config: &CommonConfig) -> Result<DatabaseConne
         config.postgres_port,
         config.postgres_database
     );
-    Database::connect(&database_url).await.map_err(Into::into)
+    let mut options = ConnectOptions::new(&database_url);
+    if let Some(n) = config.postgres_pool_max_connections.filter(|n| *n > 0) {
+        options.max_connections(n);
+    }
+    if let Some(n) = config.postgres_pool_min_connections.filter(|n| *n > 0) {
+        options.min_connections(n);
+    }
+    if let Some(secs) = config.postgres_pool_idle_timeout.filter(|n| *n > 0) {
+        options.idle_timeout(std::time::Duration::from_secs(secs));
+    }
+    if let Some(secs) = config.postgres_pool_max_lifetime.filter(|n| *n > 0) {
+        options.max_lifetime(std::time::Duration::from_secs(secs));
+    }
+    if let Some(secs) = config.postgres_pool_connect_timeout.filter(|n| *n > 0) {
+        options.connect_timeout(std::time::Duration::from_secs(secs));
+    }
+    if let Some(secs) = config.postgres_pool_acquire_timeout.filter(|n| *n > 0) {
+        options.acquire_timeout(std::time::Duration::from_secs(secs));
+    }
+    Database::connect(options).await.map_err(Into::into)
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
