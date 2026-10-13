@@ -18,6 +18,9 @@ export const TriggersListViewQuery = graphql`
         beamline
         templateRef
         enabled
+        creator {
+          creatorId
+        }
       }
     }
   }
