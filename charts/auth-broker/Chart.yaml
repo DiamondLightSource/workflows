@@ -4,7 +4,7 @@ description: >-
   Token broker service that validates pod identity via Kubernetes TokenReview
   and serves OIDC access tokens
 type: application
-version: 0.1.8
+version: 0.1.9
 appVersion: 0.1.1
 dependencies:
   - name: common
