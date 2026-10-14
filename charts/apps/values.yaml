@@ -3,25 +3,25 @@ destination:
 
 argocd:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 events:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 metacontroller:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValueFiles: []
   valuesObject: {}
 
 groups:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
@@ -117,13 +117,13 @@ kyverno:
 
 sessionspaces:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 sessionspacesController:
   enabled: false
-  targetRevision: HEAD
+  targetRevision: production
   extraValueFiles: []
   valuesObject: {}
 
@@ -137,38 +137,38 @@ sealedsecrets:
 
 workflows:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 graphProxy:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 dashboard:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
   namespace: workflows
 
 otel:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 monitoring:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 kueue:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
@@ -180,22 +180,22 @@ mpiOperator:
 
 k6Operator:
   enabled: false
-  targetRevision: HEAD
+  targetRevision: production
   extraValueFiles: []
   valuesObject: {}
 
 identityMapper:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
 
 openbao:
   enabled: false
-  targetRevision: HEAD
+  targetRevision: production
   extraValueFiles: []
   valuesObject: {}
 
 authBroker:
   enabled: true
-  targetRevision: HEAD
+  targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
