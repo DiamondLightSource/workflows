@@ -93,6 +93,8 @@ struct TriggerGQL {
     template_ref: Option<String>,
     /// The beamline that the Trigger monitors
     beamline: Option<String>,
+    /// The visit that the Trigger is tied to
+    visit: String,
     /// Whether the Trigger is currently active or not
     enabled: bool,
     /// Information about the creator of the Trigger
@@ -101,6 +103,16 @@ struct TriggerGQL {
 
 impl From<Trigger> for TriggerGQL {
     fn from(t: Trigger) -> Self {
+        let visit = match t.metadata.namespace {
+            Some(namespace) => {
+                if namespace.as_str() == "events" {
+                    String::from("any")
+                } else {
+                    namespace
+                }
+            }
+            None => String::from("Unknown"),
+        };
         Self {
             name: t.metadata.name,
             template_ref: t.spec.template_ref,
@@ -109,6 +121,7 @@ impl From<Trigger> for TriggerGQL {
                 .labels
                 .as_ref()
                 .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
+            visit,
             enabled: t.spec.enabled,
             creator: TriggerCreator::from_trigger_labels(&t.metadata.labels),
         }
@@ -773,6 +786,7 @@ users:
                 trigger(name: "example-trigger-mfvpj") {
                     name
                     beamline
+                    visit
                 }
             }
         "#,
@@ -780,7 +794,8 @@ users:
         json!({
             "trigger": {
                 "name": "example-trigger-mfvpj",
-                "beamline": "test-beamline"
+                "beamline": "test-beamline",
+                "visit": "any"
             }
         })
     )]
@@ -826,6 +841,7 @@ users:
                         number: 1
                     }
                 ) {
+                    visit
                     creator {
                         creatorId
                     }
@@ -835,6 +851,7 @@ users:
         "namespaced-trigger.json",
         json!({
             "trigger": {
+                "visit": "mg36964-1",
                 "creator": {
                     "creatorId": "abc12345"
                 }
@@ -886,6 +903,26 @@ users:
                 "creator": {
                     "creatorId": "Unknown"
                 }
+            }
+        })
+    )]
+    // missing namespace returns "Unknown"
+    #[case(
+        "example-trigger-mfvpj",
+        "events",
+        r#"
+            query {
+                trigger(
+                    name: "example-trigger-mfvpj",
+                ) {
+                    visit
+                }
+            }
+        "#,
+        "no-namespace-trigger.json",
+        json!({
+            "trigger": {
+                "visit": "Unknown"
             }
         })
     )]
