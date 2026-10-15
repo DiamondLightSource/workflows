@@ -16,7 +16,7 @@ runs:
     - name: Install argo CLI
       shell: bash
       run: |
-        curl -sLO "https://github.com/argoproj/argo-workflows/releases/download/v4.0.5/argo-linux-amd64.gz"
+        curl -sLO "https://github.com/argoproj/argo-workflows/releases/download/v4.1.5/argo-linux-amd64.gz"
         gunzip "argo-linux-amd64.gz"
         chmod +x "argo-linux-amd64"
         mv "./argo-linux-amd64" /usr/local/bin/argo

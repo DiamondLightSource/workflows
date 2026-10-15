@@ -40,7 +40,7 @@ jobs:
 
       - name: Install Workflows CRDs
         run: |
-          kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=v4.0.6"
+          kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=v4.1.5"
           kubectl apply -f charts/identity-mapper/crds/useridentity.yaml
           kubectl apply -R -f charts/events/crds
 
