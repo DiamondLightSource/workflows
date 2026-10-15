@@ -76,7 +76,7 @@ fn main() {
 }
 
 const DEFAULT_ARGO_SERVER_SCHEMA_URL: &str =
-    "https://raw.githubusercontent.com/argoproj/argo-workflows/refs/tags/v4.0.6/api/jsonschema/schema.json";
+    "https://raw.githubusercontent.com/argoproj/argo-workflows/refs/tags/v4.1.5/api/jsonschema/schema.json";
 
 fn get_argo_server_schema_url() -> String {
     println!("cargo::rerun-if-env-changed=ARGO_SERVER_SCHEMA_URL");
