@@ -308,6 +308,7 @@ impl WorkflowTemplatesMutation {
                         priority: None,
                         server_dry_run: None,
                         service_account: None,
+                        artifacts: vec![],
                     },
                 ),
             },
