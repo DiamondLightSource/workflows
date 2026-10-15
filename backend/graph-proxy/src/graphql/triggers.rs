@@ -93,6 +93,8 @@ struct TriggerGQL {
     template_ref: Option<String>,
     /// The beamline that the Trigger monitors
     beamline: Option<String>,
+    /// The namespace that the Trigger occupies
+    namespace: Option<String>,
     /// Whether the Trigger is currently active or not
     enabled: bool,
     /// Information about the creator of the Trigger
@@ -109,6 +111,7 @@ impl From<Trigger> for TriggerGQL {
                 .labels
                 .as_ref()
                 .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
+            namespace: t.metadata.namespace,
             enabled: t.spec.enabled,
             creator: TriggerCreator::from_trigger_labels(&t.metadata.labels),
         }
@@ -773,6 +776,7 @@ users:
                 trigger(name: "example-trigger-mfvpj") {
                     name
                     beamline
+                    namespace
                 }
             }
         "#,
@@ -780,7 +784,8 @@ users:
         json!({
             "trigger": {
                 "name": "example-trigger-mfvpj",
-                "beamline": "test-beamline"
+                "beamline": "test-beamline",
+                "namespace": "events"
             }
         })
     )]
@@ -826,6 +831,7 @@ users:
                         number: 1
                     }
                 ) {
+                    namespace
                     creator {
                         creatorId
                     }
@@ -835,6 +841,7 @@ users:
         "namespaced-trigger.json",
         json!({
             "trigger": {
+                "namespace": "mg36964-1",
                 "creator": {
                     "creatorId": "abc12345"
                 }
