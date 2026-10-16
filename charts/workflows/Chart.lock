@@ -7,9 +7,9 @@ dependencies:
   version: 14.3.9
 - name: oauth2-proxy
   repository: https://oauth2-proxy.github.io/manifests
-  version: 10.7.0
+  version: 10.7.1
 - name: s3mock
   repository: file://./charts/s3mock/
   version: 0.1.0
-digest: sha256:86eafda060260a643cdd4b84eaf1d04493d2b933c5c11b22113c5dcb3a989ec1
-generated: "2026-10-07T15:01:26.503211491+01:00"
+digest: sha256:2b63dca5c0b181ab704351a7cc1766fb5ce66e888350d5592ebc8f3686640b49
+generated: "2026-10-16T14:12:06.254929851Z"
