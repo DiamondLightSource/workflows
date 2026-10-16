@@ -23,6 +23,14 @@ kueue:
       leaderElection:
         leaderElect: true
         resourceName: c1f6bfd2.kueue.x-k8s.io
+      managedJobsNamespaceSelector:
+        matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: NotIn
+            values:
+              - kube-system
+              - kueue
+              - argocd
       controller:
         groupKindConcurrency:
           Job.batch: 50
