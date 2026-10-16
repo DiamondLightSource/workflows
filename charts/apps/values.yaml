@@ -116,13 +116,13 @@ kyverno:
         verbosity: 0
 
 sessionspaces:
-  enabled: true
+  enabled: false
   targetRevision: production
   extraValuesFiles: []
   valuesObject: {}
 
 sessionspacesController:
-  enabled: false
+  enabled: true
   targetRevision: production
   extraValueFiles: []
   valuesObject: {}
