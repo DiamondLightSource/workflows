@@ -1,7 +1,7 @@
 image:
   registry: ghcr.io
   repository: diamondlightsource/workflows-graph-proxy
-  tag: "0.2.3"
+  tag: ""
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
