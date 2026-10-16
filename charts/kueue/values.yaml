@@ -10,6 +10,14 @@ kueue:
           memory: 8Gi
 
   managerConfig:
+    managedJobsNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values:
+            - kube-system
+            - kueue
+            - argocd
     controllerManagerConfigYaml: |-
       apiVersion: config.kueue.x-k8s.io/v1beta2
       kind: Configuration
