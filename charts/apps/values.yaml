@@ -109,6 +109,15 @@ kyverno:
         fluentd-ignore: "true"
     cleanupController:
       enabled: false
+    config:
+      webhooks:
+        namespaceSelector:
+          matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: NotIn
+              values:
+                - kube-system
+                - argocd
     reportsController:
       enabled: false
     features:
