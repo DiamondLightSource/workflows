@@ -15,7 +15,6 @@ groups:
         annotations:
           summary: "Argo Workflow Controller failing"
           description: "Workflow controller has been in CrashLoopBackOff for more than 10 minutes."
-
       - alert: ArgoWorkflowsPending
         expr: |
           sum(
@@ -283,3 +282,109 @@ groups:
         annotations:
           summary: "PostgreSQL is not producing metrics"
           description: "No PostgreSQL metrics have been received for 10 minutes."
+  - name: workflow-resource-saturation
+    rules:
+      - alert: WorkflowContainerCPUUsageHigh
+        expr: |
+          100 *
+          sum by (namespace, pod, container) (
+            rate(container_cpu_usage_seconds_total{
+              namespace="workflows",
+              container!="",
+              container!="POD"
+            }[5m])
+          )
+          /
+          on (namespace, pod, container)
+          max by (namespace, pod, container) (
+            kube_pod_container_resource_limits{
+              namespace="workflows",
+              resource="cpu",
+              unit="core"
+            } > 0
+          ) > 80
+        for: 10m
+        labels:
+          severity: warning
+          priority: P1
+        annotations:
+          summary: "Workflow container CPU usage high on {{`{{ $labels.pod }}`}}"
+          description: 'Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using {{`{{ printf "%.1f" $value }}`}}% of its CPU limit.'
+      - alert: WorkflowContainerCPUUsageCritical
+        expr: |
+          100 *
+          sum by (namespace, pod, container) (
+            rate(container_cpu_usage_seconds_total{
+              namespace="workflows",
+              container!="",
+              container!="POD"
+            }[5m])
+          )
+          /
+          on (namespace, pod, container)
+          max by (namespace, pod, container) (
+            kube_pod_container_resource_limits{
+              namespace="workflows",
+              resource="cpu",
+              unit="core"
+            } > 0
+          ) > 95
+        for: 5m
+        labels:
+          severity: critical
+          priority: P1
+        annotations:
+          summary: "Workflow container CPU usage critical on {{`{{ $labels.pod }}`}}"
+          description: 'Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using {{`{{ printf "%.1f" $value }}`}}% of its CPU limit.'
+      - alert: WorkflowContainerMemoryUsageHigh
+        expr: |
+          100 *
+          max by (namespace, pod, container) (
+            container_memory_working_set_bytes{
+              namespace="workflows",
+              container!="",
+              container!="POD"
+            }
+          )
+          /
+          on (namespace, pod, container)
+          max by (namespace, pod, container) (
+            kube_pod_container_resource_limits{
+              namespace="workflows",
+              resource="memory",
+              unit="byte"
+            } > 0
+          ) > 80
+        for: 10m
+        labels:
+          severity: warning
+          priority: P1
+        annotations:
+          summary: "Workflow container memory usage high on {{`{{ $labels.pod }}`}}"
+          description: 'Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using {{`{{ printf "%.1f" $value }}`}}% of its memory limit.'
+      - alert: WorkflowContainerMemoryUsageCritical
+        expr: |
+          100 *
+          max by (namespace, pod, container) (
+            container_memory_working_set_bytes{
+              namespace="workflows",
+              container!="",
+              container!="POD"
+            }
+          )
+          /
+          on (namespace, pod, container)
+          max by (namespace, pod, container) (
+            kube_pod_container_resource_limits{
+              namespace="workflows",
+              resource="memory",
+              unit="byte"
+            } > 0
+          ) > 95
+        for: 5m
+        labels:
+          severity: critical
+          priority: P1
+        annotations:
+          summary: "Workflow container memory usage critical on {{`{{ $labels.pod }}`}}"
+          description: 'Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using {{`{{ printf "%.1f" $value }}`}}% of its memory limit.'
