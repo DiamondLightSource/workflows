@@ -289,7 +289,7 @@ groups:
           100 *
           sum by (namespace, pod, container) (
             rate(container_cpu_usage_seconds_total{
-              namespace="workflows",
+              namespace="namespace!~".*-[0-9]+$"",
               container!="",
               container!="POD"
             }[5m])
@@ -298,7 +298,7 @@ groups:
           on (namespace, pod, container)
           max by (namespace, pod, container) (
             kube_pod_container_resource_limits{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               resource="cpu",
               unit="core"
             } > 0
@@ -315,7 +315,7 @@ groups:
           100 *
           sum by (namespace, pod, container) (
             rate(container_cpu_usage_seconds_total{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               container!="",
               container!="POD"
             }[5m])
@@ -324,7 +324,7 @@ groups:
           on (namespace, pod, container)
           max by (namespace, pod, container) (
             kube_pod_container_resource_limits{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               resource="cpu",
               unit="core"
             } > 0
@@ -341,7 +341,7 @@ groups:
           100 *
           max by (namespace, pod, container) (
             container_memory_working_set_bytes{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               container!="",
               container!="POD"
             }
@@ -350,7 +350,7 @@ groups:
           on (namespace, pod, container)
           max by (namespace, pod, container) (
             kube_pod_container_resource_limits{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               resource="memory",
               unit="byte"
             } > 0
@@ -367,7 +367,7 @@ groups:
           100 *
           max by (namespace, pod, container) (
             container_memory_working_set_bytes{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               container!="",
               container!="POD"
             }
@@ -376,7 +376,7 @@ groups:
           on (namespace, pod, container)
           max by (namespace, pod, container) (
             kube_pod_container_resource_limits{
-              namespace="workflows",
+              namespace!~".*-[0-9]+$",
               resource="memory",
               unit="byte"
             } > 0
