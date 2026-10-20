@@ -18,6 +18,7 @@
         "enabled": true,
         "eventName": "example",
         "templateRef": "example-trigger",
+        "lifetime": "1s",
         "workflow": {
             "parameters": [
                 {
