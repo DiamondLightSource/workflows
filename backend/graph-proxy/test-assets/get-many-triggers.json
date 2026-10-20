@@ -22,6 +22,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -63,6 +64,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -104,6 +106,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -145,6 +148,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -186,6 +190,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -227,6 +232,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -268,6 +274,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
@@ -309,6 +316,7 @@
                 "enabled": true,
                 "eventName": "example",
                 "templateRef": "example-trigger",
+                "lifetime": "24h",
                 "workflow": {
                     "parameters": [
                         {
