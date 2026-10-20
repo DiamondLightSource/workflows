@@ -186,6 +186,8 @@ prometheus:
     config:
       route:
         receiver: slack-notifications
+        group_by:
+          - alertname
       receivers:
         - name: slack-notifications
           slack_configs:
