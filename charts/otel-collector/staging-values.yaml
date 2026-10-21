@@ -1,0 +1,6 @@
+opentelemetry-collector:
+  resources:
+    requests:
+      cpu: "1"
+    limits:
+      cpu: "2"
