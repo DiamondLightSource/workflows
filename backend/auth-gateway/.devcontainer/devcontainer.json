@@ -6,9 +6,9 @@
 	"service": "app",
 	"workspaceFolder": "/workspace",
 
-	// Run as vscode user and sync UID with host user for proper file permissions
-	"remoteUser": "vscode",
-	"updateRemoteUserUID": true,
+	// Ensures devcontainer is running as you
+	"remoteUser": "root",
+	"updateRemoteUserUID": false,
 
 	// testcontainers can't reach a Docker daemon inside the dev container, so
 	// container-based tests skip themselves when this is set.
@@ -23,7 +23,7 @@
 	"forwardPorts": [5432],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "cargo install sea-orm-cli"
+	"postCreateCommand": "cargo install sea-orm-cli@2.0.0-rc.38 --locked"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
