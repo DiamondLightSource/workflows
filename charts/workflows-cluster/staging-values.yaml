@@ -24,6 +24,11 @@ vcluster:
             persistence:
               volumeClaim:
                 storageClass: netapp
+            resources:
+              requests:
+                cpu: 1000m
+              limits:
+                cpu: 2000m
     coredns:
       deployment:
         replicas: 2
