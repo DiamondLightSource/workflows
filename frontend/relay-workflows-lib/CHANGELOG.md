@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.16...relay-workflows-lib@v0.1.17) (2026-10-21)
+
+
+### Features
+
+* **workflows user interface:** add button to stop workflows ([7d07a4e](https://github.com/DiamondLightSource/workflows/commit/7d07a4ee6d8c8cb874e4c1fc5a7d419cde79e405))
+* **workflows user interface:** add error messages for when trigger enabled mutation fails ([ad12551](https://github.com/DiamondLightSource/workflows/commit/ad125512bc4e2451f29fcfa5d4b4c57d8d2c2abf))
+* **workflows user interface:** make ticking checkbox toggle trigger enabled ([be1c66e](https://github.com/DiamondLightSource/workflows/commit/be1c66e4afd3289f7a50e127cc6ca89703d28ad3))
+* **workflows user interface:** make ticking checkbox toggle trigger enabled ([be1c66e](https://github.com/DiamondLightSource/workflows/commit/be1c66e4afd3289f7a50e127cc6ca89703d28ad3))
+* **workflows user interface:** show trigger creator in list ([c4d05fe](https://github.com/DiamondLightSource/workflows/commit/c4d05fedd2d608c265e72559afe108f00658c8fa))
+
+
+### Bug Fixes
+
+* **worfklows user interface:** clear error on successful cancellation ([7d07a4e](https://github.com/DiamondLightSource/workflows/commit/7d07a4ee6d8c8cb874e4c1fc5a7d419cde79e405))
+* **workflows user interface:** set loading on request ([7d07a4e](https://github.com/DiamondLightSource/workflows/commit/7d07a4ee6d8c8cb874e4c1fc5a7d419cde79e405))
+
 ## [0.1.16](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.15...relay-workflows-lib@v0.1.16) (2026-10-01)
 
 
