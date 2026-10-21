@@ -399,6 +399,18 @@ groups:
             increase(kube_pod_container_status_restarts_total[15m])
           ) >= 3
         for: 5m
+
+  - name: argo-workflows-latency
+    rules:
+      - alert: ArgoWorkflowHighRuntimeLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (namespace, name, le) (
+              rate(argo_workflows_workflowtemplate_runtime_bucket[1h])
+            )
+          ) > 60
+        for: 10m
         labels:
           severity: warning
           priority: P1
@@ -606,6 +618,22 @@ groups:
         expr: |
           up == 0
         for: 5m
+          summary: "High runtime for workflow template {{`{{ $labels.name }}`}}"
+          description: 'P95 runtime for template {{`{{ $labels.name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 60 for 10 minutes. Confirm the metric unit is seconds.'
+
+      - alert: ArgoWorkflowHighQueueLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (namespace, queue_name, le) (
+              rate(
+                argo_workflows_queue_latency_bucket{
+                  queue_name="workflow_queue"
+                }[5m]
+              )
+            )
+          ) > 30
+        for: 10m
         labels:
           severity: warning
           priority: P1
@@ -635,3 +663,21 @@ groups:
             Investigate target availability, exporter health, network connectivity,
             and scrape configuration.
           dashboard: "https://prometheus.workflows.diamond.ac.uk/targets"
+          summary: "High Argo Workflow queue latency"
+          description: 'P95 queue latency for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 30. Confirm the metric unit and threshold.'
+
+      - alert: ArgoWorkflowHighQueueDuration
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (namespace, queue_name, le) (
+              rate(argo_workflows_queue_duration_bucket[5m])
+            )
+          ) > 60
+        for: 10m
+        labels:
+          severity: warning
+          priority: P1
+        annotations:
+          summary: "High Argo Workflow queue duration"
+          description: 'P95 queue duration for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 60. Confirm the metric unit and threshold.'
