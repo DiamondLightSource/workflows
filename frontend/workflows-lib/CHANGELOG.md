@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.12...workflows-lib@v0.1.13) (2026-10-21)
+
+
+### Features
+
+* **workflows user interface:** add error messages for when trigger enabled mutation fails ([ad12551](https://github.com/DiamondLightSource/workflows/commit/ad125512bc4e2451f29fcfa5d4b4c57d8d2c2abf))
+* **workflows user interface:** make ticking checkbox toggle trigger enabled ([be1c66e](https://github.com/DiamondLightSource/workflows/commit/be1c66e4afd3289f7a50e127cc6ca89703d28ad3))
+* **workflows user interface:** make ticking checkbox toggle trigger enabled ([be1c66e](https://github.com/DiamondLightSource/workflows/commit/be1c66e4afd3289f7a50e127cc6ca89703d28ad3))
+* **workflows user interface:** show trigger creator in list ([c4d05fe](https://github.com/DiamondLightSource/workflows/commit/c4d05fedd2d608c265e72559afe108f00658c8fa))
+
 ## [0.1.12](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.11...workflows-lib@v0.1.12) (2026-10-01)
 
 
