@@ -90,7 +90,8 @@ dashboard:
 otel:
   enabled: true
   targetRevision: HEAD
-  extraValuesFiles: []
+  extraValuesFiles:
+    - staging-values.yaml
   valuesObject: {}
 
 monitoring:
