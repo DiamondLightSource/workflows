@@ -282,7 +282,7 @@ groups:
         annotations:
           summary: "PostgreSQL is not producing metrics"
           description: "No PostgreSQL metrics have been received for 10 minutes."
-  - name: workflow-resource-saturation
+  - name: core-service-resource-saturation
     rules:
       - alert: WorkflowContainerCPUUsageHigh
         expr: |
