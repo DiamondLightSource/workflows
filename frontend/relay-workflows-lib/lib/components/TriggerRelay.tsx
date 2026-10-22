@@ -38,7 +38,7 @@ function TriggerRelay(props: TriggerProps) {
     const mutationConfig = {
       variables: { name: props.name },
       onCompleted: () => {
-        setErrorMessage("");
+        setErrorMessage(undefined);
       },
       onError: (err: Error) => {
         setErrorMessage(err.message);
