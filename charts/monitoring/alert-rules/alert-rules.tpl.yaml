@@ -441,7 +441,7 @@ groups:
             {{`{{ $labels.job }}`}} for at least 5 minutes.
             Check target availability, exporter health, network connectivity,
             and scrape configuration.
-          dashboard: "<PROMETHEUS_TARGETS_DASHBOARD_URL>"
+          dashboard: "https://prometheus.workflows.diamond.ac.uk/targets"
 
       - alert: PrometheusScrapeFailureCritical
         expr: |
@@ -458,4 +458,4 @@ groups:
             {{`{{ $labels.job }}`}} for at least 15 minutes.
             Investigate target availability, exporter health, network connectivity,
             and scrape configuration.
-          dashboard: "<PROMETHEUS_TARGETS_DASHBOARD_URL>"
+          dashboard: "https://prometheus.workflows.diamond.ac.uk/targets"
