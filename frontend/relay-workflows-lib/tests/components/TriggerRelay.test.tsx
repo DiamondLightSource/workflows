@@ -5,6 +5,7 @@ import TriggerRelay from "../../lib/components/TriggerRelay";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { act } from "react";
+import { GraphQLResponseWithData } from "relay-runtime";
 // For some reason this is the only way the createMockEnvironment function works
 // https://github.com/facebook/relay/issues/4228
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -29,41 +30,54 @@ const renderComponent = (enabled: boolean) => {
   );
 };
 
-it("toggles from enabled to disabled", async () => {
-  renderComponent(true);
-
+async function clickButton() {
   const button = document.querySelector("input");
+  expect(button).not.toBeNull();
   if (button !== null) {
     await user.click(button);
   }
+}
+
+async function toggleEnabledWithoutError(initiallyEnabled: boolean) {
+  renderComponent(initiallyEnabled);
+  await clickButton();
 
   const graphqlRequest =
     mockEnvironment.mock.getMostRecentOperation().request.node.params.text;
 
-  expect(graphqlRequest).toContain("disableTrigger");
+  if (initiallyEnabled) {
+    expect(graphqlRequest).toContain("disableTrigger");
+  } else {
+    expect(graphqlRequest).toContain("enableTrigger");
+  }
+
+  // Test error message doesnt show up after response
+  // This will raise a warning that response is not correct, shouldnt affect test (currently) though
+  const emptyResponse: GraphQLResponseWithData = { data: {} };
+  act(() => {
+    mockEnvironment.mock.resolveMostRecentOperation(emptyResponse);
+  });
+
+  await expect(screen.findByTestId("ErrorOutlineIcon")).rejects.toThrow(
+    "Unable to find an element",
+  );
+}
+
+it("toggles from enabled to disabled", async () => {
+  // Vitest linting doesnt like when a test doesnt contain an expect (even when theres one in the function)
+  // This is put in place to pass that check
+  await expect(toggleEnabledWithoutError(true)).resolves.toBeUndefined();
 });
 
 it("toggles from disabled to enabled", async () => {
-  renderComponent(false);
-
-  const button = document.querySelector("input");
-  if (button !== null) {
-    await user.click(button);
-  }
-
-  const graphqlRequest =
-    mockEnvironment.mock.getMostRecentOperation().request.node.params.text;
-
-  expect(graphqlRequest).toContain("enableTrigger");
+  // Vitest linting doesnt like when a test doesnt contain an expect (even when theres one in the function)
+  // This is put in place to pass that check
+  await expect(toggleEnabledWithoutError(false)).resolves.toBeUndefined();
 });
 
 it("shows an error message", async () => {
   renderComponent(true);
-
-  const button = document.querySelector("input");
-  if (button !== null) {
-    await user.click(button);
-  }
+  await clickButton();
 
   act(() => {
     mockEnvironment.mock.rejectMostRecentOperation(
