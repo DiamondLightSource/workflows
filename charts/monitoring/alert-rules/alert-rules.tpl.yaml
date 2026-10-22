@@ -289,7 +289,7 @@ groups:
           100 *
           sum by (namespace, pod, container) (
             rate(container_cpu_usage_seconds_total{
-              namespace="namespace!~".*-[0-9]+$"",
+              namespace!~".*-[0-9]+$",
               container!="",
               container!="POD"
             }[5m])
@@ -388,3 +388,57 @@ groups:
         annotations:
           summary: "Workflow container memory usage critical on {{`{{ $labels.pod }}`}}"
           description: 'Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using {{`{{ printf "%.1f" $value }}`}}% of its memory limit.'
+
+  - name: argo-workflows-latency
+    rules:
+      - alert: ArgoWorkflowHighRuntimeLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (namespace, name, le) (
+              rate(argo_workflows_workflowtemplate_runtime_bucket[1h])
+            )
+          ) > 3600
+        for: 10m
+        labels:
+          severity: warning
+          priority: P1
+        annotations:
+          summary: "High runtime for workflow template {{`{{ $labels.name }}`}}"
+          description: 'P95 runtime for template {{`{{ $labels.name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 3600 for 10 minutes. Confirm the metric unit is seconds.'
+
+      - alert: ArgoWorkflowHighQueueLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (namespace, queue_name, le) (
+              rate(
+                argo_workflows_queue_latency_bucket{
+                  queue_name="workflow_queue"
+                }[5m]
+              )
+            )
+          ) > 3600
+        for: 10m
+        labels:
+          severity: warning
+          priority: P1
+        annotations:
+          summary: "High Argo Workflow queue latency"
+          description: 'P95 queue latency for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 3600. Confirm the metric unit and threshold.'
+
+      - alert: ArgoWorkflowHighQueueDuration
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (namespace, queue_name, le) (
+              rate(argo_workflows_queue_duration_bucket[5m])
+            )
+          ) > 3600
+        for: 10m
+        labels:
+          severity: warning
+          priority: P1
+        annotations:
+          summary: "High Argo Workflow queue duration"
+          description: 'P95 queue duration for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 360. Confirm the metric unit and threshold.'
