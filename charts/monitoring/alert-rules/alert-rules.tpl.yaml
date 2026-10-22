@@ -409,7 +409,7 @@ groups:
             sum by (namespace, name, le) (
               rate(argo_workflows_workflowtemplate_runtime_bucket[1h])
             )
-          ) > 60
+          ) > 3600
         for: 10m
         labels:
           severity: warning
@@ -619,7 +619,7 @@ groups:
           up == 0
         for: 5m
           summary: "High runtime for workflow template {{`{{ $labels.name }}`}}"
-          description: 'P95 runtime for template {{`{{ $labels.name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 60 for 10 minutes. Confirm the metric unit is seconds.'
+          description: 'P95 runtime for template {{`{{ $labels.name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 3600 for 10 minutes. Confirm the metric unit is seconds.'
 
       - alert: ArgoWorkflowHighQueueLatency
         expr: |
@@ -632,7 +632,7 @@ groups:
                 }[5m]
               )
             )
-          ) > 30
+          ) > 3600
         for: 10m
         labels:
           severity: warning
@@ -664,7 +664,7 @@ groups:
             and scrape configuration.
           dashboard: "https://prometheus.workflows.diamond.ac.uk/targets"
           summary: "High Argo Workflow queue latency"
-          description: 'P95 queue latency for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 30. Confirm the metric unit and threshold.'
+          description: 'P95 queue latency for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 3600. Confirm the metric unit and threshold.'
 
       - alert: ArgoWorkflowHighQueueDuration
         expr: |
@@ -673,11 +673,11 @@ groups:
             sum by (namespace, queue_name, le) (
               rate(argo_workflows_queue_duration_bucket[5m])
             )
-          ) > 60
+          ) > 3600
         for: 10m
         labels:
           severity: warning
           priority: P1
         annotations:
           summary: "High Argo Workflow queue duration"
-          description: 'P95 queue duration for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 60. Confirm the metric unit and threshold.'
+          description: 'P95 queue duration for queue {{`{{ $labels.queue_name }}`}} in namespace {{`{{ $labels.namespace }}`}} has exceeded 360. Confirm the metric unit and threshold.'
