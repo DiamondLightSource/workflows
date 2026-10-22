@@ -423,7 +423,7 @@ groups:
             Container {{`{{ $labels.container }}`}} in namespace
             {{`{{ $labels.namespace }}`}} has restarted at least 5 times
             in the last 15 minutes. Investigate immediately for CrashLoopBackOff,
-            OOMKilled, application failures, and resource constraints.  
+            OOMKilled, application failures, and resource constraints.
   - name: prometheus-scraping
     rules:
       - alert: PrometheusScrapeFailureWarning
