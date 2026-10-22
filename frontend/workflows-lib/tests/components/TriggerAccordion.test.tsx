@@ -11,6 +11,7 @@ function renderComponent(errorMessage: string | undefined, enabled: boolean) {
       enabled={enabled}
       templateRef="test-template"
       creatorName="test-creator"
+      visit="test-visit"
     />,
   );
 }
@@ -22,6 +23,7 @@ it("renders all trigger details", () => {
   expect(screen.getByText("test-trigger")).toBeDefined();
   expect(screen.getByText("test-template")).toBeDefined();
   expect(screen.getByText("test-creator", { exact: false })).toBeDefined();
+  expect(screen.getByText("test-visit", { exact: false })).toBeDefined();
   // Check checkbox is checked
   expect(screen.getByTestId("CheckBoxIcon")).toBeDefined();
   // No error message should be present

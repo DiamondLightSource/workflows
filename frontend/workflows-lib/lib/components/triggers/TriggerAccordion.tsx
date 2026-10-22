@@ -16,6 +16,7 @@ interface TriggerProps {
   enabled: boolean;
   templateRef: string | null | undefined;
   creatorName: string | null;
+  visit: string;
 }
 
 const TriggerAccordion: React.FC<TriggerProps> = ({
@@ -26,6 +27,7 @@ const TriggerAccordion: React.FC<TriggerProps> = ({
   enabled,
   templateRef,
   creatorName,
+  visit,
 }) => {
   return (
     <Accordion>
@@ -46,11 +48,14 @@ const TriggerAccordion: React.FC<TriggerProps> = ({
           }}
         >
           <Box>
-            <Typography>
+            <Typography sx={{ marginBottom: "5px" }}>
               Created from the <i>{templateRef}</i> template
             </Typography>
+            <Typography color="textSecondary" sx={{ marginBottom: "5px" }}>
+              Visit: {visit}
+            </Typography>
             {creatorName !== null && (
-              <Typography color="textSecondary" sx={{ marginTop: "5px" }}>
+              <Typography color="textSecondary" sx={{ marginBottom: "5px" }}>
                 Created by: {creatorName}
               </Typography>
             )}

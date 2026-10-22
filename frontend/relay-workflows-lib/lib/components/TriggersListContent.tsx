@@ -49,6 +49,7 @@ export default function TriggersListContent({
             enabled={node.enabled}
             templateRef={node.templateRef}
             creatorName={node.creator.creatorId}
+            visit={node.visit}
           />
         ))}
       </Box>
