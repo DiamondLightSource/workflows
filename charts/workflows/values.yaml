@@ -54,8 +54,8 @@ argo-workflows:
           key: password
 
       connectionPool:
-        maxIdleConns: 20
-        maxOpenConns: 40
+        maxIdleConns: 10
+        maxOpenConns: 20
         connMaxLifetime: 30m
 
     workflowDefaults:
@@ -158,8 +158,8 @@ postgresql-ha:
     existingSecret: pgpool-passwords
     customUsersSecret: postgres-application-passwords
 
-    numInitChildren: 64
-    maxPool: 4
+    numInitChildren: 160
+    maxPool: 1
     clientIdleLimit: 1800
     connectionLifeTime: 900
 
