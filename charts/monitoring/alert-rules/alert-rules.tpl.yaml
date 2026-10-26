@@ -434,10 +434,13 @@ groups:
           severity: warning
           priority: P1
         annotations:
-          summary: "Prometheus scrape failing"
+          summary: "Prometheus scrape failing for {{`{{ $labels.job }}`}}"
           description: >-
-            Prometheus has failed to scrape all expected targets
-            for at least 5 minutes.
+            Prometheus has failed to scrape target
+            {{`{{ $labels.instance }}`}} for job
+            {{`{{ $labels.job }}`}} for at least 5 minutes.
+            Investigate target availability, exporter health, network connectivity,
+            and scrape configuration.
           dashboard: "https://prometheus.workflows.diamond.ac.uk/targets"
 
       - alert: PrometheusScrapeFailureCritical
@@ -455,3 +458,4 @@ groups:
             {{`{{ $labels.job }}`}} for at least 15 minutes.
             Investigate target availability, exporter health, network connectivity,
             and scrape configuration.
+          dashboard: "https://prometheus.workflows.diamond.ac.uk/targets"
