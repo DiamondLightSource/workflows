@@ -70,6 +70,13 @@ impl TriggerCreator {
     }
 }
 
+/// The contents of the `workflow` field in the `spec` field in the Trigger custom resource
+#[derive(Clone, Debug, Deserialize, Serialize, JsonSchema)]
+struct TriggerWorkflow {
+    /// The name of the template that the workflow is based on
+    template: String,
+}
+
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
 #[derive(CustomResource, Clone, Debug, Deserialize, Serialize, JsonSchema)]
 #[kube(
@@ -86,6 +93,8 @@ struct TriggerSpec {
     enabled: bool,
     /// How long (from creation) should the trigger exist for before being cleaned up
     lifetime: Option<String>,
+    /// The workflow that is run when the trigger is activated
+    workflow: Option<TriggerWorkflow>,
 }
 
 /// A Trigger for creating automated workflows
@@ -106,6 +115,8 @@ struct TriggerGQL {
     creator: TriggerCreator,
     /// The datetime at which a trigger will be automatically deleted (None means it will not)
     expiry: Option<DateTime<Utc>>,
+    /// The workflow template(s) used when the trigger is activated
+    workflow_template_name: Vec<String>,
 }
 
 impl From<Trigger> for TriggerGQL {
@@ -133,6 +144,14 @@ impl From<Trigger> for TriggerGQL {
             enabled: t.spec.enabled,
             creator: TriggerCreator::from_trigger_labels(&t.metadata.labels),
             expiry,
+            workflow_template_name: match t.spec.workflow {
+                Some(workflow) => {
+                    vec![workflow.template]
+                }
+                None => {
+                    vec![]
+                }
+            },
         }
     }
 }
@@ -369,6 +388,7 @@ impl TriggerMutation {
                 template_ref: Some(template_ref),
                 enabled: true,
                 lifetime: None,
+                workflow: None,
             },
         };
 
@@ -817,6 +837,7 @@ users:
                     beamline
                     visit
                     expiry
+                    workflowTemplateName
                 }
             }
         "#,
@@ -826,7 +847,8 @@ users:
                 "name": "example-trigger-mfvpj",
                 "beamline": "test-beamline",
                 "visit": "any",
-                "expiry": "2026-07-18T08:19:18+00:00"
+                "expiry": "2026-07-18T08:19:18+00:00",
+                "workflowTemplateName": ["example-template"]
             }
         })
     )]
