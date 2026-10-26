@@ -289,7 +289,7 @@ groups:
           100 *
           sum by (namespace, pod, container) (
             rate(container_cpu_usage_seconds_total{
-              namespace="namespace!~".*-[0-9]+$"",
+              namespace='namespace!~".*-[0-9]+$"',
               container!="",
               container!="POD"
             }[5m])
