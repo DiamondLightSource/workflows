@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, ops::Deref};
+use std::{collections::BTreeMap, ops::Deref, str::FromStr};
 
 use crate::{
     graphql::{auth_guard::AuthGuard, subscription::get_auth_token, VisitInput},
@@ -8,14 +8,17 @@ use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
     Context, Object, SimpleObject,
 };
+use chrono::{DateTime, Utc};
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
     api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams},
+    core::duration::Duration,
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::time;
 
 /// An error relating to a workflow Trigger
 #[derive(Debug, thiserror::Error)]
@@ -81,6 +84,8 @@ struct TriggerSpec {
     template_ref: Option<String>,
     /// Whether the Trigger is currently active or not
     enabled: bool,
+    /// How long (from creation) should the trigger exist for before being cleaned up
+    lifetime: Option<String>,
 }
 
 /// A Trigger for creating automated workflows
@@ -99,20 +104,23 @@ struct TriggerGQL {
     enabled: bool,
     /// Information about the creator of the Trigger
     creator: TriggerCreator,
+    /// The datetime at which a trigger will be automatically deleted (None means it will not)
+    expiry: Option<DateTime<Utc>>,
 }
 
 impl From<Trigger> for TriggerGQL {
     fn from(t: Trigger) -> Self {
         let visit = match t.metadata.namespace {
-            Some(namespace) => {
+            Some(ref namespace) => {
                 if namespace.as_str() == "events" {
                     String::from("any")
                 } else {
-                    namespace
+                    namespace.clone()
                 }
             }
             None => String::from("Unknown"),
         };
+        let expiry = calculate_expiry(&t);
         Self {
             name: t.metadata.name,
             template_ref: t.spec.template_ref,
@@ -124,7 +132,27 @@ impl From<Trigger> for TriggerGQL {
             visit,
             enabled: t.spec.enabled,
             creator: TriggerCreator::from_trigger_labels(&t.metadata.labels),
+            expiry,
         }
+    }
+}
+
+/// Calculates the expiry time (point where a trigger will automatically be deleted)
+fn calculate_expiry(trigger_object: &Trigger) -> Option<DateTime<Utc>> {
+    let lifetime = trigger_object.spec.lifetime.as_ref()?;
+    if lifetime == "forever" {
+        return Option::<DateTime<Utc>>::None;
+    }
+    match &trigger_object.metadata.creation_timestamp {
+        Some(time) => {
+            let creation_time_in_seconds = time.0.as_second();
+            let Ok(lifetime) = Duration::from_str(lifetime) else {
+                return Option::<DateTime<Utc>>::None;
+            };
+            let lifetime_seconds = time::Duration::from(lifetime).as_secs() as i64;
+            DateTime::from_timestamp_secs(creation_time_in_seconds + lifetime_seconds)
+        }
+        None => Option::<DateTime<Utc>>::None,
     }
 }
 
@@ -340,6 +368,7 @@ impl TriggerMutation {
             spec: TriggerSpec {
                 template_ref: Some(template_ref),
                 enabled: true,
+                lifetime: None,
             },
         };
 
@@ -787,6 +816,7 @@ users:
                     name
                     beamline
                     visit
+                    expiry
                 }
             }
         "#,
@@ -795,7 +825,8 @@ users:
             "trigger": {
                 "name": "example-trigger-mfvpj",
                 "beamline": "test-beamline",
-                "visit": "any"
+                "visit": "any",
+                "expiry": "2026-07-18T08:19:18+00:00"
             }
         })
     )]
@@ -923,6 +954,85 @@ users:
         json!({
             "trigger": {
                 "visit": "Unknown"
+            }
+        })
+    )]
+    // lifetime hours work
+    #[case(
+        "test-trigger-s6qzl",
+        "mg36964-1",
+        r#"
+            query {
+                trigger(
+                    name: "test-trigger-s6qzl",
+                    visit: {
+                        proposalCode: "mg"
+                        proposalNumber: 36964
+                        number: 1
+                    }
+                ) {
+                    expiry
+                }
+            }
+        "#,
+        "namespaced-trigger.json",
+        json!({
+            "trigger": {
+                "expiry": "2026-07-01T14:20:59+00:00"
+            }
+        })
+    )]
+    // lifetime minutes work
+    #[case(
+        "custom-name",
+        "events",
+        r#"
+            query {
+                trigger(name: "custom-name") {
+                    expiry
+                }
+            }
+        "#,
+        "named-trigger.json",
+        json!({
+            "trigger": {
+                "expiry": "2026-07-01T13:21:59+00:00"
+            }
+        })
+    )]
+    // lifetime seconds work
+    #[case(
+        "example-trigger-mfvpj",
+        "events",
+        r#"
+            query {
+                trigger(name: "example-trigger-mfvpj") {
+                    expiry
+                }
+            }
+        "#,
+        "no-namespace-trigger.json",
+        json!({
+            "trigger": {
+                "expiry": "2026-07-17T08:19:19+00:00"
+            }
+        })
+    )]
+    // forever lifetime works
+    #[case(
+        "example-trigger-kdfrm",
+        "events",
+        r#"
+            query {
+                trigger(name: "example-trigger-kdfrm") {
+                    expiry
+                }
+            }
+        "#,
+        "forever-trigger.json",
+        json!({
+            "trigger": {
+                "expiry": null
             }
         })
     )]

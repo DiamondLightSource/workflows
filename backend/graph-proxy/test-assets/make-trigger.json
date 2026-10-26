@@ -18,6 +18,7 @@
         "enabled": true,
         "eventName": "test-example",
         "templateRef": "test-trigger",
+        "lifetime": "24h",
         "workflow": {
             "parameters": [
                 {

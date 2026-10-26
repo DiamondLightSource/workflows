@@ -25,6 +25,7 @@ interface TriggerProps {
   name: string | null | undefined;
   templateRef: string | null | undefined;
   creatorName: string | null;
+  visit: string;
 }
 
 function TriggerRelay(props: TriggerProps) {
@@ -38,7 +39,7 @@ function TriggerRelay(props: TriggerProps) {
     const mutationConfig = {
       variables: { name: props.name },
       onCompleted: () => {
-        setErrorMessage("");
+        setErrorMessage(undefined);
       },
       onError: (err: Error) => {
         setErrorMessage(err.message);

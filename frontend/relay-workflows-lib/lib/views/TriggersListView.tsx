@@ -21,6 +21,7 @@ export const TriggersListViewQuery = graphql`
         creator {
           creatorId
         }
+        visit
       }
     }
   }
