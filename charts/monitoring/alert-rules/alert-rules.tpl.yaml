@@ -496,6 +496,110 @@ groups:
           Check interface counters, traffic levels, host network logs,
           and correlated workflow failures.
 
+    - alert: NetworkProbeFailureWarning
+      expr: |
+        probe_success{
+          job="probe/prometheus-master/blackbox-probe"
+        } == 0
+      for: 2m
+      labels:
+        severity: warning
+        priority: P2
+      annotations:
+        summary: 'Connectivity probe failing for {{`{{ $labels.instance }}`}}'
+        description: >-
+          The connectivity probe has failed for at least 2 minutes.
+          Check DNS resolution, endpoint reachability, TLS, and probe logs.
+
+    - alert: NetworkProbeFailureCritical
+      expr: |
+        probe_success{
+          job="probe/prometheus-master/blackbox-probe"
+        } == 0
+      for: 10m
+      labels:
+        severity: critical
+        priority: P1
+      annotations:
+        summary: 'Connectivity probe persistently failing for {{`{{ $labels.instance }}`}}'
+        description: >-
+          The connectivity probe has failed for at least 10 minutes.
+          Investigate DNS, connectivity, endpoint availability, and TLS.
+          Check the Blackbox Exporter logs and correlated service failures.
+
+    - alert: ProbeHTTP5xxWarning
+      expr: |
+        probe_http_status_code{
+          job="probe/prometheus-master/blackbox-probe"
+        } >= 500
+      for: 5m
+      labels:
+        severity: warning
+        priority: P2
+      annotations:
+        summary: 'HTTP 5xx responses from {{`{{ $labels.instance }}`}}'
+        description: >-
+          The endpoint has returned HTTP 5xx responses for at least
+          5 minutes. Investigate service health and server logs.
+
+    - alert: ProbeHTTP5xxCritical
+      expr: |
+        probe_http_status_code{
+          job="probe/prometheus-master/blackbox-probe"
+        } >= 500
+      for: 10m
+      labels:
+        severity: critical
+        priority: P1
+      annotations:
+        summary: 'Persistent HTTP 5xx responses from {{`{{ $labels.instance }}`}}'
+        description: >-
+          The endpoint has returned HTTP 5xx responses for at least
+          10 minutes. Investigate the service and its dependencies.
+
+    - alert: ProbeDurationNearTimeout
+      expr: |
+        (
+          probe_duration_seconds{
+            job="probe/prometheus-master/blackbox-probe"
+          }
+          /
+          probe_timeout_seconds{
+            job="probe/prometheus-master/blackbox-probe"
+          }
+        ) > 0.8
+        and on (instance, job, namespace)
+        (
+          probe_timeout_seconds{
+            job="probe/prometheus-master/blackbox-probe"
+          } > 0
+        )
+      for: 5m
+      labels:
+        severity: warning
+        priority: P2
+      annotations:
+        summary: 'Probe approaching timeout for {{`{{ $labels.instance }}`}}'
+        description: >-
+          Probe duration has exceeded 80% of its configured timeout
+          for 5 minutes. Investigate endpoint latency, DNS lookup time,
+          and network connectivity.
+
+    - alert: ProbeDNSLookupSlow
+      expr: |
+        probe_dns_lookup_time_seconds{
+          job="probe/prometheus-master/blackbox-probe"
+        } > 1
+      for: 5m
+      labels:
+        severity: warning
+        priority: P2
+      annotations:
+        summary: 'Slow DNS lookup for {{`{{ $labels.instance }}`}}'
+        description: >-
+          DNS lookup time has exceeded 1 second for 5 minutes.
+          Investigate resolver latency and DNS service health.
+
   - name: prometheus-scraping
     rules:
       - alert: PrometheusScrapeFailureWarning
