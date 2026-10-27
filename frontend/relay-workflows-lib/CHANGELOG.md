@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.18](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.17...relay-workflows-lib@v0.1.18) (2026-10-27)
+
+
+### Features
+
+* **workflows user interface:** add visit to trigger accordion display ([dd9bac4](https://github.com/DiamondLightSource/workflows/commit/dd9bac4c9344a7e4a12ff6c6a09a4c375de71420))
+
+
+### Bug Fixes
+
+* **workflows user interface:** remove error message on sucessful trigger toggle ([831ed96](https://github.com/DiamondLightSource/workflows/commit/831ed96adc11523f52eda9d27421c3129a8097a1))
+
 ## [0.1.17](https://github.com/DiamondLightSource/workflows/compare/relay-workflows-lib@v0.1.16...relay-workflows-lib@v0.1.17) (2026-10-21)
 
 
