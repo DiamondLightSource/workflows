@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.13...workflows-lib@v0.1.14) (2026-10-27)
+
+
+### Features
+
+* **workflows user interface:** add visit to trigger accordion display ([dd9bac4](https://github.com/DiamondLightSource/workflows/commit/dd9bac4c9344a7e4a12ff6c6a09a4c375de71420))
+
 ## [0.1.13](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.12...workflows-lib@v0.1.13) (2026-10-21)
 
 
