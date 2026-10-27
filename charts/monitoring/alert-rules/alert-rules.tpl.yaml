@@ -284,12 +284,13 @@ groups:
           description: "No PostgreSQL metrics have been received for 10 minutes."
   - name: core-service-resource-saturation
     rules:
+
       - alert: WorkflowContainerCPUUsageHigh
         expr: |
           100 *
           sum by (namespace, pod, container) (
             rate(container_cpu_usage_seconds_total{
-              namespace='namespace!~".*-[0-9]+$"',
+              namespace!~".*-[0-9]+$",
               container!="",
               container!="POD"
             }[5m])
@@ -310,6 +311,7 @@ groups:
         annotations:
           summary: "Workflow container CPU usage high on {{`{{ $labels.pod }}`}}"
           description: 'Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using {{`{{ printf "%.1f" $value }}`}}% of its CPU limit.'
+
       - alert: WorkflowContainerCPUUsageCritical
         expr: |
           100 *
@@ -408,6 +410,7 @@ groups:
             in the last 15 minutes. Investigate container logs, pod events,
             and resource usage.
 
+
       - alert: KubernetesPodRestartCritical
         expr: |
           sum by (namespace, pod, container) (
@@ -422,8 +425,77 @@ groups:
           description: >-
             Container {{`{{ $labels.container }}`}} in namespace
             {{`{{ $labels.namespace }}`}} has restarted at least 5 times
-            in the last 15 minutes. Investigate immediately for CrashLoopBackOff,
-            OOMKilled, application failures, and resource constraints.
+            in the last 15 minutes. Investigate immediately for
+            CrashLoopBackOff, OOMKilled, application failures, and
+            resource constraints.
+
+
+- name: workflow-network
+  rules:
+    - alert: NodeNetworkErrorsDetected
+      expr: |
+        sum by (instance, device) (
+          rate(node_network_receive_errs_total{
+            job="node-exporter",
+            device!~"lo|docker0|veth.*"
+          }[5m])
+          +
+          rate(node_network_transmit_errs_total{
+            job="node-exporter",
+            device!~"lo|docker0|veth.*"
+          }[5m])
+        ) > 0
+      for: 10m
+      labels:
+        severity: warning
+        priority: P1
+      annotations:
+        summary: 'Network errors on {{`{{ $labels.instance }}`}}'
+        description: >-
+          Network errors have persisted for 10 minutes on interface
+          {{`{{ $labels.device }}`}}.
+          Investigate interface counters, host network logs,
+          and correlated workflow failures.
+
+    - alert: NodeNetworkPacketDropRatioHigh
+      expr: |
+        (
+          100 *
+          sum by (instance, device) (
+            rate(node_network_receive_drop_total{
+              job="node-exporter",
+              device!~"lo|docker0|veth.*"
+            }[5m])
+          )
+          /
+          sum by (instance, device) (
+            rate(node_network_receive_packets_total{
+              job="node-exporter",
+              device!~"lo|docker0|veth.*"
+            }[5m])
+          )
+        )
+        and on (instance, device)
+        (
+          sum by (instance, device) (
+            rate(node_network_receive_packets_total{
+              job="node-exporter",
+              device!~"lo|docker0|veth.*"
+            }[5m])
+          ) > 0
+        ) > 1
+      for: 10m
+      labels:
+        severity: warning
+        priority: P1
+      annotations:
+        summary: 'Elevated receive packet drops on {{`{{ $labels.instance }}`}}'
+        description: >-
+          Receive packet drops exceed 1% on interface
+          {{`{{ $labels.device }}`}} for 10 minutes.
+          Check interface counters, traffic levels, host network logs,
+          and correlated workflow failures.
+
   - name: prometheus-scraping
     rules:
       - alert: PrometheusScrapeFailureWarning
