@@ -3,6 +3,8 @@ packages:
   - workflows-lib-shared
   - relay-workflows-lib
   - dashboard
+  - dashboard-2
+
 storeDir: "/workspace/frontend/.pnpm-store"
 
 # Compatibility with release-please

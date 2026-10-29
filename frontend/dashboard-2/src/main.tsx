@@ -2,58 +2,36 @@ import { RelayEnvironmentProvider } from "react-relay";
 import { getRelayEnvironment } from "relay-workflows-lib";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Dashboard from "./routes/DashboardPage";
-import WorkflowsListPage from "./routes/WorkflowsListPage";
-import TemplatesListPage from "./routes/TemplatesListPage";
-import SingleTemplatePage from "./routes/SingleTemplatePage";
-import SingleWorkflowPage from "./routes/SingleWorkflowPage";
-import ErrorPage from "./ErrorPage";
+import { RouterProvider } from "react-router-dom";
 import {
   ThemeProvider,
   DiamondDSTheme,
 } from "@diamondlightsource/sci-react-ui";
-import TriggersListPage from "./routes/TriggersListPage";
+import { createRouterWithOverlay, NavRouteObject } from "./NavigationOverlay";
+import { NotepadText, Workflow, Zap } from "lucide-react";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Dashboard />,
-    errorElement: <ErrorPage />,
-  },
+// Having to set index to true for all of them is quite annoying
+// TODO: Fix this
+const routeObjects: NavRouteObject[] = [
   {
     path: "templates",
-    element: <TemplatesListPage />,
-  },
-  {
-    path: "templates/:templateName",
-    element: <SingleTemplatePage />,
-  },
-  {
-    path: "templates/:templateName/:prepopulate",
-    element: <SingleTemplatePage />,
+    element: <p>Templates list page</p>,
+    index: true,
+    icon: <NotepadText />,
   },
   {
     path: "workflows",
-    element: <WorkflowsListPage />,
-  },
-  {
-    path: "workflows/:visitid",
-    element: <WorkflowsListPage />,
-  },
-  {
-    path: "workflows/:visitid/:workflowId",
-    element: <SingleWorkflowPage />,
-  },
-  {
-    path: "workflows/:visitid/:workflowId/:tasknames",
-    element: <SingleWorkflowPage />,
+    element: <p>Workflows list page</p>,
+    index: true,
+    icon: <Workflow />,
   },
   {
     path: "triggers",
-    element: <TriggersListPage />,
+    element: <p>Triggers list page</p>,
+    index: true,
+    icon: <Zap />,
   },
-]);
+];
 
 async function startMockingIfConfigured() {
   if (import.meta.env.VITE_ENABLE_MOCKING === "true") {
@@ -70,7 +48,7 @@ void startMockingIfConfigured().then(() => {
       <RelayEnvironmentProvider environment={environment}>
         <StrictMode>
           <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
-            <RouterProvider router={router} />
+            <RouterProvider router={createRouterWithOverlay(routeObjects)} />
           </ThemeProvider>
         </StrictMode>
       </RelayEnvironmentProvider>,
