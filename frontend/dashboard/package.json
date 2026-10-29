@@ -1,7 +1,7 @@
 {
   "name": "dashboard",
   "private": true,
-  "version": "0.1.19",
+  "version": "0.1.20",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,8 +14,8 @@
     "keycloak-js": "^26.2.4",
     "msw": "^2.15.0",
     "react-router-dom": "^7.18.4",
-    "relay-workflows-lib": "^0.1.17",
-    "workflows-lib": "^0.1.13"
+    "relay-workflows-lib": "^0.1.18",
+    "workflows-lib": "^0.1.14"
   },
   "devDependencies": {
     "babel-plugin-relay": "21.0.1",

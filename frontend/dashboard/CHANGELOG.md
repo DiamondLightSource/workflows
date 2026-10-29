@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.20](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.19...dashboard@v0.1.20) (2026-10-29)
+
+
+### Features
+
+* **frontend:** enable release please node workspace plugin ([4d31d3a](https://github.com/DiamondLightSource/workflows/commit/4d31d3ad3ff7f9356a77d0e872fa15061184d6bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * relay-workflows-lib bumped from ^0.1.17 to ^0.1.18
+    * workflows-lib bumped from ^0.1.13 to ^0.1.14
+
 ## [0.1.19](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.18...dashboard@v0.1.19) (2026-09-24)
 
 
