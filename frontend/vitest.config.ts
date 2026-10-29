@@ -7,6 +7,7 @@ export default defineConfig({
       "workflows-lib-shared",
       "relay-workflows-lib",
       "dashboard",
+      "dashboard-2",
     ],
   },
 });
