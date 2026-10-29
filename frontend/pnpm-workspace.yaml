@@ -3,6 +3,7 @@ packages:
   - workflows-lib-shared
   - relay-workflows-lib
   - dashboard
+  - dashboard-2
 
 # Compatibility with release-please
 # resolves local dependencies with explicit version specifiers
