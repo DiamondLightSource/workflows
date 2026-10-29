@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.3...auth-gateway@v0.1.4) (2026-10-29)
+
+
+### Bug Fixes
+
+* **devcontainer:** share mount content to get around permissions issue ([a70ecfe](https://github.com/DiamondLightSource/workflows/commit/a70ecfecf9efab690d3b2b149c8f69bb43c46be9))
+* modified auth-gateway devcontainer to work on diamond workstations ([52880e9](https://github.com/DiamondLightSource/workflows/commit/52880e9e4b148544010399a610f14bf269308e8c))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/auth-gateway@v0.1.2...auth-gateway@v0.1.3) (2026-10-13)
 
 
