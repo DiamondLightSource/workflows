@@ -629,19 +629,23 @@ dependencies = [
  "anyhow",
  "async-trait",
  "axum",
+ "axum-extra",
  "base64 0.22.1",
  "chrono",
  "http-body-util",
+ "jsonwebtoken 11.1.0",
  "migration",
  "oauth2",
  "openidconnect",
+ "reqwest 0.12.28",
+ "rstest 0.28.0",
  "rustls 0.23.46",
  "sea-orm",
  "serde",
  "serde_json",
  "serde_yaml",
  "sodiumoxide",
- "thiserror 2.0.21",
+ "testcontainers",
  "tokio",
  "tracing",
 ]
@@ -654,15 +658,17 @@ dependencies = [
  "async-trait",
  "auth-core",
  "axum",
+ "axum-extra",
  "axum-reverse-proxy",
  "axum-test",
  "chrono",
  "clap",
  "dotenvy",
  "hyper 1.9.0",
+ "jsonwebtoken 11.1.0",
  "migration",
  "mockito",
- "moka",
+ "openidconnect",
  "regex",
  "reqwest 0.12.28",
  "sea-orm",
@@ -2789,13 +2795,14 @@ dependencies = [
 
 [[package]]
 name = "graph-proxy"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "argo-workflows-openapi",
  "async-graphql",
  "async-graphql-axum",
  "async-stream",
+ "auth-core",
  "aws-credential-types",
  "aws-sdk-s3",
  "axum",
@@ -2808,7 +2815,7 @@ dependencies = [
  "futures-util",
  "graphql-ws-client",
  "graphql_client",
- "jsonwebtoken",
+ "jsonwebtoken 10.3.0",
  "k8s-openapi",
  "kube",
  "lazy_static",
@@ -2819,7 +2826,7 @@ dependencies = [
  "opentelemetry_sdk",
  "regex",
  "reqwest 0.12.28",
- "rstest",
+ "rstest 0.26.1",
  "rustls 0.23.46",
  "schemars 1.2.1",
  "secrecy",
@@ -3842,6 +3849,24 @@ dependencies = [
  "serde_json",
  "signature 2.2.0",
  "simple_asn1",
+]
+
+[[package]]
+name = "jsonwebtoken"
+version = "11.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e75fe14a82d81e5f5af639997db37d8b96045938a7ac6ab18cdbe1c7467e05e1"
+dependencies = [
+ "aws-lc-rs",
+ "base64 0.22.1",
+ "getrandom 0.2.17",
+ "js-sys",
+ "pem",
+ "serde",
+ "serde_json",
+ "signature 2.2.0",
+ "simple_asn1",
+ "zeroize",
 ]
 
 [[package]]
@@ -5612,7 +5637,18 @@ checksum = "f5a3193c063baaa2a95a33f03035c8a72b83d97a54916055ba22d35ed3839d49"
 dependencies = [
  "futures-timer",
  "futures-util",
- "rstest_macros",
+ "rstest_macros 0.26.1",
+]
+
+[[package]]
+name = "rstest"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b376e512f30a7686a8dbc6aeaace99b3ade1c26c1c63473473a817ade226dafc"
+dependencies = [
+ "futures-timer",
+ "futures-util",
+ "rstest_macros 0.28.0",
 ]
 
 [[package]]
@@ -5620,6 +5656,24 @@ name = "rstest_macros"
 version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c845311f0ff7951c5506121a9ad75aec44d083c31583b2ea5a30bcb0b0abba0"
+dependencies = [
+ "cfg-if",
+ "glob",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "relative-path",
+ "rustc_version",
+ "syn 2.0.119",
+ "unicode-ident",
+]
+
+[[package]]
+name = "rstest_macros"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88512dbfb5b73a0dfa38aef7bc73b5657035fce477b923faf12d332dd83051ea"
 dependencies = [
  "cfg-if",
  "glob",
@@ -8918,6 +8972,20 @@ name = "zeroize"
 version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b97154e67e32c85465826e8bcc1c59429aaaf107c1e4a9e53c8d8ccd5eff88d0"
+dependencies = [
+ "zeroize_derive",
+]
+
+[[package]]
+name = "zeroize_derive"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c50655cbb0fe3fc43170059e702f1ce5e19b84cec58dc87b037a09935c2f328"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
 
 [[package]]
 name = "zerotrie"
