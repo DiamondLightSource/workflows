@@ -64,6 +64,25 @@ The `frontend` directory contains all the react components for the workflows. Th
 
 Refer to <https://diamondlightsource.github.io/workflows/storybook> to see all the components in storybook.
 
+## Helm chart versions
+
+Chart versions are bumped automatically by the [Chart Release](.github/workflows/chart-release.yaml)
+workflow after a pull request is merged, so do not bump `version:` in `Chart.yaml` by hand.
+
+For each chart, commits that touched `charts/<chart>/` since its last `chart-<chart>-v<version>`
+tag decide the bump:
+
+| Commit                                      | Bump                      |
+| ------------------------------------------- | ------------------------- |
+| `fix:` / `perf:`                            | patch (`0.2.54` → `.55`)  |
+| `feat:`                                     | minor (`0.2.54` → `.3.0`) |
+| `type!:` or a `BREAKING CHANGE:` footer     | major (→ `1.0.0`)         |
+| anything else (`chore:`, `docs:`, `ci:`, …) | none                      |
+
+The workflow commits the new versions, tags each chart and pushes, all marked `[skip ci]`.
+Use `chore(charts): …` for changes that should not cut a release. The script can be run
+locally with `bash .github/scripts/chart-release.sh`.
+
 ## Pre-commit hooks
 
 Pre-commit hooks are run with [prek](https://prek.j178.dev/). Requires: `cargo` (with the `rustfmt` component) and `npx`.
