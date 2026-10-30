@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use async_graphql::{Context, Error, ErrorExtensions, Guard, Result};
 
-use crate::validate_token::ValidatedAuthToken;
+use auth_core::validate_token::ValidatedAuthToken;
 
 /// Checks that OIDC authn token is valid
 pub struct AuthGuard;

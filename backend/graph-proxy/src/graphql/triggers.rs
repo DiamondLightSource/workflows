@@ -455,11 +455,11 @@ impl TriggerMutation {
 mod tests {
     use crate::{
         graphql::triggers::{TriggerMutation, TriggerQuery},
-        validate_token::ValidatedAuthToken,
         KubernetesApiUrl,
     };
 
     use async_graphql::{EmptySubscription, PathSegment, Pos, Schema, ServerError};
+    use auth_core::validate_token::ValidatedAuthToken;
     use axum_extra::headers::Authorization;
     use jsonwebtoken::{encode, EncodingKey, Header};
     use mockito::{Matcher, ServerGuard};
