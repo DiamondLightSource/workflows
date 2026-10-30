@@ -14,7 +14,7 @@ argo-workflows-openapi = { path = "../argo-workflows-openapi" }
 async-graphql = { version = "7.0.17", features = ["chrono", "url"] }
 async-graphql-axum = { version = "7.0.17" }
 axum = { workspace = true }
-axum-extra = { version = "0.12.1", features = ["typed-header"] }
+axum-extra = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }
 derive_more = { workspace = true }
@@ -45,7 +45,7 @@ opentelemetry = { workspace = true }
 opentelemetry_sdk = { workspace = true }
 openidconnect = { workspace = true }
 rstest = "0.26.1"
-jsonwebtoken = { version = "10.3.0", features = ["aws_lc_rs"] }
+jsonwebtoken = { workspace = true }
 schemars = "1.2.1"
 tempfile = "3.27.0"
 
