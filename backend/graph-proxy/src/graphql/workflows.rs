@@ -1,7 +1,6 @@
 use super::{Visit, VisitInput, CLIENT};
 use crate::{
     graphql::{auth_guard::AuthGuard, filters::WorkflowFilter, subscription::get_auth_token},
-    validate_token::ValidatedAuthToken,
     ArgoServerUrl, S3Bucket,
 };
 use argo_workflows_openapi::{
@@ -13,6 +12,7 @@ use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
     Context, Enum, Object, SimpleObject, Union, ID,
 };
+use auth_core::validate_token::ValidatedAuthToken;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum_extra::headers::{authorization::Bearer, Authorization};
 use chrono::{DateTime, Utc};
@@ -1009,8 +1009,8 @@ impl WorkflowCreator {
 mod tests {
     use crate::graphql::auth_guard::AuthErrorCode;
     use crate::graphql::{root_schema_builder, Authorization, Visit};
-    use crate::validate_token::ValidatedAuthToken;
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
+    use auth_core::validate_token::ValidatedAuthToken;
     use jsonwebtoken::{encode, EncodingKey, Header};
     use rstest::rstest;
     use serde::{Deserialize, Serialize};

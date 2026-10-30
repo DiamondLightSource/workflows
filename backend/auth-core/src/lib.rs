@@ -6,6 +6,8 @@ pub mod healthcheck;
 pub mod middleware;
 pub mod oidc;
 pub mod request;
+pub mod test_oidc_server;
+pub mod validate_token;
 pub use async_trait;
 pub use base64;
 pub use oauth2;

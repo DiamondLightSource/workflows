@@ -24,6 +24,7 @@ use async_graphql::{
     },
     Data, Executor, Result,
 };
+use auth_core::validate_token::{TokenValidator, ValidationMethod};
 use axum::{
     body::{Body, HttpBody},
     extract::{
@@ -47,10 +48,7 @@ use futures_util::{
 use opentelemetry::KeyValue;
 use tower_service::Service;
 
-use crate::{
-    metrics::MetricsState,
-    validate_token::{TokenValidator, ValidationMethod},
-};
+use crate::metrics::MetricsState;
 
 /// A GraphQL protocol extractor.
 ///
@@ -390,12 +388,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        metrics::{noop::NoopMeterProvider, Metrics},
-        test_oidc_server::TestOidcServer,
-        validate_token::ValidatedAuthToken,
-    };
+    use crate::metrics::{noop::NoopMeterProvider, Metrics};
     use async_graphql::{Context, EmptyMutation, Object, Schema, Subscription};
+    use auth_core::{
+        test_oidc_server::TestOidcServer,
+        validate_token::{TokenValidator, ValidatedAuthToken},
+    };
     use axum::{http::Uri, routing::get_service, Router};
     use axum_extra::headers::HeaderMapExt;
     use futures_util::Stream;

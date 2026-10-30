@@ -4,7 +4,7 @@ use super::{
     workflows::Workflow,
     VisitInput, CLIENT,
 };
-use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidatedAuthToken};
+use crate::graphql::auth_guard::AuthGuard;
 use crate::{graphql::filters::WorkflowTemplatesFilter, ArgoServerUrl, SessionSpacesApiUrl};
 use anyhow::anyhow;
 use argo_workflows_openapi::APIResult;
@@ -12,6 +12,7 @@ use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
     Context, Json, Object, SimpleObject,
 };
+use auth_core::validate_token::ValidatedAuthToken;
 use kube::{
     api::{ApiResource, DynamicObject},
     core::GroupVersionKind,
@@ -425,11 +426,12 @@ fn to_argo_parameter(name: String, value: Value) -> Result<Option<String>, serde
 
 #[cfg(test)]
 mod tests {
-    use crate::{graphql::auth_guard::AuthErrorCode, validate_token::ValidatedAuthToken};
+    use crate::graphql::auth_guard::AuthErrorCode;
 
     use super::WorkflowTemplatesQuery;
     use anyhow::Ok;
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+    use auth_core::validate_token::ValidatedAuthToken;
     use axum_extra::headers::Authorization;
     use rstest::rstest;
     use serde_json::json;

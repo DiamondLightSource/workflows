@@ -13,18 +13,12 @@ mod sessionspaces;
 /// Graph-proxy-specific metrics
 mod metrics;
 
-/// Validate Bearer tokens
-mod validate_token;
-
-#[cfg(test)]
-mod test_oidc_server;
-
 use crate::{
     graphql::subscription_integration::GraphQLSubscription,
     metrics::{Metrics, MetricsState},
-    validate_token::TokenValidator,
 };
 use async_graphql::{http::GraphiQLSource, SDLExportOptions};
+use auth_core::validate_token::TokenValidator;
 use axum::{
     http::Uri,
     response::Html,
