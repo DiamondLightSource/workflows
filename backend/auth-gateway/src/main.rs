@@ -1,5 +1,6 @@
 mod auth_session_data;
 mod callback;
+mod client_login;
 mod config;
 mod login;
 mod state;
@@ -159,6 +160,10 @@ fn create_router(
         // it any other routes should be wrapped by CorsLayer above if not having a similar bearer
         // token authentication to `/auth/status`
         .route("/auth/status", get(status).layer(status_cors))
+        .route(
+            "/auth/client-creds",
+            post(client_login::client_credential_login),
+        )
         .with_state(state)
 }
 

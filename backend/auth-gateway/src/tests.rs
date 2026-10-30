@@ -7,9 +7,12 @@ use auth_core::config::CommonConfig;
 use auth_core::entity::oidc_tokens;
 use auth_core::oidc::create_oidc_client;
 use auth_core::sea_orm::{ColumnTrait, Database, EntityTrait, PaginatorTrait, QueryFilter};
+use auth_core::validate_token::TokenValidator;
 use axum::http::{StatusCode, header};
 use axum_test::TestServer;
+use hyper::Uri;
 use mockito::{Matcher, Server};
+use openidconnect::IssuerUrl;
 use regex::Regex;
 use serde_json::json;
 use testcontainers::core::wait::HttpWaitStrategy;
@@ -90,6 +93,17 @@ async fn test_app_state_with(
     )
     .expect("valid test public key");
 
+    let uri: Uri = oidc_provider_url
+        .parse()
+        .expect("OIDC provider URL should be convertible to Uri");
+    let token_validator =
+        TokenValidator::new(&uri, config.client_id, config.client_secret, vec!["test"])
+            .await
+            .expect("test validator is setup");
+
+    let issuer_url = IssuerUrl::new(oidc_provider_url.to_string())
+        .expect("OIDC provider URL should be convertible to IssuerUrl");
+
     Arc::new(AppState {
         http_client,
         oidc_client,
@@ -99,6 +113,8 @@ async fn test_app_state_with(
         callback_default_return_to_url: "http://localhost/dashboard".to_string(),
         cors_allow,
         session_secure: false,
+        token_validator,
+        oidc_provider_url: issuer_url,
     })
 }
 

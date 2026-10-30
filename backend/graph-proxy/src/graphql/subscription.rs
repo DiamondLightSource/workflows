@@ -4,6 +4,7 @@ use argo_workflows_openapi::{
 };
 use async_graphql::{Context, SimpleObject, Subscription};
 use async_stream::stream;
+use auth_core::validate_token::ValidatedAuthToken;
 use eventsource_stream::Eventsource;
 use futures_util::{Stream, StreamExt};
 use serde::Deserialize;
@@ -15,7 +16,6 @@ use crate::{
         VisitInput,
     },
     s3client::{Client as S3Client, S3Bucket},
-    validate_token::ValidatedAuthToken,
     ArgoServerUrl,
 };
 
@@ -667,6 +667,7 @@ mod tests {
     use std::{env, fs, path::PathBuf};
 
     use async_graphql::Request;
+    use auth_core::validate_token::ValidatedAuthToken;
     use axum_extra::headers::Authorization;
     use futures_util::StreamExt;
     use mockito::Matcher;
@@ -676,7 +677,6 @@ mod tests {
 
     use crate::graphql::root_schema_builder;
     use crate::graphql::Visit;
-    use crate::validate_token::ValidatedAuthToken;
     use crate::{ArgoServerUrl, Client, S3Bucket, S3ClientArgs};
 
     fn test_token() -> ValidatedAuthToken {
