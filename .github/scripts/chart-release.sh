@@ -4,7 +4,12 @@
 #
 # Run from the repository root. TARGET_REF is the branch to push to (default main).
 # Requires git-cliff on PATH.
+#
+# Set DRY_RUN=true to preview: local tags for untagged charts are created (so a
+# second run can compute real bumps), but nothing is written, committed or pushed.
 set -euo pipefail
+
+DRY_RUN="${DRY_RUN:-}"
 
 versions=()   # "<chart> v<version>" entries for the commit message
 refs=()       # tag refs to push
@@ -38,11 +43,24 @@ for dir in charts/*/; do
     continue
   fi
 
+  echo "${chart}: ${current} -> ${next}"
+  if [ -n "${DRY_RUN}" ]; then
+    versions+=("${chart} v${next} (dry run)")
+    continue
+  fi
+
   sed -i "s/^version: .*/version: ${next}/" "${file}"
   versions+=("${chart} v${next}")
   refs+=("chart-${chart}-v${next}")
-  echo "${chart}: ${current} -> ${next}"
 done
+
+if [ -n "${DRY_RUN}" ]; then
+  if [ ${#versions[@]} -gt 0 ]; then
+    echo "DRY RUN: would release $(printf '%s, ' "${versions[@]}" | sed 's/, $//')"
+  fi
+  echo "DRY RUN: no changes made (created local bootstrap tags)"
+  exit 0
+fi
 
 if [ ${#versions[@]} -gt 0 ]; then
   git add -u charts
@@ -50,7 +68,6 @@ if [ ${#versions[@]} -gt 0 ]; then
     -c user.email="chart-release[bot]@users.noreply.github.com" \
     commit -m "chore(charts): release $(printf '%s, ' "${versions[@]}" | sed 's/, $//') [skip ci]"
 
-  # Tags are created after the commit so they point at the released versions.
   for ref in "${refs[@]}"; do
     git tag "${ref}"
   done

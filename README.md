@@ -81,7 +81,8 @@ For each chart, the commits that touched `charts/<chart>/` since its last
 Every commit that touches a chart cuts a release, including dependency bumps and the
 `appVersion` updates made by Release Please. The workflow commits the new versions, tags
 each chart and pushes, all marked `[skip ci]`. The script can be run locally with
-`bash .github/scripts/chart-release.sh` (it needs `git-cliff` on `PATH`).
+`bash .github/scripts/chart-release.sh` (it needs `git-cliff` on `PATH`); set
+`DRY_RUN=1` to preview what would be released without writing, committing or pushing.
 
 ## Pre-commit hooks
 

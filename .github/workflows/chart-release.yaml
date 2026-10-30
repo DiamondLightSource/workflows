@@ -7,6 +7,11 @@ on:
     paths:
       - "charts/**"
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Preview only; create local tags, commit and push nothing
+        type: boolean
+        default: true
 
 concurrency:
   group: chart-release-main
@@ -41,4 +46,5 @@ jobs:
       - name: Bump chart versions
         env:
           TARGET_REF: ${{ github.ref_name }}
+          DRY_RUN: ${{ inputs.dry-run && 'true' || 'false' }}
         run: bash .github/scripts/chart-release.sh
