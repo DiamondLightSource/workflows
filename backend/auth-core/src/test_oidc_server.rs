@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use anyhow::Context;
 use axum_extra::headers::Authorization;
-use testcontainers::core::wait::HttpWaitStrategy;
 use testcontainers::core::WaitFor;
+use testcontainers::core::wait::HttpWaitStrategy;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{ContainerAsync, GenericImage, ImageExt};
 
