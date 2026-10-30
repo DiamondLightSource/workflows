@@ -69,19 +69,19 @@ Refer to <https://diamondlightsource.github.io/workflows/storybook> to see all t
 Chart versions are bumped automatically by the [Chart Release](.github/workflows/chart-release.yaml)
 workflow after a pull request is merged, so do not bump `version:` in `Chart.yaml` by hand.
 
-For each chart, commits that touched `charts/<chart>/` since its last `chart-<chart>-v<version>`
-tag decide the bump:
+For each chart, the commits that touched `charts/<chart>/` since its last
+`chart-<chart>-v<version>` tag decide the bump:
 
-| Commit                                      | Bump                      |
-| ------------------------------------------- | ------------------------- |
-| `fix:` / `perf:`                            | patch (`0.2.54` → `.55`)  |
-| `feat:`                                     | minor (`0.2.54` → `.3.0`) |
-| `type!:` or a `BREAKING CHANGE:` footer     | major (→ `1.0.0`)         |
-| anything else (`chore:`, `docs:`, `ci:`, …) | none                      |
+| Commit                                          | Bump                      |
+| ----------------------------------------------- | ------------------------- |
+| any chart change (`fix:`, `chore:`, `docs:`, …) | at least patch            |
+| `feat:`                                         | minor (`0.2.54` → `.3.0`) |
+| `type!:` or a `BREAKING CHANGE:` footer         | major (→ `1.0.0`)         |
 
-The workflow commits the new versions, tags each chart and pushes, all marked `[skip ci]`.
-Use `chore(charts): …` for changes that should not cut a release. The script can be run
-locally with `bash .github/scripts/chart-release.sh`.
+Every commit that touches a chart cuts a release, including dependency bumps and the
+`appVersion` updates made by Release Please. The workflow commits the new versions, tags
+each chart and pushes, all marked `[skip ci]`. The script can be run locally with
+`bash .github/scripts/chart-release.sh` (it needs `git-cliff` on `PATH`).
 
 ## Pre-commit hooks
 

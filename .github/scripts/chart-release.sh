@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 # Bump each chart's version from the conventional commits that touched it
-# since its last chart-<name>-v<version> tag.
-#
-# fix / perf -> patch, feat -> minor, "type!:" or BREAKING CHANGE -> major.
-# Nothing else bumps. Only the top-level `version:` line is rewritten, so no
-# file is reformatted.
+# since its last chart-<name>-v<version> tag, using git-cliff.
 #
 # Run from the repository root. TARGET_REF is the branch to push to (default main).
+# Requires git-cliff on PATH.
 set -euo pipefail
 
 versions=()   # "<chart> v<version>" entries for the commit message
@@ -17,44 +14,34 @@ for dir in charts/*/; do
   chart=$(basename "$dir")
   file="${dir}Chart.yaml"
   current=$(sed -n 's/^version: *//p' "$file")
+  tag="chart-${chart}-v${current}"
 
-  tag=$(git tag --merged HEAD --list "chart-${chart}-v[0-9]*" --sort=-v:refname | head -n1)
-
-  if [ -z "${tag}" ]; then
-    # Bootstrap: record the chart's current state as released, bump nothing.
-    git tag "chart-${chart}-v${current}" "$(git log -1 --format=%H -- "charts/${chart}")"
-    refs+=("chart-${chart}-v${current}")
-    echo "${chart}: bootstrapped at ${current}"
+  # No tag for this version yet: first run, or a version bumped by hand.
+  # Mark it released and bump nothing.
+  if ! git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+    git tag "${tag}" "$(git log -1 --format=%H -- "charts/${chart}")"
+    refs+=("${tag}")
+    echo "${chart}: tagged ${tag}"
     continue
   fi
 
-  range="${tag}..HEAD"
-  subjects=$(git log --format=%s "${range}" -- "charts/${chart}")
-  [ -n "${subjects}" ] || continue
-
-  if printf '%s\n' "${subjects}" | grep -qE '^[a-zA-Z]+(\([^)]+\))?!:' \
-    || git log --format=%B "${range}" -- "charts/${chart}" | grep -qE '^BREAKING[ -]CHANGE:'; then
-    part="major"
-  elif printf '%s\n' "${subjects}" | grep -qE '^feat(\([^)]+\))?:'; then
-    part="minor"
-  elif printf '%s\n' "${subjects}" | grep -qE '^(fix|perf)(\([^)]+\))?:'; then
-    part="patch"
-  else
+  next=$(git cliff \
+    --include-path "charts/${chart}/**" \
+    --tag-pattern "chart-${chart}-v[0-9]*" \
+    --bumped-version 2>/dev/null)
+  next=${next#chart-"${chart}"-v}
+  if [ -z "${next}" ]; then
+    echo "error: could not determine the next version for ${chart}" >&2
+    exit 1
+  fi
+  if [ "${next}" = "${current}" ]; then
     continue
   fi
 
-  IFS=. read -r maj min pat <<< "${current}"
-  case "${part}" in
-    major) maj=$((maj + 1)); min=0; pat=0 ;;
-    minor) min=$((min + 1)); pat=0 ;;
-    patch) pat=$((pat + 1)) ;;
-  esac
-  new="${maj}.${min}.${pat}"
-
-  VERSION="${new}" perl -i -pe 's/^version: \K.*/$ENV{VERSION}/' "${file}"
-  versions+=("${chart} v${new}")
-  refs+=("chart-${chart}-v${new}")
-  echo "${chart}: ${current} -> ${new} (${part})"
+  sed -i "s/^version: .*/version: ${next}/" "${file}"
+  versions+=("${chart} v${next}")
+  refs+=("chart-${chart}-v${next}")
+  echo "${chart}: ${current} -> ${next}"
 done
 
 if [ ${#versions[@]} -gt 0 ]; then
