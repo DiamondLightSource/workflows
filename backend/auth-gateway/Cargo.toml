@@ -15,11 +15,13 @@ async-trait = { workspace = true }
 auth-core = { path = "../auth-core" }
 anyhow = { workspace = true, features = ["backtrace"] }
 axum = { workspace = true, features = ["macros"] }
+axum-extra = { workspace = true }
 axum-reverse-proxy = { workspace = true, features = ["full"] }
 chrono.workspace = true
 clap.workspace = true
 dotenvy.workspace = true
 hyper = "1.8.1"
+openidconnect.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tokio = { workspace = true, features = ["full"] }
@@ -29,9 +31,8 @@ regex = { workspace = true }
 reqwest = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
-jsonwebtoken = { version = "11.1.0", features = ["aws_lc_rs"] }
-openidconnect.workspace = true
-axum-extra = { version = "0.12.6", features = ["typed-header"] }
+jsonwebtoken = { workspace = true }
+
 
 [dev-dependencies]
 axum-test = { workspace = true }
