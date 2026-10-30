@@ -69,8 +69,9 @@ Refer to <https://diamondlightsource.github.io/workflows/storybook> to see all t
 Chart versions are bumped automatically by the [Chart Release](.github/workflows/chart-release.yaml)
 workflow after a pull request is merged, so do not bump `version:` in `Chart.yaml` by hand.
 
-For each chart, the commits that touched `charts/<chart>/` since its last
-`chart-<chart>-v<version>` tag decide the bump:
+Releases are anchored on a single tag, `chart-apps-v<version>` for the app-of-apps chart
+(`charts/apps`). Between releases, every chart's version is bumped according to the
+conventional commits that touched it:
 
 | Commit                                          | Bump                      |
 | ----------------------------------------------- | ------------------------- |
@@ -78,11 +79,13 @@ For each chart, the commits that touched `charts/<chart>/` since its last
 | `feat:`                                         | minor (`0.2.54` → `.3.0`) |
 | `type!:` or a `BREAKING CHANGE:` footer         | major (→ `1.0.0`)         |
 
-Every commit that touches a chart cuts a release, including dependency bumps and the
-`appVersion` updates made by Release Please. The workflow commits the new versions, tags
-each chart and pushes, all marked `[skip ci]`. The script can be run locally with
-`bash .github/scripts/chart-release.sh` (it needs `git-cliff` on `PATH`); set
-`DRY_RUN=1` to preview what would be released without writing, committing or pushing.
+Any change to any chart cuts a release and bumps `charts/apps` by at least a patch (it only
+goes minor/major from `charts/apps`' own `feat:`/breaking commits). Every chart that changed
+is bumped too, including dependency bumps and the `appVersion` updates made by Release Please.
+The workflow commits the new versions and pushes the single `chart-apps-v<version>` tag, all
+marked `[skip ci]`. The script can be run locally with `bash .github/scripts/chart-release.sh`
+(it needs `git-cliff` on `PATH`); set `DRY_RUN=1` to preview what would be released without
+writing, committing or pushing.
 
 ## Pre-commit hooks
 
