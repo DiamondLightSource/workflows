@@ -66,8 +66,11 @@ Refer to <https://diamondlightsource.github.io/workflows/storybook> to see all t
 
 ## Helm chart versions
 
-Chart versions are bumped automatically by the [Chart Release](.github/workflows/chart-release.yaml)
-workflow after a pull request is merged, so do not bump `version:` in `Chart.yaml` by hand.
+Chart versions are bumped by a [release PR](.github/workflows/chart-release.yaml) maintained by
+a bot, so do not bump `version:` in `Chart.yaml` by hand. The bot keeps a single PR (branch
+`chart-release`) with the pending version changes; a human reviews and merges it, and the
+[tag workflow](.github/workflows/chart-release-tag.yaml) creates the `chart-apps-v<version>` tag
+on the merge.
 
 Releases are anchored on a single tag, `chart-apps-v<version>` for the app-of-apps chart
 (`charts/apps`). Between releases, every chart's version is bumped according to the
@@ -79,13 +82,11 @@ conventional commits that touched it:
 | `feat:`                                         | minor (`0.2.54` → `.3.0`) |
 | `type!:` or a `BREAKING CHANGE:` footer         | major (→ `1.0.0`)         |
 
-Any change to any chart cuts a release and bumps `charts/apps` by at least a patch (it only
-goes minor/major from `charts/apps`' own `feat:`/breaking commits). Every chart that changed
-is bumped too, including dependency bumps and the `appVersion` updates made by Release Please.
-The workflow commits the new versions and pushes the single `chart-apps-v<version>` tag, all
-marked `[skip ci]`. The script can be run locally with `bash .github/scripts/chart-release.sh`
-(it needs `git-cliff` on `PATH`); set `DRY_RUN=1` to preview what would be released without
-writing, committing or pushing.
+Any change to any chart bumps `charts/apps` by at least a patch (it only goes minor/major from
+`charts/apps`' own `feat:`/breaking commits). Every chart that changed is bumped too, including
+dependency bumps and the `appVersion` updates made by Release Please. The script can be run
+locally with `bash .github/scripts/chart-release.sh` (it needs `git-cliff` on `PATH`); set
+`DRY_RUN=1` to preview what would be released without applying changes.
 
 ## Pre-commit hooks
 

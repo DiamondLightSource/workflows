@@ -1,5 +1,7 @@
 name: Chart Release
 
+# Maintain a single release PR on the chart-release branch. When a human merges
+# it, the Chart Release Tag workflow creates the chart-apps-v<version> tag.
 on:
   push:
     branches:
@@ -14,15 +16,17 @@ on:
         default: true
 
 concurrency:
-  group: chart-release-main
+  group: chart-release-pr
   cancel-in-progress: false
 
 jobs:
   release:
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    # Skip the push produced by a release PR merge (the tag workflow handles it).
+    if: "${{ !contains(github.event.head_commit.message, 'chore(charts): release') }}"
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Create GitHub App Token
         id: app-token
@@ -43,8 +47,41 @@ jobs:
         with:
           tool: git-cliff@2.12.0
 
-      - name: Bump chart versions
+      - name: Reset release branch to main
+        run: git checkout -B chart-release origin/main
+
+      - name: Prepare chart release
+        id: prepare
         env:
-          TARGET_REF: ${{ github.ref_name }}
           DRY_RUN: ${{ inputs.dry-run && 'true' || 'false' }}
-        run: bash .github/scripts/chart-release.sh
+        run: |
+          output="$(bash .github/scripts/chart-release.sh)"
+          echo "$output"
+          echo "status=$(echo "$output" | tail -1)" >> "$GITHUB_OUTPUT"
+
+      - name: Push baseline tag
+        if: ${{ !inputs.dry-run && startsWith(steps.prepare.outputs.status, 'BOOTSTRAP') }}
+        env:
+          status: ${{ steps.prepare.outputs.status }}
+        run: |
+          tag="${status#BOOTSTRAP }"
+          git push origin "$tag"
+
+      - name: Commit, push and open release PR
+        if: ${{ !inputs.dry-run && startsWith(steps.prepare.outputs.status, 'RELEASE') }}
+        env:
+          status: ${{ steps.prepare.outputs.status }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          message="chore(charts): release ${status#RELEASE }"
+          git config user.name "chart-release[bot]"
+          git config user.email "chart-release[bot]@users.noreply.github.com"
+          git add -u charts
+          git commit -m "$message"
+          git push --force origin HEAD:chart-release
+          pr_number="$(gh pr list --head chart-release --json number --jq '.[0].number' 2>/dev/null)"
+          if [ -n "${pr_number}" ]; then
+            gh pr edit "${pr_number}" --title "$message"
+          else
+            gh pr create --base main --head chart-release --title "$message" --body "$message"
+          fi
