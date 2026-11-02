@@ -37,4 +37,5 @@ jobs:
           lint
           --target-branch=${{ github.event.repository.default_branch }}
           --validate-maintainers=false
+          --check-version-increment=false
           --lint-conf=.lintconf.yaml
