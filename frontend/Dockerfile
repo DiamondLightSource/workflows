@@ -2,20 +2,20 @@ FROM docker.io/library/node:26-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY ./yarn.lock ./package.json .
+COPY ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json .
 COPY ./dashboard/package.json ./dashboard/package.json
 COPY ./relay-workflows-lib ./relay-workflows-lib
 COPY ./workflows-lib ./workflows-lib
 COPY ./workflows-lib-shared ./workflows-lib-shared
 RUN npm install -g corepack@latest && corepack enable
-RUN yarn install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 COPY ./workflows.graphql ./relay-workflows-lib/workflows.graphql
-RUN yarn run --cwd=relay-workflows-lib relay
+RUN pnpm --filter relay-workflows-lib run relay
 
 COPY ./workflows.graphql ./dashboard/workflows.graphql
-RUN yarn run --cwd=dashboard build
+RUN pnpm --filter dashboard run build
 
 FROM docker.io/library/nginx:1.31.6-alpine-slim as nginx
 
