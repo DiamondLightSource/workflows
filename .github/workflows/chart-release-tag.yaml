@@ -1,0 +1,39 @@
+name: Chart Release Tag
+
+# Create the chart-apps-v<version> tag when the chart-release PR is merged
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency:
+  group: chart-release-tag
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    if: ${{ github.event.pull_request.merged && github.event.pull_request.head.ref == 'chart-release' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3.2.0
+        with:
+          app-id: 1077859
+          private-key: ${{ secrets.RELEASE_PLEASE_CLIENT_SECRET }}
+
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Create chart-apps tag
+        run: |
+          version="$(sed -n 's/^version: *//p' charts/apps/Chart.yaml)"
+          git tag "chart-apps@v${version}"
+          git push origin "chart-apps@v${version}"
