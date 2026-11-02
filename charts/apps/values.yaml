@@ -188,7 +188,7 @@ mpiOperator:
   valuesObject: {}
 
 k6Operator:
-  enabled: false
+  enabled: true
   targetRevision: production
   extraValueFiles: []
   valuesObject: {}
