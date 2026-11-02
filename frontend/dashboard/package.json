@@ -11,15 +11,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "keycloak-js": "^26.2.4",
+    "keycloak-js": "^26.2.5",
     "msw": "^2.15.0",
-    "react-router-dom": "^7.18.4",
+    "react-router-dom": "^7.18.5",
     "relay-workflows-lib": "^0.1.18",
     "workflows-lib": "^0.1.14"
   },
   "devDependencies": {
     "babel-plugin-relay": "21.0.1",
-    "vite-plugin-relay": "2.1.0"
+    "vite-plugin-relay": "2.2.1"
   },
   "peerDependencies": {
     "react": "^18.3.1",
