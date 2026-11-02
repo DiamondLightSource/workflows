@@ -8,5 +8,6 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
     environment: "jsdom",
+    maxWorkers: 2,
   },
 });
