@@ -25,6 +25,7 @@ import {
 } from "@diamondlightsource/sci-react-ui";
 import { Menu } from "lucide-react";
 import ErrorPage from "./ErrorPage";
+import UserIcon from "./UserIcon";
 
 // A type to represent both NavItemDefinitions (from Sci React UI) and RouteObjects
 // Cant extend RouteObject because its a union of types
