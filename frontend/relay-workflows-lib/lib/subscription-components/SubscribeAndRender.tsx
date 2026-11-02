@@ -61,7 +61,7 @@ export const SubscribeAndRender: React.FC<SubscribeAndRenderPropsList> = ({
       }),
       [visit, workflowName],
     );
-  useSubscription(subscriptionData);
+  useSubscription<SubscribeAndRenderSubscriptionType>(subscriptionData);
 
   return (
     <RenderSubmittedMessage

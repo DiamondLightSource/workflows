@@ -129,7 +129,7 @@ const TaskLogSubscription: React.FC<TaskLogSubscriptionProps> = ({
     ],
   );
 
-  useSubscription(subscriptionConfig);
+  useSubscription<TaskLogViewerSubscription>(subscriptionConfig);
 
   return null;
 };

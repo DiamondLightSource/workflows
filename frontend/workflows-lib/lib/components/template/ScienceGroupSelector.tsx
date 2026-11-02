@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ScienceGroup, WorkflowTemplatesFilter } from "../../types";
+import { convertStringToScienceGroup } from "../../utils/commonUtils";
 import {
   Button,
   FormControl,
@@ -31,10 +32,12 @@ export default function ScienceGroupSelector({
   const [scienceGroup, setScienceGroup] = useState<ScienceGroup[]>([]);
 
   const handleSelect = (event: SelectChangeEvent) => {
-    if (event.target.value == "") {
-      setScienceGroup([]);
+    const value = event.target.value;
+    if (typeof value === "string") {
+      const group = convertStringToScienceGroup(value);
+      setScienceGroup(group ? [group] : []);
     } else {
-      setScienceGroup([event.target.value as ScienceGroup]);
+      setScienceGroup([]);
     }
   };
 
