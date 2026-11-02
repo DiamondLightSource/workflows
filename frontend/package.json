@@ -1,12 +1,6 @@
 {
   "private": true,
   "type": "module",
-  "workspaces": [
-    "workflows-lib",
-    "workflows-lib-shared",
-    "relay-workflows-lib",
-    "dashboard"
-  ],
   "scripts": {
     "lint": "eslint && prettier --config .prettierrc --ignore-path ../.gitignore --check \"**/*.{js,ts,tsx,json}\"",
     "format": "prettier --config .prettierrc --write \"**/*.{js,ts,tsx,json}\"",
@@ -63,8 +57,5 @@
     "vite": "^8.3.3",
     "vitest": "^5.0.1"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
-  "resolutions": {
-    "react-is": "^18.3.1"
-  }
+  "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1"
 }

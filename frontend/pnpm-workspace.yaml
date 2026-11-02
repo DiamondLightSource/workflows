@@ -1,0 +1,26 @@
+packages:
+  - workflows-lib
+  - workflows-lib-shared
+  - relay-workflows-lib
+  - dashboard
+
+# Compatibility with release-please
+# resolves local dependencies with explicit version specifiers
+linkWorkspacePackages: true
+
+# Reproduces package layout from yarn
+# TODO: remove when undeclared dependencies are resolved
+shamefullyHoist: true
+
+overrides:
+  react-is: ^18.3.1
+  "@types/react": ^18.3.12
+
+allowBuilds:
+  esbuild: true
+  msw: true
+
+minimumReleaseAge: 10080 # 1 week
+trustPolicy: no-downgrade
+minimumReleaseAgeExclude:
+  - semver@6.3.2 # TODO: neccessary due to newly introduced minimumReleaseAge, can be removed in future update
