@@ -23,22 +23,18 @@ jobs:
 
   helm_lint:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_helm_lint.yaml
 
   kyverno_policy:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_kyverno_policy.yaml
 
   sessionspaces_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_sessionspaces_code.yaml
 
   sessionspaces_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: sessionspaces_code
     uses: ./.github/workflows/_sessionspaces_container.yaml
     permissions:
@@ -47,12 +43,10 @@ jobs:
 
   sessionspaces_controller_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_sessionspaces_controller_code.yaml
 
   sessionspaces_webhook_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: sessionspaces_controller_code
     uses: ./.github/workflows/_sessionspaces_webhook_container.yaml
     permissions:
@@ -61,7 +55,6 @@ jobs:
 
   sessionspaces_api_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: sessionspaces_controller_code
     uses: ./.github/workflows/_sessionspaces_api_container.yaml
     permissions:
@@ -70,18 +63,15 @@ jobs:
 
   graph_proxy_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_graph_proxy_code.yaml
 
   graph_proxy_schema:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: graph_proxy_code
     uses: ./.github/workflows/_graph_proxy_schema.yaml
 
   graph_proxy_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: graph_proxy_code
     uses: ./.github/workflows/_graph_proxy_container.yaml
     permissions:
@@ -90,12 +80,10 @@ jobs:
 
   auth_broker_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_auth_broker_code.yaml
 
   auth_broker_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: auth_broker_code
     uses: ./.github/workflows/_auth_broker_container.yaml
     permissions:
@@ -104,12 +92,10 @@ jobs:
 
   auth_gateway_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_auth_gateway_code.yaml
 
   auth_gateway_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: auth_gateway_code
     uses: ./.github/workflows/_auth_gateway_container.yaml
     permissions:
@@ -118,12 +104,10 @@ jobs:
 
   identity_mapper_code:
     needs: detect_files_changed
-    if: needs.detect_files_changed.outputs.identity_mapper == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
     uses: ./.github/workflows/_identity_mapper_code.yaml
 
   identity_mapper_container:
     needs: detect_files_changed
-    if: (startsWith(github.ref, 'refs/tags/identity-mapper@') || needs.detect_files_changed.outputs.identity_mapper == 'true') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
     uses: ./.github/workflows/_identity_mapper_container.yaml
     permissions:
       contents: read
@@ -131,18 +115,15 @@ jobs:
 
   auth_core_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_auth_core_code.yaml
 
   frontend_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: graph_proxy_schema
     uses: ./.github/workflows/_frontend_code.yaml
 
   dashboard_container:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     needs: frontend_code
     uses: ./.github/workflows/_dashboard_container.yaml
     permissions:
@@ -151,14 +132,12 @@ jobs:
 
   github_pages:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_github_pages.yaml
     permissions:
       pages: write
       id-token: write
 
   commit_lint:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_commit_lint.yaml
     permissions:
       contents: read
@@ -175,20 +154,16 @@ jobs:
 
   telemetry_code:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_telemetry_code.yaml
 
   dev_resources:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_dev_resources.yaml
 
   cli_code:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_cli_code.yaml
 
   lint_workflows:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Lint Workflows
@@ -196,5 +171,4 @@ jobs:
 
   prek:
     # Deduplicate jobs from pull requests and branch pushes within the same repo.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     uses: ./.github/workflows/_prek.yaml

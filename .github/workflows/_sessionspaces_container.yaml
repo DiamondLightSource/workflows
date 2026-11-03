@@ -60,7 +60,7 @@ jobs:
           context: backend
           file: backend/Dockerfile.sessionspaces
           target: deploy
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/sessionspaces@') }}
+          push: false
           load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/sessionspaces@')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -45,7 +45,7 @@ jobs:
           context: backend
           file: backend/Dockerfile.auth-broker
           target: deploy
-          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/auth-broker@') }}
+          push: false
           load: ${{ !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/auth-broker@')) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
