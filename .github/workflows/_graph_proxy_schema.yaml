@@ -10,16 +10,16 @@ jobs:
       ARGO_SERVER_SCHEMA_URL: https://raw.githubusercontent.com/argoproj/argo-workflows/refs/tags/v4.1.5/api/jsonschema/schema.json
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.16.1
+        uses: actions-rust-lang/setup-rust-toolchain@a188e68d0fd2bd36ad51dccb2b07ba6e75105f30 # v2.0.1
         with:
           cache: false
           components: rustfmt
 
       - name: Cache Rust Build
-        uses: Swatinem/rust-cache@v2.9.1
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           shared-key: backend/graph-proxy
           workspaces: backend
@@ -33,7 +33,7 @@ jobs:
           --path workflows.graphql
 
       - name: Upload Schema Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: graph-proxy
           path: backend/graph-proxy/workflows.graphql
