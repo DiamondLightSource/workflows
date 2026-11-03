@@ -8,15 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.16.1
+        uses: actions-rust-lang/setup-rust-toolchain@a188e68d0fd2bd36ad51dccb2b07ba6e75105f30 # v2.0.1
         with:
           cache: false
           components: clippy,rustfmt
 
-      - uses: actions/cache@v5.0.5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ./workflows-cli/target
@@ -41,14 +41,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.16.1
+        uses: actions-rust-lang/setup-rust-toolchain@a188e68d0fd2bd36ad51dccb2b07ba6e75105f30 # v2.0.1
         with:
           cache: false
 
-      - uses: actions/cache@v5.0.5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ./workflows-cli/target
@@ -62,10 +62,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install stable toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1.16.1
+        uses: actions-rust-lang/setup-rust-toolchain@a188e68d0fd2bd36ad51dccb2b07ba6e75105f30 # v2.0.1
 
       - name: Download tarpaulin
         run: |
@@ -82,7 +82,7 @@ jobs:
           WORKFLOWS_CLI_TEST_ENABLE_MOCK_COMMAND=1 cargo tarpaulin --out html
 
       - name: Upload coverage report as artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage.html
           path: workflows-cli/tarpaulin-report.html
@@ -92,21 +92,21 @@ jobs:
     needs: [test, lint]
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install musl
         run: |
           sudo apt-get update
           sudo apt-get install -y musl-tools
 
-      - uses: actions/cache@v5.0.5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ./workflows-cli/target
           key: cli-release
 
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1.16.1
+        uses: actions-rust-lang/setup-rust-toolchain@a188e68d0fd2bd36ad51dccb2b07ba6e75105f30 # v2.0.1
         with:
           target: x86_64-unknown-linux-musl
 
@@ -120,6 +120,6 @@ jobs:
 
       - name: Release CLI
         if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/workflows-cli@'))
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           files: workflows-cli.zip
