@@ -13,9 +13,12 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@apollo/client": "^4",
     "@diamondlightsource/workflows-lib-shared": "^0.1.1",
+    "graphql-ws": "^6",
     "react-relay": "^20.1.1",
     "relay-test-utils": "^21.0.1",
+    "rxjs": "^7",
     "workflows-lib": "^0.1.14"
   },
   "devDependencies": {

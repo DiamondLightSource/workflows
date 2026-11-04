@@ -7,7 +7,7 @@ import Dashboard from "./routes/DashboardPage";
 import WorkflowsListPage from "./routes/WorkflowsListPage";
 import TemplatesListPage from "./routes/TemplatesListPage";
 import SingleTemplatePage from "./routes/SingleTemplatePage";
-import SingleWorkflowPage from "./routes/SingleWorkflowPage";
+import SingleWorkflowPage from "./routes/SingleWorkflowPage.tsx";
 import ErrorPage from "./ErrorPage";
 import {
   ThemeProvider,
@@ -53,6 +53,18 @@ const router = createBrowserRouter([
     path: "triggers",
     element: <TriggersListPage />,
   },
+  {
+    path: "apollo-test",
+    lazy: async () => {
+      const { default: ApolloTestPage } = await import(
+        "./routes/ApolloTestPage"
+      );
+
+      return {
+        Component: ApolloTestPage,
+      };
+    },
+  }
 ]);
 
 async function startMockingIfConfigured() {

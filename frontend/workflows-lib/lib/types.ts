@@ -1,4 +1,3 @@
-import { PayloadError } from "relay-runtime";
 
 export type TaskStatus =
   | "PENDING"
@@ -107,7 +106,7 @@ export interface SubmissionNetworkErrorMessage {
 
 export interface SubmissionGraphQLErrorMessage {
   type: "graphQLError";
-  errors: PayloadError[];
+  errors: { message: string }[];
 }
 
 export interface SubmissionData {

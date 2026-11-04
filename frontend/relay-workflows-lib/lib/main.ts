@@ -22,4 +22,10 @@ export {
 } from "./components/RelayEnvironment";
 export { RenderSubmittedMessage } from "./components/RenderSubmittedMessage";
 export { SubscribeAndRender } from "./subscription-components/SubscribeAndRender";
-export { handlers } from "../tests/mocks/handlers";
+//export { handlers } from "../tests/mocks/handlers";
+
+export { ApolloProvider } from "./apollo/ApolloProvider";
+export { getApolloClient } from "./apollo/ApolloEnvironment";
+
+
+export { default as ApolloWorkflowTest } from "./apollo/ApolloWorkflowTest";

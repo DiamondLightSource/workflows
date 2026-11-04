@@ -9,11 +9,19 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(import.meta.dirname, "lib/main.ts"),
-      name: "relay-workflows-lib",
-      fileName: "relay-workflows-lib",
+      formats: ["es"],
+      fileName: "workflows-lib",
     },
     rolldownOptions: {
-      external: ["react", "react-dom", "react-relay"],
+      external: [
+        "react",
+        "react-dom",
+        "react-relay",
+        "@apollo/client",
+        "@apollo/client/react",
+        "@apollo/client/link/subscriptions",
+        "@apollo/client/utilities",
+      ],
       output: {
         globals: {
           react: "React",
