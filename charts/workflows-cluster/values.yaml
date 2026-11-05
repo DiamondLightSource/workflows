@@ -183,6 +183,26 @@ vcluster:
             "/auth-keys": "workflows/auth-keys"
             "/workflows-cluster-client": "workflows/workflows-cluster-client"
             "/slack-bot-token": "events/slack-bot-token"
+        patches:
+          - path: ""
+            expression: |
+              (value => {
+                if (value.metadata && value.metadata.labels) {
+                  Object.keys(value.metadata.labels).forEach(key => {
+                    if (key.startsWith("generate.kyverno.io/")) {
+                      delete value.metadata.labels[key];
+                    }
+                  });
+
+                  if (
+                    value.metadata.labels["app.kubernetes.io/managed-by"] === "kyverno"
+                  ) {
+                    delete value.metadata.labels["app.kubernetes.io/managed-by"];
+                  }
+                }
+                return value;
+              })(value)
+            reverseExpression: "value"
       configMaps:
         enabled: true
         mappings:
