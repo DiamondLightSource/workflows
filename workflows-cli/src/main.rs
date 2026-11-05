@@ -37,6 +37,8 @@ const GRAPH_URL: &str = "https://workflows.diamond.ac.uk/graphql";
 
 const AUTH_URL: &str = "http://workflows.diamond.ac.uk/auth/client-creds";
 
+const ISSUER_URL: &str = "https://identity.diamond.ac.uk/realms/dls";
+
 /// The path to the ClusterTriggerTemplate custom resource definition
 const TRIGGER_TEMPLATE_CRD: &str = include_str!("../../charts/events/crds/ctt-crd.yaml");
 

@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use axum::http::StatusCode;
 use hyper::Uri;
-use openidconnect::IssuerUrl;
 use regex::Regex;
 use std::sync::Arc;
 use tower_sessions::Session;
@@ -28,7 +27,6 @@ pub struct AppState {
     pub callback_default_return_to_url: String,
     pub cors_allow: Option<Vec<Regex>>,
     pub session_secure: bool,
-    pub oidc_provider_url: IssuerUrl,
     pub token_validator: TokenValidator,
 }
 
@@ -69,7 +67,6 @@ impl AppState {
             callback_default_return_to_url: config.callback_default_return_to_url,
             cors_allow,
             session_secure: config.session_secure.unwrap_or(true),
-            oidc_provider_url: IssuerUrl::new(config.common.oidc_provider_url)?,
             token_validator,
         })
     }

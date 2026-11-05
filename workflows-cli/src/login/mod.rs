@@ -1,9 +1,11 @@
+use auth_core::oauth2::{ClientId, ClientSecret, Scope, TokenResponse};
+use auth_core::oidc::OidcClient;
+use auth_core::openidconnect::reqwest::{ClientBuilder, redirect::Policy};
+use auth_core::openidconnect::{IssuerUrl, core::CoreProviderMetadata};
 use clap::Parser;
-use reqwest::{Client, Url};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
-use crate::{AUTH_URL, auth::get_auth_token};
+use crate::{AUTH_URL, ISSUER_URL};
 
 #[derive(Debug, Parser, Serialize, Deserialize)]
 pub struct ServiceLoginArgs {
@@ -17,23 +19,38 @@ pub struct ServiceLoginArgs {
 }
 
 pub async fn service_account_login(args: ServiceLoginArgs) {
-    let url = Url::parse(AUTH_URL).expect("Should be able to parse auth URL");
+    let url = reqwest::Url::parse(AUTH_URL).expect("Should be able to parse auth URL");
 
-    let token = match get_auth_token().await {
-        Ok(token) => token,
-        Err(e) => {
-            eprintln!("Failed to obtain authentication token: {e}");
-            return;
-        }
-    };
+    let http_client = ClientBuilder::new()
+        .redirect(Policy::none())
+        .build()
+        .expect("Unable to create HTTP client");
 
-    let response = match Client::new()
+    let issuer_url =
+        IssuerUrl::new(ISSUER_URL.to_string()).expect("Unable to parse OIDC Issuer URL");
+    let provider_metadata = CoreProviderMetadata::discover_async(issuer_url, &http_client)
+        .await
+        .expect("Unable to retrieve provider metadata");
+    let client = OidcClient::from_provider_metadata(
+        provider_metadata,
+        ClientId::new(args.client_id),
+        Some(ClientSecret::new(args.client_secret)),
+    );
+
+    let token_response = client
+        .exchange_client_credentials()
+        .expect("Client credential flow not implemented")
+        .add_scope(Scope::new("offline_access".to_string()))
+        .add_scope(Scope::new("openid".to_string()))
+        .add_scope(Scope::new("fedid".to_string()))
+        .request_async(&http_client)
+        .await
+        .expect("Token exchange failed");
+
+    let response = match reqwest::Client::new()
         .post(url)
-        .bearer_auth(token.secret())
-        .json(&json!({
-            "client_id": args.client_id,
-            "client_secret": args.client_secret,
-        }))
+        .bearer_auth(token_response.access_token().secret())
+        .json(&token_response)
         .send()
         .await
     {
