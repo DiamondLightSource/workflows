@@ -11,30 +11,28 @@ path = "src/bin/keygen.rs"
 publish = false
 
 [dependencies]
-async-trait = {workspace = true }
+async-trait = { workspace = true }
 auth-core = { path = "../auth-core" }
 anyhow = { workspace = true, features = ["backtrace"] }
 axum = { workspace = true, features = ["macros"] }
-axum-reverse-proxy = { workspace = true, features=["full"] }
-bytes = "1.11.0"
+axum-extra = { workspace = true }
+axum-reverse-proxy = { workspace = true, features = ["full"] }
 chrono.workspace = true
 clap.workspace = true
 dotenvy.workspace = true
 hyper = "1.8.1"
-moka.workspace = true
+openidconnect.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-thiserror.workspace = true
 tokio = { workspace = true, features = ["full"] }
 tower-sessions = "0.14.0"
 tower-http = { workspace = true }
 regex = { workspace = true }
 reqwest = { workspace = true }
-tower-sessions-cookie-store = "0.5.2"
-tower = { workspace = true }
-tokio-tungstenite = { workspace = true, features = ["rustls-tls-native-roots"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
+jsonwebtoken = { workspace = true }
+
 
 [dev-dependencies]
 axum-test = { workspace = true }

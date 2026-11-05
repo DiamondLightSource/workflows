@@ -18,11 +18,11 @@ use helm_integration::ManifestType;
 /// Create repository for workflow templates
 mod create;
 
-mod triggers;
-
-mod visit;
-
 mod auth;
+/// Log in as a service account
+mod login;
+mod triggers;
+mod visit;
 
 use clap::Parser;
 use gql_client::{Client, GraphQLError};
@@ -34,6 +34,10 @@ use std::process::Command;
 
 /// Address for making queries to the GraphQL API
 const GRAPH_URL: &str = "https://workflows.diamond.ac.uk/graphql";
+
+const AUTH_URL: &str = "http://workflows.diamond.ac.uk/auth/client-creds";
+
+const ISSUER_URL: &str = "https://identity.diamond.ac.uk/realms/dls";
 
 /// The path to the ClusterTriggerTemplate custom resource definition
 const TRIGGER_TEMPLATE_CRD: &str = include_str!("../../charts/events/crds/ctt-crd.yaml");
@@ -52,6 +56,8 @@ enum Cli {
     Create(CreateArgs),
     /// Create a new workflow trigger from a trigger template
     TriggerCreate(triggers::TriggerCreateArgs),
+    /// Login as a service/machine account using client credentials and store its refresh token in Workflows
+    ServiceLogin(login::ServiceLoginArgs),
 }
 
 /// Arguments for linting from a configfile
@@ -135,6 +141,9 @@ async fn main() {
         }
         Cli::TriggerCreate(args) => {
             triggers::create_trigger(args).await;
+        }
+        Cli::ServiceLogin(args) => {
+            login::service_account_login(args).await;
         }
     }
 }
