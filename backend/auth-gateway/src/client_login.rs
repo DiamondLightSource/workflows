@@ -2,9 +2,7 @@ use crate::auth_session_data::TokenSessionData;
 use crate::state::AppState;
 
 use auth_core::database::write_token_to_database;
-use auth_core::oauth2::{ClientId, ClientSecret, Scope};
-use auth_core::oidc::OidcClient;
-use auth_core::openidconnect::core::CoreProviderMetadata;
+use auth_core::oidc::DiamondTokenResponse;
 use auth_core::openidconnect::{IssuerUrl, SubjectIdentifier, TokenResponse};
 use auth_core::validate_token::{ValidatedAuthToken, ValidationMethod};
 use axum_extra::TypedHeader;
@@ -26,12 +24,6 @@ pub struct IdTokenClaims {
     sub: String,
     name: Option<String>,
     fedid: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ClientCredentials {
-    pub client_id: String,
-    pub client_secret: String,
 }
 
 pub struct AppError {
@@ -60,26 +52,9 @@ impl AppError {
 pub async fn client_credential_login(
     State(state): State<Arc<AppState>>,
     TypedHeader(auth_header): TypedHeader<Authorization<Bearer>>,
-    Json(client_creds): Json<ClientCredentials>,
+    Json(token_response): Json<DiamondTokenResponse>,
 ) -> Result<StatusCode, AppError> {
-    let http_client = reqwest::ClientBuilder::new()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .map_err(|e| {
-            AppError::new(
-                e.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-                e.to_string(),
-            )
-        })?;
-
-    let provider_metadata =
-        CoreProviderMetadata::discover_async(state.oidc_provider_url.clone(), &http_client)
-            .await
-            .map_err(|e| AppError {
-                status: StatusCode::SERVICE_UNAVAILABLE,
-                message: format!("OIDC discovery failed: {e}"),
-            })?;
-
+    println!("{:?}", auth_header.token());
     let auth_token = state
         .token_validator
         .validate_token(Some(auth_header), ValidationMethod::Jwt)
@@ -104,32 +79,6 @@ pub async fn client_credential_login(
         }
     };
 
-    let client = OidcClient::from_provider_metadata(
-        provider_metadata,
-        ClientId::new(client_creds.client_id),
-        Some(ClientSecret::new(client_creds.client_secret)),
-    );
-    let token_response = match client
-        .exchange_client_credentials()
-        .unwrap_or(Err(AppError::new_500(
-            "Client credentials flow not supported",
-        ))?)
-        .add_scope(Scope::new("offline_access".to_string()))
-        .add_scope(Scope::new("openid".to_string()))
-        .add_scope(Scope::new("fedid".to_string()))
-        .request_async(&http_client)
-        .await
-    {
-        Ok(resp) => resp,
-        Err(e) => {
-            tracing::warn!("Client credential exchange failed: {e}");
-            return Err(AppError::new(
-                StatusCode::UNAUTHORIZED,
-                "Invalid client credentials",
-            ));
-        }
-    };
-
     let id_token = token_response.id_token().ok_or(AppError::new(
         StatusCode::BAD_GATEWAY,
         "No ID token was obtained for these client credentials".to_string(),
@@ -148,7 +97,7 @@ pub async fn client_credential_login(
         Some(claims.preferred_username),
         claims.fedid,
     )
-    .map_err(|_| AppError::new_500("Failed to construct token session data"))?;
+    .map_err(|e| AppError::new_500(format!("Failed to construct token session data: {:?}", e)))?;
 
     write_token_to_database(&state.database_connection, &token_data, &state.public_key)
         .await

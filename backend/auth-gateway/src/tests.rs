@@ -12,7 +12,6 @@ use axum::http::{StatusCode, header};
 use axum_test::TestServer;
 use hyper::Uri;
 use mockito::{Matcher, Server};
-use openidconnect::IssuerUrl;
 use regex::Regex;
 use serde_json::json;
 use testcontainers::core::wait::HttpWaitStrategy;
@@ -101,9 +100,6 @@ async fn test_app_state_with(
             .await
             .expect("test validator is setup");
 
-    let issuer_url = IssuerUrl::new(oidc_provider_url.to_string())
-        .expect("OIDC provider URL should be convertible to IssuerUrl");
-
     Arc::new(AppState {
         http_client,
         oidc_client,
@@ -114,7 +110,6 @@ async fn test_app_state_with(
         cors_allow,
         session_secure: false,
         token_validator,
-        oidc_provider_url: issuer_url,
     })
 }
 
