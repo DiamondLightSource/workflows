@@ -25,6 +25,13 @@ eventBuses:
 
 eventSources:
   generic:
+    - beamline: i11
+      stompConfig:
+        user: guest
+        password: guest
+        host: i11-rabbitmq-daq.diamond.ac.uk
+        port: 61613
+        destination: /topic/public.worker.event
     - beamline: i15-1
       stompConfig:
         user: guest
