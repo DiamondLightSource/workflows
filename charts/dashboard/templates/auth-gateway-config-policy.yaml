@@ -11,7 +11,7 @@ metadata:
 spec:
   evaluation:
     synchronize:
-      enabled: true
+      enabled: false
     generateExisting:
       enabled: false
 

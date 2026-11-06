@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: strip-generate-labels
+  annotations:
+    policies.kyverno.io/title: Strip Kyverno generate labels
+    policies.kyverno.io/description: >-
+      Removes the labels Kyverno adds to generated Secrets so the vCluster
+      syncer can copy them to the host, where Kyverno 1.19.2+ only lets
+      Kyverno itself set those labels.
+spec:
+  background: false
+  rules:
+    - name: strip-generate-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+              operations:
+                - CREATE
+                - UPDATE
+            subjects:
+              - kind: ServiceAccount
+                name: kyverno-background-controller
+                namespace: kyverno
+      mutate:
+        foreach:
+          - list: >-
+              keys(request.object.metadata.labels || `{}`)[?starts_with(@, 'generate.kyverno.io/') || @ == 'app.kubernetes.io/managed-by']
+            patchesJson6902: |-
+              - op: remove
+                path: "/metadata/labels/{{ replace_all(element, '/', '~1') }}"
