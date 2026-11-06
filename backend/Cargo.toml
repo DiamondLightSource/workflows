@@ -57,7 +57,7 @@ opentelemetry = { version = "0.32.0" }
 opentelemetry_sdk = { version = "0.32.1", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.32.0", features = ["metrics", "grpc-tonic"] }
 opentelemetry-semantic-conventions = "0.32.0"
-tracing-opentelemetry = { version = "0.33.0" }
+tracing-opentelemetry = { version = "0.34.0" }
 axum = { version = "0.8.6" }
 regex = "1.12.2"
 rustls = "0.23.35"
