@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.21](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.20...dashboard@v0.1.21) (2026-11-06)
+
+
+### Bug Fixes
+
+* **ci:** limit excessive vitest workers causing test timeouts ([8f3062a](https://github.com/DiamondLightSource/workflows/commit/8f3062a17d371e580617d2a02081ce7ff868598a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * relay-workflows-lib bumped from ^0.1.18 to ^0.1.19
+    * workflows-lib bumped from ^0.1.14 to ^0.1.15
+
 ## [0.1.20](https://github.com/DiamondLightSource/workflows/compare/dashboard@v0.1.19...dashboard@v0.1.20) (2026-10-29)
 
 
