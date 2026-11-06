@@ -128,7 +128,8 @@ thanos:
     tsdb:
       retention: 1d
     persistence:
-      enabled: false
+      enabled: true
+      size: 10Gi
     service:
       type: LoadBalancer
     ingress:
@@ -136,10 +137,10 @@ thanos:
     resources:
       requests:
         cpu: "2"
-        memory: 32Gi
+        memory: 10Gi
       limits:
         cpu: "4"
-        memory: 64Gi
+        memory: 10Gi
     networkPolicy:
       enabled: false
   compactor:
