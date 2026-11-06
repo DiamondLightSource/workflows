@@ -6470,6 +6470,7 @@ version = "0.1.4"
 dependencies = [
  "anyhow",
  "axum",
+ "clap",
  "dotenvy",
  "k8s-openapi",
  "kube",
@@ -6477,6 +6478,7 @@ dependencies = [
  "reqwest 0.12.28",
  "serde",
  "serde_json",
+ "serde_yaml",
  "sqlx 0.8.6",
  "strum 0.27.2",
  "time",
