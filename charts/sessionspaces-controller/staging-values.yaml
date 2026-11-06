@@ -1,11 +1,4 @@
 webhook:
-  image:
-    registry: ghcr.io
-    repository: diamondlightsource/workflows-sessionspaces-webhook
-    tag: staging
-    digest: ""
-    pullPolicy: IfNotPresent
-    pullSecrets: []
   deployment:
     replicas: 1
 
