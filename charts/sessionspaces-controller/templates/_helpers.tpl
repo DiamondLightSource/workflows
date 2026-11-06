@@ -6,6 +6,14 @@
 {{ printf "%s-api" (include "common.names.fullname" $) }}
 {{- end }}
 
+{{- define "sessionspaces-controller.config.fullname" -}}
+{{ printf "%s-config" (include "common.names.fullname" $) }}
+{{- end }}
+
+{{- define "sessionspaces-controller.config.checksum" -}}
+checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+{{- end }}
+
 {{- define "sessionspaces-controller.webhook.labels" -}}
 {{ include "common.labels.standard" $ }}
 app.kubernetes.io/component: webhook

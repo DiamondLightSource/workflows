@@ -38,9 +38,18 @@ spec:
       updateStrategy:
         method: InPlace
 
+    - apiVersion: v1
+      resource: secrets
+      updateStrategy:
+        method: InPlace
+
   hooks:
     sync:
       webhook:
         url: http://{{ include "sessionspaces-controller.webhook.fullname" $ }}.{{ .Release.Namespace }}.svc:{{ $.Values.webhook.service.port }}/sync
+        timeout: {{ $.Values.compositeController.syncTimeout }}
+    customize:
+      webhook:
+        url: http://{{ include "sessionspaces-controller.webhook.fullname" $ }}.{{ .Release.Namespace }}.svc:{{ $.Values.webhook.service.port }}/customize
         timeout: {{ $.Values.compositeController.syncTimeout }}
 {{- end }}

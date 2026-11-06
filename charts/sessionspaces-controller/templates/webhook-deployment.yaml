@@ -17,10 +17,11 @@ spec:
       {{- include "sessionspaces-controller.webhook.matchLabels" $ | nindent 6 }}
   template:
     metadata:
-      {{- with $.Values.webhook.deployment.podAnnotations }}
       annotations:
-        {{- . | toYaml | nindent 8 }}
-      {{- end }}
+        {{- include "sessionspaces-controller.config.checksum" $ | nindent 10 }}
+        {{- with $.Values.webhook.deployment.podAnnotations }}
+        {{- . | toYaml | nindent 10 }}
+        {{- end }}
       labels:
         {{- include "sessionspaces-controller.webhook.matchLabels" $ | nindent 8 }}
     spec:
@@ -32,6 +33,8 @@ spec:
           env:
             - name: RUST_LOG
               value: {{ $.Values.webhook.logLevel }}
+            - name: SESSIONSPACES_CONTROLLER_CONFIG_FILE_PATH
+              value: /etc/sessionspaces-controller/sessionspaces-controller-config.yaml
           ports:
             - name: http
               containerPort: 8080
@@ -54,6 +57,11 @@ spec:
             periodSeconds: 10
           resources:
             {{- $.Values.webhook.deployment.resources | toYaml | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/sessionspaces-controller/sessionspaces-controller-config.yaml
+              subPath: sessionspaces-controller-config.yaml
+              readOnly: true
           {{- with $.Values.webhook.deployment.nodeSelector }}
           nodeSelector:
             {{- . | toYaml | nindent 8 }}
@@ -66,4 +74,8 @@ spec:
           tolerations:
             {{- . | toYaml | nindent 8 }}
           {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "sessionspaces-controller.config.fullname" $ }}
 {{- end }}

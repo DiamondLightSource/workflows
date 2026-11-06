@@ -1,3 +1,11 @@
+# Secrets and ConfigMaps to copy into every active session namespace.
+# Sources must have unique `name`s (copies share the source name and would
+# collide in a session namespace); the webhook refuses to start on a clash.
+copySources:
+  - namespace: workflows
+    name: artifact-s3
+    kind: Secret
+
 webhook:
   enabled: true
   image:
