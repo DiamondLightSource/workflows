@@ -14,6 +14,10 @@ workflows.graphql
 # Storybook generated
 storybook-static
 
+# Python
+__pycache__/
+*.py[cod]
+
 # File Types
 **/*.tgz # Chart files created when deploying helm dep build
 .DS_Store

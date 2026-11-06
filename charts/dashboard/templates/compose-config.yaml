@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-gateway-compose-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    {{- with .Values.authGateway.configuration.config }}
+    {{- . | toYaml | nindent 4 }}
+    {{- end }}

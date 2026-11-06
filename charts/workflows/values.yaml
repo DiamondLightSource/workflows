@@ -365,6 +365,9 @@ bitnamisecret:
 s3mock:
   enabled: false
 
+composeSecrets:
+  enabled: true
+
 allowTriggerUid: true
 
 authenticatedWorkflows:

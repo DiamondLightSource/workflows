@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-broker-compose-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    {{- with .Values.authBrokerConfig.config }}
+    {{- . | toYaml | nindent 4 }}
+    {{- end }}

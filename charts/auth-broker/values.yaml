@@ -28,21 +28,10 @@ resources:
 
 authBrokerConfig:
   targetName: auth-broker-config
-
   config:
     oidc_provider_url: https://identity.diamond.ac.uk/realms/dls
     port: 8080
     graph_url: https://graph.diamond.ac.uk/
-
-    client_id:
-      name: workflows-cluster-client
-      key: client-id
-      namespace: workflows
-
-    client_secret:
-      name: workflows-cluster-client
-      key: client-secret
-      namespace: workflows
 
     postgres_database: auth_service
     postgres_hostname: workflows-postgresql-ha-pgpool.workflows.svc.cluster.local
@@ -53,23 +42,3 @@ authBrokerConfig:
     postgres_pool_max_lifetime: 1800
     postgres_pool_connect_timeout: 10
     postgres_pool_acquire_timeout: 10
-
-    postgres_user:
-      name: postgres-auth-service-password
-      key: username
-      namespace: workflows
-
-    postgres_password:
-      name: postgres-auth-service-password
-      key: password
-      namespace: workflows
-
-    encryption_public_key:
-      name: auth-keys
-      key: encryption_public_key
-      namespace: workflows
-
-    encryption_private_key:
-      name: auth-keys
-      key: encryption_private_key
-      namespace: workflows
