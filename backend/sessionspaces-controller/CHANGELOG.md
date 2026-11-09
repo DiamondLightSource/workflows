@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.4...sessionspaces-controller@v0.1.5) (2026-11-09)
+
+
+### Features
+
+* **sessionspaces-controller:** sessionspaces manages namespace secrets ([c110f56](https://github.com/DiamondLightSource/workflows/commit/c110f562e210e6c80c7a903ba43d56e5a95f8167))
+
 ## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.3...sessionspaces-controller@v0.1.4) (2026-10-20)
 
 
