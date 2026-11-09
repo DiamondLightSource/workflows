@@ -1,0 +1,86 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-mutate-pod-gc
+spec:
+  steps:
+    - name: deploy-mutating-policy
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicy
+              metadata:
+                name: test-pod-gc
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE"]
+                      resources: ["workflows"]
+                matchConditions:
+                  - name: pod-gc-not-set
+                    expression: >-
+                      !has(object.spec.podGC)
+                mutations:
+                  - patchType: JSONPatch
+                    jsonPatch:
+                      expression: >-
+                        [JSONPatch{op:'add', path:'/spec/podGC', value:{'strategy':'OnPodCompletion', 'deleteDelayDuration':'60s'}}]
+                reinvocationPolicy: IfNeeded
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicyBinding
+              metadata:
+                name: test-pod-gc
+              spec:
+                policyName: test-pod-gc
+                matchResources:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE"]
+                      resources: ["workflows"]
+        - sleep:
+            duration: 3s
+    - name: pod-gc-defaulted
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec:
+                podGC:
+                  strategy: OnPodCompletion
+                  deleteDelayDuration: 60s
+    - name: explicit-pod-gc-preserved
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit
+              spec:
+                podGC:
+                  strategy: OnWorkflowCompletion
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit
+              spec:
+                podGC:
+                  strategy: OnWorkflowCompletion

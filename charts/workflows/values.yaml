@@ -398,3 +398,10 @@ celAdmissionPolicies:
   # log-only (no enforcement) when triaging.
   enabled: true
   enforcementAction: Deny
+
+celMutatingPolicies:
+  # Kubernetes-native MutatingAdmissionPolicy (CEL) replacements for the
+  # kyverno mutate rules, which have been removed. Requires the
+  # MutatingAdmissionPolicy feature gate + admissionregistration.k8s.io/v1beta1
+  # runtime-config on the vCluster apiserver (k8s 1.34-1.35 beta).
+  enabled: true

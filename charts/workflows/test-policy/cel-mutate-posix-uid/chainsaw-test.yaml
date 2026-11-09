@@ -1,0 +1,75 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-mutate-posix-uid
+spec:
+  steps:
+    - name: deploy-mutating-policy
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicy
+              metadata:
+                name: test-posix-uid-label
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE"]
+                      resources: ["workflows"]
+                variables:
+                  - name: posixUid
+                    expression: >-
+                      (has(request.userInfo.extra) &&
+                       'workflows.diamond.ac.uk/posixuid' in request.userInfo.extra &&
+                       size(request.userInfo.extra['workflows.diamond.ac.uk/posixuid']) > 0 &&
+                       request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] != ''
+                      ) ? request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] :
+                        (has(object.metadata.labels) && 'workflows.diamond.ac.uk/triggeruid' in object.metadata.labels ?
+                          object.metadata.labels['workflows.diamond.ac.uk/triggeruid'] : '')
+                mutations:
+                  - patchType: JSONPatch
+                    jsonPatch:
+                      expression: >-
+                        (has(object.metadata.labels) && 'workflows.diamond.ac.uk/creator-posix-uid' in object.metadata.labels &&
+                         object.metadata.labels['workflows.diamond.ac.uk/creator-posix-uid'] == variables.posixUid) ? [] :
+                        (!has(object.metadata.labels) ? [JSONPatch{op:'add', path:'/metadata/labels', value:{'workflows.diamond.ac.uk/creator-posix-uid': variables.posixUid}}] : []) +
+                        (has(object.metadata.labels) ? [JSONPatch{op:'add', path:'/metadata/labels/' + jsonpatch.escapeKey('workflows.diamond.ac.uk/creator-posix-uid'), value: variables.posixUid}] : []) + []
+                reinvocationPolicy: IfNeeded
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicyBinding
+              metadata:
+                name: test-posix-uid-label
+              spec:
+                policyName: test-posix-uid-label
+                matchResources:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE"]
+                      resources: ["workflows"]
+        - sleep:
+            duration: 3s
+    - name: triggeruid-copied
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-trigger
+                labels:
+                  workflows.diamond.ac.uk/triggeruid: "12345"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-trigger
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"

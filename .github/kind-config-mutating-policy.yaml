@@ -1,0 +1,17 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: chart-testing
+# Enable the MutatingAdmissionPolicy feature (beta in Kubernetes 1.35) on the
+# kube-apiserver so that the CEL mutating admission policies can be tested.
+kubeadmConfigPatches:
+  - |
+    apiVersion: kubeadm.k8s.io/v1beta3
+    kind: ClusterConfiguration
+    metadata:
+      name: config
+    apiServer:
+      extraArgs:
+        feature-gates: MutatingAdmissionPolicy=true
+        runtime-config: admissionregistration.k8s.io/v1beta1=true
+nodes:
+  - role: control-plane

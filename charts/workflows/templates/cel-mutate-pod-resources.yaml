@@ -1,0 +1,61 @@
+{{- if .Values.celMutatingPolicies.enabled }}
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: pod-default-resources
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+    objectSelector:
+      matchLabels:
+        kueue.x-k8s.io/managed: "true"
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (has(object.spec.containers) ?
+            [0,1,2,3,4,5,6,7,8,9]
+              .filter(i, i < size(object.spec.containers) && object.spec.containers[i].name != 'wait')
+              .map(i,
+                (!has(object.spec.containers[i].resources) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources', value:{'requests':{'cpu':'1','memory':'250Mi'},'limits':{'cpu':'1','memory':'250Mi'}}}] : []) +
+                (has(object.spec.containers[i].resources) && !has(object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests', value:{'cpu':'1','memory':'250Mi'}}] : []) +
+                (has(object.spec.containers[i].resources) && !has(object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits', value:{'cpu':'1','memory':'250Mi'}}] : []) +
+                (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.requests) && !('cpu' in object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests/cpu', value:'1'}] : []) +
+                (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.requests) && !('memory' in object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests/memory', value:'250Mi'}] : []) +
+                (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.limits) && !('cpu' in object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits/cpu', value:'1'}] : []) +
+                (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.limits) && !('memory' in object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits/memory', value:'250Mi'}] : [])
+              ).flatten() : []) +
+          (has(object.spec.initContainers) ?
+            [0,1,2,3,4,5,6,7,8,9]
+              .filter(i, i < size(object.spec.initContainers))
+              .map(i,
+                (!has(object.spec.initContainers[i].resources) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources', value:{'requests':{'cpu':'1','memory':'250Mi'},'limits':{'cpu':'1','memory':'250Mi'}}}] : []) +
+                (has(object.spec.initContainers[i].resources) && !has(object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests', value:{'cpu':'1','memory':'250Mi'}}] : []) +
+                (has(object.spec.initContainers[i].resources) && !has(object.spec.initContainers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/limits', value:{'cpu':'1','memory':'250Mi'}}] : []) +
+                (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.requests) && !('cpu' in object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests/cpu', value:'1'}] : []) +
+                (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.requests) && !('memory' in object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests/memory', value:'250Mi'}] : []) +
+                (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.limits) && !('cpu' in object.spec.initContainers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/limits/cpu', value:'1'}] : []) +
+                (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.limits) && !('memory' in object.spec.initContainers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/limits/memory', value:'250Mi'}] : [])
+              ).flatten() : []) + []
+  reinvocationPolicy: IfNeeded
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: pod-default-resources
+spec:
+  policyName: pod-default-resources
+  matchResources:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+    objectSelector:
+      matchLabels:
+        kueue.x-k8s.io/managed: "true"
+{{- end }}

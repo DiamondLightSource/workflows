@@ -1,0 +1,38 @@
+{{- if .Values.celMutatingPolicies.enabled }}
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: {{ .Release.Name }}-pod-gc
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+  matchConditions:
+    - name: pod-gc-not-set
+      expression: >-
+        !has(object.spec.podGC)
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          [
+            JSONPatch{op:'add', path:'/spec/podGC', value:{'strategy':'OnPodCompletion', 'deleteDelayDuration':'60s'}}
+          ]
+  reinvocationPolicy: IfNeeded
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: {{ .Release.Name }}-pod-gc
+spec:
+  policyName: {{ .Release.Name }}-pod-gc
+  matchResources:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+{{- end }}

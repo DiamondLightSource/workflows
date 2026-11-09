@@ -1,0 +1,17 @@
+# Source: workflows/templates/cel-mutate-envoy-sidecar.yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: test-inject-envoy-sidecar
+spec:
+  policyName: test-inject-envoy-sidecar
+  matchResources:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+    objectSelector:
+      matchExpressions:
+        - key: workflows.argoproj.io/workflow
+          operator: Exists

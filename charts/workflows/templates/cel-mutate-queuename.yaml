@@ -1,0 +1,41 @@
+{{- if .Values.celMutatingPolicies.enabled }}
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: default-queuename
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+  matchConditions:
+    - name: queue-name-not-set
+      expression: >-
+        !has(object.spec.podMetadata) ||
+        !has(object.spec.podMetadata.labels) ||
+        !('kueue.x-k8s.io/queue-name' in object.spec.podMetadata.labels) ||
+        object.spec.podMetadata.labels['kueue.x-k8s.io/queue-name'] == ''
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (!has(object.spec.podMetadata) ? [JSONPatch{op:'add', path:'/spec/podMetadata', value:{'labels': {'kueue.x-k8s.io/queue-name':'default-queue'}}}] : []) +
+          (has(object.spec.podMetadata) && !has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels', value:{'kueue.x-k8s.io/queue-name':'default-queue'}}] : []) +
+          (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels/' + jsonpatch.escapeKey('kueue.x-k8s.io/queue-name'), value:'default-queue'}] : []) + []
+  reinvocationPolicy: IfNeeded
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: default-queuename
+spec:
+  policyName: default-queuename
+  matchResources:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+{{- end }}

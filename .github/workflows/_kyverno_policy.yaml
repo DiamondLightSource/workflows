@@ -73,4 +73,4 @@ jobs:
           helm get manifest --namespace kyverno kyverno | yq e '. | select(.kind == "Deployment")' | kubectl wait --for=condition=Available --timeout=60s -f -
 
       - name: Run Chainsaw Tests
-        run: chainsaw test
+        run: chainsaw test --test-dir charts/workflows/test-policy/generate-postgres-secrets

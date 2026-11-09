@@ -1,0 +1,146 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-mutate-workloadpriority
+spec:
+  steps:
+    - name: deploy-mutating-policy
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicy
+              metadata:
+                name: workloadpriority
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["workflows"]
+                variables:
+                  - name: priority
+                    expression: >-
+                      (has(object.metadata.annotations) && 'workflows.diamond.ac.uk/type' in object.metadata.annotations && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'live') ? 'high' :
+                      (has(object.metadata.annotations) && 'workflows.diamond.ac.uk/type' in object.metadata.annotations && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'test') ? 'low' : 'medium'
+                  - name: currentPriority
+                    expression: >-
+                      (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) &&
+                       'kueue.x-k8s.io/priority-class' in object.spec.podMetadata.labels) ?
+                      object.spec.podMetadata.labels['kueue.x-k8s.io/priority-class'] : ''
+                matchConditions:
+                  - name: not-running
+                    expression: >-
+                      oldObject == null || !has(oldObject.status) || !has(oldObject.status.phase) ||
+                      oldObject.status.phase != 'Running'
+                mutations:
+                  - patchType: JSONPatch
+                    jsonPatch:
+                      expression: >-
+                        variables.currentPriority == variables.priority ? [] :
+                        (!has(object.spec.podMetadata) ? [JSONPatch{op:'add', path:'/spec/podMetadata', value:{'labels': {'kueue.x-k8s.io/priority-class': variables.priority}}}] : []) +
+                        (has(object.spec.podMetadata) && !has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels', value:{'kueue.x-k8s.io/priority-class': variables.priority}}] : []) +
+                        (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels/' + jsonpatch.escapeKey('kueue.x-k8s.io/priority-class'), value: variables.priority}] : []) + []
+                reinvocationPolicy: IfNeeded
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicyBinding
+              metadata:
+                name: workloadpriority
+              spec:
+                policyName: workloadpriority
+                matchResources:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["workflows"]
+        - sleep:
+            duration: 3s
+    - name: default-medium
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+    - name: live-high
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: live
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: live
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+    - name: test-low
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test
+                annotations:
+                  workflows.diamond.ac.uk/type: "test"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: low
+    - name: explicit-is-preserved
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
