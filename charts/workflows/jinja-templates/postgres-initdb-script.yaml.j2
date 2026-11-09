@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-initdb-script
+  namespace: {{ namespace }}
+type: Opaque
+stringData:
+  init.sql: |
+    CREATE USER argo_workflows WITH PASSWORD '{{ argo.data['password'] }}';
+    CREATE DATABASE argo_workflows OWNER argo_workflows;
+    CREATE USER auth_user WITH PASSWORD '{{ auth.data['password'] }}';
+    CREATE DATABASE auth_service OWNER auth_user;

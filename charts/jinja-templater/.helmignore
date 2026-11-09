@@ -1,0 +1,7 @@
+# Test environment and caches are not part of the packaged chart.
+tests/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.tgz

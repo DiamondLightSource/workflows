@@ -1,0 +1,91 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: jinjatemplates.templating.diamond.ac.uk
+  labels:
+    app.kubernetes.io/name: jinja-templater
+spec:
+  group: templating.diamond.ac.uk
+  names:
+    kind: JinjaTemplate
+    listKind: JinjaTemplateList
+    plural: jinjatemplates
+    singular: jinjatemplate
+    shortNames:
+      - jt
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Ready
+          type: string
+          jsonPath: .status.conditions[?(@.type=="Ready")].status
+        - name: Reason
+          type: string
+          jsonPath: .status.conditions[?(@.type=="Ready")].reason
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - templates
+              additionalProperties: false
+              properties:
+                sources:
+                  type: array
+                  description: Objects made available to the Jinja templates.
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - apiVersion
+                      - kind
+                      - resource
+                    additionalProperties: false
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the Kubernetes object to read.
+                      alias:
+                        type: string
+                        description: >-
+                          Variable name exposed to templates. Defaults to the
+                          object name with non-identifier characters replaced by
+                          underscores.
+                      apiVersion:
+                        type: string
+                        description: apiVersion of the object to read.
+                      kind:
+                        type: string
+                        description: Kind of the object to read.
+                      resource:
+                        type: string
+                        description: >-
+                          Plural resource name of the object, used by the
+                          customize hook (for example secrets or configmaps).
+                      namespace:
+                        type: string
+                        description: >-
+                          Namespace of the object. Defaults to the JinjaTemplate's
+                          namespace.
+                templates:
+                  type: object
+                  description: >-
+                    Mapping of template name to Jinja source. Every rendered
+                    document becomes a child resource.
+                  additionalProperties:
+                    type: string
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true

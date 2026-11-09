@@ -1,0 +1,26 @@
+{{- if .Capabilities.APIVersions.Has "templating.diamond.ac.uk/v1alpha1" }}
+apiVersion: templating.diamond.ac.uk/v1alpha1
+kind: JinjaTemplate
+metadata:
+  name: postgres-secrets
+  namespace: {{ .Release.Namespace }}
+spec:
+  sources:
+    - name: postgres-argo-workflows-password
+      alias: argo
+      apiVersion: v1
+      kind: Secret
+      resource: secrets
+      name: postgres-argo-workflows-password
+    - name: postgres-auth-service-password
+      alias: auth
+      apiVersion: v1
+      kind: Secret
+      resource: secrets
+      name: postgres-auth-service-password
+  templates:
+    postgres-application-passwords: |
+      {{- .Files.Get "jinja-templates/postgres-application-passwords.yaml.j2" | trim | nindent 6 }}
+    postgres-initdb-script: |
+      {{- .Files.Get "jinja-templates/postgres-initdb-script.yaml.j2" | trim | nindent 6 }}
+{{- end }}

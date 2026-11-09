@@ -19,6 +19,12 @@ metacontroller:
   extraValueFiles: []
   valuesObject: {}
 
+jinjaTemplater:
+  enabled: true
+  targetRevision: production
+  extraValueFiles: []
+  valuesObject: {}
+
 groups:
   enabled: true
   targetRevision: production

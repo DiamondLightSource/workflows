@@ -1,0 +1,8 @@
+apiVersion: v2
+name: jinja-templater
+description: >-
+  Generic Metacontroller hook that renders Kubernetes resources from Jinja
+  templates declared in JinjaTemplate resources
+type: application
+version: 0.1.0
+appVersion: 0.1.0

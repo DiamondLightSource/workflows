@@ -1,0 +1,20 @@
+image:
+  repository: python
+  tag: "3.14-slim"
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+# Python packages installed at startup. Pinned so the rendered output does not
+# change when a new upstream release appears.
+pythonPackages:
+  - "jinja2==3.1.6"
+  - "pyyaml==6.0.3"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

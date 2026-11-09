@@ -1,0 +1,17 @@
+{% if static.data['config.yaml'] %}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: auth-gateway-config
+  namespace: {{ namespace }}
+type: Opaque
+stringData:
+  config.yaml: |
+    {{ static.data['config.yaml'] | fromyaml | combine({
+      'client_id': client.data['client-id'],
+      'client_secret': client.data['client-secret'],
+      'postgres_user': postgres.data['username'],
+      'postgres_password': postgres.data['password'],
+      'encryption_public_key': keys.data['encryption_public_key'],
+    }) | to_nice_yaml | indent(4) }}
+{% endif %}

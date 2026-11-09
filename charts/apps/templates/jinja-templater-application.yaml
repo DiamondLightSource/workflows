@@ -1,0 +1,35 @@
+{{- if .Values.jinjaTemplater.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jinja-templater
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  destination:
+    namespace: jinja-templater
+    server: {{ .Values.destination.server }}
+  project: default
+  source:
+    repoURL: https://github.com/DiamondLightSource/workflows.git
+    path: charts/jinja-templater
+    targetRevision: {{ .Values.jinjaTemplater.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+        {{- with .Values.jinjaTemplater.extraValueFiles }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+      {{- with .Values.jinjaTemplater.valuesObject }}
+      valuesObject:
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+{{- end }}

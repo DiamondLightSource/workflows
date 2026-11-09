@@ -17,6 +17,9 @@ storybook-static
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
 
 # File Types
 **/*.tgz # Chart files created when deploying helm dep build

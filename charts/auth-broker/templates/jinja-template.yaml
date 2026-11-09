@@ -1,0 +1,39 @@
+{{- if .Capabilities.APIVersions.Has "templating.diamond.ac.uk/v1alpha1" }}
+apiVersion: templating.diamond.ac.uk/v1alpha1
+kind: JinjaTemplate
+metadata:
+  name: auth-broker-config
+  namespace: {{ .Release.Namespace }}
+spec:
+  sources:
+    - name: auth-broker-compose-config
+      alias: static
+      apiVersion: v1
+      kind: ConfigMap
+      resource: configmaps
+      name: auth-broker-compose-config
+    - name: workflows-cluster-client
+      alias: client
+      apiVersion: v1
+      kind: Secret
+      resource: secrets
+      namespace: workflows
+      name: workflows-cluster-client
+    - name: postgres-auth-service-password
+      alias: postgres
+      apiVersion: v1
+      kind: Secret
+      resource: secrets
+      namespace: workflows
+      name: postgres-auth-service-password
+    - name: auth-keys
+      alias: keys
+      apiVersion: v1
+      kind: Secret
+      resource: secrets
+      namespace: workflows
+      name: auth-keys
+  templates:
+    auth-broker-config: |
+      {{- .Files.Get "jinja-templates/auth-broker-config.yaml.j2" | trim | nindent 6 }}
+{{- end }}

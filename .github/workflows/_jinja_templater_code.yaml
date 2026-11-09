@@ -1,10 +1,10 @@
-name: Compose Secrets Hook
+name: Jinja Templater Code
 
 on:
   workflow_call:
 
 jobs:
-  test_compose_secrets_hook:
+  test_jinja_templater_hook:
     name: pytest
     runs-on: ubuntu-latest
 
@@ -20,17 +20,17 @@ jobs:
         run: uv python install 3.14
 
       - name: Install dependencies
-        working-directory: charts/workflows/tests
+        working-directory: charts/jinja-templater/tests
         run: uv sync --all-extras --dev
 
       - name: Run Ruff format check
-        working-directory: charts/workflows/tests
-        run: uv run ruff format --check . ../hooks/compose-secrets.py
+        working-directory: charts/jinja-templater/tests
+        run: uv run ruff format --check . ../hooks/jinja_templater.py
 
       - name: Run Ruff lint
-        working-directory: charts/workflows/tests
-        run: uv run ruff check . ../hooks/compose-secrets.py
+        working-directory: charts/jinja-templater/tests
+        run: uv run ruff check . ../hooks/jinja_templater.py
 
       - name: Run pytest
-        working-directory: charts/workflows/tests
+        working-directory: charts/jinja-templater/tests
         run: uv run pytest
