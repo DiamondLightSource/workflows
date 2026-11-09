@@ -40,6 +40,17 @@ spec:
                     triggerOnMessageType:
                       type: string
                       pattern: "^(start|stop)$"
+                    filters:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          path:
+                            type: string
+                          values:
+                            type: array
+                            items:
+                              type: string
                     retryBehaviour:
                       type: object
                       properties:
