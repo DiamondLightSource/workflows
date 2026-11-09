@@ -6,8 +6,17 @@ image:
   pullPolicy: IfNotPresent
 
 policy:
-  # WARNING: this policy sets podSecurityContext following post 2026-05 cloud team policies
+  # WARNING: these policies set podSecurityContext following post 2026-05 cloud team policies
   # Conflicts with the policy in charts/sessionspaces/templates/pod-clusterpolicy.yaml
   # Do not enable both at the same time
+  #
+  # Native admission policies (MutatingAdmissionPolicy) that replace the kyverno
+  # ClusterPolicies that used to live in templates/policy.yaml:
+  #  - cel-mutate-workflow-security-context: a Param-CEL policy that sets the
+  #    Workflow spec.securityContext from the aggregated UserIdentityMap CRD
+  #    (maintained by the identity-mapper cronjob), indexed by the caller's
+  #    posix-uid (or the trigger-uid label when allowTriggerUid is true).
+  #  - cel-mutate-pod-security-context: a pure-CEL policy that hardens every
+  #    container securityContext in sessionspaces-managed namespaces.
   enable: true
   allowTriggerUid: true

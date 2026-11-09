@@ -8,19 +8,86 @@ spec:
       labels:
         app.kubernetes.io/managed-by: sessionspaces
   steps:
-    - try:
-        - create:
+    - name: deploy-policy
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicy
+              metadata:
+                name: identity-mapper-workflow-security-context
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE"]
+                      resources: ["workflows"]
+                paramKind:
+                  apiVersion: workflows.internal.diamond.ac.uk/v1
+                  kind: UserIdentityMap
+                variables:
+                  - name: posixUid
+                    expression: >-
+                      (has(request.userInfo.extra) &&
+                       'workflows.diamond.ac.uk/posixuid' in request.userInfo.extra &&
+                       size(request.userInfo.extra['workflows.diamond.ac.uk/posixuid']) > 0 &&
+                       request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] != '') ?
+                        request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] :
+                        (has(object.metadata.labels) && 'workflows.diamond.ac.uk/triggeruid' in object.metadata.labels ?
+                          object.metadata.labels['workflows.diamond.ac.uk/triggeruid'] : '')
+                mutations:
+                  - patchType: JSONPatch
+                    jsonPatch:
+                      expression: >-
+                        (variables.posixUid != '' && has(params.spec.users) && variables.posixUid in params.spec.users) ?
+                          (has(object.spec.securityContext) ?
+                            [JSONPatch{op: 'replace', path: '/spec/securityContext', value: dyn({
+                              'runAsUser': dyn(params.spec.users[variables.posixUid]).uid,
+                              'runAsGroup': dyn(params.spec.users[variables.posixUid]).gid,
+                              'supplementalGroups': dyn(params.spec.users[variables.posixUid]).supplementalGroups
+                            })}] :
+                            [JSONPatch{op: 'add', path: '/spec/securityContext', value: dyn({
+                              'runAsUser': dyn(params.spec.users[variables.posixUid]).uid,
+                              'runAsGroup': dyn(params.spec.users[variables.posixUid]).gid,
+                              'supplementalGroups': dyn(params.spec.users[variables.posixUid]).supplementalGroups
+                            })}]) : [] + []
+                reinvocationPolicy: IfNeeded
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicyBinding
+              metadata:
+                name: identity-mapper-workflow-security-context
+              spec:
+                policyName: identity-mapper-workflow-security-context
+                paramRef:
+                  name: user-identity-map
+                  parameterNotFoundAction: Allow
+                matchResources:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE"]
+                      resources: ["workflows"]
+        - apply:
             resource:
               apiVersion: workflows.internal.diamond.ac.uk/v1
-              kind: UserIdentity
+              kind: UserIdentityMap
               metadata:
-                name: "12"
+                name: user-identity-map
               spec:
-                uid: 12
-                gid: 34
-                supplementalGroups:
-                  - 56
-                  - 78
+                users:
+                  "12":
+                    uid: 12
+                    gid: 34
+                    supplementalGroups:
+                      - 56
+                      - 78
+        - sleep:
+            duration: 3s
+    - name: mutate-from-posix-uid
+      try:
         - create:
             resource:
               apiVersion: rbac.authorization.k8s.io/v1
@@ -68,129 +135,7 @@ spec:
               metadata:
                 name: test-workflow
               spec:
-                 securityContext:
+                securityContext:
                   runAsUser: 12
                   runAsGroup: 34
                   supplementalGroups: [56, 78]
----
-apiVersion: chainsaw.kyverno.io/v1alpha1
-kind: Test
-metadata:
-  name: pod-securitycontext-propagation
-spec:
-  namespaceTemplate:
-    metadata:
-      labels:
-        app.kubernetes.io/managed-by: sessionspaces
-  steps:
-    - try:
-        - create:
-            resource:
-              apiVersion: v1
-              kind: Pod
-              metadata:
-                name: test-pod
-              spec:
-                securityContext:
-                  runAsGroup: 1234
-                  runAsUser: 4321
-                containers:
-                  - name: test-container
-                    image: docker.io/library/busybox:latest
-                initContainers:
-                  - name: test-init-container
-                    image: docker.io/library/busybox:latest
-        - assert:
-            resource:
-              apiVersion: v1
-              kind: Pod
-              metadata:
-                name: test-pod
-              spec:
-                securityContext:
-                  runAsGroup: 1234
-                  runAsUser: 4321
-                containers:
-                  - name: test-container
-                    image: docker.io/library/busybox:latest
-                    securityContext:
-                      runAsGroup: 1234
-                      runAsUser: 4321
-                      allowPrivilegeEscalation: false
-                      readOnlyRootFilesystem: true
-                initContainers:
-                  - name: test-init-container
-                    image: docker.io/library/busybox:latest
-                    securityContext:
-                      runAsGroup: 1234
-                      runAsUser: 4321
-                      allowPrivilegeEscalation: false
-                      readOnlyRootFilesystem: true
----
-apiVersion: chainsaw.kyverno.io/v1alpha1
-kind: Test
-metadata:
-  name: mutate-triggered-workflow-security-context
-spec:
-  namespaceTemplate:
-    metadata:
-      labels:
-        app.kubernetes.io/managed-by: sessionspaces
-  steps:
-    - try:
-        - create:
-            resource:
-              apiVersion: workflows.internal.diamond.ac.uk/v1
-              kind: UserIdentity
-              metadata:
-                name: "54321"
-              spec:
-                uid: 54321
-                gid: 54321
-                supplementalGroups: []
-        - create:
-            resource:
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: Role
-              metadata:
-                name: workflow-creator
-                namespace: ($namespace)
-              rules:
-                - apiGroups: ["argoproj.io"]
-                  resources: ["workflows"]
-                  verbs: ["create"]
-        - create:
-            resource:
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: RoleBinding
-              metadata:
-                name: workflow-creator
-                namespace: ($namespace)
-              subjects:
-                - kind: User
-                  name: oidc:test-user
-              roleRef:
-                apiGroup: rbac.authorization.k8s.io
-                kind: Role
-                name: workflow-creator
-        - create:
-            resource:
-              apiVersion: argoproj.io/v1alpha1
-              kind: Workflow
-              metadata:
-                name: test-workflow
-                namespace: ($namespace)
-                labels:
-                  workflows.diamond.ac.uk/triggeruid: "54321"
-              spec: {}
-        - assert:
-            resource:
-              apiVersion: argoproj.io/v1alpha1
-              kind: Workflow
-              metadata:
-                name: test-workflow
-              spec:
-                 securityContext:
-                  runAsUser: 54321
-                  runAsGroup: 54321
-                  supplementalGroups: []

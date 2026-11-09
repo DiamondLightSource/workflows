@@ -1,0 +1,64 @@
+{{- if .Values.policy.enable }}
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: {{ include "common.names.fullname" $ }}-workflow-security-context
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+  paramKind:
+    apiVersion: workflows.internal.diamond.ac.uk/v1
+    kind: UserIdentityMap
+  variables:
+    - name: posixUid
+      expression: >-
+        {{- if .Values.policy.allowTriggerUid }}
+        (
+          has(request.userInfo.extra) &&
+          'workflows.diamond.ac.uk/posixuid' in request.userInfo.extra &&
+          size(request.userInfo.extra['workflows.diamond.ac.uk/posixuid']) > 0 &&
+          request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] != ''
+        ) ? request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] :
+          (has(object.metadata.labels) && 'workflows.diamond.ac.uk/triggeruid' in object.metadata.labels ?
+            object.metadata.labels['workflows.diamond.ac.uk/triggeruid'] : '')
+        {{- else }}
+        request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0]
+        {{- end }}
+  mutations:
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (variables.posixUid != '' && has(params.spec.users) && variables.posixUid in params.spec.users) ?
+            (has(object.spec.securityContext) ?
+              [JSONPatch{op: 'replace', path: '/spec/securityContext', value: dyn({
+                'runAsUser': dyn(params.spec.users[variables.posixUid]).uid,
+                'runAsGroup': dyn(params.spec.users[variables.posixUid]).gid,
+                'supplementalGroups': dyn(params.spec.users[variables.posixUid]).supplementalGroups
+              })}] :
+              [JSONPatch{op: 'add', path: '/spec/securityContext', value: dyn({
+                'runAsUser': dyn(params.spec.users[variables.posixUid]).uid,
+                'runAsGroup': dyn(params.spec.users[variables.posixUid]).gid,
+                'supplementalGroups': dyn(params.spec.users[variables.posixUid]).supplementalGroups
+              })}]) : [] + []
+  reinvocationPolicy: IfNeeded
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: {{ include "common.names.fullname" $ }}-workflow-security-context
+spec:
+  policyName: {{ include "common.names.fullname" $ }}-workflow-security-context
+  paramRef:
+    name: user-identity-map
+    parameterNotFoundAction: Allow
+  matchResources:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+{{- end }}

@@ -1,0 +1,119 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-security-context
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - name: deploy-policy
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicy
+              metadata:
+                name: identity-mapper-pod-security-context
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: [""]
+                      apiVersions: ["v1"]
+                      operations: ["CREATE"]
+                      resources: ["pods"]
+                mutations:
+                  - patchType: JSONPatch
+                    jsonPatch:
+                      expression: >-
+                        (has(object.spec.containers) ?
+                          [0,1,2,3,4,5,6,7,8,9]
+                            .filter(i, i < size(object.spec.containers))
+                            .map(i,
+                              (!has(object.spec.containers[i].securityContext) ?
+                                [JSONPatch{op: 'add', path: '/spec/containers/' + string(i) + '/securityContext', value: {
+                                  'allowPrivilegeEscalation': false,
+                                  'readOnlyRootFilesystem': true
+                                }}] :
+                                [JSONPatch{op: 'add', path: '/spec/containers/' + string(i) + '/securityContext/allowPrivilegeEscalation', value: false},
+                                 JSONPatch{op: 'add', path: '/spec/containers/' + string(i) + '/securityContext/readOnlyRootFilesystem', value: true}])
+                            ).flatten() : []) +
+                        (has(object.spec.initContainers) ?
+                          [0,1,2,3,4,5,6,7,8,9]
+                            .filter(i, i < size(object.spec.initContainers))
+                            .map(i,
+                              (!has(object.spec.initContainers[i].securityContext) ?
+                                [JSONPatch{op: 'add', path: '/spec/initContainers/' + string(i) + '/securityContext', value: {
+                                  'allowPrivilegeEscalation': false,
+                                  'readOnlyRootFilesystem': true
+                                }}] :
+                                [JSONPatch{op: 'add', path: '/spec/initContainers/' + string(i) + '/securityContext/allowPrivilegeEscalation', value: false},
+                                 JSONPatch{op: 'add', path: '/spec/initContainers/' + string(i) + '/securityContext/readOnlyRootFilesystem', value: true}])
+                            ).flatten() : []) +
+                        (has(object.spec.ephemeralContainers) ?
+                          [0,1,2,3,4,5,6,7,8,9]
+                            .filter(i, i < size(object.spec.ephemeralContainers))
+                            .map(i,
+                              (!has(object.spec.ephemeralContainers[i].securityContext) ?
+                                [JSONPatch{op: 'add', path: '/spec/ephemeralContainers/' + string(i) + '/securityContext', value: {
+                                  'allowPrivilegeEscalation': false,
+                                  'readOnlyRootFilesystem': true
+                                }}] :
+                                [JSONPatch{op: 'add', path: '/spec/ephemeralContainers/' + string(i) + '/securityContext/allowPrivilegeEscalation', value: false},
+                                 JSONPatch{op: 'add', path: '/spec/ephemeralContainers/' + string(i) + '/securityContext/readOnlyRootFilesystem', value: true}])
+                            ).flatten() : []) + []
+                reinvocationPolicy: IfNeeded
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1beta1
+              kind: MutatingAdmissionPolicyBinding
+              metadata:
+                name: identity-mapper-pod-security-context
+              spec:
+                policyName: identity-mapper-pod-security-context
+                matchResources:
+                  resourceRules:
+                    - apiGroups: [""]
+                      apiVersions: ["v1"]
+                      operations: ["CREATE"]
+                      resources: ["pods"]
+                  namespaceSelector:
+                    matchLabels:
+                      app.kubernetes.io/managed-by: sessionspaces
+        - sleep:
+            duration: 3s
+    - name: harden-managed-pod
+      try:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+                namespace: ($namespace)
+              spec:
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                initContainers:
+                  - name: test-init-container
+                    image: docker.io/library/busybox:latest
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-pod
+                namespace: ($namespace)
+              spec:
+                containers:
+                  - name: test-container
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                initContainers:
+                  - name: test-init-container
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true

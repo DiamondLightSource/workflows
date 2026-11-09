@@ -7,7 +7,7 @@ import ldap3
 
 from ._lookup_identities_in_kubernetes import lookup_identities_in_kubernetes
 from ._lookup_identities_in_ldap import lookup_identities_in_ldap
-from ._sync_ldap_to_kubernetes import sync_ldap_to_kubernetes
+from ._sync_ldap_to_kubernetes import sync_ldap_to_kubernetes, sync_user_identity_map
 
 _logger = logging.getLogger(__name__)
 
@@ -33,6 +33,8 @@ def _main() -> None:
     kubernetes_identities = lookup_identities_in_kubernetes(kubectl)
     _logger.info("Syncronizing identities")
     sync_ldap_to_kubernetes(kubectl, ldap_identities, kubernetes_identities)
+    _logger.info("Syncronizing aggregated user identity map")
+    sync_user_identity_map(kubectl, ldap_identities)
     _logger.info("Complete.")
 
 
