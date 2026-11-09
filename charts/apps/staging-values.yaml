@@ -6,6 +6,7 @@ argocd:
 
 events:
   enabled: true
+  targetRevision: HEAD
   extraValueFiles:
     - staging-values.yaml
 
