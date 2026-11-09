@@ -1,6 +1,3 @@
-.yarn/cache
-.yarn/install-state.gz
-
 **/dist
 **/dist-types
 

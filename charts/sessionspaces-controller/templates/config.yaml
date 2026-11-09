@@ -1,0 +1,15 @@
+{{- if $.Values.webhook.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sessionspaces-controller.config.fullname" $ }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sessionspaces-controller.webhook.labels" $ | nindent 4 }}
+data:
+  sessionspaces-controller-config.yaml: |
+    copySources:
+      {{- with $.Values.copySources }}
+      {{- . | toYaml | nindent 6 }}
+      {{- end }}
+{{- end }}

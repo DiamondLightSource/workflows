@@ -8,17 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
 
-      - name: Install Yarn Dependencies
-        uses: borales/actions-yarn@v5.0.0
-        with:
-          cmd: global add markdownlint-cli2 markdown-it-admon
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli2 markdown-it-admon
 
       - name: Lint with markdownlint-cli2
         run: >
@@ -30,12 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           lfs: true
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: 3.12
 
@@ -46,7 +44,7 @@ jobs:
         run: mkdocs build
 
       - name: Upload Docs Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docs
           path: site
@@ -62,23 +60,23 @@ jobs:
             artifact: storybook-shared
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Node
-        uses: actions/setup-node@v6.4.0
+      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
         with:
-          node-version: "22.x"
+          version: 12.16.1
+          runtime: node@22
 
       - name: Install Dependencies
         working-directory: frontend
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build Storybook
         working-directory: frontend/${{ matrix.package }}
-        run: yarn build-storybook --output-dir storybook-static
+        run: pnpm build-storybook --output-dir storybook-static
 
       - name: Upload Storybook Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ matrix.artifact }}
           path: frontend/${{ matrix.package }}/storybook-static
@@ -98,22 +96,22 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v6.0.0
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Download Docs Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: docs
           path: docs
 
       - name: Download Storybook Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: storybook
           path: storybook
 
       - name: Download Shared Storybook Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: storybook-shared
           path: storybook-shared
@@ -122,22 +120,22 @@ jobs:
         run: chmod -R +rX docs storybook storybook-shared
 
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v7
+        uses: actions/upload-artifact/merge@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           separate-directories: true
           pattern: "{docs,storybook,storybook-shared}"
 
       - name: Download Merged Artifact
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: merged-artifacts
           path: merged-artifacts
 
       - name: Upload Merged Artifact
-        uses: actions/upload-pages-artifact@v4.0.0
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: merged-artifacts
 
       - name: Publish Docs to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4.0.5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

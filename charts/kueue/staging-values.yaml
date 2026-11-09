@@ -1,3 +1,12 @@
+kueue:
+  controllerManager:
+    manager:
+      resources:
+        limits:
+          cpu: "2"
+        requests:
+          cpu: "1"
+
 clusterQueue:
   quotas:
     cpu: "30"

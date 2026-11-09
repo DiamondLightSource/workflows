@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.4.0...graph-proxy@v0.4.1) (2026-10-29)
+
+
+### Features
+
+* **graph-proxy:** add expiry querying ([25a2793](https://github.com/DiamondLightSource/workflows/commit/25a2793ab169f78f7e3722e04722d9e652e9ddf7))
+* **graph-proxy:** print workflow template on trigger on query ([c30427b](https://github.com/DiamondLightSource/workflows/commit/c30427b34edc1702393f4c42f0a111c20df77de7))
+
 ## [0.4.0](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.3.0...graph-proxy@v0.4.0) (2026-10-21)
 
 

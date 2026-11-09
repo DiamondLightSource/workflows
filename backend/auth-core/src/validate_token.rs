@@ -1,20 +1,20 @@
 use axum::http::Uri;
-use axum_extra::headers::{authorization::Bearer, Authorization};
-use jsonwebtoken::{decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, Validation};
+use axum_extra::headers::{Authorization, authorization::Bearer};
+use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header, jwk::JwkSet};
 use openidconnect::{
-    core::CoreClient, AccessToken, ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet,
-    EndpointSet, IntrospectionUrl, IssuerUrl, TokenIntrospectionResponse,
+    AccessToken, ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet,
+    IntrospectionUrl, IssuerUrl, TokenIntrospectionResponse, core::CoreClient,
 };
 
 use serde::{Deserialize, Serialize};
 
 use openidconnect::{
+    AdditionalProviderMetadata, ProviderMetadata,
     core::{
         CoreAuthDisplay, CoreClaimName, CoreClaimType, CoreClientAuthMethod, CoreGrantType,
         CoreJsonWebKey, CoreJweContentEncryptionAlgorithm, CoreJweKeyManagementAlgorithm,
         CoreResponseMode, CoreResponseType, CoreSubjectIdentifierType,
     },
-    AdditionalProviderMetadata, ProviderMetadata,
 };
 use serde_json::Value;
 

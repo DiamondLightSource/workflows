@@ -140,7 +140,7 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "syn 3.0.4",
+ "syn 3.0.9",
  "typify",
 ]
 
@@ -562,7 +562,7 @@ checksum = "82f6aeea286b8eb4dd3431a1be1b59d290ace00f5bfd8e2a159bc2a05e2c1667"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.4",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -592,7 +592,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
 name = "auth-broker"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "auth-core",
@@ -629,54 +629,55 @@ dependencies = [
  "anyhow",
  "async-trait",
  "axum",
+ "axum-extra",
  "base64 0.22.1",
  "chrono",
  "http-body-util",
+ "jsonwebtoken",
  "migration",
  "oauth2",
  "openidconnect",
- "rustls 0.23.45",
+ "reqwest 0.12.28",
+ "rstest 0.28.0",
+ "rustls 0.23.46",
  "sea-orm",
  "serde",
  "serde_json",
  "serde_yaml",
  "sodiumoxide",
- "thiserror 2.0.21",
+ "testcontainers",
  "tokio",
  "tracing",
 ]
 
 [[package]]
 name = "auth-gateway"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "anyhow",
  "async-trait",
  "auth-core",
  "axum",
+ "axum-extra",
  "axum-reverse-proxy",
  "axum-test",
- "bytes",
  "chrono",
  "clap",
  "dotenvy",
  "hyper 1.9.0",
+ "jsonwebtoken",
  "migration",
  "mockito",
- "moka",
+ "openidconnect",
  "regex",
  "reqwest 0.12.28",
  "sea-orm",
  "serde",
  "serde_json",
  "testcontainers",
- "thiserror 2.0.21",
  "tokio",
- "tokio-tungstenite 0.28.0",
- "tower",
  "tower-http",
  "tower-sessions",
- "tower-sessions-cookie-store",
  "tracing",
  "tracing-subscriber",
  "url",
@@ -920,7 +921,7 @@ dependencies = [
  "hyper-util",
  "pin-project-lite",
  "rustls 0.21.12",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-native-certs 0.8.3",
  "rustls-pki-types",
  "tokio",
@@ -1156,7 +1157,7 @@ dependencies = [
  "hyper-rustls 0.27.9",
  "hyper-util",
  "rand 0.9.4",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "tokio",
  "tokio-tungstenite 0.28.0",
  "tower",
@@ -1324,7 +1325,7 @@ dependencies = [
  "num",
  "pin-project-lite",
  "rand 0.9.4",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-native-certs 0.8.3",
  "rustls-pki-types",
  "serde",
@@ -1549,7 +1550,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 3.0.4",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -1654,12 +1655,7 @@ version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ddef33a339a91ea89fb53151bd0a4689cfce27055c291dfa69945475d22c747"
 dependencies = [
- "base64 0.22.1",
- "hmac 0.12.1",
  "percent-encoding",
- "rand 0.8.6",
- "sha2 0.10.9",
- "subtle",
  "time",
  "version_check",
 ]
@@ -2677,7 +2673,7 @@ checksum = "9fb9654ba8355388abeb8dcb4fc62f511300867002afc858860463bdd9fe0c44"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.4",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -2799,13 +2795,14 @@ dependencies = [
 
 [[package]]
 name = "graph-proxy"
-version = "0.3.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "argo-workflows-openapi",
  "async-graphql",
  "async-graphql-axum",
  "async-stream",
+ "auth-core",
  "aws-credential-types",
  "aws-sdk-s3",
  "axum",
@@ -2829,8 +2826,8 @@ dependencies = [
  "opentelemetry_sdk",
  "regex",
  "reqwest 0.12.28",
- "rstest",
- "rustls 0.23.45",
+ "rstest 0.26.1",
+ "rustls 0.23.46",
  "schemars 1.2.1",
  "secrecy",
  "serde",
@@ -3403,7 +3400,7 @@ dependencies = [
  "hyper 1.9.0",
  "hyper-util",
  "log",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-native-certs 0.8.3",
  "tokio",
  "tokio-rustls 0.26.4",
@@ -3839,9 +3836,9 @@ dependencies = [
 
 [[package]]
 name = "jsonwebtoken"
-version = "10.3.0"
+version = "11.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0529410abe238729a60b108898784df8984c87f6054c9c4fcacc47e4803c1ce1"
+checksum = "e75fe14a82d81e5f5af639997db37d8b96045938a7ac6ab18cdbe1c7467e05e1"
 dependencies = [
  "aws-lc-rs",
  "base64 0.22.1",
@@ -3852,6 +3849,7 @@ dependencies = [
  "serde_json",
  "signature 2.2.0",
  "simple_asn1",
+ "zeroize",
 ]
 
 [[package]]
@@ -3901,7 +3899,7 @@ dependencies = [
  "k8s-openapi",
  "kube-core",
  "pem",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-platform-verifier",
  "secrecy",
  "serde",
@@ -3978,9 +3976,9 @@ dependencies = [
 
 [[package]]
 name = "lazy_static"
-version = "1.5.0"
+version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+checksum = "20870f649af7073d53e38067b2a84312175d56ea15217e1b15bc83506ec50afb"
 dependencies = [
  "spin 0.9.8",
 ]
@@ -5167,7 +5165,7 @@ dependencies = [
  "quinn-proto",
  "quinn-udp",
  "rustc-hash",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "socket2 0.6.3",
  "thiserror 2.0.21",
  "tokio",
@@ -5188,7 +5186,7 @@ dependencies = [
  "rand_pcg",
  "ring 0.17.14",
  "rustc-hash",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-pki-types",
  "slab",
  "thiserror 2.0.21",
@@ -5443,7 +5441,7 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "quinn",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-pki-types",
  "serde",
  "serde_json",
@@ -5622,7 +5620,18 @@ checksum = "f5a3193c063baaa2a95a33f03035c8a72b83d97a54916055ba22d35ed3839d49"
 dependencies = [
  "futures-timer",
  "futures-util",
- "rstest_macros",
+ "rstest_macros 0.26.1",
+]
+
+[[package]]
+name = "rstest"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b376e512f30a7686a8dbc6aeaace99b3ade1c26c1c63473473a817ade226dafc"
+dependencies = [
+ "futures-timer",
+ "futures-util",
+ "rstest_macros 0.28.0",
 ]
 
 [[package]]
@@ -5630,6 +5639,24 @@ name = "rstest_macros"
 version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c845311f0ff7951c5506121a9ad75aec44d083c31583b2ea5a30bcb0b0abba0"
+dependencies = [
+ "cfg-if",
+ "glob",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "relative-path",
+ "rustc_version",
+ "syn 2.0.119",
+ "unicode-ident",
+]
+
+[[package]]
+name = "rstest_macros"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88512dbfb5b73a0dfa38aef7bc73b5657035fce477b923faf12d332dd83051ea"
 dependencies = [
  "cfg-if",
  "glob",
@@ -5739,9 +5766,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.45"
+version = "0.23.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d41d731c7d2f962d1ccc364cec258de3c0e93b38c2fb3ba97ac74513048d634"
+checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "aws-lc-rs",
  "log",
@@ -5807,7 +5834,7 @@ dependencies = [
  "jni",
  "log",
  "once_cell",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-native-certs 0.8.3",
  "rustls-platform-verifier-android",
  "rustls-webpki 0.103.15",
@@ -5967,9 +5994,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm"
-version = "2.0.3"
+version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e01d46a6e22b8ce84aba64fe97011669859bc7f7120a47f5b58839dcaaa4545c"
+checksum = "40bc08e0aa1963295a30473f98d9b4c9c2b0b3a028381e0143cb2647d0a59a32"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -6015,9 +6042,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-cli"
-version = "2.0.3"
+version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2479056c3f9c96c8ec5b9091103050b5f3a0532c615d8ab01d3edb81af5c65a8"
+checksum = "04469c4a54e7271fe3fe2b8140102a2cd2eb7e48129a3afcd013b9909ddebc3c"
 dependencies = [
  "chrono",
  "clap",
@@ -6035,9 +6062,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-macros"
-version = "2.0.3"
+version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e24c82fc1e76c014dffe5ecdac8f654da73161d703a16ea13414581e07459c83"
+checksum = "91fa8c81c20fc8cfe78d22d9a2721ca5ef151dc4a8a7b372de218aaba33733fa"
 dependencies = [
  "heck 0.5.0",
  "itertools 0.14.0",
@@ -6051,9 +6078,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-migration"
-version = "2.0.3"
+version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9acbadc98b17aa94657122dae4b5a840c7cebe6359a5ba15d8eaa233768942a5"
+checksum = "07970137dbbed6daf56a2429db349abfb68ed1c79206957c30d4a0e9ea808c08"
 dependencies = [
  "async-trait",
  "clap",
@@ -6274,7 +6301,7 @@ checksum = "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.4",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -6290,9 +6317,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.151"
+version = "1.0.154"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
+checksum = "e7e9cc8b1b85264074fbcc02a88680c4096b1e47df8f739dceb03bf482f04bd6"
 dependencies = [
  "itoa",
  "memchr",
@@ -6412,7 +6439,7 @@ dependencies = [
 
 [[package]]
 name = "sessionspaces"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "anyhow",
  "clap",
@@ -6439,10 +6466,11 @@ dependencies = [
 
 [[package]]
 name = "sessionspaces-controller"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "axum",
+ "clap",
  "dotenvy",
  "k8s-openapi",
  "kube",
@@ -6450,6 +6478,7 @@ dependencies = [
  "reqwest 0.12.28",
  "serde",
  "serde_json",
+ "serde_yaml",
  "sqlx 0.8.6",
  "strum 0.27.2",
  "time",
@@ -6712,7 +6741,7 @@ dependencies = [
  "memchr",
  "once_cell",
  "percent-encoding",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -6751,7 +6780,7 @@ dependencies = [
  "memchr",
  "percent-encoding",
  "rust_decimal",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -7159,9 +7188,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "3.0.4"
+version = "3.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6275cddf4610d1775e6d1fe9469b2e77d0f39fd98fb7450901b821e0c53649f"
+checksum = "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7322,7 +7351,7 @@ checksum = "fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.4",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -7442,7 +7471,7 @@ version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1729aa945f29d91ba541258c8df89027d5792d85a8841fb65e8bf0f4ede4ef61"
 dependencies = [
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "tokio",
 ]
 
@@ -7465,11 +7494,7 @@ checksum = "d25a406cddcc431a75d3d9afc6a7c0f7428d4891dd973e4d54c56b46127bf857"
 dependencies = [
  "futures-util",
  "log",
- "rustls 0.23.45",
- "rustls-native-certs 0.8.3",
- "rustls-pki-types",
  "tokio",
- "tokio-rustls 0.26.4",
  "tungstenite 0.28.0",
 ]
 
@@ -7723,25 +7748,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tower-sessions-cookie-store"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8831be41b579a91b2b4084e2a8b5a383ac4e73a93c2a0dbb0c1d232a7e3f7247"
-dependencies = [
- "async-trait",
- "base64 0.22.1",
- "http 1.4.2",
- "serde",
- "serde_json",
- "time",
- "tower-cookies",
- "tower-layer",
- "tower-service",
- "tower-sessions-core",
- "tracing",
-]
-
-[[package]]
 name = "tower-sessions-core"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7870,8 +7876,6 @@ dependencies = [
  "httparse",
  "log",
  "rand 0.9.4",
- "rustls 0.23.45",
- "rustls-pki-types",
  "sha1 0.10.6",
  "thiserror 2.0.21",
  "utf-8",
@@ -8060,7 +8064,7 @@ dependencies = [
  "base64 0.22.1",
  "log",
  "percent-encoding",
- "rustls 0.23.45",
+ "rustls 0.23.46",
  "rustls-pki-types",
  "ureq-proto",
  "utf8-zero",
@@ -8953,6 +8957,20 @@ name = "zeroize"
 version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b97154e67e32c85465826e8bcc1c59429aaaf107c1e4a9e53c8d8ccd5eff88d0"
+dependencies = [
+ "zeroize_derive",
+]
+
+[[package]]
+name = "zeroize_derive"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c50655cbb0fe3fc43170059e702f1ce5e19b84cec58dc87b037a09935c2f328"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
 
 [[package]]
 name = "zerotrie"

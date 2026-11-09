@@ -15,8 +15,8 @@ mod workflow_templates;
 /// GraphQL operations related to workflows
 mod workflows;
 
+use crate::graphql::auth_guard::AuthGuard;
 use crate::RouterState;
-use crate::{graphql::auth_guard::AuthGuard, validate_token::ValidationMethod};
 
 use self::{
     subscription::WorkflowsSubscription,
@@ -29,6 +29,7 @@ use async_graphql::{
     MergedSubscription, Object, Schema, SchemaBuilder, SimpleObject, Union, Value, ID,
 };
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
+use auth_core::validate_token::ValidationMethod;
 use axum::extract::State;
 use axum_extra::{
     headers::{authorization::Bearer, Authorization},

@@ -1,5 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "plugins": [
+    {
+      "type": "node-workspace",
+      "merge": true
+    }
+  ],
   "include-component-in-tag": true,
   "include-v-in-tag": true,
   "tag-separator": "@",
@@ -79,6 +85,7 @@
     },
     "frontend/dashboard": {
       "release-type": "node",
+      "separate-pull-requests": false,
       "extra-files": [
         {
           "type": "yaml",
@@ -88,14 +95,17 @@
       ]
     },
     "frontend/relay-workflows-lib": {
-      "release-type": "node"
+      "release-type": "node",
+      "separate-pull-requests": false
     },
     "frontend/workflows-lib": {
-      "release-type": "node"
+      "release-type": "node",
+      "separate-pull-requests": false
     },
     "frontend/workflows-lib-shared": {
       "release-type": "node",
-      "component": "workflows-lib-shared"
+      "component": "workflows-lib-shared",
+      "separate-pull-requests": false
     },
     "backend/telemetry": {
       "release-type": "rust"

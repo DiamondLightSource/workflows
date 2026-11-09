@@ -77,9 +77,9 @@ export function formatErrorMessage(errorMessage: string | undefined) {
 export function convertStringToScienceGroup(
   input: string,
 ): ScienceGroup | undefined {
-  return Object.values(ScienceGroup).includes(input as ScienceGroup)
-    ? (input as ScienceGroup)
-    : undefined;
+  const values = Object.values(ScienceGroup) as string[];
+  const index = values.indexOf(input);
+  return index >= 0 ? Object.values(ScienceGroup)[index] : undefined;
 }
 
 /**

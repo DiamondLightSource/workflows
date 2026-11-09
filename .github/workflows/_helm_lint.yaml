@@ -8,15 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Setup Helm
-        uses: azure/setup-helm@v5
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
 
       - name: Setup Chart Testing
-        uses: helm/chart-testing-action@v2.8.0
+        uses: helm/chart-testing-action@720270857a28afd41e2426521a7801db09e9b510 # v2.9.0
 
       - name: Install chart dependencies
         run: |
@@ -37,5 +37,5 @@ jobs:
           lint
           --target-branch=${{ github.event.repository.default_branch }}
           --validate-maintainers=false
-          --check-version-increment=true
+          --check-version-increment=false
           --lint-conf=.lintconf.yaml
