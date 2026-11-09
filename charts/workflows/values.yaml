@@ -390,3 +390,11 @@ authenticatedWorkflows:
         # limit range doesn't allow a smaller value
         cpu: 1000m
         memory: 256Mi
+
+celAdmissionPolicies:
+  # Kubernetes-native ValidatingAdmissionPolicy (CEL) replacements for the
+  # kyverno validating (deny) rules, which have been removed. Deployed in-process
+  # on the vCluster apiserver. `enforcementAction` may be set to `Audit` to
+  # log-only (no enforcement) when triaging.
+  enabled: true
+  enforcementAction: Deny

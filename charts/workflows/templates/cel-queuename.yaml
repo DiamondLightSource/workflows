@@ -1,0 +1,65 @@
+{{- if .Values.celAdmissionPolicies.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: validate-queuename
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["workflows"]
+  validations:
+    - expression: >-
+        !has(object.spec.podMetadata.labels) ||
+        !('kueue.x-k8s.io/queue-name' in object.spec.podMetadata.labels) ||
+        object.spec.podMetadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
+      message: "The label kueue.x-k8s.io/queue-name must be default-queue"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: validate-queuename
+spec:
+  policyName: validate-queuename
+  validationActions: [{{ .Values.celAdmissionPolicies.enforcementAction }}]
+  matchResources:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["workflows"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: validate-mpijob-queuename
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["kubeflow.org"]
+        apiVersions: ["v2beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["mpijobs"]
+  validations:
+    - expression: >-
+        has(object.metadata.labels) &&
+        'kueue.x-k8s.io/queue-name' in object.metadata.labels &&
+        object.metadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
+      message: "The label kueue.x-k8s.io/queue-name must be default-queue"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: validate-mpijob-queuename
+spec:
+  policyName: validate-mpijob-queuename
+  validationActions: [{{ .Values.celAdmissionPolicies.enforcementAction }}]
+  matchResources:
+    resourceRules:
+      - apiGroups: ["kubeflow.org"]
+        apiVersions: ["v2beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["mpijobs"]
+{{- end }}

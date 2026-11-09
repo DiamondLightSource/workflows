@@ -1,0 +1,69 @@
+{{- if .Values.celAdmissionPolicies.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: validate-workflow-type
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["workflows"]
+  validations:
+    - expression: >-
+        !has(object.metadata.annotations) ||
+        !('workflows.diamond.ac.uk/type' in object.metadata.annotations) ||
+        object.metadata.annotations['workflows.diamond.ac.uk/type'] == '' ||
+        object.metadata.annotations['workflows.diamond.ac.uk/type'] in ['standard', 'live', 'test']
+      message: "The annotation workflows.diamond.ac.uk/type must be 'standard', 'live', or 'test'."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: validate-workflow-type
+spec:
+  policyName: validate-workflow-type
+  validationActions: [{{ .Values.celAdmissionPolicies.enforcementAction }}]
+  matchResources:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["workflows"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: validate-kueue-labels
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["workflows"]
+  validations:
+    - expression: >-
+        (has(object.spec.podMetadata.labels) && 'kueue.x-k8s.io/priority-class' in object.spec.podMetadata.labels
+          ? object.spec.podMetadata.labels['kueue.x-k8s.io/priority-class'] : '') ==
+        (has(object.metadata.annotations) && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'live'
+          ? 'high' :
+         has(object.metadata.annotations) && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'test'
+          ? 'low' : 'medium')
+      message: "Workload priority labels must match the workflows.diamond.ac.uk/type annotation."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: validate-kueue-labels
+spec:
+  policyName: validate-kueue-labels
+  validationActions: [{{ .Values.celAdmissionPolicies.enforcementAction }}]
+  matchResources:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["workflows"]
+{{- end }}

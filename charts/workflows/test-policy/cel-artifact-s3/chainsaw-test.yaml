@@ -1,0 +1,140 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-artifact-s3
+spec:
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - name: deploy-cel-policy
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1
+              kind: ValidatingAdmissionPolicy
+              metadata:
+                name: artifact-s3-secret-usage
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: [""]
+                      apiVersions: ["v1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["pods"]
+                validations:
+                  - expression: >-
+                      !(
+                        (has(object.spec.volumes) && object.spec.volumes.exists(v,
+                          v.name != 'artifact-s3' && has(v.secret) && v.secret.secretName == 'artifact-s3'))
+                        ||
+                        (has(object.spec.containers) && object.spec.containers.exists(c,
+                          c.name != 'wait' &&
+                          !(has(c.image) && c.image.startsWith('quay.io/argoproj/argoexec')) &&
+                          ((has(c.env) && c.env.exists(e, has(e.valueFrom) && has(e.valueFrom.secretKeyRef) && e.valueFrom.secretKeyRef.name == 'artifact-s3')) ||
+                           (has(c.volumeMounts) && c.volumeMounts.exists(vm, vm.name == 'artifact-s3')))))
+                        ||
+                        (has(object.spec.initContainers) && object.spec.initContainers.exists(c,
+                          c.name != 'init' &&
+                          !(has(c.image) && c.image.startsWith('quay.io/argoproj/argoexec')) &&
+                          ((has(c.env) && c.env.exists(e, has(e.valueFrom) && has(e.valueFrom.secretKeyRef) && e.valueFrom.secretKeyRef.name == 'artifact-s3')) ||
+                           (has(c.volumeMounts) && c.volumeMounts.exists(vm, vm.name == 'artifact-s3')))))
+                        ||
+                        (has(object.spec.ephemeralContainers) && object.spec.ephemeralContainers.exists(c,
+                          has(c.volumeMounts) && c.volumeMounts.exists(vm, vm.name == 'artifact-s3')))
+                      )
+                    message: "The artifact-s3 secret cannot be used by workflow pods"
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1
+              kind: ValidatingAdmissionPolicyBinding
+              metadata:
+                name: artifact-s3-secret-usage
+              spec:
+                policyName: artifact-s3-secret-usage
+                validationActions: [Deny]
+                matchResources:
+                  namespaceSelector:
+                    matchLabels:
+                      app.kubernetes.io/managed-by: sessionspaces
+        - sleep:
+            duration: 3s
+    - name: allowed-workflow-sidecars
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: allowed
+              spec:
+                initContainers:
+                  - name: init
+                    image: quay.io/argoproj/argoexec:v3.5.6
+                    volumeMounts:
+                      - name: artifact-s3
+                        mountPath: /argo/secret/artifact-s3
+                containers:
+                  - name: main
+                    image: docker.io/library/busybox:latest
+                  - name: wait
+                    image: quay.io/argoproj/argoexec:v3.5.6
+                    volumeMounts:
+                      - name: artifact-s3
+                        mountPath: /argo/secret/artifact-s3
+                volumes:
+                  - name: artifact-s3
+                    secret:
+                      secretName: artifact-s3
+    - name: denied-usage
+      try:
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: denied-mount
+              spec:
+                containers:
+                  - name: denied-mount
+                    image: docker.io/library/busybox:latest
+                volumes:
+                  - name: secret
+                    secret:
+                      secretName: artifact-s3
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: denied-container-environment
+              spec:
+                containers:
+                  - name: denied-environment
+                    image: docker.io/library/busybox:latest
+                    env:
+                      - name: FOO
+                        valueFrom:
+                          secretKeyRef:
+                            name: artifact-s3
+                            key: access-key
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: denied-init-container-environment
+              spec:
+                initContainers:
+                  - name: denied-environment
+                    image: docker.io/library/busybox:latest
+                    env:
+                      - name: FOO
+                        valueFrom:
+                          secretKeyRef:
+                            name: artifact-s3
+                            key: access-key
+                containers:
+                  - name: main
+                    image: docker.io/library/busybox:latest

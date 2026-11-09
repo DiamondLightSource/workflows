@@ -80,25 +80,6 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/priority-class: low
-        - error:
-            resource:
-              apiVersion: argoproj.io/v1alpha1
-              kind: Workflow
-              metadata:
-                name: invalid
-                annotations:
-                  workflows.diamond.ac.uk/type: "processing"
-              spec: {}
-        - error:
-            resource:
-              apiVersion: argoproj.io/v1alpha1
-              kind: Workflow
-              metadata:
-                name: manual-standard
-              spec:
-                podMetadata:
-                  labels:
-                    kueue.x-k8s.io/priority-class: medium
 ---
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
@@ -190,7 +171,9 @@ spec:
                 name: update-while-running
               status:
                 phase: Running
-        - error:
+        # A Running Workflow must not have its priority-class mutated when the
+        # type annotation changes (the mutate rules guard on phase != Running).
+        - apply:
             resource:
               apiVersion: argoproj.io/v1alpha1
               kind: Workflow
@@ -198,11 +181,7 @@ spec:
                 name: update-while-running
                 annotations:
                   workflows.diamond.ac.uk/type: "test"
-              spec:
-                podMetadata:
-                  labels:
-                    kueue.x-k8s.io/priority-class: high
-        # Verify that the rejected update has not changed the Workflow.
+              spec: {}
         - assert:
             resource:
               apiVersion: argoproj.io/v1alpha1
@@ -210,7 +189,7 @@ spec:
               metadata:
                 name: update-while-running
                 annotations:
-                  workflows.diamond.ac.uk/type: "live"
+                  workflows.diamond.ac.uk/type: "test"
               spec:
                 podMetadata:
                   labels:

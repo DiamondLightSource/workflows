@@ -1,0 +1,47 @@
+{{- if .Values.celAdmissionPolicies.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: {{ .Release.Name }}-artifact-s3-secret-usage
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >-
+        !(
+          (has(object.spec.volumes) && object.spec.volumes.exists(v,
+            v.name != 'artifact-s3' && has(v.secret) && v.secret.secretName == 'artifact-s3'))
+          ||
+          (has(object.spec.containers) && object.spec.containers.exists(c,
+            c.name != 'wait' &&
+            !(has(c.image) && c.image.startsWith('quay.io/argoproj/argoexec')) &&
+            ((has(c.env) && c.env.exists(e, has(e.valueFrom) && has(e.valueFrom.secretKeyRef) && e.valueFrom.secretKeyRef.name == 'artifact-s3')) ||
+             (has(c.volumeMounts) && c.volumeMounts.exists(vm, vm.name == 'artifact-s3')))))
+          ||
+          (has(object.spec.initContainers) && object.spec.initContainers.exists(c,
+            c.name != 'init' &&
+            !(has(c.image) && c.image.startsWith('quay.io/argoproj/argoexec')) &&
+            ((has(c.env) && c.env.exists(e, has(e.valueFrom) && has(e.valueFrom.secretKeyRef) && e.valueFrom.secretKeyRef.name == 'artifact-s3')) ||
+             (has(c.volumeMounts) && c.volumeMounts.exists(vm, vm.name == 'artifact-s3')))))
+          ||
+          (has(object.spec.ephemeralContainers) && object.spec.ephemeralContainers.exists(c,
+            has(c.volumeMounts) && c.volumeMounts.exists(vm, vm.name == 'artifact-s3')))
+        )
+      message: "The artifact-s3 secret cannot be used by workflow pods"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: {{ .Release.Name }}-artifact-s3-secret-usage
+spec:
+  policyName: {{ .Release.Name }}-artifact-s3-secret-usage
+  validationActions: [{{ .Values.celAdmissionPolicies.enforcementAction }}]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        app.kubernetes.io/managed-by: sessionspaces
+{{- end }}

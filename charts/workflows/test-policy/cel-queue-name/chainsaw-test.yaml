@@ -1,0 +1,161 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-queue-name
+spec:
+  steps:
+    - name: deploy-cel-policies
+      try:
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1
+              kind: ValidatingAdmissionPolicy
+              metadata:
+                name: validate-queuename
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["workflows"]
+                validations:
+                  - expression: >-
+                      !has(object.spec.podMetadata.labels) ||
+                      !('kueue.x-k8s.io/queue-name' in object.spec.podMetadata.labels) ||
+                      object.spec.podMetadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
+                    message: "The label kueue.x-k8s.io/queue-name must be default-queue"
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1
+              kind: ValidatingAdmissionPolicyBinding
+              metadata:
+                name: validate-queuename
+              spec:
+                policyName: validate-queuename
+                validationActions: [Deny]
+                matchResources:
+                  resourceRules:
+                    - apiGroups: ["argoproj.io"]
+                      apiVersions: ["v1alpha1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["workflows"]
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1
+              kind: ValidatingAdmissionPolicy
+              metadata:
+                name: validate-mpijob-queuename
+              spec:
+                matchConstraints:
+                  resourceRules:
+                    - apiGroups: ["kubeflow.org"]
+                      apiVersions: ["v2beta1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["mpijobs"]
+                validations:
+                  - expression: >-
+                      has(object.metadata.labels) &&
+                      'kueue.x-k8s.io/queue-name' in object.metadata.labels &&
+                      object.metadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
+                    message: "The label kueue.x-k8s.io/queue-name must be default-queue"
+        - apply:
+            resource:
+              apiVersion: admissionregistration.k8s.io/v1
+              kind: ValidatingAdmissionPolicyBinding
+              metadata:
+                name: validate-mpijob-queuename
+              spec:
+                policyName: validate-mpijob-queuename
+                validationActions: [Deny]
+                matchResources:
+                  resourceRules:
+                    - apiGroups: ["kubeflow.org"]
+                      apiVersions: ["v2beta1"]
+                      operations: ["CREATE", "UPDATE"]
+                      resources: ["mpijobs"]
+        - sleep:
+            duration: 3s
+    - name: workflows
+      try:
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: custom-queue
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: custom-queue
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit-default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: explicit-default
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+    - name: mpijobs
+      try:
+        - error:
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-missing-queue
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
+        - apply:
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-default-queue
+                labels:
+                  kueue.x-k8s.io/queue-name: default-queue
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
+        - error:
+            resource:
+              apiVersion: kubeflow.org/v2beta1
+              kind: MPIJob
+              metadata:
+                name: mpijob-custom-queue
+                labels:
+                  kueue.x-k8s.io/queue-name: custom-queue
+              spec:
+                mpiReplicaSpecs:
+                  Launcher:
+                    replicas: 1
+                    template:
+                      spec:
+                        containers:
+                          - name: launcher
+                            image: docker.io/library/busybox:latest
