@@ -51,10 +51,14 @@ class RetryBehaviour(BaseModel):
   numRetries: int
   alertSlackChannelId: str | None = None
 
+class TriggerFilter(BaseModel):
+  path: str
+  values: list[str]
 
 class TriggerWorkflow(BaseModel):
   template: str
   triggerOnMessageType: Literal["start", "stop"] | None = None
+  filters: list[TriggerFilter] | None = None
   parameters: list[WorkflowParameter]
   retryBehaviour: RetryBehaviour | None = None
 
@@ -121,6 +125,13 @@ class Controller(BaseHTTPRequestHandler):
             "path": "body.name",
             "type": "string",
             "value": [workflow.triggerOnMessageType],
+          })
+      if workflow.filters:
+        for filter in workflow.filters:
+          dataFilters.append({
+            "path": "body." + filter.path,
+            "type": "string",
+            "value": filter.values
           })
 
       if namespace != "events":
