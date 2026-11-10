@@ -20,3 +20,5 @@ spec:
           value: "http://127.0.0.1:6000/graphql"
         - name: GRAPH_URL_WS
           value: "http://127.0.0.1:6000/graphql/ws"
+        - name: TILED_URL
+          value: "http://127.0.0.1:6001"

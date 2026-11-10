@@ -377,6 +377,8 @@ authenticatedWorkflows:
     authBrokerServerSocketPort: 8080
     graphAddress: graph.diamond.ac.uk
     graphPort: 443
+    tiledAddress: tiled.diamond.ac.uk
+    tiledPort: 443
     tls:
       enabled: true
     logLevel: warn
