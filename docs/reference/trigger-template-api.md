@@ -24,8 +24,18 @@
 | ---------------------- | ------------------------------------------------------------------------------------------------ | ------- |
 | `template`             | The `name` of the template that should be run                                                    | -       |
 | `triggerOnMessageType` | Which type of document to trigger on - either `'start'` or `'stop'`                              | -       |
+| `filters`              | A list of [filter](#filter) objects for selective triggering                                     | [ ]     |
 | `parameters`           | A list of [parameter](#parameter) objects                                                        | [ ]     |
 | `retryBehaviour`       | A [retryBehaviour](#retry-behaviour) object specifying what occurs should workflow creation fail | -       |
+
+### Filter
+
+Workflows will only trigger for a given message if all filters are matched. If `filters` is omitted then all messages will trigger workflows
+
+| Field    | Description                                                 | Default |
+| -------- | ----------------------------------------------------------- | ------- |
+| `path`   | The path to a value in the `body` of the message            | -       |
+| `values` | A whitelist of values for the field at the specified `path` | -       |
 
 ### Parameter
 
