@@ -16,3 +16,4 @@ dist-ssr
 storybook-static
 
 *.tsbuildinfo
+.pnpm-store
