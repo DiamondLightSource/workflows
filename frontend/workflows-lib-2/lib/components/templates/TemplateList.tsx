@@ -1,14 +1,19 @@
 import { Box } from "@mui/material";
 import TemplateOverviewCard, { CardInfo } from "./TemplateOverviewCard";
-import { useState } from "react";
 
+// selectedTemplateName and setSelectedTemplate name should just be the result of
+// useState<String | null>(null);
 interface TemplateListProps {
     templateData: CardInfo[]
+    selectedTemplateName: String | null
+    setSelectedTemplateName: (selectedTemplateName: String) => void
 }
 
-export default function TemplateList({ templateData }: TemplateListProps) {
-
-    const [selectedName, setSelectedName] = useState<String | null>(null);
+export default function TemplateList({ 
+    templateData, 
+    selectedTemplateName, 
+    setSelectedTemplateName 
+}: TemplateListProps) {
 
     return (
         <Box sx={{ overflowY: "auto"}}>
@@ -19,8 +24,8 @@ export default function TemplateList({ templateData }: TemplateListProps) {
                 <Box sx={{ margin: "10px", marginLeft: "5px"}}>
                     <TemplateOverviewCard 
                         key={index}
-                        selected={props.name === selectedName}
-                        onSelect={() => setSelectedName(props.name)}
+                        selected={props.name === selectedTemplateName}
+                        onSelect={() => setSelectedTemplateName(props.name)}
                         cardInfo={props}
                     />
                 </Box>
