@@ -258,7 +258,9 @@ authenticationConfiguration:
         expression: >
           claims.?fedid.hasValue()
           ? ('oidc:' + claims.fedid)
-          : ('oidc:' + claims.iss + '/' + claims.client_id)
+          : (
+              claims.?posix_uid.hasValue() ? ('oidc:' + claims.client_id) : ('oidc:' + claims.iss + '/' + claims.client_id)
+            )
       uid:
         expression: "claims.?fedid.orValue(claims.sub)"
       groups:
@@ -286,7 +288,7 @@ authenticationConfiguration:
           (
             claims.?client_id.hasValue()
             &&
-            ['k6Operator'].exists(allowed, allowed == claims.client_id)
+            ['k6Operator', 'i15-1udc'].exists(allowed, allowed == claims.client_id)
           )
         message: "Invalid access token (service account not on allowed-list). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
       - expression: >
@@ -295,7 +297,7 @@ authenticationConfiguration:
           (
             claims.?client_id.hasValue()
             &&
-            ['k6Operator'].exists(allowed, allowed == claims.client_id)
+            ['k6Operator', 'i15-1udc'].exists(allowed, allowed == claims.client_id)
           )
         message: "Invalid access token (missing posix-uid). See: https://diamondlightsource.github.io/workflows/docs/how-tos/authentication/"
     userValidationRules:
