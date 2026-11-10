@@ -45,6 +45,56 @@ spec:
               --data '{"query":"query WorkflowTemplates { workflowTemplates { nodes { name } } }"}'
 ```
 
+## How to access Tiled from within a Workflow
+
+[Tiled](https://tiled.diamond.ac.uk) is accessible from authenticated workflows. To enable authenticated access, the same requirements as for the Federated Graph apply:
+
+- The workflow template must include the annotation `workflows.diamond.ac.uk/authenticated: "true"`.
+- The user submitting the Workflow must have logged in to <https://workflows.diamond.ac.uk>.
+
+When this annotation is present, the `TILED_URL` environment variable is automatically injected into the workflow. Applications running within the workflow can use this URL with the Tiled Python client. Authentication is handled automatically — there is no need to supply credentials or an `Authorization: Bearer ...` header yourself.
+
+Requests **must** be sent via `TILED_URL`. Direct requests to [tiled.diamond.ac.uk](https://tiled.diamond.ac.uk) still require Keycloak authentication.
+
+For example:
+
+```
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: example-tiled-workflow-
+spec:
+  entrypoint: read-tiled-data
+
+  templates:
+    - name: read-tiled-data
+      metadata:
+        annotations:
+          workflows.diamond.ac.uk/authenticated: "true"
+      script:
+        image: ghcr.io/bluesky/tiled:latest
+        command: ["python"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        source: |
+          import os
+          from itertools import islice
+          from tiled.client import from_uri
+
+          client = from_uri(
+              os.environ["TILED_URL"],
+              remember_me=False,
+          )
+
+          print(f"Connected to Tiled catalog: {client}")
+          print(f"Top-level nodes: {list(islice(client, 10))}")
+```
+
 # Developer Instructions
 
 ## How to Set up a Keycloak Client to work with Workflows via the Graph

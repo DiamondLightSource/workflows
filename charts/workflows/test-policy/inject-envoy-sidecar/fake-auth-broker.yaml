@@ -31,7 +31,25 @@ data:
             return []
 
     class Handler(BaseHTTPRequestHandler):
+        # The real auth-broker handles every method (Axum ``fallback``), and
+        # Envoy's ext_authz check forwards the original request method. Mirror
+        # that here so e.g. Tiled ``GET`` requests are authorised too.
+        def do_GET(self):
+            self._handle()
+
         def do_POST(self):
+            self._handle()
+
+        def do_PUT(self):
+            self._handle()
+
+        def do_PATCH(self):
+            self._handle()
+
+        def do_DELETE(self):
+            self._handle()
+
+        def _handle(self):
             token = self.headers.get("k8s-pod-service-account-token")
             token_present = bool(token)
             print(f"TOKEN_PRESENT {str(token_present).lower()}", flush=True)
