@@ -15,6 +15,7 @@
     "msw": "^2.15.0",
     "react-router-dom": "^7.18.4",
     "relay-workflows-lib": "^0.1.17",
+    "workflows-lib-2": "../workflows-lib-2",
     "workflows-lib": "^0.1.13"
   },
   "devDependencies": {

@@ -364,6 +364,9 @@ importers:
       workflows-lib:
         specifier: ^0.1.13
         version: link:../workflows-lib
+      workflows-lib-2:
+        specifier: ../workflows-lib-2
+        version: link:../workflows-lib-2
     devDependencies:
       babel-plugin-relay:
         specifier: 21.0.1
