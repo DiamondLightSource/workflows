@@ -26,6 +26,9 @@ The mapping of the message to a workflow is done via triggers, which in turn are
         lifetime: 72h
         template: visr-reconstruction
         triggerOnMessageType: stop
+        filters:
+          - path: doc.exit_status
+            values: ["success", "abort"]
         parameters:
           - name: input-file-name
             path: doc.scan_file
@@ -74,6 +77,16 @@ workflow:
 ```
 
 The `workflow` field contains information about what should run when a message is received. The `template` should match the `metadata.name` of a workflow template in the [template list](https://workflows.diamond.ac.uk/templates). `triggerOnMessageType` allows workflows to be triggered from either `start` or `stop` documents.
+
+### Filters
+
+```yaml
+filters:
+  - path: doc.exit_status
+    values: ["success", "abort"]
+```
+
+Filters allow for triggering to be customised based on the contents of the message. The `path` points to a field in the message and `values` is a list of acceptable values for that field. In this case, a workflow will only run if the `exit_status` field in the scan message reads `"success"` or `"abort"`.
 
 #### Workflow Parameters
 
