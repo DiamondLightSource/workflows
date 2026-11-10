@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.5...sessionspaces-controller@v0.1.6) (2026-11-10)
+
+
+### Bug Fixes
+
+* **ss-controller:** add p51 to directory list ([31ff629](https://github.com/DiamondLightSource/workflows/commit/31ff6297cfe5cc21a1a930e6a79a28ee87eeb92e))
+
 ## [0.1.5](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.4...sessionspaces-controller@v0.1.5) (2026-11-09)
 
 
