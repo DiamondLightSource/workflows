@@ -20,9 +20,9 @@ export default function TemplateOverviewCard(
 
     return (
         <Box sx={{
-            background: "white", 
+            background: (theme: Theme) => theme.palette.background.paper, 
             borderBottom: "2px solid", 
-            borderColor: (theme: Theme) => theme.palette.surface.subtle,
+            borderColor: (theme: Theme) => theme.palette.surface.strong,
             padding: "10px"
             }}>
             <Typography variant="h5">{title}</Typography>
