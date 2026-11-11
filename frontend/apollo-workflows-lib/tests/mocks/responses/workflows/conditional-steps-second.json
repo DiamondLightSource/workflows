@@ -1,0 +1,89 @@
+{
+  "name": "conditional-steps-second",
+  "visit": {
+    "proposalCode": "mg",
+    "proposalNumber": 36964,
+    "number": 1
+  },
+  "templateRef": "conditional-steps",
+  "parameters": {},
+  "status": {
+    "__typename": "WorkflowSucceededStatus",
+    "startTime": "2025-08-05T17:06:00+00:00",
+    "endTime": "2025-08-05T17:06:20+00:00",
+    "message": null,
+    "tasks": [
+      {
+        "id": "conditional-steps-second-1851624235",
+        "name": "pick-a-number",
+        "status": "SUCCEEDED",
+        "depends": ["conditional-steps-second"],
+        "dependencies": [
+          "conditional-steps-second-757537572",
+          "conditional-steps-second-2546591724",
+          "conditional-steps-second-3106395740",
+          "conditional-steps-second-2942740785"
+        ],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "conditional-steps-second-2546591724",
+        "name": "even",
+        "status": "SKIPPED",
+        "depends": ["conditional-steps-second-1851624235"],
+        "dependencies": [],
+        "stepType": "Skipped",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-second-2942740785",
+        "name": "less-than-5",
+        "status": "SUCCEEDED",
+        "depends": ["conditional-steps-second-1851624235"],
+        "dependencies": [],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "conditional-steps-second",
+        "name": "conditional-steps-second",
+        "status": "SUCCEEDED",
+        "depends": [],
+        "dependencies": ["conditional-steps-second-1851624235"],
+        "stepType": "DAG",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-second-3106395740",
+        "name": "greater-than-5",
+        "status": "SKIPPED",
+        "depends": ["conditional-steps-second-1851624235"],
+        "dependencies": [],
+        "stepType": "Skipped",
+        "artifacts": []
+      },
+      {
+        "id": "conditional-steps-second-757537572",
+        "name": "complex-condition",
+        "status": "SKIPPED",
+        "depends": ["conditional-steps-second-1851624235"],
+        "dependencies": [],
+        "stepType": "Skipped",
+        "artifacts": []
+      }
+    ]
+  }
+}

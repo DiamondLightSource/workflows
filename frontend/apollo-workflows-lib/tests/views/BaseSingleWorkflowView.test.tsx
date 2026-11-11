@@ -1,0 +1,121 @@
+import { render, screen, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import BaseSingleWorkflowView from "relay-workflows-lib/lib/views/BaseSingleWorkflowView";
+import { SingleWorkflowViewQuery } from "relay-workflows-lib/lib/views/SingleWorkflowView";
+import { server } from "../mocks/server.ts";
+import { RelayEnvironmentProvider, useLazyLoadQuery } from "react-relay";
+import { getRelayEnvironment } from "relay-workflows-lib";
+import { MemoryRouter, useSearchParams } from "react-router-dom";
+import { SingleWorkflowViewQuery as SingleWorkflowViewQueryType } from "relay-workflows-lib/lib/views/__generated__/SingleWorkflowViewQuery.graphql";
+import userEvent from "@testing-library/user-event";
+import * as workflowsLib from "workflows-lib";
+import { useMemo } from "react";
+
+const QueryWrappedBaseSingleWorkflowView = () => {
+  const [searchParams] = useSearchParams();
+  const taskParam = searchParams.get("tasks");
+
+  const taskIds = useMemo(() => {
+    if (!taskParam) return [];
+    try {
+      return JSON.parse(taskParam) as string[];
+    } catch {
+      return [];
+    }
+  }, [taskParam]);
+
+  const data = useLazyLoadQuery<SingleWorkflowViewQueryType>(
+    SingleWorkflowViewQuery,
+    {
+      id: "mg36964-1:conditional-steps-first:12345",
+    },
+  );
+  return (
+    <BaseSingleWorkflowView
+      fragmentRef={data.workflowById ?? null}
+      taskIds={taskIds}
+      onSelectTask={vi.fn()}
+      selectedTaskId={null}
+    />
+  );
+};
+
+describe("BaseSingleWorkflowView", () => {
+  const user = userEvent.setup();
+  const highlightSpy = vi.spyOn(workflowsLib, "addHighlightsAndFills");
+
+  beforeAll(() => {
+    server.listen();
+  });
+
+  beforeEach(async () => {
+    const environment = await getRelayEnvironment();
+
+    render(
+      <MemoryRouter>
+        <RelayEnvironmentProvider environment={environment}>
+          <QueryWrappedBaseSingleWorkflowView />
+        </RelayEnvironmentProvider>
+      </MemoryRouter>,
+    );
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
+  it("highlights the output tasks", async () => {
+    expect(
+      await screen.findByText("conditional-steps-first"),
+    ).toBeInTheDocument();
+    const outputButton = screen.getByText("OUTPUT");
+
+    await user.click(outputButton);
+    expect(highlightSpy).toHaveBeenLastCalledWith(
+      expect.anything(),
+      [
+        "conditional-steps-first-1223470002",
+        "conditional-steps-first-2863409095",
+        "conditional-steps-first-3590043386",
+        "conditional-steps-first-567981434",
+      ],
+      null,
+    );
+  });
+
+  it("clears the output tasks", async () => {
+    expect(
+      await screen.findByText("conditional-steps-first"),
+    ).toBeInTheDocument();
+    await user.click(screen.getByText("CLEAR"));
+    expect(highlightSpy).toHaveBeenLastCalledWith(expect.anything(), [], null);
+  });
+
+  it("renders the artifact list", async () => {
+    expect(await screen.findAllByText("main.log")).toHaveLength(2);
+  });
+
+  it("fills the corresponding task node when an artifact is hovered over", async () => {
+    const artifact = await screen.findByRole("cell", { name: "less-than-5" });
+    await user.hover(artifact);
+    await waitFor(() => {
+      expect(highlightSpy).toHaveBeenLastCalledWith(
+        expect.anything(),
+        [],
+        "conditional-steps-first-2863409095",
+      );
+    });
+    await user.unhover(artifact);
+    await waitFor(() => {
+      expect(highlightSpy).toHaveBeenLastCalledWith(
+        expect.anything(),
+        [],
+        null,
+      );
+    });
+  });
+});

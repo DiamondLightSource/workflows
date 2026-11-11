@@ -1,0 +1,62 @@
+{
+  "name": "notebook-second",
+  "visit": {
+    "proposalCode": "mg",
+    "proposalNumber": 36964,
+    "number": 1
+  },
+  "templateRef": "notebook",
+  "parameters": {},
+  "status": {
+    "__typename": "WorkflowSucceededStatus",
+    "startTime": "2025-08-21T18:12:48+00:00",
+    "endTime": "2025-08-21T18:14:50+00:00",
+    "message": null,
+    "tasks": [
+      {
+        "id": "notebook-second",
+        "name": "notebook-second",
+        "status": "SUCCEEDED",
+        "depends": [],
+        "dependencies": ["notebook-second-3790061711"],
+        "stepType": "DAG",
+        "artifacts": []
+      },
+      {
+        "id": "notebook-second-3790061711",
+        "name": "files",
+        "status": "SUCCEEDED",
+        "depends": ["notebook-second"],
+        "dependencies": ["notebook-second-3005300287"],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      {
+        "id": "notebook-second-3005300287",
+        "name": "convert",
+        "status": "SUCCEEDED",
+        "depends": ["notebook-second-3790061711"],
+        "dependencies": [],
+        "stepType": "Pod",
+        "artifacts": [
+          {
+            "name": "notebook.html",
+            "url": "",
+            "mimeType": "text/html"
+          },
+          {
+            "name": "main.log",
+            "url": "",
+            "mimeType": "text/plain"
+          }
+        ]
+      }
+    ]
+  }
+}
