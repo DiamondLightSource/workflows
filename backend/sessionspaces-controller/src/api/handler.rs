@@ -19,11 +19,20 @@ pub(super) async fn prepare(
 ) -> Result<Json<PrepareResponse>, ApiError> {
     let name = SessionName::parse(&request.namespace)?;
     let token = bearer(&headers)?;
-    if let Err(error) = state.authz.check_session_access(token, &name).await {
-        tracing::info!(namespace = %name.namespace, "Session access check failed");
-        return Err(error.into());
+    match state.system.identify(token).await {
+        Some(identity) => tracing::info!(
+            %identity,
+            namespace = %name.namespace,
+            "Preparing as a trusted system identity"
+        ),
+        None => {
+            if let Err(error) = state.authz.check_session_access(token, &name).await {
+                tracing::info!(namespace = %name.namespace, "Session access check failed");
+                return Err(error.into());
+            }
+            tracing::info!(namespace = %name.namespace, "Session access granted");
+        }
     }
-    tracing::info!(namespace = %name.namespace, "Session access granted");
     tokio::time::timeout(Duration::from_secs(120), async {
         let spec = lookup::fetch(&state.database, &state.ldap_url, &name).await?;
         let generation =
