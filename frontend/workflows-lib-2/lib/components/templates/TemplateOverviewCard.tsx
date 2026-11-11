@@ -28,7 +28,7 @@ export default function TemplateOverviewCard(
         onSelect
     }: TemplateOverviewCardProps) {
 
-    const backgroundColour = selected ? (theme: Theme) => theme.palette.primary.container : (theme: Theme) => theme.palette.primary.contrastText;
+    const backgroundColour = selected ? (theme: Theme) => theme.palette.primary.container : (theme: Theme) => theme.palette.background.paper;
     const hoverColour = selected ? (theme: Theme) => theme.palette.primary.container : (theme: Theme) => theme.palette.surface.subtle;
 
     return (
