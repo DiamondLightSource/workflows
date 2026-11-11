@@ -1,24 +1,29 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
-import relay from "vite-plugin-relay";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [relay, react()],
+  plugins: [react()],
   build: {
     lib: {
       entry: resolve(import.meta.dirname, "lib/main.ts"),
-      name: "relay-workflows-lib",
-      fileName: "relay-workflows-lib",
+      formats: ["es"],
+      fileName: "workflows-lib-2",
     },
     rolldownOptions: {
-      external: ["react", "react-dom", "react-relay"],
+      external: [
+        "react", 
+        "react-dom",
+        "@apollo/client",
+        "@apollo/client/react",
+        "@apollo/client/link/subscriptions",
+        "@apollo/client/utilities",
+      ],
       output: {
         globals: {
           react: "React",
           "react-dom": "ReactDom",
-          "react-relay": "ReactRelay",
         },
       },
     },
