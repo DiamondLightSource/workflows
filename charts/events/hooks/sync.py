@@ -1,8 +1,15 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
+import os
 import re
 from typing import TypedDict, NotRequired, Literal, Any
 from pydantic import BaseModel, ValidationError
+
+# When enabled, triggers submit their workflow through the prepare-and-submit
+# service, which prepares the visit namespace first. Set via the chart's
+# `prepareService.enabled` value.
+USE_PREPARE_SERVICE = os.environ.get("PREPARE_SERVICE_ENABLED", "") == "true"
+PREPARE_SERVICE_URL = os.environ.get("PREPARE_SERVICE_URL", "")
 
 '''
 The body of the POST request to /sync
@@ -199,6 +206,49 @@ class Controller(BaseHTTPRequestHandler):
                   }
                 }
               }}
+
+      if USE_PREPARE_SERVICE:
+        payload = [
+          {
+            "src": {
+              "dependencyName": name,
+              "dataKey": "body.doc.instrument_session"
+            },
+            "dest": "namespace"
+          },
+          {
+            "src": {"dependencyName": name, "contextKey": "id"},
+            "dest": "eventId"
+          },
+          {"src": {"value": template}, "dest": "template"},
+        ]
+        if uid:
+          payload.append({"src": {"value": uid}, "dest": "posixuid"})
+        for index, userParam in enumerate(workflow.parameters):
+          src = {"dependencyName": name}
+          if userParam.path:
+            src.update({"dataKey": "body." + userParam.path})
+          if userParam.default:
+            src.update({"value": userParam.default})
+          payload.append(
+            {"src": {"value": userParam.name}, "dest": f"parameters.{index}.name"}
+          )
+          payload.append({"src": src, "dest": f"parameters.{index}.value"})
+
+        triggerTemplate = {
+          "template": {
+            "name": name,
+            "conditions": name,
+            "http": {
+              "url": PREPARE_SERVICE_URL,
+              "method": "POST",
+              # /prepare may block until the namespace is Ready (up to 120 s).
+              "timeout": 150,
+              "payload": payload,
+            },
+          },
+          "policy": {"status": {"allow": [200]}},
+        }
 
       if retryBehaviour and retryBehaviour.numRetries > 0:
         triggerTemplate.update({"retryStrategy": {"steps": retryBehaviour.numRetries}})
