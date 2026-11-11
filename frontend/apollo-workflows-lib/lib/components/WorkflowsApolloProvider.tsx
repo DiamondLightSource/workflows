@@ -8,8 +8,11 @@ import {
 } from "@apollo/client";
 import { getApolloClient } from "./ApolloEnvironment";
 
+interface ProviderProps {
+  children: ReactNode;
+}
 
-export default function(children : ReactNode) {
+export default function({ children } : ProviderProps) {
 
   // TODO: Replace use state / use effect malarchy
   const [client, setClient] = useState<ApolloClient | null>(null);

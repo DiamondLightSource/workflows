@@ -16,10 +16,12 @@ export { default as TriggersListView } from "./views/TriggersListView";
 export { default as RepositoryLink } from "./query-components/RepositoryLink";
 export { default as WorkflowsNavbar } from "./components/WorkflowsNavbar";
 export {
-  getRelayEnvironment,
   getUser,
   wsClient,
-} from "./components/RelayEnvironment";
+} from "./components/ApolloEnvironment";
+export {
+  default as WorkflowsApolloProvider
+} from "./components/WorkflowsApolloProvider"
 export { RenderSubmittedMessage } from "./components/RenderSubmittedMessage";
 export { SubscribeAndRender } from "./subscription-components/SubscribeAndRender";
 export { handlers } from "../tests/mocks/handlers";

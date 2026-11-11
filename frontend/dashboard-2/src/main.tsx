@@ -1,5 +1,3 @@
-import { RelayEnvironmentProvider } from "react-relay";
-import { getRelayEnvironment } from "relay-workflows-lib";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
@@ -10,6 +8,7 @@ import {
 import { createRouterWithOverlay, NavRouteObject } from "./NavigationOverlay";
 import { NotepadText, Workflow, Zap } from "lucide-react";
 import TemplateRoute from "./routes/TemplateRoute";
+import { WorkflowsApolloProvider } from "apollo-workflows-lib";
 
 // Having to set index to true for all of them is quite annoying
 // TODO: Fix this
@@ -44,15 +43,13 @@ async function startMockingIfConfigured() {
 const root = createRoot(document.getElementById("root") as Element);
 
 void startMockingIfConfigured().then(() => {
-  void getRelayEnvironment().then((environment) => {
     root.render(
-      <RelayEnvironmentProvider environment={environment}>
+      <WorkflowsApolloProvider>
         <StrictMode>
           <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
             <RouterProvider router={createRouterWithOverlay(routeObjects)} />
           </ThemeProvider>
         </StrictMode>
-      </RelayEnvironmentProvider>,
+      </WorkflowsApolloProvider>,
     );
-  });
 });
