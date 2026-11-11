@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./apollo-workflows-lib" },
     { "path": "./workflows-lib" },
     { "path": "./workflows-lib-2" },
     { "path": "./workflows-lib-shared" },

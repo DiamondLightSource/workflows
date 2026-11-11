@@ -1,4 +1,5 @@
 packages:
+  - apollo-workflows-lib
   - workflows-lib
   - workflows-lib-2
   - workflows-lib-shared
