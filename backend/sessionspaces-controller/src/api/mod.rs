@@ -8,6 +8,7 @@ mod instrument;
 mod ispyb;
 mod lookup;
 mod prepare;
+mod system;
 mod types;
 
 use axum::{
@@ -24,6 +25,7 @@ struct AppState {
     ldap_url: String,
     sessionspaces: Api<DynamicObject>,
     authz: authz::OpaClient,
+    system: system::SystemAuth,
 }
 
 /// Loads configuration, initializes tracing and serves health and preparation routes.
@@ -31,13 +33,15 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt::init();
     let config = config::Config::from_env()?;
+    let client = Client::try_default().await?;
     let state = AppState {
         database: MySqlPoolOptions::new()
             .max_connections(5)
             .connect_lazy_with(config.database),
         ldap_url: config.ldap_url,
-        sessionspaces: prepare::session_spaces(Client::try_default().await?),
+        sessionspaces: prepare::session_spaces(client.clone()),
         authz: authz::OpaClient::new(&config.opa_url, config.opa_timeout)?,
+        system: system::SystemAuth::new(client),
     };
     let app = Router::new()
         .route("/healthz", get(|| async { "ok" }))
