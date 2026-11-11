@@ -1,13 +1,3 @@
-import {
-  Environment,
-  Network,
-  RecordSource,
-  Store,
-  FetchFunction,
-  SubscribeFunction,
-  GraphQLResponse,
-  Observable,
-} from "relay-runtime";
 import { getKeycloak } from "../utils/keycloak";
 import { createClient } from "graphql-ws";
 import { AuthState } from "@diamondlightsource/sci-react-ui";
@@ -18,6 +8,15 @@ import {
   baseGatewayUrl,
 } from "@diamondlightsource/workflows-lib-shared";
 import { getUseAuthGateway } from "../utils/useAuthGateway";
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from "@apollo/client";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { getMainDefinition } from "@apollo/client/utilities";
+
 
 const HTTP_ENDPOINT = import.meta.env.VITE_GRAPH_URL;
 const WS_ENDPOINT = import.meta.env.VITE_GRAPH_WS_URL;
@@ -57,43 +56,40 @@ function redirectToAuthGatewayLogin() {
   window.location.assign(loginUrl);
 }
 
-const fetchFn: FetchFunction = async (request, variables) => {
-  if (!keycloak.authenticated) {
-    await ensureKeycloakInit();
-  }
+const httpLink = new HttpLink({
+  uri: HTTP_ENDPOINT,
+  credentials: USE_AUTH_GATEWAY ? "include" : undefined,
+  fetch: async (input, init) => {
+    if (!keycloak.authenticated) {
+      await ensureKeycloakInit();
+    }
 
-  const headers: Record<string, string> = {
-    Accept:
+    const headers = new Headers(init?.headers);
+
+    headers.set(
+      "Accept",
       "application/graphql-response+json; charset=utf-8, application/json; charset=utf-8",
-    "Content-Type": "application/json",
-  };
+    );
 
-  if (!USE_AUTH_GATEWAY && keycloak.token) {
-    headers.Authorization = `Bearer ${keycloak.token}`;
-  }
+    headers.set("Content-Type", "application/json");
 
-  const fetchOptions: RequestInit = {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      query: request.text,
-      variables,
-    }),
-  };
+    if (!USE_AUTH_GATEWAY && keycloak.token) {
+      headers.set("Authorization", `Bearer ${keycloak.token}`);
+    }
 
-  if (USE_AUTH_GATEWAY) {
-    fetchOptions.credentials = "include";
-  }
+    const response = await fetch(input, {
+      ...init,
+      headers,
+      credentials: USE_AUTH_GATEWAY ? "include" : init?.credentials,
+    });
 
-  const resp = await fetch(HTTP_ENDPOINT, fetchOptions);
+    if (USE_AUTH_GATEWAY && response.status === 401) {
+      redirectToAuthGatewayLogin();
+    }
 
-  if (USE_AUTH_GATEWAY && resp.status === 401) {
-    redirectToAuthGatewayLogin();
-    return {};
-  }
-
-  return await resp.json(); // eslint-disable-line @typescript-eslint/no-unsafe-return
-};
+    return response;
+  },
+});
 
 export const wsClient = createClient({
   url: WS_ENDPOINT,
@@ -113,46 +109,36 @@ export const wsClient = createClient({
   },
 });
 
-const subscribeFn: SubscribeFunction = (operation, variables) => {
-  return Observable.create((sink) => {
-    const cleanup = wsClient.subscribe(
-      {
-        operationName: operation.name,
-        query: operation.text ?? "",
-        variables,
-      },
-      {
-        next: (response) => {
-          sink.next(response as GraphQLResponse);
-        },
+const wsLink = new GraphQLWsLink(wsClient);
 
-        error: (error) => {
-          sink.error(error as Error);
-        },
+const link = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
 
-        complete: () => {
-          sink.complete();
-        },
-      },
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
     );
+  },
+  wsLink,
+  httpLink,
+);
 
-    return cleanup;
-  });
-};
+let apolloClient: ApolloClient | null = null;
 
-let RelayEnvironment: Environment | null = null;
-
-export async function getRelayEnvironment(): Promise<Environment> {
-  if (!RelayEnvironment) {
+export async function getApolloClient(): Promise<ApolloClient> {
+  if (!apolloClient) {
     await ensureKeycloakInit();
-    RelayEnvironment = new Environment({
-      network: Network.create(fetchFn, subscribeFn),
-      store: new Store(new RecordSource()),
+
+    apolloClient = new ApolloClient({
+      link,
+      cache: new InMemoryCache(),
     });
   }
 
-  return RelayEnvironment;
+  return apolloClient;
 }
+
 
 export async function getUser(): Promise<AuthState | null> {
   if (USE_AUTH_GATEWAY) {
