@@ -36,6 +36,10 @@ spec:
         env:
         - name: PYTHONUNBUFFERED
           value: "1"
+        - name: PREPARE_SERVICE_ENABLED
+          value: {{ .Values.prepareService.enabled | quote }}
+        - name: PREPARE_SERVICE_URL
+          value: {{ .Values.prepareService.url }}
       volumes:
       - name: hooks
         configMap:

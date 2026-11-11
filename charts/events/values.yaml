@@ -60,3 +60,6 @@ genericServers:
   stomp:
     enabled: true
     logLevel: INFO
+prepareService:
+  enabled: false
+  url: http://sessionspaces-prepare.events.svc/prepare-and-submit

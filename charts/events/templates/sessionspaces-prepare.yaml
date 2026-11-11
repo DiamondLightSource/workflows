@@ -1,0 +1,90 @@
+{{- if .Values.prepareService.enabled -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sessionspaces-preparer
+automountServiceAccountToken: true
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sessionspaces-preparer
+rules:
+  - apiGroups: [argoproj.io]
+    resources: [workflows]
+    verbs: [create]
+  - apiGroups: [workflows.diamond.ac.uk]
+    resources: [sessionspaces]
+    verbs: [create]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sessionspaces-preparer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sessionspaces-preparer
+subjects:
+  - kind: ServiceAccount
+    name: sessionspaces-preparer
+    namespace: {{ .Release.Namespace }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sessionspaces-prepare
+data:
+  prepare_and_submit.py: |
+    {{- .Files.Get "generic-servers/prepare_and_submit.py" | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sessionspaces-prepare
+spec:
+  selector:
+    app: sessionspaces-prepare
+  ports:
+    - port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sessionspaces-prepare
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sessionspaces-prepare
+  template:
+    metadata:
+      labels:
+        app: sessionspaces-prepare
+    spec:
+      serviceAccountName: sessionspaces-preparer
+      containers:
+        - name: prepare
+          image: python:3.14-slim
+          command: ["/bin/sh", "-c"]
+          args: ["python /hooks/prepare_and_submit.py"]
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: PREPARE_URL
+              value: http://sessionspaces-controller-api.kube-system.svc:8081/prepare
+          volumeMounts:
+            - name: hooks
+              mountPath: /hooks
+      volumes:
+        - name: hooks
+          configMap:
+            name: sessionspaces-prepare
+{{- end }}
