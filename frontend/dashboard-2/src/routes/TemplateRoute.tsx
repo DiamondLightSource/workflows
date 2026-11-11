@@ -27,6 +27,44 @@ export default function TemplateRoute() {
         description: `A utility which takes in a file path, a mask, aligns data according to vertical mass or phase 
         correlation between images, and does some more stuff that should overflow the text box and lead to an elipse`
     },
+    {
+        name: "normalisation",
+        maintainer: "imaging-i14-group",
+        title: "Normalisation",
+        description: "Normalises data using min-max scaling."
+    },
+    {
+        name: "calibrate",
+        maintainer: "imaging-i14-group",
+        title: "Calibrate Data",
+        description: "Applies calibration to data using provided calirbation coeffiecients."
+    },
+    {
+        name: "align",
+        maintainer: "imaging-i14-group",
+        title: "Align Data",
+        description: `A utility which takes in a file path, a mask, aligns data according to vertical mass or phase 
+        correlation between images, and does some more stuff that should overflow the text box and lead to an elipse`
+    },
+    {
+        name: "normalisation",
+        maintainer: "imaging-i14-group",
+        title: "Normalisation",
+        description: "Normalises data using min-max scaling."
+    },
+    {
+        name: "calibrate",
+        maintainer: "imaging-i14-group",
+        title: "Calibrate Data",
+        description: "Applies calibration to data using provided calirbation coeffiecients."
+    },
+    {
+        name: "align",
+        maintainer: "imaging-i14-group",
+        title: "Align Data",
+        description: `A utility which takes in a file path, a mask, aligns data according to vertical mass or phase 
+        correlation between images, and does some more stuff that should overflow the text box and lead to an elipse`
+    },
     ]
 
     const [selectedTemplateName, setSelectedTemplateName] = useState<String | null>(null);
@@ -34,8 +72,8 @@ export default function TemplateRoute() {
     return (
         // Looking for a colour inbetween background and default??
         // Is default fine??
-        <Box sx={{display: "flex", backgroundColor: (theme: Theme) => theme.palette.background.default}}>
-            <Box sx={{width: "300px"}}>
+        <Box sx={{display: "flex", minHeight: 0}}>
+            <Box sx={{display: "flex", flexDirection: "column", width: "300px", minHeight: 0}}>
                 <p>Filter placeholder</p>
                 <TemplateList 
                 templateData={workflowTemplates} 

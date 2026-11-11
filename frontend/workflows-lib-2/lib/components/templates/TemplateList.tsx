@@ -16,7 +16,7 @@ export default function TemplateList({
 }: TemplateListProps) {
 
     return (
-        <Box sx={{ overflowY: "auto"}}>
+        <Box sx={{ minHeight: 0, overflowY: "auto" }}>
             { templateData.map((props, index) => (
                 // Dont like this double box
                 // Would be a lot better if I could set the margin in the Template Overview card from here

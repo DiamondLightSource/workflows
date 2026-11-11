@@ -92,7 +92,9 @@ function NavigationOverlay({ navigation }: { navigation: Navigation }) {
   const [open, setOpen] = useState(true);
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex" 
+     , maxWidth: "100vw", maxHeight: "100vh"
+    }}>
       {/* Are  there not AppBar components already made?? 
                 TODO: Switch this out for a premade Sci react UI appbar component*/}
       <AppBar
@@ -152,7 +154,7 @@ function NavigationOverlay({ navigation }: { navigation: Navigation }) {
       </AppBar>
 
       <SidebarNav navigation={navigation} open={open} setOpen={setOpen} />
-      <Box>
+      <Box sx={{display: "flex", flexDirection: "column", height: "inherit"}}>
         {/* Toolbar call here is to align main content vertically below the AppBar
             This is in the official MUI example: 
             https://mui.com/material-ui/react-drawer/#clipped-under-the-app-bar
