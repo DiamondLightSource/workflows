@@ -51,12 +51,6 @@ def _prepare(namespace, token):
         return error.code
 
 
-def _workflow_name(template, event_id):
-    """A deterministic, retry-safe name derived from the event id."""
-    slug = re.sub(r"[^a-z0-9]+", "-", (event_id or "").lower()).strip("-")[:32]
-    return f"{template}-event-{slug or 'unknown'}"
-
-
 def _submit(namespace, template, event_id, posixuid, parameters, token):
     """Submit the Workflow via the Kubernetes API, returning the status code."""
     context = (
@@ -68,7 +62,7 @@ def _submit(namespace, template, event_id, posixuid, parameters, token):
         "apiVersion": "argoproj.io/v1alpha1",
         "kind": "Workflow",
         "metadata": {
-            "name": _workflow_name(template, event_id),
+            "generateName": f"{template}-event-",
             "labels": {"workflows.diamond.ac.uk/triggeruid": posixuid or ""},
         },
         "spec": {
