@@ -33,6 +33,8 @@ enum TriggerError {
     TokenDecodeError,
     #[error(r#"Posix UID missing from token claims"#)]
     MissingPosixUid,
+    #[error(r#"Missing subject in token"#)]
+    MissingSub,
     #[error(r#"Token not found"#)]
     MissingToken,
     #[error(r#"Unable to infer Kubernetes config"#)]
@@ -355,21 +357,8 @@ struct UserClaims {
     preferred_username: Option<String>,
     /// A user's Fed-ID
     fedid: Option<String>,
-}
-
-impl UserClaims {
-    /// Creates a new [`UserInfo`] from the provided fields.
-    fn new(
-        posix_uid: impl Into<String>,
-        preferred_username: impl Into<Option<String>>,
-        fedid: impl Into<Option<String>>,
-    ) -> Self {
-        Self {
-            posix_uid: posix_uid.into(),
-            preferred_username: preferred_username.into(),
-            fedid: fedid.into(),
-        }
-    }
+    /// The subject of the JWT (the user)
+    sub: String,
 }
 
 /// Decodes the JWT to obtain the user's posix uid
@@ -383,15 +372,22 @@ async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<UserClaims, TriggerErro
     let posix_uid = claims["posix_uid"]
         .as_str()
         .map(str::to_owned)
-        .ok_or(TriggerError::MissingPosixUid);
+        .ok_or(TriggerError::MissingPosixUid)?;
 
     let preferred_username = claims["preferred_username"].as_str().map(str::to_owned);
 
     let fedid = claims["fedid"].as_str().map(str::to_owned);
-    match posix_uid {
-        Ok(p) => Ok(UserClaims::new(p, preferred_username, fedid)),
-        Err(e) => Err(e),
-    }
+    let sub = claims["sub"]
+        .as_str()
+        .map(str::to_owned)
+        .ok_or(TriggerError::MissingSub)?;
+
+    Ok(UserClaims {
+        posix_uid,
+        preferred_username,
+        fedid,
+        sub,
+    })
 }
 
 /// Uses the provided API to retrieve a Trigger, if the posix uid argument matches the label on the Trigger
@@ -597,11 +593,14 @@ impl TriggerMutation {
             posix_uid,
             preferred_username,
             fedid,
+            sub,
         } = get_posix_from_ctx(ctx).await?;
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
         let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        let mut labels =
-            BTreeMap::from([(String::from("workflows.diamond.ac.uk/posixuid"), posix_uid)]);
+        let mut labels = BTreeMap::from([
+            (String::from("workflows.diamond.ac.uk/posixuid"), posix_uid),
+            (String::from("workflows.diamond.ac.uk/creator"), sub),
+        ]);
         preferred_username.map(|p| {
             labels.insert(
                 String::from("workflows.diamond.ac.uk/creator-preferred-username"),
