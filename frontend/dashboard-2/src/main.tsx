@@ -44,12 +44,12 @@ const root = createRoot(document.getElementById("root") as Element);
 
 void startMockingIfConfigured().then(() => {
     root.render(
-      // <WorkflowsApolloProvider>
+      <WorkflowsApolloProvider>
         <StrictMode>
           <ThemeProvider theme={DiamondDSTheme} defaultMode="light">
             <RouterProvider router={createRouterWithOverlay(routeObjects)} />
           </ThemeProvider>
         </StrictMode>
-      // </WorkflowsApolloProvider>,
+      </WorkflowsApolloProvider>,
     );
 });

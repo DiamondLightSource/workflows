@@ -1,8 +1,8 @@
 import { User, AuthState } from "@diamondlightsource/sci-react-ui";
-import { getUser } from "relay-workflows-lib";
+import { getUser } from "apollo-workflows-lib";
 import { useEffect, useState } from "react";
-import { externalRedirect } from "relay-workflows-lib/lib/utils/coreUtils";
-import { getUseAuthGateway } from "relay-workflows-lib/lib/utils/useAuthGateway";
+import { externalRedirect } from "apollo-workflows-lib/lib/utils/coreUtils";
+import { getUseAuthGateway } from "apollo-workflows-lib/lib/utils/useAuthGateway";
 
 // Copied from relay-workflows-lib/lib/components/WorkflowsNavBar.tsx
 const handleLogout = () => {
