@@ -269,7 +269,6 @@ spec:
                                       route:
                                         cluster: tiled-upstream
                                         timeout: 30s
-                                        host_rewrite_literal: {{ .Values.authenticatedWorkflows.envoy.tiledAddress | quote }}
                                       typed_per_filter_config:
                                         envoy.filters.http.ext_authz:
                                           "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
