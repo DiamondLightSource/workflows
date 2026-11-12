@@ -116,19 +116,14 @@ lint_one_helm_chart:
       data:
         key: value
 submit_workflow:
-  - command: argo submit - -n SESSION
+  - command: argo submit - -n SESSION -o json
     response: |
-      Name:                conditional-steps-40
-      Namespace:           SESSION
-      ServiceAccount:      unset (will run with the default ServiceAccount)
-      Status:              Pending
-      Created:             Thu Jul 10 16:05:20 +0100 (now)
-      Progress:
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"Workflow","metadata":{"name":"conditional-steps-40","namespace":"SESSION","uid":"test-uid-12345"}}
     code: 0
 
-  - command: argo submit - -n SESSION -p message=hello
+  - command: argo submit - -n SESSION -o json -p message=hello
     response: |
-      Name: conditional-steps-40
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"Workflow","metadata":{"name":"conditional-steps-40","namespace":"SESSION","uid":"test-uid-12345"}}
     code: 0
 
   - command: helm template ././tests/charts -s templates/workflow1.yaml
@@ -146,6 +141,13 @@ submit_workflow:
       data:
         key: value
     code: 0
+
+submit_workflow_no_uid:
+  - command: argo submit - -n SESSION -o json
+    response: |
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"Workflow","metadata":{"name":"conditional-steps-40","namespace":"SESSION"}}
+    code: 0
+
 submit_workflow_failing:
   - command: helm template ././tests/charts -s templates/workflow1.yaml
     response: |
