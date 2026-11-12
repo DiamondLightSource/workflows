@@ -33,7 +33,10 @@ pub async fn resolve_subject(k8s: &dyn K8sApi, pod: &Pod) -> Result<String, Auth
         .metadata
         .labels
         .as_ref()
-        .and_then(|l| l.get("workflows.argoproj.io/creator"))
+        .and_then(|l| {
+            l.get("workflows.diamond.ac.uk/creator")
+                .or_else(|| l.get("workflows.argoproj.io/creator"))
+        })
         .ok_or_else(|| {
             AuthzError::SubjectResolution(format!(
                 "label workflows.argoproj.io/creator missing on workflow \
