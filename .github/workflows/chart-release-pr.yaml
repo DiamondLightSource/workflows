@@ -71,15 +71,16 @@ jobs:
           status: ${{ steps.prepare.outputs.status }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          message="chore(charts): release ${status#RELEASE }"
+          message="chore(charts): release charts"
+          body="Release ${status#RELEASE }"
           git config user.name "chart-release[bot]"
           git config user.email "chart-release[bot]@users.noreply.github.com"
           git add -u charts
-          git commit -m "$message"
+          git commit -m "$message" -m "$body"
           git push --force origin HEAD:chart-release
           pr_number="$(gh pr list --head chart-release --json number --jq '.[0].number' 2>/dev/null)"
           if [ -n "${pr_number}" ]; then
-            gh pr edit "${pr_number}" --title "$message"
+            gh pr edit "${pr_number}" --title "$message" --body "$body"
           else
-            gh pr create --base main --head chart-release --title "$message" --body "$message"
+            gh pr create --base main --head chart-release --title "$message" --body "$body"
           fi
