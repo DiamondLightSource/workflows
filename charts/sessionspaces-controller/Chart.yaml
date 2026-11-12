@@ -2,7 +2,7 @@ apiVersion: v2
 name: sessionspaces-controller
 description: SessionSpace preparation API and Metacontroller sync webhook
 type: application
-version: 0.1.4
+version: 0.2.0
 appVersion: 0.1.7
 dependencies:
   - name: common
