@@ -8,6 +8,8 @@ mod subscription;
 pub mod subscription_integration;
 /// GraphQL operations related to Triggers
 mod triggers;
+/// Shared Graph types
+mod types;
 /// Workflow Template JSON Forms UI Schema
 mod ui_schema;
 /// GraphQL operations related to workflow templates

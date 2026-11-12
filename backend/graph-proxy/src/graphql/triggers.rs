@@ -1,12 +1,17 @@
 use std::{collections::BTreeMap, ops::Deref, str::FromStr};
 
 use crate::{
-    graphql::{auth_guard::AuthGuard, subscription::get_auth_token, VisitInput},
+    graphql::{
+        auth_guard::AuthGuard,
+        subscription::get_auth_token,
+        types::{SortOrder, StringFilterInputV2},
+        VisitInput,
+    },
     KubernetesApiUrl,
 };
 use async_graphql::{
     connection::{Connection, CursorType, Edge, EmptyFields, OpaqueCursor},
-    Context, Object, SimpleObject,
+    Context, Enum, InputObject, Object, SimpleObject,
 };
 use chrono::{DateTime, Utc};
 use jsonwebtoken::dangerous::insecure_decode;
@@ -40,7 +45,84 @@ enum TriggerError {
     TriggerNotFound(String),
 }
 
+/// Information that uniquely identifies a single trigger
+#[derive(Debug, InputObject)]
+struct WorkflowTriggerReferenceInput {
+    /// The name of the trigger
+    name: String,
+    /// The session the trigger belongs to
+    session: Option<VisitInput>,
+}
+
+/// Filters for the workflowTriggers query
+#[expect(unused)]
+#[derive(Debug, InputObject)]
+struct WorkflowTriggerFilterInput {
+    /// The session a trigger is attached to
+    session: VisitInput,
+    /// The name of the trigger
+    name: StringFilterInputV2,
+    /// The template from which the trigger was created
+    template_ref: StringFilterInputV2,
+    /// The beamline a trigger belongs to
+    beamline: StringFilterInputV2,
+    /// Whether a trigger is currently active or not
+    is_enabled: bool,
+    /// The account that created the trigger
+    creator_id: StringFilterInputV2,
+}
+
+/// Sort fields for triggers
+#[derive(Debug, Enum, Copy, Clone, Eq, PartialEq)]
+enum WorkflowTriggerSortField {
+    /// The name of the trigger
+    Name,
+    /// The beamline the trigger belongs to
+    Beamline,
+    /// The template from which the trigger was created
+    TemplateRef,
+}
+
+/// Configuration for displaying sorted triggers
+#[expect(unused)]
+#[derive(Debug, InputObject)]
+struct WorkflowTriggerOrderInput {
+    /// The metadata field that should be used to order the triggers
+    field: WorkflowTriggerSortField,
+    /// The direction (ascending or descending) to display results
+    direction: SortOrder,
+}
+
 /// Information about the creator of a Trigger.
+#[derive(Debug, Clone, SimpleObject, Eq, PartialEq, Serialize, Deserialize)]
+struct WorkflowTriggerCreator {
+    /// An identifier unique to the creator of the Trigger.
+    /// Typically this is the creator's Fed-ID.
+    creator_id: String,
+}
+impl WorkflowTriggerCreator {
+    /// Creates a new [`WorkflowTriggerCreator`] from the given creator ID.
+    fn new(creator_id: impl Into<String>) -> Self {
+        Self {
+            creator_id: creator_id.into(),
+        }
+    }
+
+    /// Builds a [`WorkflowTriggerCreator`] from Trigger labels.
+    fn from_trigger_labels(labels: &Option<BTreeMap<String, String>>) -> Self {
+        let creator_id = match labels {
+            Some(l) => l
+                .get("workflows.diamond.ac.uk/creator-preferred-username")
+                .or_else(|| l.get("workflows.diamond.ac.uk/creator-fedid"))
+                .cloned()
+                .unwrap_or("Unknown".into()),
+            None => "Unknown".into(),
+        };
+        Self::new(creator_id)
+    }
+}
+
+/// Information about the creator of a Trigger
 #[derive(Debug, Clone, SimpleObject, Eq, PartialEq, Serialize, Deserialize)]
 struct TriggerCreator {
     /// An identifier unique to the creator of the Trigger.
@@ -67,6 +149,14 @@ impl TriggerCreator {
             None => "Unknown".into(),
         };
         Self::new(creator_id)
+    }
+}
+
+impl From<WorkflowTriggerCreator> for TriggerCreator {
+    fn from(wtc: WorkflowTriggerCreator) -> Self {
+        Self {
+            creator_id: wtc.creator_id,
+        }
     }
 }
 
@@ -155,6 +245,78 @@ impl From<Trigger> for TriggerGQL {
         }
     }
 }
+/// Converts the new WorkflowTrigger type into the deprecated TriggerGQL for backwards compatibility
+impl From<WorkflowTrigger> for TriggerGQL {
+    fn from(t: WorkflowTrigger) -> Self {
+        Self {
+            name: t.name,
+            template_ref: t.template_ref,
+            beamline: t.beamline,
+            visit: t.session,
+            enabled: t.enabled,
+            creator: t.creator.into(),
+            expiry: t.expiry,
+            workflow_template_name: t.workflow_template_name,
+        }
+    }
+}
+impl From<Trigger> for WorkflowTrigger {
+    fn from(t: Trigger) -> Self {
+        let session = match t.metadata.namespace {
+            Some(ref namespace) => {
+                if namespace.as_str() == "events" {
+                    String::from("any")
+                } else {
+                    namespace.clone()
+                }
+            }
+            None => String::from("Unknown"),
+        };
+        let expiry = calculate_expiry(&t);
+        Self {
+            name: t.metadata.name,
+            template_ref: t.spec.template_ref,
+            beamline: t
+                .metadata
+                .labels
+                .as_ref()
+                .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
+            session,
+            enabled: t.spec.enabled,
+            creator: WorkflowTriggerCreator::from_trigger_labels(&t.metadata.labels),
+            expiry,
+            workflow_template_name: match t.spec.workflow {
+                Some(workflow) => {
+                    vec![workflow.template]
+                }
+                None => {
+                    vec![]
+                }
+            },
+        }
+    }
+}
+
+/// A Trigger for creating automated workflows
+#[derive(Debug, Serialize, Deserialize, SimpleObject)]
+struct WorkflowTrigger {
+    /// The name of the Trigger
+    name: Option<String>,
+    /// The name of a ClusterTriggerTemplate that the Trigger is created from
+    template_ref: Option<String>,
+    /// The beamline that the Trigger monitors
+    beamline: Option<String>,
+    /// The session that the Trigger is tied to
+    session: String,
+    /// Whether the Trigger is currently active or not
+    enabled: bool,
+    /// Information about the creator of the Trigger
+    creator: WorkflowTriggerCreator,
+    /// The datetime at which a trigger will be automatically deleted (None means it will not)
+    expiry: Option<DateTime<Utc>>,
+    /// The workflow template(s) used when the trigger is activated
+    workflow_template_name: Vec<String>,
+}
 
 /// Calculates the expiry time (point where a trigger will automatically be deleted)
 fn calculate_expiry(trigger_object: &Trigger) -> Option<DateTime<Utc>> {
@@ -237,7 +399,7 @@ async fn get_trigger_with_matching_posix(
     api: &Api<Trigger>,
     posix_uid: &str,
     name: &str,
-) -> anyhow::Result<Option<TriggerGQL>> {
+) -> anyhow::Result<Option<WorkflowTrigger>> {
     match api.get(name).await {
         Ok(trigger) => {
             if trigger.clone().metadata.labels.is_some_and(|f| {
@@ -254,7 +416,7 @@ async fn get_trigger_with_matching_posix(
 }
 
 /// Uses the provided API to retrieve a Trigger without checking the posix uid
-async fn get_trigger(api: &Api<Trigger>, name: &str) -> anyhow::Result<Option<TriggerGQL>> {
+async fn get_trigger(api: &Api<Trigger>, name: &str) -> anyhow::Result<Option<WorkflowTrigger>> {
     api.get(name)
         .await
         .map_or_else(|err| Err(err.into()), |t| Ok(Some(t.into())))
@@ -283,20 +445,25 @@ pub struct TriggerQuery;
 
 #[Object(guard = "AuthGuard")]
 impl TriggerQuery {
-    /// Get a specific Trigger by name and visit
+    #[graphql(deprecation = "Use workflowTrigger instead")]
+    /// Get a specific Trigger by name and visit (DEPRECATED)
     async fn trigger(
         &self,
         ctx: &Context<'_>,
         name: String,
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
-        let client = setup_client(ctx).await?;
-        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        get_trigger(&api, &name).await
+        let reference = WorkflowTriggerReferenceInput {
+            name,
+            session: visit,
+        };
+        self.workflow_trigger(ctx, reference)
+            .await
+            .map(|f| f.map(TriggerGQL::from))
     }
 
-    /// Get multiple Triggers across namespaces
+    #[graphql(deprecation = "Use workflowTriggers instead")]
+    /// Get multiple Triggers across namespaces (DEPRECATED)
     async fn triggers(
         &self,
         ctx: &Context<'_>,
@@ -328,6 +495,71 @@ impl TriggerQuery {
             .items
             .into_iter()
             .map(TriggerGQL::from)
+            .collect::<Vec<_>>();
+
+        let next_continue_token = triggers_response.metadata.continue_;
+
+        let mut connection =
+            Connection::new(continue_token.is_some(), next_continue_token.is_some());
+
+        connection.edges.extend(triggers.into_iter().map(|trigger| {
+            Edge::new(
+                OpaqueCursor(next_continue_token.clone().unwrap_or_default()),
+                trigger,
+            )
+        }));
+
+        Ok(connection)
+    }
+
+    /// Get a specific Trigger by name and session
+    async fn workflow_trigger(
+        &self,
+        ctx: &Context<'_>,
+        reference: WorkflowTriggerReferenceInput,
+    ) -> anyhow::Result<Option<WorkflowTrigger>> {
+        let client = setup_client(ctx).await?;
+        let namespace = reference
+            .session
+            .map_or(String::from("events"), |v| v.to_string());
+        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        get_trigger(&api, &reference.name).await
+    }
+
+    /// Get multiple Triggers across sessions
+    async fn workflow_triggers(
+        &self,
+        ctx: &Context<'_>,
+        cursor: Option<String>,
+        limit: Option<u32>,
+        // filter: Option<WorkflowTriggerFilterInput>,
+        // order_by: Option<Vec<WorkflowTriggerOrderInput>>,
+    ) -> anyhow::Result<Connection<OpaqueCursor<String>, WorkflowTrigger, EmptyFields, EmptyFields>>
+    {
+        let client = setup_client(ctx).await?;
+        let api: Api<Trigger> = Api::all(client);
+
+        let continue_token = cursor
+            .as_ref()
+            .map(|cursor| {
+                OpaqueCursor::<String>::decode_cursor(cursor)
+                    .map(|c| c.0)
+                    .map_err(|_| anyhow::anyhow!("Cursor not valid"))
+            })
+            .transpose()?;
+
+        let mut lp = ListParams::default().limit(limit.unwrap_or(10));
+
+        if let Some(token) = &continue_token {
+            lp = lp.continue_token(token);
+        }
+
+        let triggers_response = api.list(&lp).await?;
+
+        let triggers = triggers_response
+            .items
+            .into_iter()
+            .map(WorkflowTrigger::from)
             .collect::<Vec<_>>();
 
         let next_continue_token = triggers_response.metadata.continue_;
@@ -415,7 +647,7 @@ impl TriggerMutation {
             .ok_or(TriggerError::TriggerNotFound(name.clone()))?;
 
         api.delete(&name, &DeleteParams::default()).await?;
-        Ok(Some(trigger))
+        Ok(Some(trigger.into()))
     }
 
     /// Disable an automated workflow trigger
