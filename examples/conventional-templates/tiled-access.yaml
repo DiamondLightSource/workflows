@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/argoproj/argo-workflows/main/api/jsonschema/schema.json
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: tiled-data-access
+  labels:
+    workflows.diamond.ac.uk/science-group-examples: "true"
+  annotations:
+    workflows.argoproj.io/title: Authenticated Tiled Data Access
+    workflows.argoproj.io/description: |
+      An example demonstrating how to read data from Tiled from within an authenticated workflow.
+      The TILED_URL environment variable is injected automatically and requests are proxied via
+      a sidecar that adds the authenticated user's Keycloak token as a bearer token.
+    workflows.diamond.ac.uk/repository: "https://github.com/DiamondLightSource/workflows"
+spec:
+  entrypoint: read-tiled-data
+  templates:
+    - name: read-tiled-data
+      metadata:
+        annotations:
+          workflows.diamond.ac.uk/authenticated: "true"
+      script:
+        image: ghcr.io/bluesky/tiled:latest
+        command: ["python"]
+        source: |
+          import os
+          from itertools import islice
+          from tiled.client import from_uri
+
+          client = from_uri(
+              os.environ["TILED_URL"],
+              remember_me=False,
+          )
+
+          print(f"Connected to Tiled catalog: {client}")
+          print(f"Top-level nodes: {list(islice(client, 10))}")

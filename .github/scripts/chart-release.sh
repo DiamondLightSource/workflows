@@ -48,7 +48,7 @@ if [ "${apps_next}" = "${apps_current}" ]; then
 fi
 echo "apps: ${apps_current} -> ${apps_next}"
 bumped+=("apps v${apps_next}")
-if [ -z "${DRY_RUN}" ]; then
+if [ "${DRY_RUN:-false}" != "true" ]; then
   sed -i "s/^version: .*/version: ${apps_next}/" "${apps_file}"
 fi
 
@@ -85,7 +85,7 @@ for dir in charts/*/; do
 
   echo "${chart}: ${current} -> ${next}"
   bumped+=("${chart} v${next}")
-  if [ -z "${DRY_RUN}" ]; then
+  if [ "${DRY_RUN:-false}" != "true" ]; then
     sed -i "s/^version: .*/version: ${next}/" "${file}"
   fi
 done

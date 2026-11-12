@@ -51,7 +51,7 @@ jobs:
       - name: Prepare chart release
         id: prepare
         env:
-          DRY_RUN: ${{ inputs.dry-run && 'true' || 'false' }}
+          DRY_RUN: ${{ inputs.dry-run && 'true' || '' }}
         run: |
           output="$(bash .github/scripts/chart-release.sh)"
           echo "$output"

@@ -21,6 +21,7 @@ spec:
           set -eu
 
           echo "GRAPH_URL=${GRAPH_URL}"
+          echo "TILED_URL=${TILED_URL}"
 
           RESPONSE="$(curl -v \
             --fail \
@@ -35,3 +36,14 @@ spec:
           echo "${RESPONSE}"
 
           echo "${RESPONSE}" | grep -q '"workflowTemplates"'
+
+          TILED_RESPONSE="$(curl -v \
+            --fail \
+            --silent \
+            --show-error \
+            --connect-timeout 5 \
+            "${TILED_URL}")"
+
+          echo "${TILED_RESPONSE}"
+
+          echo "${TILED_RESPONSE}" | grep -q '"mock-tiled-catalog"'

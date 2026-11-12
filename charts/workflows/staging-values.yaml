@@ -44,3 +44,4 @@ authenticatedWorkflows:
   envoy:
     enabled: true
     graphAddress: staging.workflows.diamond.ac.uk
+    tiledAddress: tiled-staging.diamond.ac.uk

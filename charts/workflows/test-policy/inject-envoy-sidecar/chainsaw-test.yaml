@@ -24,6 +24,12 @@ spec:
         - assert:
             file: fake-auth-broker.yaml
 
+        - apply:
+            file: fake-tiled.yaml
+
+        - assert:
+            file: fake-tiled.yaml
+
         - script:
             content: |
               # overwrite the policy with new mock values
@@ -96,6 +102,29 @@ spec:
                 exit 1
               }
 
+        - script:
+            content: |
+              set -eu
+
+              echo "Checking fake-tiled logs"
+
+              LOGS="$(kubectl logs \
+                --namespace "$NAMESPACE" \
+                -l app=fake-tiled \
+                -c fake-tiled)"
+
+              echo "$LOGS" | grep -Fq 'TOKEN_HAS_AUTH_HEADER true' || {
+                echo "Expected TOKEN_HAS_AUTH_HEADER true in fake-tiled logs"
+                echo "$LOGS"
+                exit 1
+              }
+
+              echo "$LOGS" | grep -Fq 'TOKEN_LEAKED false' || {
+                echo "Expected TOKEN_LEAKED false in fake-tiled logs"
+                echo "$LOGS"
+                exit 1
+              }
+
       catch:
         - describe:
             apiVersion: v1
@@ -117,6 +146,10 @@ spec:
         - podLogs:
             selector: app=fake-graph
             container: fake-graph
+
+        - podLogs:
+            selector: app=fake-tiled
+            container: fake-tiled
 
       finally:
         - script:

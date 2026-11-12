@@ -6,6 +6,8 @@ authenticatedWorkflows:
     authBrokerServerSocketPort: 8080
     graphAddress: fake-graph.envoy-authz-chainsaw.svc.cluster.local
     graphPort: 8080
+    tiledAddress: fake-tiled.envoy-authz-chainsaw.svc.cluster.local
+    tiledPort: 8080
     tls:
       enabled: false
     logLevel: warn
