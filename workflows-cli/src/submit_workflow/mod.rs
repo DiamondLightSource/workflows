@@ -12,11 +12,18 @@ pub fn submit(args: SubmitArgs) {
         ManifestType::Helm => submit_helm(&args.file_path, &args.session, &args.parameters),
     };
 
-    if let Ok(workflow_name) = result {
-        println!(
-            "Submitted Workflow {} to https://workflows.diamond.ac.uk/workflows/{}/{}",
-            workflow_name, args.session, workflow_name
-        );
+    if let Ok((workflow_name, workflow_uid)) = result {
+        match workflow_uid {
+            Some(uid) => println!(
+                "Submitted Workflow {} to https://workflows.diamond.ac.uk/workflows/{}/{}:{}:{}",
+                workflow_name, args.session, args.session, workflow_name, uid
+            ),
+            None => eprintln!(
+                "Workflow {} was submitted successfully, but we couldn't generate a link \
+                 to it. You can find it in the dashboard at https://workflows.diamond.ac.uk",
+                workflow_name
+            ),
+        }
         std::process::exit(0);
     } else if let Err(e) = result {
         if e.contains("authentication error") {
@@ -33,7 +40,11 @@ pub fn submit(args: SubmitArgs) {
     }
 }
 
-fn submit_helm(target: &Path, session: &str, parameters: &[String]) -> Result<String, String> {
+fn submit_helm(
+    target: &Path,
+    session: &str,
+    parameters: &[String],
+) -> Result<(String, Option<String>), String> {
     let manifest = helm_to_manifest(target, false)?;
 
     if manifest.len() > 1 {
@@ -48,7 +59,11 @@ fn submit_helm(target: &Path, session: &str, parameters: &[String]) -> Result<St
     submit_from_str(raw_manifest, session, parameters)
 }
 
-fn submit_manifest(target: &Path, session: &str, parameters: &[String]) -> Result<String, String> {
+fn submit_manifest(
+    target: &Path,
+    session: &str,
+    parameters: &[String],
+) -> Result<(String, Option<String>), String> {
     let raw_manifest = read_manifest(target)?;
     submit_from_str(&raw_manifest, session, parameters)
 }
@@ -57,7 +72,7 @@ fn submit_from_str(
     raw_manifest: &str,
     session: &str,
     parameters: &[String],
-) -> Result<String, String> {
+) -> Result<(String, Option<String>), String> {
     let mut parsed: Value = serde_yaml::from_str(raw_manifest)
         .map_err(|e| format!("Could not parse the manifest {e}"))?;
 
@@ -84,7 +99,13 @@ fn submit_from_str(
     let yaml = serde_json::to_string(&parsed).unwrap();
     let mut command = get_command_factory().new_command("argo");
 
-    command.arg("submit").arg("-").arg("-n").arg(session);
+    command
+        .arg("submit")
+        .arg("-")
+        .arg("-n")
+        .arg(session)
+        .arg("-o")
+        .arg("json");
 
     for parameter in parameters {
         command.arg("-p").arg(parameter);
@@ -99,16 +120,24 @@ fn submit_from_str(
         return Err(error.to_string());
     }
 
-    let response = String::from_utf8(response.stdout)
-        .map_err(|e| format!("Could not parse error response: {e}"))?;
-    let name = response
-        .lines()
-        .next()
-        .and_then(|line| line.split(":").nth(1))
-        .map(|name| name.trim())
+    let stdout = String::from_utf8(response.stdout)
+        .map_err(|e| format!("Could not parse argo submit response: {e}"))?;
+    let json: serde_json::Value =
+        serde_json::from_str(&stdout).map_err(|e| format!("Could not parse workflow JSON: {e}"))?;
+
+    let name = json
+        .get("metadata")
+        .and_then(|metadata| metadata.get("name"))
+        .and_then(|name| name.as_str())
         .ok_or("Could not extract submitted workflow name")?;
 
-    Ok(name.to_string())
+    let uid = json
+        .get("metadata")
+        .and_then(|metadata| metadata.get("uid"))
+        .and_then(|uid| uid.as_str())
+        .map(|uid| uid.trim().to_string());
+
+    Ok((name.to_string(), uid))
 }
 
 fn read_manifest(target: &Path) -> Result<String, String> {
@@ -151,7 +180,13 @@ mod tests {
         }
         let path = Path::new("./tests/manifests/workflow1.yaml");
         let result = submit_manifest(path, "SESSION", &[]).unwrap();
-        assert_eq!(result, "conditional-steps-40");
+        assert_eq!(
+            result,
+            (
+                "conditional-steps-40".to_string(),
+                Some("test-uid-12345".to_string())
+            )
+        );
     }
 
     #[test]
@@ -162,7 +197,13 @@ mod tests {
         }
         let path = Path::new("./tests/charts/templates/workflow1.yaml");
         let result = submit_helm(path, "SESSION", &[]).unwrap();
-        assert_eq!(result, "conditional-steps-40");
+        assert_eq!(
+            result,
+            (
+                "conditional-steps-40".to_string(),
+                Some("test-uid-12345".to_string())
+            )
+        );
     }
 
     #[test]
@@ -176,7 +217,24 @@ mod tests {
 
         let result = submit_manifest(path, "SESSION", &["message=hello".to_string()]).unwrap();
 
-        assert_eq!(result, "conditional-steps-40");
+        assert_eq!(
+            result,
+            (
+                "conditional-steps-40".to_string(),
+                Some("test-uid-12345".to_string())
+            )
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn test_submit_manifest_no_uid() {
+        unsafe {
+            env::set_var("WORKFLOW_CLI_TEST_ACTIVE_MAPPING", "submit_workflow_no_uid");
+        }
+        let path = Path::new("./tests/manifests/workflow1.yaml");
+        let result = submit_manifest(path, "SESSION", &[]).unwrap();
+        assert_eq!(result, ("conditional-steps-40".to_string(), None::<String>));
     }
 
     #[test]
