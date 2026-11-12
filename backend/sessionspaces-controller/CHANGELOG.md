@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.6...sessionspaces-controller@v0.1.7) (2026-11-12)
+
+
+### Features
+
+* **sessionspaces-controller:** prepare API accepts trusted service accounts ([1ee7284](https://github.com/DiamondLightSource/workflows/commit/1ee7284e049817e40a1811a7fdda5be6314491db))
+
 ## [0.1.6](https://github.com/DiamondLightSource/workflows/compare/sessionspaces-controller@v0.1.5...sessionspaces-controller@v0.1.6) (2026-11-10)
 
 
