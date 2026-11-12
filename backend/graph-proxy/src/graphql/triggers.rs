@@ -1064,10 +1064,10 @@ users:
         "events",
         r#"
             query {
-                trigger(name: "example-trigger-mfvpj") {
+                workflowTrigger(reference: {name: "example-trigger-mfvpj"}) {
                     name
                     beamline
-                    visit
+                    session
                     expiry
                     workflowTemplateName
                 }
@@ -1075,10 +1075,10 @@ users:
         "#,
         "get-single-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "name": "example-trigger-mfvpj",
                 "beamline": "test-beamline",
-                "visit": "any",
+                "session": "any",
                 "expiry": "2026-07-18T08:19:18+00:00",
                 "workflowTemplateName": ["example-template"]
             }
@@ -1089,12 +1089,14 @@ users:
         "mg36964-1",
         r#"
             query {
-                trigger(
-                    name: "test-trigger-s6qzl",
-                    visit: {
-                        proposalCode: "mg"
-                        proposalNumber: 36964
-                        number: 1
+                workflowTrigger(
+                    reference: {
+                        name: "test-trigger-s6qzl",
+                        session: {
+                            proposalCode: "mg"
+                            proposalNumber: 36964
+                            number: 1
+                        }
                     }
                 ) {
                     name
@@ -1105,7 +1107,7 @@ users:
         "#,
         "namespaced-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "name": "test-trigger-s6qzl",
                 "beamline": "b01-1",
                 "enabled": true
@@ -1118,15 +1120,17 @@ users:
         "mg36964-1",
         r#"
             query {
-                trigger(
-                    name: "test-trigger-s6qzl",
-                    visit: {
-                        proposalCode: "mg"
-                        proposalNumber: 36964
-                        number: 1
+                workflowTrigger(
+                    reference: {
+                        name: "test-trigger-s6qzl",
+                        session: {
+                            proposalCode: "mg"
+                            proposalNumber: 36964
+                            number: 1
+                        }
                     }
                 ) {
-                    visit
+                    session
                     creator {
                         creatorId
                     }
@@ -1135,8 +1139,8 @@ users:
         "#,
         "namespaced-trigger.json",
         json!({
-            "trigger": {
-                "visit": "mg36964-1",
+            "workflowTrigger": {
+                "session": "mg36964-1",
                 "creator": {
                     "creatorId": "abc12345"
                 }
@@ -1149,8 +1153,10 @@ users:
         "events",
         r#"
             query {
-                trigger(
-                    name: "custom-name",
+                workflowTrigger(
+                    reference: {
+                        name: "custom-name",
+                    }
                 ) {
                     creator {
                         creatorId
@@ -1160,7 +1166,7 @@ users:
         "#,
         "named-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "creator": {
                     "creatorId": "test-preferred-user"
                 }
@@ -1173,8 +1179,10 @@ users:
         "events",
         r#"
             query {
-                trigger(
-                    name: "example-trigger-mfvpj",
+                workflowTrigger(
+                    reference: {
+                        name: "example-trigger-mfvpj",
+                    }
                 ) {
                     creator {
                         creatorId
@@ -1184,7 +1192,7 @@ users:
         "#,
         "get-single-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "creator": {
                     "creatorId": "Unknown"
                 }
@@ -1197,17 +1205,19 @@ users:
         "events",
         r#"
             query {
-                trigger(
-                    name: "example-trigger-mfvpj",
+                workflowTrigger(
+                    reference: {
+                        name: "example-trigger-mfvpj",
+                    }
                 ) {
-                    visit
+                    session
                 }
             }
         "#,
         "no-namespace-trigger.json",
         json!({
-            "trigger": {
-                "visit": "Unknown"
+            "workflowTrigger": {
+                "session": "Unknown"
             }
         })
     )]
@@ -1217,12 +1227,14 @@ users:
         "mg36964-1",
         r#"
             query {
-                trigger(
-                    name: "test-trigger-s6qzl",
-                    visit: {
-                        proposalCode: "mg"
-                        proposalNumber: 36964
-                        number: 1
+                workflowTrigger(
+                    reference: {
+                        name: "test-trigger-s6qzl",
+                        session: {
+                            proposalCode: "mg"
+                            proposalNumber: 36964
+                            number: 1
+                        }
                     }
                 ) {
                     expiry
@@ -1231,7 +1243,7 @@ users:
         "#,
         "namespaced-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "expiry": "2026-07-01T14:20:59+00:00"
             }
         })
@@ -1242,14 +1254,18 @@ users:
         "events",
         r#"
             query {
-                trigger(name: "custom-name") {
+                workflowTrigger(
+                    reference: {
+                        name: "custom-name"
+                    }
+                ) {
                     expiry
                 }
             }
         "#,
         "named-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "expiry": "2026-07-01T13:21:59+00:00"
             }
         })
@@ -1260,14 +1276,18 @@ users:
         "events",
         r#"
             query {
-                trigger(name: "example-trigger-mfvpj") {
+                workflowTrigger(
+                    reference: {
+                        name: "example-trigger-mfvpj"
+                    }
+                ) {
                     expiry
                 }
             }
         "#,
         "no-namespace-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "expiry": "2026-07-17T08:19:19+00:00"
             }
         })
@@ -1278,14 +1298,18 @@ users:
         "events",
         r#"
             query {
-                trigger(name: "example-trigger-kdfrm") {
+                workflowTrigger(
+                    reference: {
+                        name: "example-trigger-kdfrm"
+                    }
+                ) {
                     expiry
                 }
             }
         "#,
         "forever-trigger.json",
         json!({
-            "trigger": {
+            "workflowTrigger": {
                 "expiry": null
             }
         })
@@ -1320,7 +1344,7 @@ users:
             &ctx.schema,
             r#"
             query {
-                triggers {
+                workflowTriggers {
                     nodes {
                         name
                         beamline
@@ -1337,7 +1361,7 @@ users:
 
     fn expected_triggers() -> Value {
         json!({
-            "triggers": {
+            "workflowTriggers": {
                 "nodes": [
                     {
                         "name": "example-trigger-bv597",
