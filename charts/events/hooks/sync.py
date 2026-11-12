@@ -220,10 +220,10 @@ class Controller(BaseHTTPRequestHandler):
             "src": {"dependencyName": name, "contextKey": "id"},
             "dest": "eventId"
           },
-          {"src": {"value": template}, "dest": "template"},
+          {"src": {"dependencyName": name, "value": template}, "dest": "template"},
         ]
         if uid:
-          payload.append({"src": {"value": uid}, "dest": "posixuid"})
+          payload.append({"src": {"dependencyName": name, "value": uid}, "dest": "posixuid"})
         for index, userParam in enumerate(workflow.parameters):
           src = {"dependencyName": name}
           if userParam.path:
@@ -231,7 +231,7 @@ class Controller(BaseHTTPRequestHandler):
           if userParam.default:
             src.update({"value": userParam.default})
           payload.append(
-            {"src": {"value": userParam.name}, "dest": f"parameters.{index}.name"}
+            {"src": {"dependencyName": name, "value": userParam.name}, "dest": f"parameters.{index}.name"}
           )
           payload.append({"src": src, "dest": f"parameters.{index}.value"})
 
