@@ -61,5 +61,5 @@ genericServers:
     enabled: true
     logLevel: INFO
 prepareService:
-  enabled: false
+  enabled: true
   url: http://sessionspaces-prepare.events.svc/prepare-and-submit
