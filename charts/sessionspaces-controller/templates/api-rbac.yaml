@@ -24,6 +24,12 @@ rules:
   - apiGroups: [workflows.diamond.ac.uk]
     resources: [sessionspaces]
     verbs: [get, create, patch]
+  - apiGroups: [authentication.k8s.io]
+    resources: [tokenreviews]
+    verbs: [create]
+  - apiGroups: [authorization.k8s.io]
+    resources: [subjectaccessreviews]
+    verbs: [create]
 {{- end }}
 ---
 {{- if and $.Values.api.enabled $.Values.api.serviceAccount.create }}
