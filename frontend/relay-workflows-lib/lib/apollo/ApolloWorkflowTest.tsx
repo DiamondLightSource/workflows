@@ -1,10 +1,12 @@
 
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-import { useState } from "react";
+import { useState, useRef,useEffect} from "react";
 import { visitTextToVisit } from "workflows-lib";
 
 import WorkflowsNavbar from "relay-workflows-lib/lib/components/WorkflowsNavbar";
+
+
 
 const APOLLO_WORKFLOWS_QUERY = gql`
   query ApolloWorkflowsTest(
@@ -287,6 +289,17 @@ export default function ApolloWorkflowTest() {
   const visitId = localStorage.getItem("instrumentSessionID");
   const visit = visitTextToVisit(visitId ?? undefined);
 
+  // Reference to the scrollable workflow table
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Number of workflows per page
+  const PAGE_SIZE = 10;
+
+  // Currently selected page
+  const [selectedPage, setSelectedPage] = useState(1);
+  const [pendingScrollPage, setPendingScrollPage] =
+    useState<number | null>(null);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState("DATE_DESC");
@@ -309,48 +322,6 @@ export default function ApolloWorkflowTest() {
       pollInterval: 0,
     },
   );
-
-  if (!visit) {
-    return (
-      <>
-        <WorkflowsNavbar />
-
-        <div style={styles.page}>
-          <div style={styles.card}>
-            No valid visit found. Open a workflow visit first.
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (loading && !data) {
-    return (
-      <>
-        <WorkflowsNavbar />
-
-        <div style={styles.page}>
-          <div style={styles.card}>
-            Loading workflows from Apollo...
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (error && !data) {
-    return (
-      <>
-        <WorkflowsNavbar />
-
-        <div style={styles.page}>
-          <div style={styles.card}>
-            <pre>{error.message}</pre>
-          </div>
-        </div>
-      </>
-    );
-  }
 
   const workflows = data?.workflows?.nodes ?? [];
   const pageInfo = data?.workflows?.pageInfo;
@@ -417,6 +388,52 @@ export default function ApolloWorkflowTest() {
     }
   });
 
+
+  // Number of pages currently available
+  const loadedPages = Math.ceil(
+    sortedWorkflows.length / PAGE_SIZE,
+  );
+
+  // Scroll to the beginning of the selected page
+  const jumpToPage = (page: number) => {
+    const container = tableContainerRef.current;
+
+    if (!container) return;
+
+    const rows = container.querySelectorAll<HTMLTableRowElement>(
+      "tbody tr",
+    );
+
+    const targetIndex = (page - 1) * PAGE_SIZE;
+    const targetRow = rows[targetIndex];
+    const firstRow = rows[0];
+
+    if (targetRow && firstRow) {
+      setSelectedPage(page);
+
+      container.scrollTo({
+        top: targetRow.offsetTop - firstRow.offsetTop,
+        behavior: "smooth",
+      });
+    }
+  };  
+
+  useEffect(() => {
+    if (pendingScrollPage === null) return;
+
+    const targetIndex = (pendingScrollPage - 1) * PAGE_SIZE;
+
+    // Wait until the new workflows have been rendered
+    if (sortedWorkflows.length <= targetIndex) return;
+
+    const frame = requestAnimationFrame(() => {
+      jumpToPage(pendingScrollPage);
+      setPendingScrollPage(null);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [pendingScrollPage, sortedWorkflows.length]);
+
   // Existing Apollo pagination remains intact.
 
   const loadNextPage = async () => {
@@ -455,10 +472,61 @@ export default function ApolloWorkflowTest() {
           };
         },
       });
+
+      // Navigate to the newly loaded page
+      const nextPage = Math.floor(workflows.length / PAGE_SIZE) + 1;
+
+      setSelectedPage(nextPage);
+      setPendingScrollPage(nextPage);
+
     } catch (err) {
       console.error("Failed to load next page:", err);
     }
   };
+
+
+  if (!visit) {
+    return (
+      <>
+        <WorkflowsNavbar />
+
+        <div style={styles.page}>
+          <div style={styles.card}>
+            No valid visit found. Open a workflow visit first.
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (loading && !data) {
+    return (
+      <>
+        <WorkflowsNavbar />
+
+        <div style={styles.page}>
+          <div style={styles.card}>
+            Loading workflows from Apollo...
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <>
+        <WorkflowsNavbar />
+
+        <div style={styles.page}>
+          <div style={styles.card}>
+            <pre>{error.message}</pre>
+          </div>
+        </div>
+      </>
+    );
+  }
+
 
   const summaryCards = [
     {
@@ -662,6 +730,7 @@ export default function ApolloWorkflowTest() {
         {/* TABLE */}
 
         <div
+          ref={tableContainerRef}
           style={{
             overflow: "auto",
             maxHeight: "calc(100vh - 300px)",
@@ -853,7 +922,6 @@ export default function ApolloWorkflowTest() {
         </div>
 
         {/* PAGINATION */}
-
         <div
           style={{
             display: "flex",
@@ -872,6 +940,45 @@ export default function ApolloWorkflowTest() {
           >
             {workflows.length} workflows loaded
           </span>
+          {/* PAGE NAVIGATION DROPDOWN */}
+          {loadedPages > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <label
+                htmlFor="workflow-page"
+                style={{
+                  fontSize: 13,
+                  color: "#64748b",
+                }}
+              >
+                Go to page:
+              </label>
+
+              <select
+                id="workflow-page"
+                value={selectedPage <= loadedPages ? selectedPage : 1}
+                onChange={(e) => jumpToPage(Number(e.target.value))}
+                style={styles.input}
+              >
+                {Array.from({ length: loadedPages }, (_, index) => {
+                  const page = index + 1;
+                  const start = index * PAGE_SIZE + 1;
+                  const end = Math.min(page * PAGE_SIZE, sortedWorkflows.length);
+
+                  return (
+                    <option key={page} value={page}>
+                      Page {page} ({start}-{end})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
 
           {pageInfo?.hasNextPage && (
             <button
@@ -884,33 +991,28 @@ export default function ApolloWorkflowTest() {
                 border: "none",
                 borderRadius: 8,
                 fontWeight: 600,
-                cursor: loading
-                  ? "not-allowed"
-                  : "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 opacity: loading ? 0.6 : 1,
               }}
             >
-              {loading
-                ? "Loading..."
-                : "Load More Workflows"}
+              {loading ? "Loading..." : "Load More Workflows"}
             </button>
           )}
 
-          {!pageInfo?.hasNextPage &&
-            workflows.length > 0 && (
-              <span
-                style={{
-                  fontSize: 13,
-                  color: "#15803d",
-                  fontWeight: 600,
-                }}
-              >
-                All workflows loaded
-              </span>
-            )}
+          {!pageInfo?.hasNextPage && workflows.length > 0 && (
+            <span
+              style={{
+                fontSize: 13,
+                color: "#15803d",
+                fontWeight: 600,
+              }}
+            >
+              All workflows loaded
+            </span>
+          )}
         </div>
       </div>
     </div>
     </>
-    );
-  }
+  );
+}
