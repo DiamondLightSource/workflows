@@ -704,6 +704,7 @@ mod tests {
         posix_uid: String,
         preferred_username: String,
         fedid: String,
+        sub: String,
     }
 
     fn test_token() -> ValidatedAuthToken {
@@ -711,6 +712,7 @@ mod tests {
             posix_uid: "7357".into(),
             preferred_username: "test-pref-user".into(),
             fedid: "abc12345".into(),
+            sub: "test-subject-12345".into(),
         };
 
         let token = encode(
