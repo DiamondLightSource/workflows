@@ -263,6 +263,15 @@ spec:
                                 - name: tiled_backend
                                   domains:
                                   - "*"
+                                  # Tiled builds self-referencing links in its responses from the
+                                  # X-Forwarded-Host header (see
+                                  # https://blueskyproject.io/tiled/user-guide/serve-behind-reverse-proxy.html).
+                                  # Point them back at the local Envoy sidecar so the Tiled client keeps
+                                  # going through the proxy
+                                  request_headers_to_add:
+                                    - header:
+                                        key: X-Forwarded-Host
+                                        value: "127.0.0.1:6001"
                                   routes:
                                     - match:
                                         prefix: "/"
