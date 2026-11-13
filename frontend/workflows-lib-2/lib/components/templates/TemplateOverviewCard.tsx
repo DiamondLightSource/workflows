@@ -16,6 +16,15 @@ interface TemplateOverviewCardProps {
     onSelect: () => void
 }
 
+function kebabToTitle(str: String): string {
+  const splitStr = str.toLowerCase().split("-");
+  for (let i = 0; i < splitStr.length; i++) {
+    splitStr[i] =
+      splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+  }
+  return splitStr.join(" ");
+}
+
 export default function TemplateOverviewCard(
     {
         cardInfo: {
@@ -34,8 +43,13 @@ export default function TemplateOverviewCard(
     return (
         <ButtonBase
             onClick={ onSelect }
+            sx={{
+                width: "100%",
+                display: "block"
+            }}
         >
             <Box sx={{
+                width: "100%",
                 transition: "all 0.3s ease",
                 bgcolor: backgroundColour,
                 '&:hover': { bgcolor: hoverColour },
@@ -44,9 +58,11 @@ export default function TemplateOverviewCard(
                 padding: "10px",
                 textAlign: "left"
                 }}>
-                    <Typography variant="h5" noWrap>{title}</Typography>
-                    {/* A bit lazy, should probably use a divider and flex box */}
-                    <Typography sx={{color: (theme: Theme) => theme.palette.text.secondary,}} noWrap>{name} | {maintainer}</Typography>
+                    <Typography variant="h5" noWrap>{ title === null ? kebabToTitle(name) : title}</Typography>
+                    {/* A bit lazy, should probably use a divider and flex box for the separator */}
+                    <Typography sx={{
+                        color: (theme: Theme) => theme.palette.text.secondary, 
+                    }} noWrap>{name} | {maintainer}</Typography>
                     {/* 
                         This is a long list of styles and some of them are depricated (WebkitBoxOrient) 
                         But literally nothing else works 
@@ -58,7 +74,7 @@ export default function TemplateOverviewCard(
                         display: "-webkit-box", 
                         WebkitLineClamp: "3", 
                         WebkitBoxOrient: "vertical"
-                        }}>{description}</Typography>
+                        }}>{ description === null ? "No description." : description}</Typography>
             </Box>
         </ButtonBase>
     );

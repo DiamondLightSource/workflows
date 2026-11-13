@@ -37,7 +37,7 @@ export default function TemplateList({
                 // Dont like this double box
                 // Would be a lot better if I could set the margin in the Template Overview card from here
                 // But that would be messy if I passed in a style prop
-                <Box sx={{ margin: "10px", marginLeft: "5px"}}>
+                <Box sx={{ display: "flex", margin: "10px", marginLeft: "5px"}}>
                     <TemplateOverviewCard 
                         key={index}
                         selected={props.name === selectedTemplateName}
