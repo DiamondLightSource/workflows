@@ -25,3 +25,4 @@ export {
 export { RenderSubmittedMessage } from "./components/RenderSubmittedMessage";
 export { SubscribeAndRender } from "./subscription-components/SubscribeAndRender";
 export { handlers } from "../tests/mocks/handlers";
+export { default as TemplateList } from "./components/templates/TemplateList";

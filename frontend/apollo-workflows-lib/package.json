@@ -16,7 +16,8 @@
     "@diamondlightsource/workflows-lib-shared": "^0.1.1",
     "graphql-ws": "^6",
     "rxjs": "^7",
-    "workflows-lib": "^0.1.14"
+    "workflows-lib": "^0.1.14",
+    "workflows-lib-2": "../workflows-lib-2"
   },
   "devDependencies": {
     "@jsonforms/core": "^3.8.0"
