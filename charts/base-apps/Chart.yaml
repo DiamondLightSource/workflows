@@ -6,4 +6,4 @@ version: 0.1.0
 dependencies:
   - name: common
     repository: https://charts.bitnami.com/bitnami
-    version: 2.27.0
+    version: 2.41.0
