@@ -56,6 +56,8 @@ When this annotation is present, the `TILED_URL` environment variable is automat
 
 Requests **must** be sent via `TILED_URL`. Direct requests to [tiled.diamond.ac.uk](https://tiled.diamond.ac.uk) still require Keycloak authentication.
 
+The Tiled Python client normally tries to run its own login flow when you connect. Because the platform already attaches the authenticated user's credentials to requests sent via `TILED_URL` you should supply a **no-op auth** so the client does not attempt a separate login.
+
 For example:
 
 ```
@@ -84,11 +86,21 @@ spec:
         source: |
           import os
           from itertools import islice
+
+          import httpx2 as httpx
           from tiled.client import from_uri
+
+          class WorkflowsAuth(httpx.Auth):
+              """No-op auth: the platform attaches the authenticated user's
+              credentials to requests sent through TILED_URL, so don't attempt
+              a separate login flow."""
+
+              def auth_flow(self, request):
+                  yield request
 
           client = from_uri(
               os.environ["TILED_URL"],
-              remember_me=False,
+              auth=WorkflowsAuth(),
           )
 
           print(f"Connected to Tiled catalog: {client}")
