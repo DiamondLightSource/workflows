@@ -25,7 +25,6 @@ dashmap = "6"
 
 [dev-dependencies]
 axum-test = {workspace = true}
-mockito.workspace = true
 env_logger = { workspace = true }
 sea-orm = { workspace = true, features = ["sqlx-postgres", "sqlx-sqlite"] }
 migration = { version = "0.1.0", path = "../auth-core/migration" }
