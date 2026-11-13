@@ -17,7 +17,6 @@ openssl = { version = "0.10", features = ["vendored"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 serde_yaml = { version = "0.9.34" }
-yaml-rust2 = "0.10.4"
 anyhow = "1.0.104"
 lazy_static = "1.5.0"
 regex = "1.13.1"
@@ -28,9 +27,9 @@ reqwest = { version = "0.13.4", default-features = false, features = [
 ] }
 jsonwebtoken = "11.0.0"
 thiserror = "2.0.19"
-mockito = "1.7.2"
 jsonschema = "0.57.0"
 json-colorizer = "0.1.2"
 
 [dev-dependencies]
+mockito = "1.7.2"
 serial_test = "3.2.0"
