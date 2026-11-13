@@ -8,7 +8,6 @@ config_argus
 kubeconfig.yaml
 
 # Relay
-__generated__
 workflows.graphql
 
 # Storybook generated
