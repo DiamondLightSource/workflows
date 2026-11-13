@@ -126,6 +126,11 @@ submit_workflow:
       Progress:
     code: 0
 
+  - command: argo get conditional-steps-40 -n SESSION -o json
+    response: |
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"Workflow","metadata":{"name":"conditional-steps-40","namespace":"SESSION","uid":"test-uid-12345"}}
+    code: 0
+
   - command: argo submit - -n SESSION -p message=hello
     response: |
       Name: conditional-steps-40

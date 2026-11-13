@@ -12,10 +12,10 @@ pub fn submit(args: SubmitArgs) {
         ManifestType::Helm => submit_helm(&args.file_path, &args.session, &args.parameters),
     };
 
-    if let Ok(workflow_name) = result {
+    if let Ok((workflow_name, workflow_uid)) = result {
         println!(
-            "Submitted Workflow {} to https://workflows.diamond.ac.uk/workflows/{}/{}",
-            workflow_name, args.session, workflow_name
+            "Submitted Workflow {} to https://workflows.diamond.ac.uk/workflows/{}/{}:{}:{}",
+            workflow_name, args.session, args.session, workflow_name, workflow_uid
         );
         std::process::exit(0);
     } else if let Err(e) = result {
@@ -33,7 +33,11 @@ pub fn submit(args: SubmitArgs) {
     }
 }
 
-fn submit_helm(target: &Path, session: &str, parameters: &[String]) -> Result<String, String> {
+fn submit_helm(
+    target: &Path,
+    session: &str,
+    parameters: &[String],
+) -> Result<(String, String), String> {
     let manifest = helm_to_manifest(target, false)?;
 
     if manifest.len() > 1 {
@@ -48,7 +52,11 @@ fn submit_helm(target: &Path, session: &str, parameters: &[String]) -> Result<St
     submit_from_str(raw_manifest, session, parameters)
 }
 
-fn submit_manifest(target: &Path, session: &str, parameters: &[String]) -> Result<String, String> {
+fn submit_manifest(
+    target: &Path,
+    session: &str,
+    parameters: &[String],
+) -> Result<(String, String), String> {
     let raw_manifest = read_manifest(target)?;
     submit_from_str(&raw_manifest, session, parameters)
 }
@@ -57,7 +65,7 @@ fn submit_from_str(
     raw_manifest: &str,
     session: &str,
     parameters: &[String],
-) -> Result<String, String> {
+) -> Result<(String, String), String> {
     let mut parsed: Value = serde_yaml::from_str(raw_manifest)
         .map_err(|e| format!("Could not parse the manifest {e}"))?;
 
@@ -108,7 +116,45 @@ fn submit_from_str(
         .map(|name| name.trim())
         .ok_or("Could not extract submitted workflow name")?;
 
-    Ok(name.to_string())
+    let uid = get_workflow_uid(name, session)?;
+
+    Ok((name.to_string(), uid))
+}
+
+/// Retrieve the Kubernetes UID of a submitted workflow
+fn get_workflow_uid(name: &str, session: &str) -> Result<String, String> {
+    let mut command = get_command_factory().new_command("argo");
+
+    command
+        .arg("get")
+        .arg(name)
+        .arg("-n")
+        .arg(session)
+        .arg("-o")
+        .arg("json");
+
+    let response = command
+        .output()
+        .map_err(|e| format!("Failed to run argo get command: {e}"))?;
+
+    if !response.status.success() {
+        let error = String::from_utf8_lossy(&response.stderr);
+        return Err(error.to_string());
+    }
+
+    let stdout = String::from_utf8(response.stdout)
+        .map_err(|e| format!("Could not parse argo get response: {e}"))?;
+
+    let json: serde_json::Value =
+        serde_json::from_str(&stdout).map_err(|e| format!("Could not parse workflow JSON: {e}"))?;
+
+    let uid = json
+        .get("metadata")
+        .and_then(|metadata| metadata.get("uid"))
+        .and_then(|uid| uid.as_str())
+        .ok_or("Could not extract submitted workflow uid")?;
+
+    Ok(uid.trim().to_string())
 }
 
 fn read_manifest(target: &Path) -> Result<String, String> {
@@ -151,7 +197,13 @@ mod tests {
         }
         let path = Path::new("./tests/manifests/workflow1.yaml");
         let result = submit_manifest(path, "SESSION", &[]).unwrap();
-        assert_eq!(result, "conditional-steps-40");
+        assert_eq!(
+            result,
+            (
+                "conditional-steps-40".to_string(),
+                "test-uid-12345".to_string()
+            )
+        );
     }
 
     #[test]
@@ -162,7 +214,13 @@ mod tests {
         }
         let path = Path::new("./tests/charts/templates/workflow1.yaml");
         let result = submit_helm(path, "SESSION", &[]).unwrap();
-        assert_eq!(result, "conditional-steps-40");
+        assert_eq!(
+            result,
+            (
+                "conditional-steps-40".to_string(),
+                "test-uid-12345".to_string()
+            )
+        );
     }
 
     #[test]
@@ -176,7 +234,13 @@ mod tests {
 
         let result = submit_manifest(path, "SESSION", &["message=hello".to_string()]).unwrap();
 
-        assert_eq!(result, "conditional-steps-40");
+        assert_eq!(
+            result,
+            (
+                "conditional-steps-40".to_string(),
+                "test-uid-12345".to_string()
+            )
+        );
     }
 
     #[test]
