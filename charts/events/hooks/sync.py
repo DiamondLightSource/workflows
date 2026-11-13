@@ -111,8 +111,16 @@ class Controller(BaseHTTPRequestHandler):
         continue
       name: str | None = trigger.metadata.name
       namespace: str | None = trigger.metadata.namespace
-      source_type: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/source")
-      uid: str | None = trigger.metadata.labels.get("workflows.diamond.ac.uk/posixuid")
+
+      labels = trigger.metadata.labels
+      source_type: str | None = labels.get("workflows.diamond.ac.uk/source")
+      uid: str | None = labels.get("workflows.diamond.ac.uk/posixuid")
+      sub: str | None = labels.get("workflows.diamond.ac.uk/creator")
+      creatorName: str = (
+        labels.get("workflows.diamond.ac.uk/creator-preferred-username")
+        or labels.get("workflows.diamond.ac.uk/creator-fedid")
+        or "Unknown"
+      )
       workflow = trigger.spec.workflow
       template = workflow.template
       eventName = trigger.spec.eventName
@@ -234,6 +242,11 @@ class Controller(BaseHTTPRequestHandler):
             {"src": {"dependencyName": name, "value": userParam.name}, "dest": f"parameters.{index}.name"}
           )
           payload.append({"src": src, "dest": f"parameters.{index}.value"})
+
+        if sub:
+          payload.append({"src": {"dependencyName": name, "value": sub}, "dest": "sub"})
+
+        payload.append({"src": {"dependencyName": name, "value": creatorName}, "dest": "creator"})
 
         triggerTemplate = {
           "template": {
