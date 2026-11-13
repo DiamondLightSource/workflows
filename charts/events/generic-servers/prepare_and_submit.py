@@ -51,7 +51,7 @@ def _prepare(namespace, token):
         return error.code
 
 
-def _submit(namespace, template, event_id, posixuid, parameters, token):
+def _submit(namespace, template, event_id, posixuid, sub, creator, parameters, token):
     """Submit the Workflow via the Kubernetes API, returning the status code."""
     context = (
         ssl.create_default_context(cafile=KUBE_CA_FILE)
@@ -63,7 +63,11 @@ def _submit(namespace, template, event_id, posixuid, parameters, token):
         "kind": "Workflow",
         "metadata": {
             "generateName": f"{template}-event-",
-            "labels": {"workflows.diamond.ac.uk/triggeruid": posixuid or ""},
+            "labels": {
+                "workflows.diamond.ac.uk/triggeruid": posixuid or "",
+                "workflows.diamond.ac.uk/creator": sub,
+                "workflows.diamond.ac.uk/creator-name": creator,
+            },
         },
         "spec": {
             "serviceAccountName": "argo-workflow",
@@ -140,6 +144,8 @@ class Handler(BaseHTTPRequestHandler):
             str(payload.get("template") or ""),
             str(payload.get("eventId") or ""),
             str(payload.get("posixuid") or ""),
+            str(payload.get("sub") or ""),
+            str(payload.get("creator") or "Unknown"),
             payload.get("parameters") or [],
             token,
         )
