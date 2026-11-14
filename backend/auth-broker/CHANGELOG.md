@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/DiamondLightSource/workflows/compare/auth-broker@v0.1.1...auth-broker@v0.1.2) (2026-11-14)
+
+
+### Features
+
+* **auth-broker:** read custom workflow creator label ([4de9b8c](https://github.com/DiamondLightSource/workflows/commit/4de9b8c6bc26d3de211d282b0e44d921f96ac79d))
+
 ## [0.1.1](https://github.com/DiamondLightSource/workflows/compare/auth-broker@v0.1.0...auth-broker@v0.1.1) (2026-10-13)
 
 
