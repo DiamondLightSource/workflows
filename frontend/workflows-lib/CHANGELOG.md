@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.15](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.14...workflows-lib@v0.1.15) (2026-11-14)
+
+
+### Bug Fixes
+
+* **ci:** limit excessive vitest workers causing test timeouts ([8f3062a](https://github.com/DiamondLightSource/workflows/commit/8f3062a17d371e580617d2a02081ce7ff868598a))
+* **relay-workflows-lib,workflows-lib:** fix linter errors ([7d81823](https://github.com/DiamondLightSource/workflows/commit/7d8182394aecbba3003a94a3867a03f769b8c2f7))
+
 ## [0.1.14](https://github.com/DiamondLightSource/workflows/compare/workflows-lib@v0.1.13...workflows-lib@v0.1.14) (2026-10-29)
 
 
