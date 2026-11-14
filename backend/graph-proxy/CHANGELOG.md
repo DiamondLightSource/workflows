@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.4.1...graph-proxy@v0.4.2) (2026-11-14)
+
+
+### Features
+
+* **graph-proxy:** add creator subj to triggers as label ([17057b5](https://github.com/DiamondLightSource/workflows/commit/17057b571b994168bf29f8b58a17e51fe56d8c08))
+* **graph-proxy:** align trigger query API with supergraph ([c0c4ecb](https://github.com/DiamondLightSource/workflows/commit/c0c4ecb797edf2e4a6a1c26fa7abf4b2d534ec1c))
+
 ## [0.4.1](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.4.0...graph-proxy@v0.4.1) (2026-10-29)
 
 
