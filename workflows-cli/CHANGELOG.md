@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.3...workflows-cli@v0.1.4) (2026-11-14)
+
+
+### Features
+
+* **cli:** add command to authenticate as service account ([94cc04b](https://github.com/DiamondLightSource/workflows/commit/94cc04bb3244e2756ec774f660d7d85656723944))
+
 ## [0.1.3](https://github.com/DiamondLightSource/workflows/compare/workflows-cli@v0.1.2...workflows-cli@v0.1.3) (2026-10-14)
 
 
