@@ -7,5 +7,5 @@ version: 0.1.0
 dependencies:
   - name: metacontroller-helm
     alias: metacontroller
-    version: 4.17.2
+    version: 4.17.6
     repository: oci://ghcr.io/metacontroller
