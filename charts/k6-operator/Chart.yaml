@@ -6,4 +6,4 @@ appVersion: "1.16.0"
 dependencies:
   - name: k6-operator
     repository: https://grafana.github.io/helm-charts
-    version: 4.3.0
+    version: 4.7.0

@@ -6,9 +6,9 @@ type: application
 version: 0.3.39
 dependencies:
   - name: common
-    version: 2.23.0
+    version: 2.41.0
     repository: oci://docker.io/bitnamicharts
   - name: argo-cd
     repository: https://argoproj.github.io/argo-helm
-    version: 10.10.5
+    version: 10.18.0
     condition: argo-cd.enabled
