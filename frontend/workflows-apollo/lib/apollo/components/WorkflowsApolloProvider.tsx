@@ -14,7 +14,6 @@ export default function WorkflowsApolloProvider({ children }: ProviderProps) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log("calling use effect");
     let active = true;
 
     getApolloClient()
