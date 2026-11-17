@@ -4,7 +4,7 @@ s3mock:
   image:
     repository: adobe/s3mock
     pullPolicy: Always
-    tag: "3.12.0"
+    tag: "5.2.3"
   config:
     initialBuckets: k8s-workflows-test
     debug: true
