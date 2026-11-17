@@ -14,7 +14,8 @@
     "keycloak-js": "^26.2.4",
     "msw": "^2.15.0",
     "react-router-dom": "^7.18.4",
-    "workflows-ui": "../workflows-ui"
+    "workflows-ui": "../workflows-ui",
+    "workflows-apollo": "../workflows-apollo"
   },
   "devDependencies": {
     "babel-plugin-relay": "21.0.1",
