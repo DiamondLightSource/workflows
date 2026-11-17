@@ -1,7 +1,7 @@
 {
   "name": "relay-workflows-lib",
   "private": true,
-  "version": "0.1.18",
+  "version": "0.1.19",
   "type": "module",
   "main": "lib/main.ts",
   "scripts": {
@@ -13,10 +13,10 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@diamondlightsource/workflows-lib-shared": "^0.1.1",
+    "@diamondlightsource/workflows-lib-shared": "^0.1.2",
     "react-relay": "^20.1.1",
     "relay-test-utils": "^21.0.1",
-    "workflows-lib": "^0.1.14"
+    "workflows-lib": "^0.1.15"
   },
   "devDependencies": {
     "@jsonforms/core": "^3.8.0",
