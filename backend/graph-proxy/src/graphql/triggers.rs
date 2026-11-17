@@ -353,6 +353,11 @@ const TEMPLATE_LABELS: [&str; 2] = [
     "workflows.diamond.ac.uk/source",
 ];
 
+/// Marker that a `Trigger` has already been populated from its template. Set by
+/// `create_trigger`; the events `trigger-populator` sweep skips any `Trigger`
+/// carrying it so it does not revert a user's later edits.
+const POPULATED_ANNOTATION: &str = "workflows.diamond.ac.uk/trigger-populated";
+
 /// The group, version and kind of the `ClusterTriggerTemplate` custom resource
 const CLUSTER_TRIGGER_TEMPLATE_GVK: (&str, &str, &str) = (
     "workflows.diamond.ac.uk",
@@ -391,6 +396,11 @@ async fn apply_trigger_template(client: Client, trigger: &mut Trigger) -> anyhow
 
     merge_template_spec(trigger, &template)?;
     copy_template_labels(trigger, &template);
+    trigger
+        .metadata
+        .annotations
+        .get_or_insert_with(BTreeMap::new)
+        .insert(POPULATED_ANNOTATION.to_string(), String::from("true"));
     Ok(())
 }
 
@@ -896,6 +906,9 @@ users:
                         "workflows.diamond.ac.uk/posixuid": "7357",
                         "workflows.diamond.ac.uk/beamline": "b01-1",
                         "workflows.diamond.ac.uk/source": "generic"
+                    },
+                    "annotations": {
+                        "workflows.diamond.ac.uk/trigger-populated": "true"
                     }
                 },
                 "spec": {

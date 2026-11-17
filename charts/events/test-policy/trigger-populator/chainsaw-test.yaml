@@ -1,0 +1,141 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: trigger-populator
+spec:
+  steps:
+    - name: deploy-populator
+      try:
+        - script:
+            content: |
+              set -eu
+              helm template populator "$(git rev-parse --show-toplevel)/charts/events" \
+                --namespace "$NAMESPACE" --show-only templates/trigger-populator.yaml \
+                | kubectl apply --validate=false -f -
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              helm template populator "$(git rev-parse --show-toplevel)/charts/events" \
+                --namespace "$NAMESPACE" --show-only templates/trigger-populator.yaml \
+                | kubectl delete --ignore-not-found -f -
+    - name: kubectl-created-trigger-is-populated
+      try:
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: ClusterTriggerTemplate
+              metadata:
+                name: test-template
+                labels:
+                  workflows.diamond.ac.uk/beamline: b01-1
+                  workflows.diamond.ac.uk/source: generic
+              spec:
+                eventName: test-example
+                lifetime: 24h
+                workflow:
+                  parameters:
+                    - name: message
+                      path: name
+                  template: echo-workflow-template
+                  triggerOnMessageType: start
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: unpopulated-trigger
+                namespace: ($namespace)
+              spec:
+                templateRef: test-template
+                eventName: placeholder-event
+                workflow:
+                  template: workflow-template
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" create job trigger-populator-manual \
+                --from=cronjob/trigger-populator
+              kubectl -n "$NAMESPACE" wait \
+                --for=condition=complete job/trigger-populator-manual --timeout=120s
+        - assert:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: unpopulated-trigger
+                namespace: ($namespace)
+                labels:
+                  workflows.diamond.ac.uk/beamline: b01-1
+                  workflows.diamond.ac.uk/source: generic
+                annotations:
+                  workflows.diamond.ac.uk/trigger-populated: "true"
+              spec:
+                templateRef: test-template
+                enabled: true
+                eventName: test-example
+                lifetime: 24h
+                workflow:
+                  parameters:
+                    - name: message
+                      path: name
+                  template: echo-workflow-template
+                  triggerOnMessageType: start
+    - name: already-populated-trigger-is-left-alone
+      try:
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: already-populated
+                namespace: ($namespace)
+                annotations:
+                  workflows.diamond.ac.uk/trigger-populated: "true"
+              spec:
+                templateRef: test-template
+                enabled: true
+                eventName: user-edited-event
+                workflow:
+                  template: user-edited-workflow
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" create job trigger-populator-manual-skip \
+                --from=cronjob/trigger-populator
+              kubectl -n "$NAMESPACE" wait \
+                --for=condition=complete job/trigger-populator-manual-skip --timeout=120s
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get trigger already-populated -o json | \
+                jq -e '.spec.eventName == "user-edited-event" and .spec.workflow.template == "user-edited-workflow"'
+    - name: missing-template-is-skipped
+      try:
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: missing-template-trigger
+                namespace: ($namespace)
+              spec:
+                templateRef: does-not-exist
+                eventName: placeholder-event
+                workflow:
+                  template: workflow-template
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" create job trigger-populator-manual-missing \
+                --from=cronjob/trigger-populator
+              kubectl -n "$NAMESPACE" wait \
+                --for=condition=complete job/trigger-populator-manual-missing --timeout=120s
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get trigger missing-template-trigger -o json | \
+                jq -e '.metadata.annotations["workflows.diamond.ac.uk/trigger-populated"] == null'
