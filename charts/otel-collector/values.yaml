@@ -81,9 +81,6 @@ opentelemetry-collector:
                 - role: pod
               relabel_configs:
                 - source_labels: [__meta_kubernetes_namespace]
-                  regex: kyverno
-                  action: drop
-                - source_labels: [__meta_kubernetes_namespace]
                   regex: monitoring
                   action: drop
                 - source_labels: [__meta_kubernetes_namespace]

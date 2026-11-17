@@ -392,16 +392,14 @@ authenticatedWorkflows:
         memory: 256Mi
 
 celAdmissionPolicies:
-  # Kubernetes-native ValidatingAdmissionPolicy (CEL) replacements for the
-  # kyverno validating (deny) rules, which have been removed. Deployed in-process
-  # on the vCluster apiserver. `enforcementAction` may be set to `Audit` to
+  # Kubernetes-native ValidatingAdmissionPolicy (CEL). Deployed in-process on
+  # the vCluster apiserver. `enforcementAction` may be set to `Audit` to
   # log-only (no enforcement) when triaging.
   enabled: true
   enforcementAction: Deny
 
 celMutatingPolicies:
-  # Kubernetes-native MutatingAdmissionPolicy (CEL) replacements for the
-  # kyverno mutate rules, which have been removed. Requires the
+  # Kubernetes-native MutatingAdmissionPolicy (CEL). Requires the
   # MutatingAdmissionPolicy feature gate + admissionregistration.k8s.io/v1beta1
   # runtime-config on the vCluster apiserver (k8s 1.34-1.35 beta).
   enabled: true

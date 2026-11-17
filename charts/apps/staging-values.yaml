@@ -22,34 +22,6 @@ groups:
   enabled: true
   targetRevision: HEAD
 
-kyverno:
-  enabled: false
-  valuesObject:
-    admissionController:
-      replicas: 1
-      container:
-        resources:
-          limits:
-            cpu: 1
-            memory: 8Gi
-          requests:
-            cpu: 100m
-            memory: 1Gi
-    backgroundController:
-      extraArgs:
-        genWorkers: 10
-      replicas: 1
-      resources:
-        limits:
-          cpu: 1
-          memory: 8Gi
-        requests:
-          cpu: 100m
-          memory: 4Gi
-    cleanupController:
-      enabled: true
-      replicas: 1
-
 sessionspaces:
   enabled: false
   targetRevision: HEAD

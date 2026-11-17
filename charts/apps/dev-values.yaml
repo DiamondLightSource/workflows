@@ -17,29 +17,6 @@ groups:
   enabled: false
   targetRevision: HEAD
 
-kyverno:
-  enabled: false
-  valuesObject:
-    admissionController:
-      replicas: 1
-      container:
-        resources:
-          limits:
-            cpu: 200m
-            memory: 2Gi
-          requests:
-            cpu: 100m
-            memory: 1Gi
-    backgroundController:
-      replicas: 1
-      resources:
-        limits:
-          cpu: 200m
-          memory: 2Gi
-        requests:
-          cpu: 100m
-          memory: 1Gi
-
 sessionspaces:
   enabled: true
   targetRevision: HEAD
