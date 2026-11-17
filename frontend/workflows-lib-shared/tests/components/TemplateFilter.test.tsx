@@ -3,11 +3,7 @@ import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import { TemplateFilter } from "../../lib/main";
 
-const templates = [
-  "mx-processing",
-  "tomography",
-  "visr-reconstruction",
-];
+const templates = ["mx-processing", "tomography", "visr-reconstruction"];
 
 describe("TemplateFilter", () => {
   it("renders the template filter", () => {
@@ -19,8 +15,9 @@ describe("TemplateFilter", () => {
       />,
     );
 
-    expect(screen.getByRole("combobox")).toBeInTheDocument();
-    expect(screen.getByLabelText("Templates")).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Science Group" }),
+    ).toBeInTheDocument();
   });
 
   it("displays available templates", async () => {
@@ -58,9 +55,8 @@ describe("TemplateFilter", () => {
     );
 
     await user.click(screen.getByRole("combobox"));
-    await user.click(
-      screen.getByRole("option", { name: "tomography" }),
-    );
+
+    await user.click(screen.getByRole("option", { name: "tomography" }));
 
     expect(onChange).toHaveBeenCalledWith(["tomography"]);
   });
@@ -74,7 +70,7 @@ describe("TemplateFilter", () => {
       />,
     );
 
-    expect(screen.getByText("tomography")).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveTextContent("tomography");
   });
 
   it("updates the selection when props change", () => {
@@ -88,7 +84,7 @@ describe("TemplateFilter", () => {
       />,
     );
 
-    expect(screen.getByText("tomography")).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveTextContent("tomography");
 
     rerender(
       <TemplateFilter
@@ -98,8 +94,9 @@ describe("TemplateFilter", () => {
       />,
     );
 
-    expect(screen.getByText("mx-processing")).toBeInTheDocument();
-    expect(screen.queryByText("tomography")).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveTextContent("mx-processing");
+
+    expect(screen.getByRole("combobox")).not.toHaveTextContent("tomography");
   });
 
   it("calls onChange when a selected template is removed", async () => {
@@ -114,12 +111,12 @@ describe("TemplateFilter", () => {
       />,
     );
 
-    await user.click(
-      screen.getByRole("button", { name: "tomography" })
-        .querySelector('[data-testid="CancelIcon"]')!,
-    );
+    await user.click(screen.getByRole("combobox"));
 
-    expect(onChange).toHaveBeenCalledWith([]);
+    await user.click(screen.getByRole("option", { name: "tomography" }));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
   it("handles an empty template list", async () => {
@@ -133,47 +130,82 @@ describe("TemplateFilter", () => {
       />,
     );
 
+    expect(screen.getByRole("combobox")).toHaveTextContent("All");
+
     await user.click(screen.getByRole("combobox"));
 
-    expect(screen.getByText("No options")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("option", { name: "tomography" }),
+    ).not.toBeInTheDocument();
   });
-});
 
-it("supports multiple template selections", async () => {
-  const user = userEvent.setup();
-  const onChange = vi.fn();
+  it("supports multiple template selections", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
 
-  const { rerender } = render(
-    <TemplateFilter
-      templates={templates}
-      selectedTemplates={[]}
-      onChange={onChange}
-    />,
-  );
+    const { rerender } = render(
+      <TemplateFilter
+        templates={templates}
+        selectedTemplates={[]}
+        onChange={onChange}
+      />,
+    );
 
-  await user.click(screen.getByRole("combobox"));
-  await user.click(
-    screen.getByRole("option", { name: "tomography" }),
-  );
+    await user.click(screen.getByRole("combobox"));
 
-  expect(onChange).toHaveBeenCalledWith(["tomography"]);
+    await user.click(screen.getByRole("option", { name: "tomography" }));
 
-  // Simulate the parent updating the controlled selection.
-  rerender(
-    <TemplateFilter
-      templates={templates}
-      selectedTemplates={["tomography"]}
-      onChange={onChange}
-    />,
-  );
+    expect(onChange).toHaveBeenLastCalledWith(["tomography"]);
 
-  await user.click(screen.getByRole("combobox"));
-  await user.click(
-    screen.getByRole("option", { name: "mx-processing" }),
-  );
+    // Simulate the parent updating the controlled state.
+    rerender(
+      <TemplateFilter
+        templates={templates}
+        selectedTemplates={["tomography"]}
+        onChange={onChange}
+      />,
+    );
 
-  expect(onChange).toHaveBeenLastCalledWith([
-    "tomography",
-    "mx-processing",
-  ]);
+    await user.click(screen.getByRole("option", { name: "mx-processing" }));
+
+    expect(onChange).toHaveBeenLastCalledWith(["tomography", "mx-processing"]);
+  });
+
+  it("clears all selected templates", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    render(
+      <TemplateFilter
+        templates={templates}
+        selectedTemplates={["tomography", "mx-processing"]}
+        onChange={onChange}
+      />,
+    );
+
+    await user.click(screen.getByRole("combobox"));
+
+    await user.click(screen.getByText("Clear all"));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it("displays the first selection and remaining count", () => {
+    render(
+      <TemplateFilter
+        templates={templates}
+        selectedTemplates={[
+          "tomography",
+          "mx-processing",
+          "visr-reconstruction",
+        ]}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("combobox")).toHaveTextContent(
+      "tomography +2 more",
+    );
+  });
 });

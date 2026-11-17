@@ -4,10 +4,7 @@ import {
   ThemeProvider,
   DiamondDSTheme,
 } from "@diamondlightsource/sci-react-ui";
-import {
-  TemplateFilter,
-  type TemplateFilterProps,
-} from "../lib/main";
+import { TemplateFilter, type TemplateFilterProps } from "../lib/main";
 
 const templates = [
   "mx-processing",
@@ -37,8 +34,7 @@ const ControlledTemplateFilter = ({
   selectedTemplates: initialSelection,
   ...props
 }: TemplateFilterProps) => {
-  const [selectedTemplates, setSelectedTemplates] =
-    useState(initialSelection);
+  const [selectedTemplates, setSelectedTemplates] = useState(initialSelection);
 
   return (
     <TemplateFilter
