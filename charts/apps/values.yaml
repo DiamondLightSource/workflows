@@ -32,7 +32,10 @@ groups:
   valuesObject: {}
 
 kyverno:
-  enabled: true
+  # Kyverno is being removed in favour of native CEL admission policies.
+  # Disabled first so ArgoCD prunes the deployment; the template and the
+  # remaining Kyverno footprint are deleted in a follow-up commit.
+  enabled: false
   targetRevision: 3.9.0
   extraValuesFiles: []
   valuesObject:
