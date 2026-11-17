@@ -4,52 +4,26 @@ metadata:
   name: cel-mutate-queue-name
 spec:
   steps:
-    - name: deploy-mutating-policy
+    - name: deploy-policies
       try:
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicy
-              metadata:
-                name: default-queuename
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE"]
-                      resources: ["workflows"]
-                matchConditions:
-                  - name: queue-name-not-set
-                    expression: >-
-                      !has(object.spec.podMetadata) ||
-                      !has(object.spec.podMetadata.labels) ||
-                      !('kueue.x-k8s.io/queue-name' in object.spec.podMetadata.labels) ||
-                      object.spec.podMetadata.labels['kueue.x-k8s.io/queue-name'] == ''
-                mutations:
-                  - patchType: JSONPatch
-                    jsonPatch:
-                      expression: >-
-                        (!has(object.spec.podMetadata) ? [JSONPatch{op:'add', path:'/spec/podMetadata', value:{'labels': {'kueue.x-k8s.io/queue-name':'default-queue'}}}] : []) +
-                        (has(object.spec.podMetadata) && !has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels', value:{'kueue.x-k8s.io/queue-name':'default-queue'}}] : []) +
-                        (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels/' + jsonpatch.escapeKey('kueue.x-k8s.io/queue-name'), value:'default-queue'}] : []) + []
-                reinvocationPolicy: IfNeeded
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicyBinding
-              metadata:
-                name: default-queuename
-              spec:
-                policyName: default-queuename
-                matchResources:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE"]
-                      resources: ["workflows"]
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-queue-name \
+                --show-only templates/cel-mutate-queuename.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-queue-name \
+                --show-only templates/cel-mutate-queuename.yaml \
+                --delete
     - name: default-queue
       try:
         - apply:
@@ -68,6 +42,53 @@ spec:
               spec:
                 podMetadata:
                   labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+    - name: empty-pod-metadata-is-defaulted
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: empty-pod-metadata
+              spec:
+                podMetadata:
+                  annotations:
+                    example.com/unrelated: value
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: empty-pod-metadata
+              spec:
+                podMetadata:
+                  annotations:
+                    example.com/unrelated: value
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+    - name: existing-labels-are-preserved
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: existing-labels
+              spec:
+                podMetadata:
+                  labels:
+                    example.com/unrelated: value
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: existing-labels
+              spec:
+                podMetadata:
+                  labels:
+                    example.com/unrelated: value
                     kueue.x-k8s.io/queue-name: default-queue
     - name: explicit-queue-is-preserved
       try:

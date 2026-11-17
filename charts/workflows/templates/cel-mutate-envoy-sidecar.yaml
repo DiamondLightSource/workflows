@@ -1,7 +1,7 @@
 {{- if and .Values.celMutatingPolicies.enabled .Values.authenticatedWorkflows.envoy.enabled }}
 {{- $reqCpu := default "25m" ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu }}
 {{- $reqMem := default "32Mi" ((.Values.authenticatedWorkflows.envoy.resources).requests).memory }}
-{{- $limCpu := default "250m" ((.Values.authenticatedWorkflows.envoy.resources).requests).cpu }}
+{{- $limCpu := default "250m" ((.Values.authenticatedWorkflows.envoy.resources).limits).cpu }}
 {{- $limMem := default "64Mi" ((.Values.authenticatedWorkflows.envoy.resources).limits).memory }}
 {{- /*
   Build the entire `workflows-auth-init` command as a single CEL string literal.
@@ -31,6 +31,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: {{ .Release.Name }}-inject-envoy-sidecar
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -43,8 +44,12 @@ spec:
           operator: Exists
   matchConditions:
     - name: authenticated
+      # Every map access is guarded: a match condition that errors rejects the
+      # request (failurePolicy is Fail), so a labelled pod without annotations
+      # must evaluate to false rather than raise "no such key: annotations".
       expression: >-
         has(object.metadata.annotations) &&
+        'workflows.diamond.ac.uk/authenticated' in object.metadata.annotations &&
         object.metadata.annotations['workflows.diamond.ac.uk/authenticated'] == 'true'
     - name: does-not-already-have-sidecar
       expression: >-
@@ -91,8 +96,8 @@ spec:
       jsonPatch:
         expression: >-
           (has(object.spec.containers) ?
-            [0,1,2,3,4,5,6,7,8,9]
-              .filter(i, i < size(object.spec.containers) && object.spec.containers[i].name != 'wait')
+            lists.range(size(object.spec.containers))
+              .filter(i, object.spec.containers[i].name != 'wait')
               .map(i,
                 (has(object.spec.containers[i].env) ? [
                     JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/env/-', value:{'name':'GRAPH_URL', 'value':'http://127.0.0.1:6000/graphql'}},

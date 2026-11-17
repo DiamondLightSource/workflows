@@ -4,6 +4,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: {{ .Release.Name }}-pod-gc
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -11,16 +12,21 @@ spec:
         operations: ["CREATE"]
         resources: ["workflows"]
   matchConditions:
-    - name: pod-gc-not-set
+    - name: pod-gc-needs-defaults
       expression: >-
-        !has(object.spec.podGC)
+        !has(object.spec.podGC) ||
+        !has(object.spec.podGC.strategy) ||
+        !has(object.spec.podGC.deleteDelayDuration)
   mutations:
     - patchType: JSONPatch
       jsonPatch:
         expression: >-
-          [
-            JSONPatch{op:'add', path:'/spec/podGC', value:{'strategy':'OnPodCompletion', 'deleteDelayDuration':'60s'}}
-          ]
+          (!has(object.spec.podGC) ?
+            [JSONPatch{op:'add', path:'/spec/podGC', value:{'strategy':'OnPodCompletion', 'deleteDelayDuration':'60s'}}] : []) +
+          (has(object.spec.podGC) && !has(object.spec.podGC.strategy) ?
+            [JSONPatch{op:'add', path:'/spec/podGC/strategy', value:'OnPodCompletion'}] : []) +
+          (has(object.spec.podGC) && !has(object.spec.podGC.deleteDelayDuration) ?
+            [JSONPatch{op:'add', path:'/spec/podGC/deleteDelayDuration', value:'60s'}] : []) + []
   reinvocationPolicy: IfNeeded
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1

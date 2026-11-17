@@ -4,61 +4,26 @@ metadata:
   name: cel-mutate-workloadpriority
 spec:
   steps:
-    - name: deploy-mutating-policy
+    - name: deploy-policies
       try:
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicy
-              metadata:
-                name: workloadpriority
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
-                variables:
-                  - name: priority
-                    expression: >-
-                      (has(object.metadata.annotations) && 'workflows.diamond.ac.uk/type' in object.metadata.annotations && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'live') ? 'high' :
-                      (has(object.metadata.annotations) && 'workflows.diamond.ac.uk/type' in object.metadata.annotations && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'test') ? 'low' : 'medium'
-                  - name: currentPriority
-                    expression: >-
-                      (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) &&
-                       'kueue.x-k8s.io/priority-class' in object.spec.podMetadata.labels) ?
-                      object.spec.podMetadata.labels['kueue.x-k8s.io/priority-class'] : ''
-                matchConditions:
-                  - name: not-running
-                    expression: >-
-                      oldObject == null || !has(oldObject.status) || !has(oldObject.status.phase) ||
-                      oldObject.status.phase != 'Running'
-                mutations:
-                  - patchType: JSONPatch
-                    jsonPatch:
-                      expression: >-
-                        variables.currentPriority == variables.priority ? [] :
-                        (!has(object.spec.podMetadata) ? [JSONPatch{op:'add', path:'/spec/podMetadata', value:{'labels': {'kueue.x-k8s.io/priority-class': variables.priority}}}] : []) +
-                        (has(object.spec.podMetadata) && !has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels', value:{'kueue.x-k8s.io/priority-class': variables.priority}}] : []) +
-                        (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) ? [JSONPatch{op:'add', path:'/spec/podMetadata/labels/' + jsonpatch.escapeKey('kueue.x-k8s.io/priority-class'), value: variables.priority}] : []) + []
-                reinvocationPolicy: IfNeeded
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicyBinding
-              metadata:
-                name: workloadpriority
-              spec:
-                policyName: workloadpriority
-                matchResources:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-workloadpriority \
+                --show-only templates/cel-mutate-workloadpriority.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-workloadpriority \
+                --show-only templates/cel-mutate-workloadpriority.yaml \
+                --delete
     - name: default-medium
       try:
         - apply:
@@ -74,6 +39,29 @@ spec:
               kind: Workflow
               metadata:
                 name: standard
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+    - name: unrelated-annotation-is-ignored
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: unrelated-annotation
+                annotations:
+                  example.com/unrelated: value
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: unrelated-annotation
+                annotations:
+                  example.com/unrelated: value
               spec:
                 podMetadata:
                   labels:
@@ -120,6 +108,52 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/priority-class: low
+    - name: standard-medium
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard-type
+                annotations:
+                  workflows.diamond.ac.uk/type: "standard"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: standard-type
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+    - name: existing-labels-are-preserved
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: existing-labels
+                annotations:
+                  workflows.diamond.ac.uk/type: "live"
+              spec:
+                podMetadata:
+                  labels:
+                    example.com/unrelated: value
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: existing-labels
+              spec:
+                podMetadata:
+                  labels:
+                    example.com/unrelated: value
+                    kueue.x-k8s.io/priority-class: high
     - name: explicit-is-preserved
       try:
         - apply:

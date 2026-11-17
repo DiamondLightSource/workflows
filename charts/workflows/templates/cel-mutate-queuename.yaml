@@ -4,6 +4,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: default-queuename
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]

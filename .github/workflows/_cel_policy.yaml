@@ -27,22 +27,16 @@ jobs:
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add argo https://argoproj.github.io/argo-helm
-          helm repo add kyverno https://kyverno.github.io/kyverno/
           helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
-          helm repo add localstack https://localstack.github.io/helm-charts
           helm repo update
           helm dep build charts/workflows
-          helm dep build charts/sessionspaces
-          helm dep build charts/sessionspaces/charts/database
           helm dep build charts/identity-mapper
-          helm dep build charts/events
 
       - name: Install Workflows CRDs
         run: |
           kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=v4.1.5"
           kubectl apply -f charts/identity-mapper/crds/useridentity.yaml
           kubectl apply -f charts/identity-mapper/crds/useridentitymap.yaml
-          kubectl apply -R -f charts/events/crds
 
       - name: Install Kueue CRDs
         run: |
@@ -55,4 +49,11 @@ jobs:
 
       - name: Run Chainsaw Tests
         run: |
-          chainsaw test --test-dir charts/workflows/test-policy/cel-artifact-s3,charts/workflows/test-policy/cel-queue-name,charts/workflows/test-policy/cel-workloadpriority,charts/workflows/test-policy/cel-mutate-queue-name,charts/workflows/test-policy/cel-mutate-workloadpriority,charts/workflows/test-policy/cel-mutate-pod-gc,charts/workflows/test-policy/cel-mutate-posix-uid,charts/workflows/test-policy/cel-mutate-pod-resources,charts/workflows/test-policy/cel-mutate-envoy-sidecar,charts/identity-mapper/test-policy/mutate-argo-workflow-security-context,charts/identity-mapper/test-policy/mutate-triggered-workflow-security-context,charts/identity-mapper/test-policy/pod-security-context
+          # Every suite renders the policies it needs from the charts (see
+          # .github/scripts/render-cel-policies.sh) and removes them again when
+          # the test ends.
+          #
+          # --parallel 1 is required: the policies are cluster-scoped, and a
+          # suite's freshly applied policy would otherwise leak into another
+          # suite running at the same time and fail its assertions.
+          chainsaw test --parallel 1 --test-dir charts/workflows/test-policy,charts/identity-mapper/test-policy

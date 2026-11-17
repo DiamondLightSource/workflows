@@ -4,6 +4,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: pod-default-resources
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -18,8 +19,8 @@ spec:
       jsonPatch:
         expression: >-
           (has(object.spec.containers) ?
-            [0,1,2,3,4,5,6,7,8,9]
-              .filter(i, i < size(object.spec.containers) && object.spec.containers[i].name != 'wait')
+            lists.range(size(object.spec.containers))
+              .filter(i, object.spec.containers[i].name != 'wait')
               .map(i,
                 (!has(object.spec.containers[i].resources) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources', value:{'requests':{'cpu':'1','memory':'250Mi'},'limits':{'cpu':'1','memory':'250Mi'}}}] : []) +
                 (has(object.spec.containers[i].resources) && !has(object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests', value:{'cpu':'1','memory':'250Mi'}}] : []) +
@@ -30,8 +31,7 @@ spec:
                 (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.limits) && !('memory' in object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits/memory', value:'250Mi'}] : [])
               ).flatten() : []) +
           (has(object.spec.initContainers) ?
-            [0,1,2,3,4,5,6,7,8,9]
-              .filter(i, i < size(object.spec.initContainers))
+            lists.range(size(object.spec.initContainers))
               .map(i,
                 (!has(object.spec.initContainers[i].resources) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources', value:{'requests':{'cpu':'1','memory':'250Mi'},'limits':{'cpu':'1','memory':'250Mi'}}}] : []) +
                 (has(object.spec.initContainers[i].resources) && !has(object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests', value:{'cpu':'1','memory':'250Mi'}}] : []) +

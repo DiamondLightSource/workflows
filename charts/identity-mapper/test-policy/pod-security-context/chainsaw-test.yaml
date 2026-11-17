@@ -8,81 +8,26 @@ spec:
       labels:
         app.kubernetes.io/managed-by: sessionspaces
   steps:
-    - name: deploy-policy
+    - name: deploy-policies
       try:
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicy
-              metadata:
-                name: identity-mapper-pod-security-context
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: [""]
-                      apiVersions: ["v1"]
-                      operations: ["CREATE"]
-                      resources: ["pods"]
-                mutations:
-                  - patchType: JSONPatch
-                    jsonPatch:
-                      expression: >-
-                        (has(object.spec.containers) ?
-                          [0,1,2,3,4,5,6,7,8,9]
-                            .filter(i, i < size(object.spec.containers))
-                            .map(i,
-                              (!has(object.spec.containers[i].securityContext) ?
-                                [JSONPatch{op: 'add', path: '/spec/containers/' + string(i) + '/securityContext', value: {
-                                  'allowPrivilegeEscalation': false,
-                                  'readOnlyRootFilesystem': true
-                                }}] :
-                                [JSONPatch{op: 'add', path: '/spec/containers/' + string(i) + '/securityContext/allowPrivilegeEscalation', value: false},
-                                 JSONPatch{op: 'add', path: '/spec/containers/' + string(i) + '/securityContext/readOnlyRootFilesystem', value: true}])
-                            ).flatten() : []) +
-                        (has(object.spec.initContainers) ?
-                          [0,1,2,3,4,5,6,7,8,9]
-                            .filter(i, i < size(object.spec.initContainers))
-                            .map(i,
-                              (!has(object.spec.initContainers[i].securityContext) ?
-                                [JSONPatch{op: 'add', path: '/spec/initContainers/' + string(i) + '/securityContext', value: {
-                                  'allowPrivilegeEscalation': false,
-                                  'readOnlyRootFilesystem': true
-                                }}] :
-                                [JSONPatch{op: 'add', path: '/spec/initContainers/' + string(i) + '/securityContext/allowPrivilegeEscalation', value: false},
-                                 JSONPatch{op: 'add', path: '/spec/initContainers/' + string(i) + '/securityContext/readOnlyRootFilesystem', value: true}])
-                            ).flatten() : []) +
-                        (has(object.spec.ephemeralContainers) ?
-                          [0,1,2,3,4,5,6,7,8,9]
-                            .filter(i, i < size(object.spec.ephemeralContainers))
-                            .map(i,
-                              (!has(object.spec.ephemeralContainers[i].securityContext) ?
-                                [JSONPatch{op: 'add', path: '/spec/ephemeralContainers/' + string(i) + '/securityContext', value: {
-                                  'allowPrivilegeEscalation': false,
-                                  'readOnlyRootFilesystem': true
-                                }}] :
-                                [JSONPatch{op: 'add', path: '/spec/ephemeralContainers/' + string(i) + '/securityContext/allowPrivilegeEscalation', value: false},
-                                 JSONPatch{op: 'add', path: '/spec/ephemeralContainers/' + string(i) + '/securityContext/readOnlyRootFilesystem', value: true}])
-                            ).flatten() : []) + []
-                reinvocationPolicy: IfNeeded
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicyBinding
-              metadata:
-                name: identity-mapper-pod-security-context
-              spec:
-                policyName: identity-mapper-pod-security-context
-                matchResources:
-                  resourceRules:
-                    - apiGroups: [""]
-                      apiVersions: ["v1"]
-                      operations: ["CREATE"]
-                      resources: ["pods"]
-                  namespaceSelector:
-                    matchLabels:
-                      app.kubernetes.io/managed-by: sessionspaces
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart identity-mapper \
+                --release identity-mapper \
+                --show-only templates/cel-mutate-pod-security-context.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart identity-mapper \
+                --release identity-mapper \
+                --show-only templates/cel-mutate-pod-security-context.yaml \
+                --delete
     - name: harden-managed-pod
       try:
         - create:
@@ -117,3 +62,99 @@ spec:
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
+    - name: existing-container-security-context-is-merged
+      try:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: existing-container-security-context
+                namespace: ($namespace)
+              spec:
+                containers:
+                  - name: test-container
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsNonRoot: true
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: existing-container-security-context
+                namespace: ($namespace)
+              spec:
+                containers:
+                  - name: test-container
+                    securityContext:
+                      runAsNonRoot: true
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+    - name: pod-security-context-is-propagated
+      try:
+        - create:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: propagated
+                namespace: ($namespace)
+              spec:
+                securityContext:
+                  runAsUser: 12345
+                  runAsGroup: 54321
+                containers:
+                  - name: plain
+                    image: docker.io/library/busybox:latest
+                  - name: hardened
+                    image: docker.io/library/busybox:latest
+                    securityContext:
+                      runAsNonRoot: true
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: propagated
+                namespace: ($namespace)
+              spec:
+                containers:
+                  - name: plain
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsUser: 12345
+                      runAsGroup: 54321
+                  - name: hardened
+                    securityContext:
+                      runAsNonRoot: true
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      runAsUser: 12345
+                      runAsGroup: 54321
+    - name: more-than-ten-containers
+      try:
+        - script:
+            content: |
+              set -eu
+              {
+                cat <<'EOF'
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: many-containers
+              spec:
+                containers:
+              EOF
+                i=0
+                while [ "$i" -lt 12 ]; do
+                  printf '  - name: c%s\n    image: busybox\n' "$i"
+                  i=$((i + 1))
+                done
+              } | kubectl -n "$NAMESPACE" create -f -
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get pod many-containers -o json |
+                jq -e '[.spec.containers[] | .securityContext.readOnlyRootFilesystem] | length == 12 and all(. == true)'

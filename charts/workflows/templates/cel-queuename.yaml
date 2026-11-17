@@ -4,6 +4,7 @@ kind: ValidatingAdmissionPolicy
 metadata:
   name: validate-queuename
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -12,6 +13,7 @@ spec:
         resources: ["workflows"]
   validations:
     - expression: >-
+        !has(object.spec.podMetadata) ||
         !has(object.spec.podMetadata.labels) ||
         !('kueue.x-k8s.io/queue-name' in object.spec.podMetadata.labels) ||
         object.spec.podMetadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
@@ -36,6 +38,7 @@ kind: ValidatingAdmissionPolicy
 metadata:
   name: validate-mpijob-queuename
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["kubeflow.org"]

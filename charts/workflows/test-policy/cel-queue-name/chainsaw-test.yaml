@@ -4,78 +4,26 @@ metadata:
   name: cel-queue-name
 spec:
   steps:
-    - name: deploy-cel-policies
+    - name: deploy-policies
       try:
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicy
-              metadata:
-                name: validate-queuename
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
-                validations:
-                  - expression: >-
-                      !has(object.spec.podMetadata.labels) ||
-                      !('kueue.x-k8s.io/queue-name' in object.spec.podMetadata.labels) ||
-                      object.spec.podMetadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
-                    message: "The label kueue.x-k8s.io/queue-name must be default-queue"
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicyBinding
-              metadata:
-                name: validate-queuename
-              spec:
-                policyName: validate-queuename
-                validationActions: [Deny]
-                matchResources:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicy
-              metadata:
-                name: validate-mpijob-queuename
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: ["kubeflow.org"]
-                      apiVersions: ["v2beta1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["mpijobs"]
-                validations:
-                  - expression: >-
-                      has(object.metadata.labels) &&
-                      'kueue.x-k8s.io/queue-name' in object.metadata.labels &&
-                      object.metadata.labels['kueue.x-k8s.io/queue-name'] == 'default-queue'
-                    message: "The label kueue.x-k8s.io/queue-name must be default-queue"
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicyBinding
-              metadata:
-                name: validate-mpijob-queuename
-              spec:
-                policyName: validate-mpijob-queuename
-                validationActions: [Deny]
-                matchResources:
-                  resourceRules:
-                    - apiGroups: ["kubeflow.org"]
-                      apiVersions: ["v2beta1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["mpijobs"]
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-queue-name \
+                --show-only templates/cel-queuename.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-queue-name \
+                --show-only templates/cel-queuename.yaml \
+                --delete
     - name: workflows
       try:
         - error:
@@ -108,6 +56,31 @@ spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/queue-name: default-queue
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-pod-metadata
+              spec: {}
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: empty-pod-metadata
+              spec:
+                podMetadata: {}
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: pod-metadata-without-labels
+              spec:
+                podMetadata:
+                  annotations:
+                    example.com/key: value
     - name: mpijobs
       try:
         - error:

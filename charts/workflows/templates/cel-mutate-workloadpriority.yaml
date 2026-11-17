@@ -4,6 +4,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: workloadpriority
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]

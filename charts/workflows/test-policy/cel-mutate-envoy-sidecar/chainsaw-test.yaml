@@ -8,14 +8,26 @@ spec:
     delete: 60s
     assert: 60s
   steps:
-    - name: deploy-mutating-policy
+    - name: deploy-policies
       try:
-        - apply:
-            file: mutating-policy.yaml
-        - apply:
-            file: mutating-policy-binding.yaml
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-envoy-sidecar \
+                --show-only templates/cel-mutate-envoy-sidecar.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-envoy-sidecar \
+                --show-only templates/cel-mutate-envoy-sidecar.yaml \
+                --delete
     - name: authenticated-workflow-pod-is-injected
       try:
         - apply:
@@ -39,26 +51,24 @@ spec:
         - script:
             content: |
               set -eu
-              python3 - <<'PY'
-              import json, subprocess, os
-              pod = json.loads(subprocess.check_output([
-                  "kubectl", "-n", os.environ["NAMESPACE"], "get", "pod", "injected", "-o", "json"]))
-              spec = pod["spec"]
-              ics = [c["name"] for c in spec.get("initContainers", [])]
-              vols = [v["name"] for v in spec.get("volumes", [])]
-              main = [c for c in spec["containers"] if c["name"] == "main"][0]
-              envs = {e["name"]: e["value"] for e in main.get("env", [])}
-              assert "workflows-auth-init" in ics, ics
-              assert "workflows-auth-envoy-validate" in ics, ics
-              assert "workflows-auth-envoy" in ics, ics
-              assert "workflows-envoy-config" in vols, vols
-              assert "workflows-auth-broker-token" in vols, vols
-              assert envs.get("EXISTING") == "keep", envs
-              assert envs.get("GRAPH_URL") == "http://127.0.0.1:6000/graphql", envs
-              assert envs.get("GRAPH_URL_WS") == "http://127.0.0.1:6000/graphql/ws", envs
-              print("envoy injection verified")
-              PY
+              # limits.cpu "1000m" is normalised to "1" by the API server, so the
+              # pair below also proves the limit is not using the request value.
+              kubectl -n "$NAMESPACE" get pod injected -o json |
+                jq -e '
+                  ([.spec.initContainers[].name] | contains(["workflows-auth-init", "workflows-auth-envoy-validate", "workflows-auth-envoy"])) and
+                  ([.spec.volumes[].name] | contains(["workflows-envoy-config", "workflows-auth-broker-token"])) and
+                  ([.spec.containers[0].env[] | {(.name): .value}] | add == {
+                    "EXISTING": "keep",
+                    "GRAPH_URL": "http://127.0.0.1:6000/graphql",
+                    "GRAPH_URL_WS": "http://127.0.0.1:6000/graphql/ws"
+                  }) and
+                  ([.spec.initContainers[] | select(.name == "workflows-auth-init") | .resources.limits.cpu] == ["1"]) and
+                  ([.spec.initContainers[] | select(.name == "workflows-auth-init") | .resources.requests.cpu] == ["100m"])
+                '
     - name: unauthenticated-pod-not-injected
+      # This pod has the workflow label and no annotations at all: the policy's
+      # match conditions must evaluate to false instead of erroring, otherwise
+      # failurePolicy: Fail rejects the pod.
       try:
         - apply:
             resource:
@@ -76,14 +86,56 @@ spec:
         - script:
             content: |
               set -eu
-              python3 - <<'PY'
-              import json, subprocess, os
-              pod = json.loads(subprocess.check_output([
-                  "kubectl", "-n", os.environ["NAMESPACE"], "get", "pod", "not-injected", "-o", "json"]))
-              spec = pod["spec"]
-              ics = [c["name"] for c in spec.get("initContainers", [])]
-              vols = [v["name"] for v in spec.get("volumes", [])]
-              assert "workflows-auth-init" not in ics, ics
-              assert "workflows-envoy-config" not in vols, vols
-              print("unauthenticated pod not injected")
-              PY
+              kubectl -n "$NAMESPACE" get pod not-injected -o json |
+                jq -e '([.spec.initContainers // [] | .[].name] | contains(["workflows-auth-init"]) | not) and
+                       ([.spec.volumes // [] | .[].name] | contains(["workflows-envoy-config"]) | not)'
+    - name: pod-without-workflow-label-not-injected
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: no-workflow-label
+                annotations:
+                  workflows.diamond.ac.uk/authenticated: "true"
+              spec:
+                terminationGracePeriodSeconds: 0
+                containers:
+                  - name: main
+                    image: nginx
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get pod no-workflow-label -o json |
+                jq -e '([.spec.initContainers // [] | .[].name] | contains(["workflows-auth-init"]) | not)'
+    - name: more-than-ten-containers
+      try:
+        - script:
+            content: |
+              set -eu
+              {
+                cat <<'EOF'
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: many-containers
+                labels:
+                  workflows.argoproj.io/workflow: wf-1
+                annotations:
+                  workflows.diamond.ac.uk/authenticated: "true"
+              spec:
+                terminationGracePeriodSeconds: 0
+                containers:
+              EOF
+                i=0
+                while [ "$i" -lt 12 ]; do
+                  printf '  - name: c%s\n    image: busybox\n' "$i"
+                  i=$((i + 1))
+                done
+              } | kubectl -n "$NAMESPACE" create -f -
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get pod many-containers -o json |
+                jq -e '[.spec.containers[] | [.env[]? | .name]] | length == 12 and all(index("GRAPH_URL") != null and index("GRAPH_URL_WS") != null)'

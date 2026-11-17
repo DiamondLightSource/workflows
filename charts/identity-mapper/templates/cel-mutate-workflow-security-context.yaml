@@ -4,6 +4,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: {{ include "common.names.fullname" $ }}-workflow-security-context
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -26,7 +27,12 @@ spec:
           (has(object.metadata.labels) && 'workflows.diamond.ac.uk/triggeruid' in object.metadata.labels ?
             object.metadata.labels['workflows.diamond.ac.uk/triggeruid'] : '')
         {{- else }}
-        request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0]
+        (
+          has(request.userInfo.extra) &&
+          'workflows.diamond.ac.uk/posixuid' in request.userInfo.extra &&
+          size(request.userInfo.extra['workflows.diamond.ac.uk/posixuid']) > 0 &&
+          request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] != ''
+        ) ? request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] : ''
         {{- end }}
   mutations:
     - patchType: JSONPatch
@@ -34,11 +40,9 @@ spec:
         expression: >-
           (variables.posixUid != '' && has(params.spec.users) && variables.posixUid in params.spec.users) ?
             (has(object.spec.securityContext) ?
-              [JSONPatch{op: 'replace', path: '/spec/securityContext', value: dyn({
-                'runAsUser': dyn(params.spec.users[variables.posixUid]).uid,
-                'runAsGroup': dyn(params.spec.users[variables.posixUid]).gid,
-                'supplementalGroups': dyn(params.spec.users[variables.posixUid]).supplementalGroups
-              })}] :
+              [JSONPatch{op: 'add', path: '/spec/securityContext/runAsUser', value: dyn(params.spec.users[variables.posixUid]).uid},
+               JSONPatch{op: 'add', path: '/spec/securityContext/runAsGroup', value: dyn(params.spec.users[variables.posixUid]).gid},
+               JSONPatch{op: 'add', path: '/spec/securityContext/supplementalGroups', value: dyn(params.spec.users[variables.posixUid]).supplementalGroups}] :
               [JSONPatch{op: 'add', path: '/spec/securityContext', value: dyn({
                 'runAsUser': dyn(params.spec.users[variables.posixUid]).uid,
                 'runAsGroup': dyn(params.spec.users[variables.posixUid]).gid,

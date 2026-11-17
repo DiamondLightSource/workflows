@@ -4,6 +4,7 @@ kind: MutatingAdmissionPolicy
 metadata:
   name: {{ .Release.Name }}-posix-uid-label
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -25,16 +26,22 @@ spec:
           (has(object.metadata.labels) && 'workflows.diamond.ac.uk/triggeruid' in object.metadata.labels ?
             object.metadata.labels['workflows.diamond.ac.uk/triggeruid'] : '')
         {{- else }}
-        request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0]
+        (
+          has(request.userInfo.extra) &&
+          'workflows.diamond.ac.uk/posixuid' in request.userInfo.extra &&
+          size(request.userInfo.extra['workflows.diamond.ac.uk/posixuid']) > 0 &&
+          request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] != ''
+        ) ? request.userInfo.extra['workflows.diamond.ac.uk/posixuid'][0] : ''
         {{- end }}
   mutations:
     - patchType: JSONPatch
       jsonPatch:
         expression: >-
-          (has(object.metadata.labels) && 'workflows.diamond.ac.uk/creator-posix-uid' in object.metadata.labels &&
-           object.metadata.labels['workflows.diamond.ac.uk/creator-posix-uid'] == variables.posixUid) ? [] :
-          (!has(object.metadata.labels) ? [JSONPatch{op:'add', path:'/metadata/labels', value:{'workflows.diamond.ac.uk/creator-posix-uid': variables.posixUid}}] : []) +
-          (has(object.metadata.labels) ? [JSONPatch{op:'add', path:'/metadata/labels/' + jsonpatch.escapeKey('workflows.diamond.ac.uk/creator-posix-uid'), value: variables.posixUid}] : []) + []
+          variables.posixUid == '' ? [] :
+          ((has(object.metadata.labels) && 'workflows.diamond.ac.uk/creator-posix-uid' in object.metadata.labels &&
+            object.metadata.labels['workflows.diamond.ac.uk/creator-posix-uid'] == variables.posixUid) ? [] :
+           (!has(object.metadata.labels) ? [JSONPatch{op:'add', path:'/metadata/labels', value:{'workflows.diamond.ac.uk/creator-posix-uid': variables.posixUid}}] : []) +
+           (has(object.metadata.labels) ? [JSONPatch{op:'add', path:'/metadata/labels/' + jsonpatch.escapeKey('workflows.diamond.ac.uk/creator-posix-uid'), value: variables.posixUid}] : []))
   reinvocationPolicy: IfNeeded
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1

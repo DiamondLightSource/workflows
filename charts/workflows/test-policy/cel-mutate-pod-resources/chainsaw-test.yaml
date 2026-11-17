@@ -8,72 +8,26 @@ spec:
     delete: 60s
     assert: 60s
   steps:
-    - name: deploy-mutating-policy
+    - name: deploy-policies
       try:
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicy
-              metadata:
-                name: pod-default-resources
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: [""]
-                      apiVersions: ["v1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["pods"]
-                  objectSelector:
-                    matchLabels:
-                      kueue.x-k8s.io/managed: "true"
-                mutations:
-                  - patchType: JSONPatch
-                    jsonPatch:
-                      expression: >-
-                        (has(object.spec.containers) ?
-                          [0,1,2,3,4,5,6,7,8,9]
-                            .filter(i, i < size(object.spec.containers) && object.spec.containers[i].name != 'wait')
-                            .map(i,
-                              (!has(object.spec.containers[i].resources) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources', value:{'requests':{'cpu':'1','memory':'250Mi'},'limits':{'cpu':'1','memory':'250Mi'}}}] : []) +
-                              (has(object.spec.containers[i].resources) && !has(object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests', value:{'cpu':'1','memory':'250Mi'}}] : []) +
-                              (has(object.spec.containers[i].resources) && !has(object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits', value:{'cpu':'1','memory':'250Mi'}}] : []) +
-                              (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.requests) && !('cpu' in object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests/cpu', value:'1'}] : []) +
-                              (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.requests) && !('memory' in object.spec.containers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/requests/memory', value:'250Mi'}] : []) +
-                              (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.limits) && !('cpu' in object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits/cpu', value:'1'}] : []) +
-                              (has(object.spec.containers[i].resources) && has(object.spec.containers[i].resources.limits) && !('memory' in object.spec.containers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/containers/' + string(i) + '/resources/limits/memory', value:'250Mi'}] : [])
-                            ).flatten() : []) +
-                        (has(object.spec.initContainers) ?
-                          [0,1,2,3,4,5,6,7,8,9]
-                            .filter(i, i < size(object.spec.initContainers))
-                            .map(i,
-                              (!has(object.spec.initContainers[i].resources) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources', value:{'requests':{'cpu':'1','memory':'250Mi'},'limits':{'cpu':'1','memory':'250Mi'}}}] : []) +
-                              (has(object.spec.initContainers[i].resources) && !has(object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests', value:{'cpu':'1','memory':'250Mi'}}] : []) +
-                              (has(object.spec.initContainers[i].resources) && !has(object.spec.initContainers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/limits', value:{'cpu':'1','memory':'250Mi'}}] : []) +
-                              (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.requests) && !('cpu' in object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests/cpu', value:'1'}] : []) +
-                              (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.requests) && !('memory' in object.spec.initContainers[i].resources.requests) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/requests/memory', value:'250Mi'}] : []) +
-                              (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.limits) && !('cpu' in object.spec.initContainers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/limits/cpu', value:'1'}] : []) +
-                              (has(object.spec.initContainers[i].resources) && has(object.spec.initContainers[i].resources.limits) && !('memory' in object.spec.initContainers[i].resources.limits) ? [JSONPatch{op:'add', path:'/spec/initContainers/' + string(i) + '/resources/limits/memory', value:'250Mi'}] : [])
-                            ).flatten() : []) + []
-                reinvocationPolicy: IfNeeded
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1beta1
-              kind: MutatingAdmissionPolicyBinding
-              metadata:
-                name: pod-default-resources
-              spec:
-                policyName: pod-default-resources
-                matchResources:
-                  resourceRules:
-                    - apiGroups: [""]
-                      apiVersions: ["v1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["pods"]
-                  objectSelector:
-                    matchLabels:
-                      kueue.x-k8s.io/managed: "true"
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-pod-resources \
+                --show-only templates/cel-mutate-pod-resources.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-pod-resources \
+                --show-only templates/cel-mutate-pod-resources.yaml \
+                --delete
     - name: full-defaults
       try:
         - apply:
@@ -141,6 +95,39 @@ spec:
                       limits:
                         cpu: "1"
                         memory: "250Mi"
+    - name: empty-resources-are-defaulted
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: empty-resources
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+              spec:
+                terminationGracePeriodSeconds: 0
+                containers:
+                  - name: main
+                    image: nginx
+                    resources: {}
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: empty-resources
+              spec:
+                terminationGracePeriodSeconds: 0
+                containers:
+                  - name: main
+                    resources:
+                      requests:
+                        cpu: "1"
+                        memory: "250Mi"
+                      limits:
+                        cpu: "1"
+                        memory: "250Mi"
     - name: wait-container-skipped
       try:
         - apply:
@@ -190,14 +177,32 @@ spec:
                 terminationGracePeriodSeconds: 0
                 containers:
                   - name: main
-        - assert:
-            resource:
+                    resources: {}
+    - name: more-than-ten-containers
+      try:
+        - script:
+            content: |
+              set -eu
+              {
+                cat <<'EOF'
               apiVersion: v1
               kind: Pod
               metadata:
-                name: unmanaged
+                name: many-containers
+                labels:
+                  kueue.x-k8s.io/managed: "true"
               spec:
                 terminationGracePeriodSeconds: 0
                 containers:
-                  - name: main
-                    resources: {}
+              EOF
+                i=0
+                while [ "$i" -lt 12 ]; do
+                  printf '  - name: c%s\n    image: busybox\n' "$i"
+                  i=$((i + 1))
+                done
+              } | kubectl -n "$NAMESPACE" create -f -
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get pod many-containers -o json |
+                jq -e '[.spec.containers[] | .resources.requests.cpu] | length == 12 and all(. == "1")'

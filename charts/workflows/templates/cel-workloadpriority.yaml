@@ -4,6 +4,7 @@ kind: ValidatingAdmissionPolicy
 metadata:
   name: validate-workflow-type
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -37,6 +38,7 @@ kind: ValidatingAdmissionPolicy
 metadata:
   name: validate-kueue-labels
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -45,11 +47,14 @@ spec:
         resources: ["workflows"]
   validations:
     - expression: >-
-        (has(object.spec.podMetadata.labels) && 'kueue.x-k8s.io/priority-class' in object.spec.podMetadata.labels
+        (has(object.spec.podMetadata) && has(object.spec.podMetadata.labels) &&
+         'kueue.x-k8s.io/priority-class' in object.spec.podMetadata.labels
           ? object.spec.podMetadata.labels['kueue.x-k8s.io/priority-class'] : '') ==
-        (has(object.metadata.annotations) && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'live'
+        (has(object.metadata.annotations) && 'workflows.diamond.ac.uk/type' in object.metadata.annotations &&
+         object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'live'
           ? 'high' :
-         has(object.metadata.annotations) && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'test'
+         has(object.metadata.annotations) && 'workflows.diamond.ac.uk/type' in object.metadata.annotations &&
+         object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'test'
           ? 'low' : 'medium')
       message: "Workload priority labels must match the workflows.diamond.ac.uk/type annotation."
 ---

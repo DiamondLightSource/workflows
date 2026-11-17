@@ -1,0 +1,194 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-combined-policies
+spec:
+  # Exercise the mutating and validating policies together, the way they are
+  # deployed: the mutations fill in defaults and the validations run against
+  # the mutated object.
+  namespaceTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: sessionspaces
+  steps:
+    - name: deploy-policies
+      try:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-combined-policies
+        - sleep:
+            duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-combined-policies \
+                --delete
+    - name: workflow-defaults
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: defaults
+                annotations:
+                  example.com/unrelated: value
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: defaults
+                annotations:
+                  example.com/unrelated: value
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: default-queue
+                    kueue.x-k8s.io/priority-class: medium
+                podGC:
+                  strategy: OnPodCompletion
+                  deleteDelayDuration: 60s
+    - name: workflow-live-priority
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: live
+                annotations:
+                  workflows.diamond.ac.uk/type: live
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: live
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+    - name: workflow-priority-is-corrected-before-validation
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: corrected-priority
+                annotations:
+                  workflows.diamond.ac.uk/type: live
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: low
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: corrected-priority
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+    - name: workflow-invalid-type-denied
+      try:
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: invalid-type
+                annotations:
+                  workflows.diamond.ac.uk/type: processing
+              spec: {}
+    - name: workflow-custom-queue-denied
+      try:
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: custom-queue
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/queue-name: custom-queue
+    - name: pod-defaults-without-sidecar
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: managed-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+                annotations:
+                  example.com/unrelated: value
+              spec:
+                terminationGracePeriodSeconds: 0
+                containers:
+                  - name: main
+                    image: nginx
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get pod managed-pod -o json |
+                jq -e '
+                  ([.spec.initContainers // [] | .[].name] | contains(["workflows-auth-init"]) | not) and
+                  ([.spec.containers[].resources.requests.cpu] == ["1"])
+                '
+    - name: authenticated-managed-pod
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: authenticated-managed-pod
+                labels:
+                  kueue.x-k8s.io/managed: "true"
+                  workflows.argoproj.io/workflow: "wf-1"
+                annotations:
+                  workflows.diamond.ac.uk/authenticated: "true"
+              spec:
+                terminationGracePeriodSeconds: 0
+                containers:
+                  - name: main
+                    image: nginx
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get pod authenticated-managed-pod -o json |
+                jq -e '
+                  ([.spec.initContainers[].name] | contains(["workflows-auth-init", "workflows-auth-envoy-validate", "workflows-auth-envoy"])) and
+                  ([.spec.containers[] | .env[] | .name] | index("GRAPH_URL") != null) and
+                  ([.spec.containers[].resources.requests.cpu] == ["1"])
+                '
+    - name: pod-artifact-secret-denied
+      try:
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: artifact-secret
+              spec:
+                containers:
+                  - name: main
+                    image: docker.io/library/busybox:latest
+                volumes:
+                  - name: data
+                    secret:
+                      secretName: artifact-s3

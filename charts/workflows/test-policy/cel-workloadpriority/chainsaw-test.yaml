@@ -4,82 +4,26 @@ metadata:
   name: cel-workloadpriority
 spec:
   steps:
-    - name: deploy-cel-policies
+    - name: deploy-policies
       try:
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicy
-              metadata:
-                name: validate-workflow-type
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
-                validations:
-                  - expression: >-
-                      !has(object.metadata.annotations) ||
-                      !('workflows.diamond.ac.uk/type' in object.metadata.annotations) ||
-                      object.metadata.annotations['workflows.diamond.ac.uk/type'] == '' ||
-                      object.metadata.annotations['workflows.diamond.ac.uk/type'] in ['standard', 'live', 'test']
-                    message: "The annotation workflows.diamond.ac.uk/type must be 'standard', 'live', or 'test'."
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicyBinding
-              metadata:
-                name: validate-workflow-type
-              spec:
-                policyName: validate-workflow-type
-                validationActions: [Deny]
-                matchResources:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicy
-              metadata:
-                name: validate-kueue-labels
-              spec:
-                matchConstraints:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
-                validations:
-                  - expression: >-
-                      (has(object.spec.podMetadata.labels) && 'kueue.x-k8s.io/priority-class' in object.spec.podMetadata.labels
-                        ? object.spec.podMetadata.labels['kueue.x-k8s.io/priority-class'] : '') ==
-                      (has(object.metadata.annotations) && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'live'
-                        ? 'high' :
-                       has(object.metadata.annotations) && object.metadata.annotations['workflows.diamond.ac.uk/type'] == 'test'
-                        ? 'low' : 'medium')
-                    message: "Workload priority labels must match the workflows.diamond.ac.uk/type annotation."
-        - apply:
-            resource:
-              apiVersion: admissionregistration.k8s.io/v1
-              kind: ValidatingAdmissionPolicyBinding
-              metadata:
-                name: validate-kueue-labels
-              spec:
-                policyName: validate-kueue-labels
-                validationActions: [Deny]
-                matchResources:
-                  resourceRules:
-                    - apiGroups: ["argoproj.io"]
-                      apiVersions: ["v1alpha1"]
-                      operations: ["CREATE", "UPDATE"]
-                      resources: ["workflows"]
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-workloadpriority \
+                --show-only templates/cel-workloadpriority.yaml
         - sleep:
             duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-workloadpriority \
+                --show-only templates/cel-workloadpriority.yaml \
+                --delete
     - name: workflow-type-validation
       try:
         - error:
@@ -90,7 +34,10 @@ spec:
                 name: invalid-type
                 annotations:
                   workflows.diamond.ac.uk/type: processing
-              spec: {}
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
         - apply:
             resource:
               apiVersion: argoproj.io/v1alpha1
@@ -108,7 +55,33 @@ spec:
               apiVersion: argoproj.io/v1alpha1
               kind: Workflow
               metadata:
-                name: no-type
+                name: standard-type
+                annotations:
+                  workflows.diamond.ac.uk/type: standard
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: unrelated-annotation
+                annotations:
+                  example.com/unrelated: value
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: medium
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: empty-type
+                annotations:
+                  workflows.diamond.ac.uk/type: ""
               spec:
                 podMetadata:
                   labels:
@@ -120,13 +93,44 @@ spec:
               apiVersion: argoproj.io/v1alpha1
               kind: Workflow
               metadata:
-                name: mismatch
+                name: live-with-low-priority
                 annotations:
                   workflows.diamond.ac.uk/type: live
               spec:
                 podMetadata:
                   labels:
                     kueue.x-k8s.io/priority-class: low
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: test-with-high-priority
+                annotations:
+                  workflows.diamond.ac.uk/type: test
+              spec:
+                podMetadata:
+                  labels:
+                    kueue.x-k8s.io/priority-class: high
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: missing-priority-label
+                annotations:
+                  workflows.diamond.ac.uk/type: live
+              spec:
+                podMetadata:
+                  labels:
+                    example.com/unrelated: value
+        - error:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-pod-metadata
+              spec: {}
         - apply:
             resource:
               apiVersion: argoproj.io/v1alpha1

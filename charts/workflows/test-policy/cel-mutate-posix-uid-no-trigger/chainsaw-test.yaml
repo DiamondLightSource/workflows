@@ -1,0 +1,107 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cel-mutate-posix-uid-no-trigger
+spec:
+  steps:
+    - name: deploy-policies
+      try:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-posix-uid-no-trigger \
+                --show-only templates/cel-mutate-posix-uid.yaml \
+                --set allowTriggerUid=false
+        - sleep:
+            duration: 3s
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              "$(git rev-parse --show-toplevel)/.github/scripts/render-cel-policies.sh" \
+                --chart workflows \
+                --release cel-mutate-posix-uid-no-trigger \
+                --show-only templates/cel-mutate-posix-uid.yaml \
+                --set allowTriggerUid=false \
+                --delete
+    - name: triggeruid-is-ignored
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-trigger
+                labels:
+                  workflows.diamond.ac.uk/triggeruid: "12345"
+              spec: {}
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get workflow with-trigger -o json |
+                jq -e '.metadata.labels["workflows.diamond.ac.uk/creator-posix-uid"] == null'
+    - name: missing-posixuid-does-not-reject
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-uid
+              spec: {}
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get workflow no-uid -o json |
+                jq -e '.metadata.labels["workflows.diamond.ac.uk/creator-posix-uid"] == null'
+    - name: posixuid-extra-is-copied
+      try:
+        - create:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: Role
+              metadata:
+                name: workflow-creator
+                namespace: ($namespace)
+              rules:
+                - apiGroups: ["argoproj.io"]
+                  resources: ["workflows"]
+                  verbs: ["create"]
+        - create:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: workflow-creator
+                namespace: ($namespace)
+              subjects:
+                - kind: User
+                  name: oidc:test-user
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: workflow-creator
+        - command:
+            env:
+              - name: namespace
+                value: ($namespace)
+            entrypoint: sh
+            args:
+              - -c
+              - |
+                cat <<'EOF' | kubectl create --namespace="$namespace" --as=oidc:test-user --as-user-extra=workflows.diamond.ac.uk/posixuid=98765 -f -
+                apiVersion: argoproj.io/v1alpha1
+                kind: Workflow
+                metadata:
+                  name: with-extra
+                  labels:
+                    workflows.diamond.ac.uk/triggeruid: "12345"
+                spec: {}
+                EOF
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get workflow with-extra -o json |
+                jq -e '.metadata.labels["workflows.diamond.ac.uk/creator-posix-uid"] == "98765"'

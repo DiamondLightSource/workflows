@@ -4,6 +4,7 @@ kind: ValidatingAdmissionPolicy
 metadata:
   name: {{ .Release.Name }}-artifact-s3-secret-usage
 spec:
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
