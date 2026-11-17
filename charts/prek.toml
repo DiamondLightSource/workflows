@@ -8,7 +8,7 @@ hooks = [
     entry = "prettier --write",
     files = "^[^/]+/[^/]*\\.ya?ml$",
     pass_filenames = true,
-    additional_dependencies = ["prettier@3.6.2"],
+    additional_dependencies = ["prettier@3.9.10"],
   },
   {
     id = "prettier-json",
@@ -17,6 +17,6 @@ hooks = [
     entry = "prettier --write",
     files = "\\.json$",
     pass_filenames = true,
-    additional_dependencies = ["prettier@3.6.2"],
+    additional_dependencies = ["prettier@3.9.10"],
   },
 ]

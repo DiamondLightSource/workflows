@@ -36,6 +36,6 @@ hooks = [
     entry = "prettier --write",
     files = "^[^/]+\\.(ya?ml)$",
     pass_filenames = true,
-    additional_dependencies = ["prettier@3.6.2"],
+    additional_dependencies = ["prettier@3.9.10"],
   },
 ]
