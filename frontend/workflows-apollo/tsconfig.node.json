@@ -21,5 +21,10 @@
 
     "types": ["vitest/globals"]
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "vitest.setup.ts"]
+  "include": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "codegen.ts"
+  ]
 }
