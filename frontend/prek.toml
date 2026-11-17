@@ -8,6 +8,6 @@ hooks = [
     entry = "prettier --config .prettierrc --ignore-path ../.gitignore --check \"**/*.{js,ts,tsx,json}\"",
     files = "\\.(js|ts|tsx|json)$",
     pass_filenames = false,
-    additional_dependencies = ["prettier@3.9.8"],
+    additional_dependencies = ["prettier@3.9.10"],
   },
 ]
