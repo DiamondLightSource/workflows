@@ -2,10 +2,7 @@ import { getUseAuthGateway } from "./useAuthGateway";
 import { AuthState } from "@diamondlightsource/sci-react-ui";
 import { parseJwt } from "./coreUtils";
 import { JSONObject } from "../../types";
-import {
-  buildLoginUrl,
-  baseGatewayUrl,
-} from "./authUtils";
+import { buildLoginUrl, baseGatewayUrl } from "./authUtils";
 
 export async function getKeycloak() {
   const isMocking = import.meta.env.VITE_ENABLE_MOCKING === "true";
@@ -36,7 +33,6 @@ export async function getKeycloak() {
   };
 }
 
-
 const KEYCLOAK_SCOPE = import.meta.env.VITE_KEYCLOAK_SCOPE;
 const USE_AUTH_GATEWAY = getUseAuthGateway();
 const AUTH_GATEWAY_LOGIN_URL = import.meta.env.VITE_AUTH_GATEWAY_LOGIN_URL;
@@ -56,7 +52,7 @@ export function ensureKeycloakInit(): Promise<boolean> {
       .catch((err: unknown) => {
         console.error("Keycloak init failed", err);
         return false;
-      }) as Promise<boolean>;
+      });
   }
   return kcinitPromise;
 }
@@ -72,7 +68,6 @@ export function redirectToAuthGatewayLogin() {
   const loginUrl = buildLoginUrl(returnTo, AUTH_GATEWAY_LOGIN_URL);
   window.location.assign(loginUrl);
 }
-
 
 export async function getUser(): Promise<AuthState | null> {
   if (USE_AUTH_GATEWAY) {
@@ -131,4 +126,3 @@ function buildUserInfoUrl(gatewayUrl?: string): string {
   const userInfoUrl = new URL(`${baseGatewayUrl(gatewayUrl)}/auth/me`);
   return userInfoUrl.toString();
 }
-

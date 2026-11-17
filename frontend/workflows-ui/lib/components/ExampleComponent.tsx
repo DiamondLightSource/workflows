@@ -1,3 +1,3 @@
-export default function() {
-    return (<p>Example Component</p>)
+export default function ExampleComponent() {
+  return <p>Example Component</p>;
 }

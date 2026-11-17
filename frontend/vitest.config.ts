@@ -9,7 +9,7 @@ export default defineConfig({
       "dashboard",
       "dashboard-2",
       "workflows-ui",
-      "workflows-apollo"
+      "workflows-apollo",
     ],
   },
 });

@@ -9,10 +9,7 @@
     "prebuild": "rm -rf dist",
     "build": "tsc --build && vite build && tsc -p tsconfig.build.json"
   },
-  "peerDependencies": {
-  },
-  "devDependencies": {
-  },
-  "eslintConfig": {
-  }
+  "peerDependencies": {},
+  "devDependencies": {},
+  "eslintConfig": {}
 }

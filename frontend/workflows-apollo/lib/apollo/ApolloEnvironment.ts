@@ -2,7 +2,7 @@ import {
   ApolloClient,
   HttpLink,
   InMemoryCache,
-  split,
+  ApolloLink,
 } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
@@ -10,9 +10,9 @@ import { createClient } from "graphql-ws";
 import { getUseAuthGateway } from "../auth/utils/useAuthGateway";
 
 import {
-    keycloak,
-    ensureKeycloakInit,
-    redirectToAuthGatewayLogin
+  keycloak,
+  ensureKeycloakInit,
+  redirectToAuthGatewayLogin,
 } from "../auth/utils/keycloak";
 
 const USE_AUTH_GATEWAY = getUseAuthGateway();
@@ -74,7 +74,7 @@ export const wsClient = createClient({
 
 const wsLink = new GraphQLWsLink(wsClient);
 
-const link = split(
+const link = ApolloLink.split(
   ({ query }) => {
     const definition = getMainDefinition(query);
 
