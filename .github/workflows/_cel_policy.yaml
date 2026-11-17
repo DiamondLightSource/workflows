@@ -31,12 +31,15 @@ jobs:
           helm repo update
           helm dep build charts/workflows
           helm dep build charts/identity-mapper
+          helm dep build charts/events
 
       - name: Install Workflows CRDs
         run: |
           kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=v4.1.5"
           kubectl apply -f charts/identity-mapper/crds/useridentity.yaml
           kubectl apply -f charts/identity-mapper/crds/useridentitymap.yaml
+          kubectl apply -f charts/events/crds/trigger-crd.yaml
+          kubectl apply -f charts/events/crds/ctt-crd.yaml
 
       - name: Install Kueue CRDs
         run: |
@@ -56,4 +59,4 @@ jobs:
           # --parallel 1 is required: the policies are cluster-scoped, and a
           # suite's freshly applied policy would otherwise leak into another
           # suite running at the same time and fail its assertions.
-          chainsaw test --parallel 1 --test-dir charts/workflows/test-policy,charts/identity-mapper/test-policy
+          chainsaw test --parallel 1 --test-dir charts/workflows/test-policy,charts/identity-mapper/test-policy,charts/events/test-policy

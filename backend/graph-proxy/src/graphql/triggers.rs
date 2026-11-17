@@ -17,7 +17,7 @@ use chrono::{DateTime, Utc};
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
     api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams},
-    core::duration::Duration,
+    core::{duration::Duration, ApiResource, DynamicObject, GroupVersionKind},
     Api, Client, Config, CustomResource,
 };
 use schemars::JsonSchema;
@@ -167,6 +167,10 @@ impl From<WorkflowTriggerCreator> for TriggerCreator {
 struct TriggerWorkflow {
     /// The name of the template that the workflow is based on
     template: String,
+    /// The remaining workflow fields (parameters, trigger type, retry behaviour),
+    /// copied verbatim from the `ClusterTriggerTemplate`
+    #[serde(flatten)]
+    extra: BTreeMap<String, Value>,
 }
 
 /// The contents of the `spec` field of the Trigger custom resource. Used to generate the Trigger root object
@@ -187,6 +191,10 @@ struct TriggerSpec {
     lifetime: Option<String>,
     /// The workflow that is run when the trigger is activated
     workflow: Option<TriggerWorkflow>,
+    /// The remaining spec fields (for example `eventName`), copied verbatim from
+    /// the `ClusterTriggerTemplate` that the Trigger was created from
+    #[serde(flatten)]
+    extra: BTreeMap<String, Value>,
 }
 
 /// A Trigger for creating automated workflows
@@ -336,6 +344,84 @@ fn calculate_expiry(trigger_object: &Trigger) -> Option<DateTime<Utc>> {
             DateTime::from_timestamp_secs(creation_time_in_seconds + lifetime_seconds)
         }
         None => Option::<DateTime<Utc>>::None,
+    }
+}
+
+/// Labels that a `ClusterTriggerTemplate` contributes to the `Trigger` it creates
+const TEMPLATE_LABELS: [&str; 2] = [
+    "workflows.diamond.ac.uk/beamline",
+    "workflows.diamond.ac.uk/source",
+];
+
+/// The group, version and kind of the `ClusterTriggerTemplate` custom resource
+const CLUSTER_TRIGGER_TEMPLATE_GVK: (&str, &str, &str) = (
+    "workflows.diamond.ac.uk",
+    "v1alpha1",
+    "ClusterTriggerTemplate",
+);
+
+/// Fills in the template-owned parts of a `Trigger` from its `ClusterTriggerTemplate`.
+///
+/// A Kyverno rule used to merge the template's `spec` and two of its labels into
+/// the `Trigger` at admission time. CEL cannot read a second object, so the merge
+/// happens here, where the `Trigger` is created.
+///
+/// A template that cannot be read is not fatal: the `Trigger` is still created
+/// with only its `templateRef`, which is what the skipped Kyverno patch produced.
+async fn apply_trigger_template(client: Client, trigger: &mut Trigger) -> anyhow::Result<()> {
+    let Some(template_ref) = trigger.spec.template_ref.clone() else {
+        return Ok(());
+    };
+
+    let (group, version, kind) = CLUSTER_TRIGGER_TEMPLATE_GVK;
+    let gvk = GroupVersionKind::gvk(group, version, kind);
+    let api: Api<DynamicObject> = Api::all_with(client, &ApiResource::from_gvk(&gvk));
+
+    let template = match api.get(&template_ref).await {
+        Ok(template) => template,
+        Err(err) => {
+            tracing::warn!(
+                template_ref,
+                error = %err,
+                "Could not read the ClusterTriggerTemplate; creating the Trigger without it"
+            );
+            return Ok(());
+        }
+    };
+
+    merge_template_spec(trigger, &template)?;
+    copy_template_labels(trigger, &template);
+    Ok(())
+}
+
+/// Merges the template's `spec` into the `Trigger`, with the template's fields
+/// taking precedence, matching the strategic merge of the Kyverno rule.
+fn merge_template_spec(trigger: &mut Trigger, template: &DynamicObject) -> anyhow::Result<()> {
+    let Some(template_spec) = template.data.get("spec").and_then(Value::as_object) else {
+        return Ok(());
+    };
+    let mut spec = serde_json::to_value(&trigger.spec)?;
+    let Some(object) = spec.as_object_mut() else {
+        return Ok(());
+    };
+    for (key, value) in template_spec {
+        object.insert(key.clone(), value.clone());
+    }
+    trigger.spec = serde_json::from_value(spec)?;
+    Ok(())
+}
+
+/// Copies the `beamline` and `source` labels from the template onto the `Trigger`,
+/// leaving the creator labels already present untouched.
+fn copy_template_labels(trigger: &mut Trigger, template: &DynamicObject) {
+    let Some(template_labels) = template.metadata.labels.as_ref() else {
+        return;
+    };
+    let labels = trigger.metadata.labels.get_or_insert_with(BTreeMap::new);
+    for key in TEMPLATE_LABELS {
+        if let Some(value) = template_labels.get(key) {
+            labels.insert(key.to_string(), value.clone());
+        }
     }
 }
 
@@ -596,7 +682,7 @@ impl TriggerMutation {
             sub,
         } = get_posix_from_ctx(ctx).await?;
         let namespace = visit.map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        let api: Api<Trigger> = Api::namespaced(client.clone(), &namespace);
         let mut labels = BTreeMap::from([
             (String::from("workflows.diamond.ac.uk/posixuid"), posix_uid),
             (String::from("workflows.diamond.ac.uk/creator"), sub),
@@ -608,7 +694,7 @@ impl TriggerMutation {
             )
         });
         fedid.map(|f| labels.insert(String::from("workflows.diamond.ac.uk/creator-fedid"), f));
-        let trigger = Trigger {
+        let mut trigger = Trigger {
             metadata: ObjectMeta {
                 generate_name: Some(format!("{}-", template_ref)),
                 name,
@@ -620,8 +706,10 @@ impl TriggerMutation {
                 enabled: true,
                 lifetime: None,
                 workflow: None,
+                extra: BTreeMap::new(),
             },
         };
+        apply_trigger_template(client, &mut trigger).await?;
 
         match api.create(&PostParams::default(), &trigger).await {
             Ok(creation) => Ok(Some(creation.into())),
@@ -805,13 +893,46 @@ users:
             .match_body(Matcher::PartialJson(json!({
                 "metadata": {
                     "labels": {
-                        "workflows.diamond.ac.uk/posixuid": "7357"
+                        "workflows.diamond.ac.uk/posixuid": "7357",
+                        "workflows.diamond.ac.uk/beamline": "b01-1",
+                        "workflows.diamond.ac.uk/source": "generic"
+                    }
+                },
+                "spec": {
+                    "templateRef": "test-trigger",
+                    "enabled": true,
+                    "lifetime": "24h",
+                    "eventName": "test-example",
+                    "workflow": {
+                        "parameters": [
+                            {
+                                "name": "message",
+                                "path": "name"
+                            }
+                        ],
+                        "template": "echo-workflow-template",
+                        "triggerOnMessageType": "start"
                     }
                 }
             })))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body_from_file(asset(response_fixture))
+            .create_async()
+            .await
+    }
+
+    /// Mocks the `GET` of the `ClusterTriggerTemplate` referenced by the trigger
+    /// being created, returning its spec and beamline/source labels.
+    async fn mock_trigger_template(server: &mut ServerGuard) -> mockito::Mock {
+        server
+            .mock(
+                "GET",
+                "/apis/workflows.diamond.ac.uk/v1alpha1/clustertriggertemplates/test-trigger",
+            )
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(asset("clustertriggertemplate.json"))
             .create_async()
             .await
     }
@@ -1051,11 +1172,77 @@ users:
     ) -> anyhow::Result<()> {
         let mut ctx = TestContext::new().await?;
 
+        let template_mock = mock_trigger_template(&mut ctx.server).await;
         let mock = mock_create_trigger(&mut ctx.server, namespace, fixture).await;
         let actual = execute(&ctx.schema, query).await?;
 
+        template_mock.assert_async().await;
         mock.assert_async().await;
         assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_trigger_missing_template_creates_unpopulated() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+
+        // The referenced template does not exist: the API returns 404, and the
+        // trigger is still created with only its templateRef (parity with the
+        // skipped Kyverno patch).
+        ctx.server
+            .mock(
+                "GET",
+                "/apis/workflows.diamond.ac.uk/v1alpha1/clustertriggertemplates/missing-trigger",
+            )
+            .with_status(404)
+            .with_body("{}")
+            .create_async()
+            .await;
+
+        let mock = ctx
+            .server
+            .mock(
+                "POST",
+                "/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/events/triggers?",
+            )
+            .match_body(Matcher::PartialJson(json!({
+                "metadata": {
+                    "labels": {
+                        "workflows.diamond.ac.uk/posixuid": "7357"
+                    }
+                },
+                "spec": {
+                    "templateRef": "missing-trigger",
+                    "enabled": true
+                }
+            })))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(asset("make-trigger.json"))
+            .create_async()
+            .await;
+
+        let actual = execute(
+            &ctx.schema,
+            r#"
+            mutation {
+                createTrigger(templateRef: "missing-trigger") {
+                    name
+                }
+            }
+            "#,
+        )
+        .await?;
+
+        mock.assert_async().await;
+        assert_eq!(
+            actual,
+            json!({
+                "createTrigger": {
+                    "name": "test-trigger-s6qzl"
+                }
+            })
+        );
         Ok(())
     }
 

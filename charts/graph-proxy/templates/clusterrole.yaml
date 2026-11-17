@@ -21,4 +21,10 @@ rules:
       - patch
       - create
       - delete
+  - apiGroups:
+      - workflows.diamond.ac.uk
+    resources:
+      - clustertriggertemplates
+    verbs:
+      - get
 {{- end }}

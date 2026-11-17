@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trigger-reaper-hooks
+  namespace: {{ .Release.Namespace }}
+data:
+  {{- (.Files.Glob "hooks/reaper.py").AsConfig | nindent 2 }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trigger-reaper
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: trigger-reaper:delete-triggers
+rules:
+  - apiGroups:
+      - workflows.diamond.ac.uk
+    resources:
+      - triggers
+    verbs:
+      - get
+      - list
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trigger-reaper:delete-triggers
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trigger-reaper:delete-triggers
+subjects:
+  - kind: ServiceAccount
+    name: trigger-reaper
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trigger-reaper
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: trigger-reaper
+          restartPolicy: OnFailure
+          containers:
+            - name: trigger-reaper
+              image: python:3.14-slim
+              imagePullPolicy: IfNotPresent
+              command: ["/usr/local/bin/python3", "/hooks/reaper.py"]
+              env:
+                - name: PYTHONUNBUFFERED
+                  value: "1"
+              volumeMounts:
+                - name: hooks
+                  mountPath: /hooks
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 65532
+                runAsGroup: 65532
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: hooks
+              configMap:
+                name: trigger-reaper-hooks

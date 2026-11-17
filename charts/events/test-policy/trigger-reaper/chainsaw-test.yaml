@@ -1,0 +1,112 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: trigger-reaper
+spec:
+  steps:
+    - name: deploy-reaper
+      try:
+        - script:
+            content: |
+              set -eu
+              helm template reaper "$(git rev-parse --show-toplevel)/charts/events" \
+                --namespace "$NAMESPACE" --show-only templates/trigger-reaper.yaml \
+                | kubectl apply --validate=false -f -
+      cleanup:
+        - script:
+            content: |
+              set -eu
+              helm template reaper "$(git rev-parse --show-toplevel)/charts/events" \
+                --namespace "$NAMESPACE" --show-only templates/trigger-reaper.yaml \
+                | kubectl delete --ignore-not-found -f -
+    - name: expired-trigger-is-reaped
+      try:
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: expired-trigger
+                namespace: ($namespace)
+              spec:
+                lifetime: 1s
+                templateRef: test-template
+                eventName: test-event
+                workflow:
+                  template: workflow-template
+        - sleep:
+            duration: 5s
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" create job trigger-reaper-manual-expired \
+                --from=cronjob/trigger-reaper
+              kubectl -n "$NAMESPACE" wait \
+                --for=condition=complete job/trigger-reaper-manual-expired --timeout=120s
+        - script:
+            timeout: 60s
+            content: |
+              set -eu
+              for _ in $(seq 1 45); do
+                if ! kubectl -n "$NAMESPACE" get trigger expired-trigger >/dev/null 2>&1; then
+                  echo "expired-trigger was deleted"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "expired-trigger was not deleted" >&2
+              exit 1
+    - name: forever-trigger-survives
+      try:
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: forever-trigger
+                namespace: ($namespace)
+              spec:
+                lifetime: forever
+                templateRef: test-template
+                eventName: test-event
+                workflow:
+                  template: workflow-template
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" create job trigger-reaper-manual-forever \
+                --from=cronjob/trigger-reaper
+              kubectl -n "$NAMESPACE" wait \
+                --for=condition=complete job/trigger-reaper-manual-forever --timeout=120s
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get trigger forever-trigger >/dev/null 2>&1
+    - name: missing-lifetime-defaults-to-24h
+      try:
+        - create:
+            resource:
+              apiVersion: workflows.diamond.ac.uk/v1alpha1
+              kind: Trigger
+              metadata:
+                name: no-lifetime-trigger
+                namespace: ($namespace)
+              spec:
+                templateRef: test-template
+                eventName: test-event
+                workflow:
+                  template: workflow-template
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" create job trigger-reaper-manual-default \
+                --from=cronjob/trigger-reaper
+              kubectl -n "$NAMESPACE" wait \
+                --for=condition=complete job/trigger-reaper-manual-default --timeout=120s
+        - script:
+            content: |
+              set -eu
+              kubectl -n "$NAMESPACE" get trigger no-lifetime-trigger >/dev/null 2>&1
