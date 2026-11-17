@@ -4,6 +4,9 @@
     { "path": "./workflows-lib" },
     { "path": "./workflows-lib-shared" },
     { "path": "./relay-workflows-lib" },
-    { "path": "./dashboard" }
+    { "path": "./dashboard" },
+    { "path": "./dashboard-2" },
+    { "path": "./workflows-ui" },
+    { "path": "./workflows-apollo" }
   ]
 }
