@@ -1,3 +1,3 @@
 export { kebabToTitle } from "./utils";
-export * from "../lib/components/templates/WorkflowSubmitter";
+export * from "./components/templates/WorkflowSubmissionForm";
 export * from "../lib/components/templates/WorkflowTemplateDetails";

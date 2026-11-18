@@ -11,25 +11,30 @@ import {
 } from "@diamondlightsource/sci-react-ui";
 import { Box, Button, Divider, Stack, useTheme } from "@mui/material";
 
-interface WorkflowSubmitterProps {
+interface WorkflowSubmissionFormProps {
+  //** The name of the workflow template */
   name: string;
+  //** A JSON Schema describing the arguments of a workflow template */
   args: JsonSchema;
+  /** A JSON Forms UI Schema describing how to render the arguments of the Workflow Template */
   uiSchema?: UISchemaElement;
+  /** The session to submit the workflow to. If not provided, a session input is displayed */
   session?: Session;
-  onSubmit?: (
+  /** Function that is executed when the submit button is pressed */
+  onSubmit: (
     name: string,
     session: Session,
     parameters: object,
   ) => Promise<void>;
 }
 
-export function WorkflowSubmitter({
+export function WorkflowSubmissionForm({
   name,
   args,
   uiSchema,
   session,
   onSubmit,
-}: WorkflowSubmitterProps) {
+}: WorkflowSubmissionFormProps) {
   const [parameters, setParameters] = useState<object>({});
   const [errors, setErrors] = useState<ErrorObject[]>([]);
   const validator = createAjv({ useDefaults: true, coerceTypes: true });
