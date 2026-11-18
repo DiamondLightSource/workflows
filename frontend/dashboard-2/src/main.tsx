@@ -8,7 +8,7 @@ import WorkflowsRouterProvider from "./navigation-overlay/WorkflowsRouterProvide
 import { NotepadText, Workflow, Zap } from "lucide-react";
 import { WorkflowsApolloProvider } from "workflows-apollo";
 import { NavRouteObject } from "./navigation-overlay/utils";
-
+import "@diamondlightsource/sci-react-ui/font-styles.css";
 // Having to set index to true for all of them is quite annoying
 // TODO: Fix this
 const routeObjects: NavRouteObject[] = [
