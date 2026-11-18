@@ -26,7 +26,7 @@ export default function NavigationOverlay({
   const [open, setOpen] = useState(true);
 
   return (
-    <Box sx={{ display: "flex", maxWidth: "100vw", maxHeight: "100vh" }}>
+    <Box sx={{ display: "flex", width: "100vw", height: "100vh" }}>
       <AppBar
         position="fixed"
         sx={{
@@ -89,7 +89,14 @@ export default function NavigationOverlay({
       </AppBar>
 
       <SidebarNav navigation={navigation} open={open} setOpen={setOpen} />
-      <Box sx={{ display: "flex", flexDirection: "column", height: "inherit" }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "inherit",
+          flexGrow: 1,
+        }}
+      >
         {/* Toolbar call here is to align main content vertically below the AppBar
             This is in the official MUI example:
             https://mui.com/material-ui/react-drawer/#clipped-under-the-app-bar
