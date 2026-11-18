@@ -9,12 +9,13 @@ import { NotepadText, Workflow, Zap } from "lucide-react";
 import { WorkflowsApolloProvider } from "workflows-apollo";
 import { NavRouteObject } from "./navigation-overlay/utils";
 import "@diamondlightsource/sci-react-ui/font-styles.css";
+import { WorkflowTemplatesPage } from "./routes/WorkflowTemplatesPage";
 // Having to set index to true for all of them is quite annoying
 // TODO: Fix this
 const routeObjects: NavRouteObject[] = [
   {
     path: "templates",
-    element: <p>Templates list page</p>,
+    element: <WorkflowTemplatesPage />,
     index: true,
     icon: <NotepadText />,
   },
