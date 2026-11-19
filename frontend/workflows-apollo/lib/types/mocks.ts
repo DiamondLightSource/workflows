@@ -66,3 +66,37 @@ export const submitWorkflowTemplateMock = {
     },
   },
 };
+import { templatesOverviewQuery } from "../components/templates/ApolloTemplateList"
+
+export const getTemplatesMock = {
+  request: {
+    query: templatesOverviewQuery,
+    variables: () => true,
+  },
+  result: {
+    data: {
+      workflowTemplates: {
+        nodes: [
+          {
+            name: "name-1",
+            maintainer: "maintainer1",
+            title: "Title 1",
+            description: "description 1",
+          },
+          {
+            name: "name-2",
+            maintainer: "maintainer2",
+            title: "Title 2",
+            description: "description 2",
+          },
+          {
+            name: "name-3",
+            maintainer: "maintainer3",
+            title: "Title 3",
+            description: "description 3",
+          },
+        ],
+      },
+    },
+  },
+};
