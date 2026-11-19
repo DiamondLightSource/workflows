@@ -23,5 +23,5 @@
 
     "types": ["vitest/globals"]
   },
-  "include": ["lib", "tests"]
+  "include": ["lib", ".storybook/**/*.ts", ".storybook/**/*.tsx", "tests"]
 }
