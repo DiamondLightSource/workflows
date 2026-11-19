@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useColorScheme } from "@mui/material/styles";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   ThemeProvider,
@@ -12,16 +13,53 @@ const templates = [
   "visr-reconstruction",
   "data-analysis",
 ];
+const StoryTheme = ({
+  children,
+  mode,
+}: {
+  children: React.ReactNode;
+  mode: "light" | "dark";
+}) => {
+  return (
+    <ThemeProvider theme={DiamondDSTheme}>
+      <ThemeMode mode={mode}>{children}</ThemeMode>
+    </ThemeProvider>
+  );
+};
+
+const ThemeMode = ({
+  children,
+  mode,
+}: {
+  children: React.ReactNode;
+  mode: "light" | "dark";
+}) => {
+  const { setMode } = useColorScheme();
+
+  useEffect(() => {
+    setMode(mode);
+
+    // Synchronise Diamond Design System CSS variables.
+    document.documentElement.setAttribute("data-mode", mode);
+  }, [mode, setMode]);
+
+  return <>{children}</>;
+};
+
 
 const meta: Meta<typeof TemplateFilter> = {
   title: "TemplateFilter",
   component: TemplateFilter,
   decorators: [
-    (Story) => (
-      <ThemeProvider theme={DiamondDSTheme}>
-        <Story />
-      </ThemeProvider>
-    ),
+    (Story, context) => {
+      console.log("Diamond mode:", context.globals.diamondMode);
+
+      return (
+        <StoryTheme mode={context.globals.diamondMode ?? "light"}>
+          <Story />
+        </StoryTheme>
+      );
+    },
   ],
 };
 
