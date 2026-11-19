@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   Divider,
   FormControl,
   InputLabel,
@@ -96,10 +97,14 @@ const TemplateFilter = ({
 
         {templates.map((template) => (
           <MenuItem key={template} value={template}>
+            <Checkbox
+              checked={selectedTemplates.includes(template)}
+              size="small"
+            />
             <ListItemText primary={template} />
           </MenuItem>
-        ))}
-      </Select>
+        ))}     
+         </Select>
     </FormControl>
   );
 };
