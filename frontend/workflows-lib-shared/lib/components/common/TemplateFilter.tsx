@@ -57,19 +57,35 @@ const TemplateFilter = ({
       </InputLabel>
 
       <Select
-        labelId="template-filter-label"
-        id="template-filter"
-        multiple
-        displayEmpty
-        value={selectedTemplates}
-        onChange={handleChange}
-        label={label}
-        renderValue={renderSelectedValues}
-        sx={{
-          borderRadius: "4px",
-          backgroundColor: "transparent",
-        }}
-      >
+         labelId="template-filter-label"
+          id="template-filter"
+          multiple
+          displayEmpty
+          value={selectedTemplates}
+          onChange={handleChange}
+          label={label}
+          renderValue={renderSelectedValues}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                bgcolor: "background.paper",
+                color: "text.primary",
+              },
+            },
+          }}
+          sx={{
+            bgcolor: "background.paper",
+            color: "text.primary",
+
+            "& .MuiSelect-select": {
+              color: "text.primary",
+            },
+
+            "& .MuiSelect-icon": {
+              color: "text.primary",
+            },
+          }}
+        >
         <MenuItem
           value={CLEAR_ALL_VALUE}
           disabled={selectedTemplates.length === 0}
