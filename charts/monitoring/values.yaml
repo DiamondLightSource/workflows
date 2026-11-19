@@ -273,10 +273,7 @@ prometheus:
         configMap: alert-rules
         readOnly: true
     persistentVolume:
-      enabled: true
-      size: 50Gi
-      accessModes:
-        - ReadWriteOnce
+      enabled: false
     replicaCount: 1
     retention: 7d
     statefulSet:
