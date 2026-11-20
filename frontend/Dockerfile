@@ -17,7 +17,7 @@ RUN pnpm --filter relay-workflows-lib run relay
 COPY ./workflows.graphql ./dashboard/workflows.graphql
 RUN pnpm --filter dashboard run build
 
-FROM docker.io/library/nginx:1.31.6-alpine-slim as nginx
+FROM docker.io/library/nginx:1.31.8-alpine-slim as nginx
 
 WORKDIR /app
 
