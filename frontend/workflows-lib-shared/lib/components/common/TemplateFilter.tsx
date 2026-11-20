@@ -8,24 +8,50 @@ import {
   Select,
   type SelectChangeEvent,
 } from "@mui/material";
+import { useEffect, useId, useRef, useState } from "react";
 
 export interface TemplateFilterProps {
   label?: string;
   emptyLabel?: string;
-  templates: string[];
+  filterValues: string[];
   selectedTemplates: string[];
   onChange: (selectedTemplates: string[]) => void;
+  variant?: "outlined" | "filled" | "standard";
 }
 
 const CLEAR_ALL_VALUE = "__clear_all__";
 
 const TemplateFilter = ({
-  label = "Science Group",
+  label,
   emptyLabel = "All ",
-  templates,
+  filterValues,
   selectedTemplates,
   onChange,
+  variant = "outlined",
 }: TemplateFilterProps) => {
+  const id = useId();
+
+  const selectRef = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState(0);
+
+  useEffect(() => {
+    const element = selectRef.current;
+
+    if (!element) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setAvailableWidth(entry.contentRect.width);
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const selectId = `${id}-select`;
+  const labelId = `${id}-label`;
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
 
@@ -38,7 +64,6 @@ const TemplateFilter = ({
 
     onChange(selected);
   };
-
   const renderSelectedValues = (selected: string[]) => {
     if (selected.length === 0) {
       return emptyLabel;
@@ -48,45 +73,95 @@ const TemplateFilter = ({
       return selected[0];
     }
 
-    return `${selected[0]} +${String(selected.length - 1)} more`;
+    const element = selectRef.current;
+
+    if (!element || availableWidth === 0) {
+      return `${selected[0]} +${String(selected.length - 1)} more`;
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      return `${selected[0]} +${String(selected.length - 1)} more`;
+    }
+
+    context.font = getComputedStyle(element).font;
+
+    const measure = (text: string) => context.measureText(text).width;
+
+    const maxWidth = Math.max(0, availableWidth - 40);
+
+    const visible: string[] = [];
+
+    for (let i = 0; i < selected.length; i++) {
+      const remaining = selected.length - i - 1;
+
+      const candidate = [...visible, selected[i]].join(", ");
+
+      const display =
+        remaining > 0 ? `${candidate} +${String(remaining)} more` : candidate;
+
+      if (measure(display) > maxWidth) {
+        break;
+      }
+
+      visible.push(selected[i]);
+    }
+
+    if (visible.length === selected.length) {
+      return visible.join(", ");
+    }
+
+    if (visible.length === 0) {
+      return `+${String(selected.length)} more`;
+    }
+
+    return `${visible.join(", ")} +${String(selected.length - visible.length)} more`;
   };
 
   return (
-    <FormControl fullWidth variant="outlined">
-      <InputLabel id="template-filter-label" shrink>
-        {label}
-      </InputLabel>
-
+    <FormControl fullWidth variant={variant}>
+      {label && (
+        <InputLabel id={labelId} shrink>
+          {label}
+        </InputLabel>
+      )}
       <Select
-         labelId="template-filter-label"
-          id="template-filter"
-          multiple
-          displayEmpty
-          value={selectedTemplates}
-          onChange={handleChange}
-          label={label}
-          renderValue={renderSelectedValues}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                bgcolor: "background.paper",
-                color: "text.primary",
-              },
+        ref={selectRef}
+        labelId={label ? labelId : undefined}
+        id={selectId}
+        multiple
+        displayEmpty
+        value={selectedTemplates}
+        onChange={handleChange}
+        label={label}
+        inputProps={{
+          "aria-label": label ? undefined : "Filter templates",
+        }}
+        renderValue={renderSelectedValues}
+
+        MenuProps={{
+          PaperProps: {
+            sx: {
+              bgcolor: "background.paper",
+              color: "text.primary",
             },
-          }}
-          sx={{
-            bgcolor: "background.paper",
+          },
+        }}
+        sx={{
+          bgcolor: "background.paper",
+          color: "text.primary",
+
+          "& .MuiSelect-select": {
             color: "text.primary",
+          },
 
-            "& .MuiSelect-select": {
-              color: "text.primary",
-            },
-
-            "& .MuiSelect-icon": {
-              color: "text.primary",
-            },
-          }}
-        >
+          "& .MuiSelect-icon": {
+            color: "text.primary",
+          },
+        }}
+      >
         <MenuItem
           value={CLEAR_ALL_VALUE}
           disabled={selectedTemplates.length === 0}
@@ -95,7 +170,7 @@ const TemplateFilter = ({
         </MenuItem>
         <Divider />
 
-        {templates.map((template) => (
+        {filterValues.map((template) => (
           <MenuItem key={template} value={template}>
             <Checkbox
               checked={selectedTemplates.includes(template)}
@@ -103,8 +178,8 @@ const TemplateFilter = ({
             />
             <ListItemText primary={template} />
           </MenuItem>
-        ))}     
-         </Select>
+        ))}
+      </Select>
     </FormControl>
   );
 };

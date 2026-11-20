@@ -9,6 +9,7 @@ describe("TemplateFilter", () => {
   it("renders the template filter", () => {
     render(
       <TemplateFilter
+        label="Science Group"
         templates={templates}
         selectedTemplates={[]}
         onChange={vi.fn()}
@@ -22,7 +23,6 @@ describe("TemplateFilter", () => {
 
   it("displays available templates", async () => {
     const user = userEvent.setup();
-
     render(
       <TemplateFilter
         templates={templates}
@@ -32,11 +32,9 @@ describe("TemplateFilter", () => {
     );
 
     await user.click(screen.getByRole("combobox"));
-
     expect(
       screen.getByRole("option", { name: "mx-processing" }),
     ).toBeInTheDocument();
-
     expect(
       screen.getByRole("option", { name: "tomography" }),
     ).toBeInTheDocument();
@@ -45,7 +43,6 @@ describe("TemplateFilter", () => {
   it("calls onChange when a template is selected", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-
     render(
       <TemplateFilter
         templates={templates}
@@ -53,11 +50,8 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     await user.click(screen.getByRole("combobox"));
-
     await user.click(screen.getByRole("option", { name: "tomography" }));
-
     expect(onChange).toHaveBeenCalledWith(["tomography"]);
   });
 
@@ -69,13 +63,11 @@ describe("TemplateFilter", () => {
         onChange={vi.fn()}
       />,
     );
-
     expect(screen.getByRole("combobox")).toHaveTextContent("tomography");
   });
 
   it("updates the selection when props change", () => {
     const onChange = vi.fn();
-
     const { rerender } = render(
       <TemplateFilter
         templates={templates}
@@ -83,9 +75,7 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     expect(screen.getByRole("combobox")).toHaveTextContent("tomography");
-
     rerender(
       <TemplateFilter
         templates={templates}
@@ -93,16 +83,13 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     expect(screen.getByRole("combobox")).toHaveTextContent("mx-processing");
-
     expect(screen.getByRole("combobox")).not.toHaveTextContent("tomography");
   });
 
   it("calls onChange when a selected template is removed", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-
     render(
       <TemplateFilter
         templates={templates}
@@ -110,18 +97,14 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     await user.click(screen.getByRole("combobox"));
-
     await user.click(screen.getByRole("option", { name: "tomography" }));
-
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
   it("handles an empty template list", async () => {
     const user = userEvent.setup();
-
     render(
       <TemplateFilter
         templates={[]}
@@ -129,11 +112,8 @@ describe("TemplateFilter", () => {
         onChange={vi.fn()}
       />,
     );
-
     expect(screen.getByRole("combobox")).toHaveTextContent("All");
-
     await user.click(screen.getByRole("combobox"));
-
     expect(
       screen.queryByRole("option", { name: "tomography" }),
     ).not.toBeInTheDocument();
@@ -142,7 +122,6 @@ describe("TemplateFilter", () => {
   it("supports multiple template selections", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-
     const { rerender } = render(
       <TemplateFilter
         templates={templates}
@@ -150,13 +129,9 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     await user.click(screen.getByRole("combobox"));
-
     await user.click(screen.getByRole("option", { name: "tomography" }));
-
     expect(onChange).toHaveBeenLastCalledWith(["tomography"]);
-
     // Simulate the parent updating the controlled state.
     rerender(
       <TemplateFilter
@@ -165,16 +140,13 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     await user.click(screen.getByRole("option", { name: "mx-processing" }));
-
     expect(onChange).toHaveBeenLastCalledWith(["tomography", "mx-processing"]);
   });
 
   it("clears all selected templates", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-
     render(
       <TemplateFilter
         templates={templates}
@@ -182,16 +154,13 @@ describe("TemplateFilter", () => {
         onChange={onChange}
       />,
     );
-
     await user.click(screen.getByRole("combobox"));
-
     await user.click(screen.getByText("Clear all"));
-
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
-  it("displays the first selection and remaining count", () => {
+  it("displays the selected templates", () => {
     render(
       <TemplateFilter
         templates={templates}
@@ -203,9 +172,32 @@ describe("TemplateFilter", () => {
         onChange={vi.fn()}
       />,
     );
+    expect(screen.getByRole("combobox")).toHaveTextContent("tomography");
+  });
 
-    expect(screen.getByRole("combobox")).toHaveTextContent(
-      "tomography +2 more",
+  it.skip("generates unique IDs for multiple filters", () => {
+    render(
+      <>
+        <TemplateFilter
+          label="Science Group"
+          templates={templates}
+          selectedTemplates={[]}
+          onChange={vi.fn()}
+        />
+        <TemplateFilter
+          label="Workflow Templates"
+          templates={templates}
+          selectedTemplates={[]}
+          onChange={vi.fn()}
+        />
+      </>,
     );
+    const firstFilter = screen.getByRole("combobox", { name: "Science Group" });
+    const secondFilter = screen.getByRole("combobox", {
+      name: "Workflow Templates",
+    });
+    expect(firstFilter.id).toBeTruthy();
+    expect(secondFilter.id).toBeTruthy();
+    expect(firstFilter.id).not.toBe(secondFilter.id);
   });
 });

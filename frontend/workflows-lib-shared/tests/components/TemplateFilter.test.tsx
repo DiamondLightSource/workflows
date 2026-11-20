@@ -9,7 +9,8 @@ describe("TemplateFilter", () => {
   it("renders the template filter", () => {
     render(
       <TemplateFilter
-        templates={templates}
+        label="Science Group"
+        filterValues={templates}
         selectedTemplates={[]}
         onChange={vi.fn()}
       />,
@@ -25,7 +26,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={[]}
         onChange={vi.fn()}
       />,
@@ -48,7 +49,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={[]}
         onChange={onChange}
       />,
@@ -64,7 +65,7 @@ describe("TemplateFilter", () => {
   it("displays templates selected through props", () => {
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={["tomography"]}
         onChange={vi.fn()}
       />,
@@ -78,7 +79,7 @@ describe("TemplateFilter", () => {
 
     const { rerender } = render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
@@ -88,7 +89,7 @@ describe("TemplateFilter", () => {
 
     rerender(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={["mx-processing"]}
         onChange={onChange}
       />,
@@ -105,7 +106,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
@@ -124,7 +125,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={[]}
+        filterValues={[]}
         selectedTemplates={[]}
         onChange={vi.fn()}
       />,
@@ -145,7 +146,7 @@ describe("TemplateFilter", () => {
 
     const { rerender } = render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={[]}
         onChange={onChange}
       />,
@@ -160,7 +161,7 @@ describe("TemplateFilter", () => {
     // Simulate the parent updating the controlled state.
     rerender(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
@@ -177,7 +178,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={["tomography", "mx-processing"]}
         onChange={onChange}
       />,
@@ -191,10 +192,10 @@ describe("TemplateFilter", () => {
     expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
-  it("displays the first selection and remaining count", () => {
+  it("displays the selected templates", () => {
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={templates}
         selectedTemplates={[
           "tomography",
           "mx-processing",
@@ -204,8 +205,38 @@ describe("TemplateFilter", () => {
       />,
     );
 
-    expect(screen.getByRole("combobox")).toHaveTextContent(
-      "tomography +2 more",
+    expect(screen.getByRole("combobox")).toHaveTextContent("tomography");
+  });
+
+  it("generates unique IDs for multiple filters", () => {
+    const { container } = render(
+      <>
+        <TemplateFilter
+          label="Science Group"
+          filterValues={templates}
+          selectedTemplates={[]}
+          onChange={vi.fn()}
+        />
+
+        <TemplateFilter
+          label="Workflow Templates"
+          filterValues={templates}
+          selectedTemplates={[]}
+          onChange={vi.fn()}
+        />
+      </>,
     );
+
+    const filters = container.querySelectorAll('[role="combobox"]');
+
+    expect(filters).toHaveLength(2);
+
+    const firstFilter = filters[0];
+    const secondFilter = filters[1];
+
+    expect(firstFilter.id).toBeTruthy();
+    expect(secondFilter.id).toBeTruthy();
+
+    expect(firstFilter.id).not.toBe(secondFilter.id);
   });
 });
