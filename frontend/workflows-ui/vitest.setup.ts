@@ -1,3 +1,5 @@
+import "@testing-library/jest-dom";
+
 class ResizeObserverMock {
   observe() {}
   unobserve() {}
