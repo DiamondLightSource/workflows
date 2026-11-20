@@ -604,7 +604,7 @@ dependencies = [
  "dotenvy",
  "env_logger",
  "http 1.4.2",
- "k8s-openapi",
+ "k8s-openapi 0.29.0",
  "kube",
  "migration",
  "moka",
@@ -2815,7 +2815,7 @@ dependencies = [
  "graphql-ws-client",
  "graphql_client",
  "jsonwebtoken",
- "k8s-openapi",
+ "k8s-openapi 0.29.0",
  "kube",
  "lazy_static",
  "mime_guess",
@@ -3864,12 +3864,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "k8s-openapi"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab0d13801242174b1f3966907c3f32039f2d6b36c7ce82c61225d66ed5d1eb70"
+dependencies = [
+ "base64 0.22.1",
+ "jiff",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "kube"
 version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "208d7fe1380066abb194812a8a8e303cb896a33bb3d7b3177b71bd03ff39bf18"
 dependencies = [
- "k8s-openapi",
+ "k8s-openapi 0.28.0",
  "kube-client",
  "kube-core",
  "kube-derive",
@@ -3895,7 +3907,7 @@ dependencies = [
  "hyper-util",
  "jiff",
  "jsonpath-rust",
- "k8s-openapi",
+ "k8s-openapi 0.28.0",
  "kube-core",
  "pem",
  "rustls 0.23.46",
@@ -3924,7 +3936,7 @@ dependencies = [
  "http 1.4.2",
  "jiff",
  "json-patch",
- "k8s-openapi",
+ "k8s-openapi 0.28.0",
  "schemars 1.2.1",
  "serde",
  "serde-value",
@@ -3961,7 +3973,7 @@ dependencies = [
  "hashbrown 0.16.1",
  "hostname",
  "json-patch",
- "k8s-openapi",
+ "k8s-openapi 0.28.0",
  "kube-client",
  "parking_lot",
  "pin-project",
@@ -6446,7 +6458,7 @@ dependencies = [
  "dotenvy",
  "humantime",
  "if_chain",
- "k8s-openapi",
+ "k8s-openapi 0.29.0",
  "kube",
  "ldap3",
  "serde",
@@ -6470,7 +6482,7 @@ dependencies = [
  "axum",
  "clap",
  "dotenvy",
- "k8s-openapi",
+ "k8s-openapi 0.29.0",
  "kube",
  "ldap3",
  "reqwest 0.12.28",
