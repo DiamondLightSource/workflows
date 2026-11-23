@@ -1,13 +1,11 @@
-import {
-  NavRouteObject,
-  kebabToTitle,
-} from "../../src/navigation-overlay/utils";
+import { NavRouteObject } from "../../src/navigation-overlay/utils";
 import { render, screen } from "@testing-library/react";
 import { Typography } from "@mui/material";
 import { NotepadText, Workflow } from "lucide-react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import WorkflowsRouterProvider from "../../src/navigation-overlay/WorkflowsRouterProvider";
+import { kebabToTitle } from "workflows-ui";
 
 const firstRouteName = "first-route";
 const firstRouteTextContent = "First route root";

@@ -1,5 +1,5 @@
-import { RawScanRange } from "../components/jsonforms/controls/ScanRangeInput";
-import { ScanRange } from "../types";
+import { RawScanRange } from "../../components/jsonforms/controls/ScanRangeInput";
+import { ScanRange } from "../../types";
 
 export const isStrictPositiveInteger = (value: string): boolean =>
   /^\d+$/.test(value) && Number(value) >= 0;
