@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(import.meta.dirname, "lib/main.ts"),
-      fileName: "workflows-ui",
+      fileName: "workflows-apollo",
       formats: ["es", "cjs"],
     },
     rolldownOptions: {
