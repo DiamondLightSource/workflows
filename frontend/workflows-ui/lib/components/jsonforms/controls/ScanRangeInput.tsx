@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { InfoOutlined } from "@mui/icons-material";
-import { validateScanRange } from "../../../utils/validationUtils";
+import { validateScanRange } from "../../../utils/jsonforms/validation";
 import { ScanRange } from "../../../types";
 
 export interface RawScanRange {
