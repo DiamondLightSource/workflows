@@ -19,7 +19,7 @@ jobs:
         working-directory: frontend
         run: pnpm install --frozen-lockfile
 
-      - name: Download Graph Proxy Schema Artifact
+      - name: Download Graph Proxy Schema Artifact for Relay
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: graph-proxy
@@ -28,6 +28,16 @@ jobs:
       - name: Compile Relay
         working-directory: frontend/relay-workflows-lib
         run: pnpm relay
+
+      - name: Download Graph Proxy Schema Artifact for Apollo
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: graph-proxy
+          path: frontend/workflows-apollo
+
+      - name: Compile Apollo
+        working-directory: frontend/workflows-apollo
+        run: pnpm codegen
 
       - name: Build Typescript
         working-directory: frontend/
