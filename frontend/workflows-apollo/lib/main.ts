@@ -3,3 +3,4 @@ export { externalRedirect } from "./auth/utils/coreUtils";
 export { getUseAuthGateway } from "./auth/utils/useAuthGateway";
 export { getUser } from "./auth/utils/keycloak";
 export { WorkflowTemplateDetails } from "./components/templates/WorkflowTemplateDetails";
+export { default as ApolloTemplateList } from "./apollo/components/templates/ApolloTemplateList";
