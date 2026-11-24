@@ -446,8 +446,8 @@ importers:
         version: link:../workflows-ui
     devDependencies:
       '@graphql-codegen/cli':
-        specifier: 8.0.0-alpha-20261105125819-fea6b9b9e38c5cda144fea3fff48235de0baa8a9
-        version: 8.0.0-alpha-20261105125819-fea6b9b9e38c5cda144fea3fff48235de0baa8a9(@types/node@26.6.6)(graphql@17.1.0)(typescript@5.9.3)
+        specifier: 8.0.0
+        version: 8.0.0(@types/node@26.6.6)(graphql@17.1.0)(typescript@5.9.3)
       '@graphql-codegen/typescript-operations':
         specifier: 7.0.1
         version: 7.0.1(graphql@17.1.0)
@@ -1170,8 +1170,8 @@ packages:
     peerDependencies:
       graphql: ^16.0.0 || ^17.0.0
 
-  '@graphql-codegen/cli@8.0.0-alpha-20261105125819-fea6b9b9e38c5cda144fea3fff48235de0baa8a9':
-    resolution: {integrity: sha512-eF4xeSIS2bA8AwCa1XCydQQa+LGzFalkQ+e1mXiiVujTW0LpMihkfjwp36YuG3Qdto1me84pfkcjbQKUr4q2Nw==}
+  '@graphql-codegen/cli@8.0.0':
+    resolution: {integrity: sha512-7CyOVEvpalfA6HdW7KH0WCdb9Piu5sGrNvvaqZY6xZOQRMSXt20UwSf4gxAep7FKkA10a7z5iihiPmKLAlErBg==}
     engines: {node: '>=22.18.0'}
     hasBin: true
     peerDependencies:
@@ -5671,7 +5671,7 @@ snapshots:
       graphql: 17.1.0
       tslib: 2.9.1
 
-  '@graphql-codegen/cli@8.0.0-alpha-20261105125819-fea6b9b9e38c5cda144fea3fff48235de0baa8a9(@types/node@26.6.6)(graphql@17.1.0)(typescript@5.9.3)':
+  '@graphql-codegen/cli@8.0.0(@types/node@26.6.6)(graphql@17.1.0)(typescript@5.9.3)':
     dependencies:
       '@babel/generator': 7.29.14
       '@babel/template': 7.29.7
