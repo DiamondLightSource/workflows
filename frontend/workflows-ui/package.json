@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "rm -rf dist",
-    "build": "tsc --build && vite build && tsc -p tsconfig.build.json"
+    "build": "tsc --build && vite build && tsc -p tsconfig.build.json",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "peerDependencies": {
     "@emotion/react": "^11.14.0",
@@ -18,4 +20,10 @@
   },
   "devDependencies": {},
   "eslintConfig": {}
+  "eslintConfig": {},
+  "peerDependencies": {},
+  "devDependencies": {
+    "@storybook/addon-docs": "^10.6.7",
+    "@storybook/react-vite": "^10.6.7"
+  }
 }
