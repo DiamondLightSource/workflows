@@ -32,7 +32,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "8.0.0-alpha-20261105125819-fea6b9b9e38c5cda144fea3fff48235de0baa8a9",
+    "@graphql-codegen/cli": "8.0.0",
     "@graphql-codegen/typescript-operations": "7.0.1",
     "@storybook/addon-docs": "^10.6.7",
     "@storybook/react-vite": "^10.6.7",
