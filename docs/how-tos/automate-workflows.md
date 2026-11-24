@@ -138,10 +138,18 @@ Triggers can also be instantiated with a Graph mutation to https://graph.diamond
 
 ```graphql
 mutation {
-  createTrigger(templateRef: "example-trigger-template") {
-    name
+  createWorkflowTrigger(input: { templateRef: "example-trigger-template" }) {
+    workflowTrigger {
+      name
+    }
+    errors {
+      code
+      message
+    }
   }
 }
 ```
+
+If the trigger cannot be created, for example because a trigger with the requested name already exists, `workflowTrigger` is `null` and the reason is given in `errors`.
 
 Browse the [example trigger queries](../reference/example-trigger-queries.md) for more ways to interact with triggers via the Graph.

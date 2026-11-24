@@ -20,7 +20,7 @@ By default, a trigger will last for 24 hours before being deleted. This can be c
 
 ### Auth in Automated Workflows
 
-For the purposes of accessing the file system, workflows that are created via an automated trigger will run with the same groups and permissions as the account whose token is used to create that instance of the trigger. Typically, this will be whomever ran the `createTrigger` mutation.
+For the purposes of accessing the file system, workflows that are created via an automated trigger will run with the same groups and permissions as the account whose token is used to create that instance of the trigger. Typically, this will be whomever ran the `createWorkflowTrigger` mutation.
 
 Triggers can run as a service account, but that account requires:
 
