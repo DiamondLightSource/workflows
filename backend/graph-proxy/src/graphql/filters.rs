@@ -1071,6 +1071,63 @@ mod tests {
         assert_eq!(filters.create_label_selection(), "beamline=i14");
     }
 
+    fn selector(
+        operator: WorkflowLabelSelectorOperator,
+        values: Option<Vec<&str>>,
+    ) -> WorkflowLabelSelectorInput {
+        WorkflowLabelSelectorInput {
+            key: "beamline".to_string(),
+            operator,
+            values: values.map(|v| v.into_iter().map(String::from).collect()),
+        }
+    }
+
+    #[tokio::test]
+    async fn eq_and_ne_require_exactly_one_value() {
+        use WorkflowLabelSelectorOperator::{Eq, Ne};
+        for op in [Eq, Ne] {
+            assert!(selector(op, Some(vec!["i14"])).validate().is_ok());
+            assert!(selector(op, None).validate().is_err());
+            assert!(selector(op, Some(vec![])).validate().is_err());
+            assert!(selector(op, Some(vec!["i14", "i13"])).validate().is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn in_and_not_in_require_one_or_more_values() {
+        use WorkflowLabelSelectorOperator::{In, NotIn};
+        for op in [In, NotIn] {
+            assert!(selector(op, Some(vec!["i14"])).validate().is_ok());
+            assert!(selector(op, Some(vec!["i14", "i13"])).validate().is_ok());
+            assert!(selector(op, None).validate().is_err());
+            assert!(selector(op, Some(vec![])).validate().is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn exists_and_does_not_exist_require_no_values() {
+        use WorkflowLabelSelectorOperator::{DoesNotExist, Exists};
+        for op in [Exists, DoesNotExist] {
+            assert!(selector(op, None).validate().is_ok());
+            assert!(selector(op, Some(vec![])).validate().is_ok());
+            assert!(selector(op, Some(vec!["i14"])).validate().is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn workflow_filter_validate_rejects_any_invalid_selector() {
+        let filter = WorkflowFilter {
+            labels: Some(vec![
+                selector(WorkflowLabelSelectorOperator::Eq, Some(vec!["i14"])),
+                selector(WorkflowLabelSelectorOperator::In, None),
+            ]),
+            ..Default::default()
+        };
+        assert!(filter.validate().is_err());
+
+        assert!(WorkflowFilter::default().validate().is_ok());
+    }
+
     // Workflows--------------------------------------------
     #[tokio::test]
     async fn creator() {
