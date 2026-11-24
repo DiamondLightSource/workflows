@@ -9,7 +9,13 @@
     "prebuild": "rm -rf dist",
     "build": "tsc --build && vite build && tsc -p tsconfig.build.json"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {},
   "eslintConfig": {}
 }
