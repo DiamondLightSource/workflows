@@ -118,7 +118,7 @@ pub enum WorkflowLabelSelectorOperator {
 
 /// Represents a label selector for filtering workflows based on labels
 #[derive(Debug, Clone, InputObject)]
-pub struct LabelSelector {
+pub struct WorkflowLabelSelectorInput {
     /// The label key to filter on
     key: String,
     /// The operator to use for the label selection
@@ -174,7 +174,7 @@ pub struct WorkflowFilter {
 
     /// Additional label selectors for filtering workflows
     #[graphql(name = "labelSelectors")]
-    labels: Option<Vec<LabelSelector>>,
+    labels: Option<Vec<WorkflowLabelSelectorInput>>,
 
     /// Workflow parameter key/value filters
     parameters: Option<Vec<WorkflowParameterFilter>>,
@@ -399,7 +399,7 @@ impl GraphFilter for Template {
     }
 }
 
-impl GraphFilter for Vec<LabelSelector> {
+impl GraphFilter for Vec<WorkflowLabelSelectorInput> {
     fn generate_labels(&self, labels: &mut Vec<String>) {
         for selector in self {
             labels.push(selector.to_label_selector());
@@ -407,7 +407,7 @@ impl GraphFilter for Vec<LabelSelector> {
     }
 }
 
-impl LabelSelector {
+impl WorkflowLabelSelectorInput {
     /// Converts the LabelSelector into a string representation suitable for use in a label selector query
     fn to_label_selector(&self) -> String {
         match self.operator {
@@ -458,8 +458,8 @@ impl LabelSelector {
 #[cfg(test)]
 mod tests {
     use super::{
-        Creator, DatetimeOperatorInput, LabelSelector, ScienceGroup, Template,
-        WorkflowAnnotationFilter, WorkflowFilter, WorkflowLabelSelectorOperator,
+        Creator, DatetimeOperatorInput, ScienceGroup, Template, WorkflowAnnotationFilter,
+        WorkflowFilter, WorkflowLabelSelectorInput, WorkflowLabelSelectorOperator,
         WorkflowParameterFilter, WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
     use url::Url;
@@ -981,7 +981,7 @@ mod tests {
             template: None,
             annotations: None,
             workflow_status_filter: None,
-            labels: Some(vec![LabelSelector {
+            labels: Some(vec![WorkflowLabelSelectorInput {
                 key: "beamline".to_string(),
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
@@ -1002,7 +1002,7 @@ mod tests {
             template: None,
             annotations: None,
             workflow_status_filter: None,
-            labels: Some(vec![LabelSelector {
+            labels: Some(vec![WorkflowLabelSelectorInput {
                 key: "beamline".to_string(),
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
@@ -1024,7 +1024,7 @@ mod tests {
             template: None,
             annotations: None,
             workflow_status_filter: None,
-            labels: Some(vec![LabelSelector {
+            labels: Some(vec![WorkflowLabelSelectorInput {
                 key: "beamline".to_string(),
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
