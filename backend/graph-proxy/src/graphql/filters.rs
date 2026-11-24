@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use anyhow::bail;
 use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow;
 use async_graphql::{
     Enum, InputObject, InputValueError, InputValueResult, Scalar, ScalarType, Value,
@@ -289,6 +290,14 @@ impl WorkflowFilter {
                 .is_some_and(|value| value == &filter.value)
         })
     }
+
+    /// Validates user-supplied label selectors for number of values
+    pub fn validate(&self) -> anyhow::Result<()> {
+        for selector in self.labels.iter().flatten() {
+            selector.validate()?;
+        }
+        Ok(())
+    }
 }
 
 /// Represents workflow status filters
@@ -408,6 +417,32 @@ impl GraphFilter for Vec<WorkflowLabelSelectorInput> {
 }
 
 impl WorkflowLabelSelectorInput {
+    /// Checks that the number of supplied values is valid for the operator
+    pub fn validate(&self) -> anyhow::Result<()> {
+        let count = self.values.as_ref().map_or(0, Vec::len);
+
+        let (valid, expected) = match self.operator {
+            WorkflowLabelSelectorOperator::Eq | WorkflowLabelSelectorOperator::Ne => {
+                (count == 1, "exactly one value")
+            }
+            WorkflowLabelSelectorOperator::In | WorkflowLabelSelectorOperator::NotIn => {
+                (count >= 1, "one or more values")
+            }
+            WorkflowLabelSelectorOperator::Exists | WorkflowLabelSelectorOperator::DoesNotExist => {
+                (count == 0, "no values")
+            }
+        };
+
+        if !valid {
+            bail!(
+                "label selector '{}' with operator {:?} requires {expected}, but {count} provided",
+                self.key,
+                self.operator
+            );
+        }
+        Ok(())
+    }
+
     /// Converts the LabelSelector into a string representation suitable for use in a label selector query
     fn to_label_selector(&self) -> String {
         match self.operator {

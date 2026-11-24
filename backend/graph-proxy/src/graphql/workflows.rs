@@ -619,6 +619,7 @@ impl WorkflowsQuery {
             .extend(["api", "v1", "workflows", &visit.to_string()]);
 
         if let Some(filter) = &filter {
+            filter.validate()?;
             filter.generate_filters(&mut url);
         }
         let limit = limit.unwrap_or(10);
