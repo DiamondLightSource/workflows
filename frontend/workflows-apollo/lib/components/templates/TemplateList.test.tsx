@@ -1,5 +1,5 @@
-import ApolloTemplateList from "./ApolloTemplateList";
-import { templatesOverviewQuery } from "../../apollo/queries/ApolloTemplateListQuery";
+import ApolloTemplateList from "./TemplateList";
+import { templatesOverviewQuery } from "../../apollo/queries/TemplateListQuery";
 import { render, screen } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing/react";
 import {

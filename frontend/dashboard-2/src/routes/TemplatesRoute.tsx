@@ -1,6 +1,6 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { useState } from "react";
-import { ApolloTemplateList } from "workflows-apollo";
+import { TemplateList } from "workflows-apollo";
 
 export default function TemplateRoute() {
   const theme = useTheme();
@@ -23,7 +23,7 @@ export default function TemplateRoute() {
         }}
       >
         <p>Filter placeholder</p>
-        <ApolloTemplateList
+        <TemplateList
           selectedName={selectedTemplateName}
           setSelectedName={setSelectedTemplateName}
         />

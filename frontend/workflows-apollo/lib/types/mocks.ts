@@ -66,7 +66,7 @@ export const submitWorkflowTemplateMock = {
     },
   },
 };
-import { templatesOverviewQuery } from "../components/templates/ApolloTemplateList"
+import { templatesOverviewQuery } from "../apollo/queries/TemplateListQuery";
 
 export const getTemplatesMock = {
   request: {

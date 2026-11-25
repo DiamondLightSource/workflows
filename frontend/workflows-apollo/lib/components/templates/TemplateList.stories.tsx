@@ -1,5 +1,5 @@
 import { getTemplatesMock } from "../../types/mocks";
-import ApolloTemplateList from "./ApolloTemplateList";
+import ApolloTemplateList from "./TemplateList";
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta<typeof ApolloTemplateList> = {

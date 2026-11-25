@@ -2,7 +2,7 @@ import { TemplateList } from "workflows-ui";
 import { useQuery } from "@apollo/client/react";
 import { Progress } from "@diamondlightsource/sci-react-ui";
 import { Box, useTheme } from "@mui/material";
-import { templatesOverviewQuery } from "../../queries/ApolloTemplateListQuery";
+import { templatesOverviewQuery } from "../../apollo/queries/TemplateListQuery";
 
 interface TemplateListProps {
   selectedName: string | null;
