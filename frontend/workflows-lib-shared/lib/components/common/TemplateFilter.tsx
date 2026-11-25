@@ -140,27 +140,6 @@ const TemplateFilter = ({
           "aria-label": label ? undefined : "Filter values",
         }}
         renderValue={renderSelectedValues}
-
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              bgcolor: "background.paper",
-              color: "text.primary",
-            },
-          },
-        }}
-        sx={{
-          bgcolor: "background.paper",
-          color: "text.primary",
-
-          "& .MuiSelect-select": {
-            color: "text.primary",
-          },
-
-          "& .MuiSelect-icon": {
-            color: "text.primary",
-          },
-        }}
       >
         <MenuItem
           value={CLEAR_ALL_VALUE}

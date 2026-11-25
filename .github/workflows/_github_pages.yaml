@@ -54,10 +54,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - package: workflows-lib
-            artifact: storybook
-          - package: workflows-lib-shared
-            artifact: storybook-shared
+          - package: workflows-ui
+            artifact: storybook-ui
+          - package: workflows-apollo
+            artifact: storybook-apollo
     steps:
       - name: Checkout Source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -82,7 +82,7 @@ jobs:
           path: frontend/${{ matrix.package }}/storybook-static
 
   publish_pages:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
     needs:
       - lint_docs
       - build_docs
