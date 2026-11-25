@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use anyhow::bail;
 use argo_workflows_openapi::IoArgoprojWorkflowV1alpha1Workflow;
 use async_graphql::{
     Enum, InputObject, InputValueError, InputValueResult, Scalar, ScalarType, Value,
@@ -118,7 +119,7 @@ pub enum WorkflowLabelSelectorOperator {
 
 /// Represents a label selector for filtering workflows based on labels
 #[derive(Debug, Clone, InputObject)]
-pub struct LabelSelector {
+pub struct WorkflowLabelSelectorInput {
     /// The label key to filter on
     key: String,
     /// The operator to use for the label selection
@@ -174,7 +175,7 @@ pub struct WorkflowFilter {
 
     /// Additional label selectors for filtering workflows
     #[graphql(name = "labelSelectors")]
-    labels: Option<Vec<LabelSelector>>,
+    labels: Option<Vec<WorkflowLabelSelectorInput>>,
 
     /// Workflow parameter key/value filters
     parameters: Option<Vec<WorkflowParameterFilter>>,
@@ -289,6 +290,14 @@ impl WorkflowFilter {
                 .is_some_and(|value| value == &filter.value)
         })
     }
+
+    /// Validates user-supplied label selectors for number of values
+    pub fn validate(&self) -> anyhow::Result<()> {
+        for selector in self.labels.iter().flatten() {
+            selector.validate()?;
+        }
+        Ok(())
+    }
 }
 
 /// Represents workflow status filters
@@ -399,7 +408,7 @@ impl GraphFilter for Template {
     }
 }
 
-impl GraphFilter for Vec<LabelSelector> {
+impl GraphFilter for Vec<WorkflowLabelSelectorInput> {
     fn generate_labels(&self, labels: &mut Vec<String>) {
         for selector in self {
             labels.push(selector.to_label_selector());
@@ -407,7 +416,33 @@ impl GraphFilter for Vec<LabelSelector> {
     }
 }
 
-impl LabelSelector {
+impl WorkflowLabelSelectorInput {
+    /// Checks that the number of supplied values is valid for the operator
+    pub fn validate(&self) -> anyhow::Result<()> {
+        let count = self.values.as_ref().map_or(0, Vec::len);
+
+        let (valid, expected) = match self.operator {
+            WorkflowLabelSelectorOperator::Eq | WorkflowLabelSelectorOperator::Ne => {
+                (count == 1, "exactly one value")
+            }
+            WorkflowLabelSelectorOperator::In | WorkflowLabelSelectorOperator::NotIn => {
+                (count >= 1, "one or more values")
+            }
+            WorkflowLabelSelectorOperator::Exists | WorkflowLabelSelectorOperator::DoesNotExist => {
+                (count == 0, "no values")
+            }
+        };
+
+        if !valid {
+            bail!(
+                "label selector '{}' with operator {:?} requires {expected}, but {count} provided",
+                self.key,
+                self.operator
+            );
+        }
+        Ok(())
+    }
+
     /// Converts the LabelSelector into a string representation suitable for use in a label selector query
     fn to_label_selector(&self) -> String {
         match self.operator {
@@ -458,8 +493,8 @@ impl LabelSelector {
 #[cfg(test)]
 mod tests {
     use super::{
-        Creator, DatetimeOperatorInput, LabelSelector, ScienceGroup, Template,
-        WorkflowAnnotationFilter, WorkflowFilter, WorkflowLabelSelectorOperator,
+        Creator, DatetimeOperatorInput, ScienceGroup, Template, WorkflowAnnotationFilter,
+        WorkflowFilter, WorkflowLabelSelectorInput, WorkflowLabelSelectorOperator,
         WorkflowParameterFilter, WorkflowStatusFilter, WorkflowTemplatesFilter,
     };
     use url::Url;
@@ -981,7 +1016,7 @@ mod tests {
             template: None,
             annotations: None,
             workflow_status_filter: None,
-            labels: Some(vec![LabelSelector {
+            labels: Some(vec![WorkflowLabelSelectorInput {
                 key: "beamline".to_string(),
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
@@ -1002,7 +1037,7 @@ mod tests {
             template: None,
             annotations: None,
             workflow_status_filter: None,
-            labels: Some(vec![LabelSelector {
+            labels: Some(vec![WorkflowLabelSelectorInput {
                 key: "beamline".to_string(),
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
@@ -1024,7 +1059,7 @@ mod tests {
             template: None,
             annotations: None,
             workflow_status_filter: None,
-            labels: Some(vec![LabelSelector {
+            labels: Some(vec![WorkflowLabelSelectorInput {
                 key: "beamline".to_string(),
                 operator: WorkflowLabelSelectorOperator::Eq,
                 values: Some(vec!["i14".to_string()]),
@@ -1034,6 +1069,63 @@ mod tests {
         };
 
         assert_eq!(filters.create_label_selection(), "beamline=i14");
+    }
+
+    fn selector(
+        operator: WorkflowLabelSelectorOperator,
+        values: Option<Vec<&str>>,
+    ) -> WorkflowLabelSelectorInput {
+        WorkflowLabelSelectorInput {
+            key: "beamline".to_string(),
+            operator,
+            values: values.map(|v| v.into_iter().map(String::from).collect()),
+        }
+    }
+
+    #[tokio::test]
+    async fn eq_and_ne_require_exactly_one_value() {
+        use WorkflowLabelSelectorOperator::{Eq, Ne};
+        for op in [Eq, Ne] {
+            assert!(selector(op, Some(vec!["i14"])).validate().is_ok());
+            assert!(selector(op, None).validate().is_err());
+            assert!(selector(op, Some(vec![])).validate().is_err());
+            assert!(selector(op, Some(vec!["i14", "i13"])).validate().is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn in_and_not_in_require_one_or_more_values() {
+        use WorkflowLabelSelectorOperator::{In, NotIn};
+        for op in [In, NotIn] {
+            assert!(selector(op, Some(vec!["i14"])).validate().is_ok());
+            assert!(selector(op, Some(vec!["i14", "i13"])).validate().is_ok());
+            assert!(selector(op, None).validate().is_err());
+            assert!(selector(op, Some(vec![])).validate().is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn exists_and_does_not_exist_require_no_values() {
+        use WorkflowLabelSelectorOperator::{DoesNotExist, Exists};
+        for op in [Exists, DoesNotExist] {
+            assert!(selector(op, None).validate().is_ok());
+            assert!(selector(op, Some(vec![])).validate().is_ok());
+            assert!(selector(op, Some(vec!["i14"])).validate().is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn workflow_filter_validate_rejects_any_invalid_selector() {
+        let filter = WorkflowFilter {
+            labels: Some(vec![
+                selector(WorkflowLabelSelectorOperator::Eq, Some(vec!["i14"])),
+                selector(WorkflowLabelSelectorOperator::In, None),
+            ]),
+            ..Default::default()
+        };
+        assert!(filter.validate().is_err());
+
+        assert!(WorkflowFilter::default().validate().is_ok());
     }
 
     // Workflows--------------------------------------------
