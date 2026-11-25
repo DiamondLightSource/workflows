@@ -51,8 +51,6 @@ const meta: Meta<typeof TemplateFilter> = {
   component: TemplateFilter,
   decorators: [
     (Story, context) => {
-      console.log("Diamond mode:", context.globals.diamondMode);
-
       return (
         <StoryTheme
           mode={context.globals.diamondMode === "dark" ? "dark" : "light"}
@@ -70,15 +68,15 @@ type Story = StoryObj<typeof TemplateFilter>;
 
 // Wrapper to manage controlled filter state
 const ControlledTemplateFilter = ({
-  selectedTemplates: initialSelection,
+  selectedValues: initialSelection,
   ...props
 }: TemplateFilterProps) => {
-  const [selectedTemplates, setSelectedTemplates] = useState(initialSelection);
+  const [selectedValues, setSelectedTemplates] = useState(initialSelection);
 
   return (
     <TemplateFilter
       {...props}
-      selectedTemplates={selectedTemplates}
+      selectedValues={selectedValues}
       onChange={setSelectedTemplates}
     />
   );
@@ -88,7 +86,7 @@ export const Default: Story = {
   args: {
     label: "Science Group",
     filterValues: templates,
-    selectedTemplates: [],
+    selectedValues: [],
     variant: "outlined",
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
@@ -98,7 +96,7 @@ export const Preselected: Story = {
   args: {
     label: "Science Group",
     filterValues: templates,
-    selectedTemplates: ["tomography"],
+    selectedValues: ["tomography"],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
@@ -106,7 +104,7 @@ export const Preselected: Story = {
 export const MultipleSelected: Story = {
   args: {
     filterValues: templates,
-    selectedTemplates: ["tomography", "mx-processing"],
+    selectedValues: ["tomography", "mx-processing"],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
@@ -114,7 +112,7 @@ export const MultipleSelected: Story = {
 export const Empty: Story = {
   args: {
     filterValues: [],
-    selectedTemplates: [],
+    selectedValues: [],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
@@ -122,7 +120,7 @@ export const Empty: Story = {
 export const MultipleFilters: Story = {
   args: {
     filterValues: templates,
-    selectedTemplates: [],
+    selectedValues: [],
   },
   render: (args) => (
     <div
@@ -145,7 +143,7 @@ export const MultipleFilters: Story = {
 export const ResponsiveWidth: Story = {
   args: {
     filterValues: templates,
-    selectedTemplates: ["tomography", "mx-processing", "visr-reconstruction"],
+    selectedValues: ["tomography", "mx-processing", "visr-reconstruction"],
   },
   render: (args) => (
     <div

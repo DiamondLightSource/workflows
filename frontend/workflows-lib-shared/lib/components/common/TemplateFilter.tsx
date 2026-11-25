@@ -14,8 +14,8 @@ export interface TemplateFilterProps {
   label?: string;
   emptyLabel?: string;
   filterValues: string[];
-  selectedTemplates: string[];
-  onChange: (selectedTemplates: string[]) => void;
+  selectedValues: string[];
+  onChange: (selectedValues: string[]) => void;
   variant?: "outlined" | "filled" | "standard";
 }
 
@@ -23,9 +23,9 @@ const CLEAR_ALL_VALUE = "__clear_all__";
 
 const TemplateFilter = ({
   label,
-  emptyLabel = "All ",
+  emptyLabel = "All",
   filterValues,
-  selectedTemplates,
+  selectedValues,
   onChange,
   variant = "outlined",
 }: TemplateFilterProps) => {
@@ -133,11 +133,11 @@ const TemplateFilter = ({
         id={selectId}
         multiple
         displayEmpty
-        value={selectedTemplates}
+        value={selectedValues}
         onChange={handleChange}
         label={label}
         inputProps={{
-          "aria-label": label ? undefined : "Filter templates",
+          "aria-label": label ? undefined : "Filter values",
         }}
         renderValue={renderSelectedValues}
 
@@ -164,19 +164,16 @@ const TemplateFilter = ({
       >
         <MenuItem
           value={CLEAR_ALL_VALUE}
-          disabled={selectedTemplates.length === 0}
+          disabled={selectedValues.length === 0}
         >
           Clear all
         </MenuItem>
         <Divider />
 
-        {filterValues.map((template) => (
-          <MenuItem key={template} value={template}>
-            <Checkbox
-              checked={selectedTemplates.includes(template)}
-              size="small"
-            />
-            <ListItemText primary={template} />
+        {filterValues.map((value) => (
+          <MenuItem key={value} value={value}>
+            <Checkbox checked={selectedValues.includes(value)} size="small" />
+            <ListItemText primary={value} />
           </MenuItem>
         ))}
       </Select>
