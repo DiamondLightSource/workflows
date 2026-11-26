@@ -30,7 +30,7 @@ without checkboxes.
 
 ```tsx
 import { useState } from "react";
-import { TemplateFilter } from "@diamondlightsource/workflows-lib-shared";
+import { TemplateFilter } from "@diamondlightsource/workflows-ui";
 
 const scienceGroups = [
   "No Group",
@@ -196,16 +196,16 @@ Run Storybook:
 
 The component belongs to:
 
-`frontend/workflows-lib-shared/lib/components/common/TemplateFilter.tsx`
+`frontend/workflows-ui/lib/components/common/TemplateFilter.tsx`
 
 It is exported through:
 
-`frontend/workflows-lib-shared/lib/main.ts`
+`frontend/workflows-lib-ui/lib/main.ts`
 
 The component can be imported using:
 
 ```tsx
-import { TemplateFilter } from "@diamondlightsource/workflows-lib-shared";
+import { TemplateFilter } from "@diamondlightsource/workflows-ui";
 ```
 
 It is reusable across workflow dashboards regardless of whether

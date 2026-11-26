@@ -10,8 +10,8 @@ describe("TemplateFilter", () => {
     render(
       <TemplateFilter
         label="Science Group"
-        filterValues={templates}
-        selectedValues={[]}
+        templates={templates}
+        selectedTemplates={[]}
         onChange={vi.fn()}
       />,
     );
@@ -26,8 +26,8 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={[]}
+        templates={templates}
+        selectedTemplates={[]}
         onChange={vi.fn()}
       />,
     );
@@ -49,8 +49,8 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={[]}
+        templates={templates}
+        selectedTemplates={[]}
         onChange={onChange}
       />,
     );
@@ -65,8 +65,8 @@ describe("TemplateFilter", () => {
   it("displays templates selected through props", () => {
     render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["tomography"]}
+        templates={templates}
+        selectedTemplates={["tomography"]}
         onChange={vi.fn()}
       />,
     );
@@ -79,8 +79,8 @@ describe("TemplateFilter", () => {
 
     const { rerender } = render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["tomography"]}
+        templates={templates}
+        selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
     );
@@ -89,8 +89,8 @@ describe("TemplateFilter", () => {
 
     rerender(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["mx-processing"]}
+        templates={templates}
+        selectedTemplates={["mx-processing"]}
         onChange={onChange}
       />,
     );
@@ -106,8 +106,8 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["tomography"]}
+        templates={templates}
+        selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
     );
@@ -125,8 +125,8 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        filterValues={[]}
-        selectedValues={[]}
+        templates={[]}
+        selectedTemplates={[]}
         onChange={vi.fn()}
       />,
     );
@@ -146,8 +146,8 @@ describe("TemplateFilter", () => {
 
     const { rerender } = render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={[]}
+        templates={templates}
+        selectedTemplates={[]}
         onChange={onChange}
       />,
     );
@@ -161,8 +161,8 @@ describe("TemplateFilter", () => {
     // Simulate the parent updating the controlled state.
     rerender(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["tomography"]}
+        templates={templates}
+        selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
     );
@@ -178,8 +178,8 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["tomography", "mx-processing"]}
+        templates={templates}
+        selectedTemplates={["tomography", "mx-processing"]}
         onChange={onChange}
       />,
     );
@@ -195,8 +195,8 @@ describe("TemplateFilter", () => {
   it("displays the selected templates", () => {
     render(
       <TemplateFilter
-        filterValues={templates}
-        selectedValues={["tomography", "mx-processing", "visr-reconstruction"]}
+        templates={templates}
+        selectedTemplates={["tomography", "mx-processing", "visr-reconstruction"]}
         onChange={vi.fn()}
       />,
     );
@@ -209,15 +209,15 @@ describe("TemplateFilter", () => {
       <>
         <TemplateFilter
           label="Science Group"
-          filterValues={templates}
-          selectedValues={[]}
+          templates={templates}
+          selectedTemplates={[]}
           onChange={vi.fn()}
         />
 
         <TemplateFilter
           label="Workflow Templates"
-          filterValues={templates}
-          selectedValues={[]}
+          templates={templates}
+          selectedTemplates={[]}
           onChange={vi.fn()}
         />
       </>,

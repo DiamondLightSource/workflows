@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
-import { useColorScheme } from "@mui/material/styles";
+import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+
 import {
-  ThemeProvider,
-  DiamondDSTheme,
-} from "@diamondlightsource/sci-react-ui";
-import { TemplateFilter, type TemplateFilterProps } from "../lib/main";
+  TemplateFilter,
+  type TemplateFilterProps,
+} from "../lib/main";
 
 const templates = [
   "mx-processing",
@@ -13,70 +12,30 @@ const templates = [
   "visr-reconstruction",
   "data-analysis",
 ];
-const StoryTheme = ({
-  children,
-  mode,
-}: {
-  children: React.ReactNode;
-  mode: "light" | "dark";
-}) => {
-  return (
-    <ThemeProvider theme={DiamondDSTheme}>
-      <ThemeMode mode={mode}>{children}</ThemeMode>
-    </ThemeProvider>
-  );
-};
-
-const ThemeMode = ({
-  children,
-  mode,
-}: {
-  children: React.ReactNode;
-  mode: "light" | "dark";
-}) => {
-  const { setMode } = useColorScheme();
-
-  useEffect(() => {
-    setMode(mode);
-
-    // Synchronise Diamond Design System CSS variables.
-    document.documentElement.setAttribute("data-mode", mode);
-  }, [mode, setMode]);
-
-  return <>{children}</>;
-};
 
 const meta: Meta<typeof TemplateFilter> = {
   title: "TemplateFilter",
   component: TemplateFilter,
-  decorators: [
-    (Story, context) => {
-      return (
-        <StoryTheme
-          mode={context.globals.diamondMode === "dark" ? "dark" : "light"}
-        >
-          <Story />
-        </StoryTheme>
-      );
-    },
-  ],
 };
 
 export default meta;
 
 type Story = StoryObj<typeof TemplateFilter>;
 
+
 // Wrapper to manage controlled filter state
 const ControlledTemplateFilter = ({
-  selectedValues: initialSelection,
+  selectedTemplates: initialSelection,
   ...props
 }: TemplateFilterProps) => {
-  const [selectedValues, setSelectedTemplates] = useState(initialSelection);
+  const [selectedTemplates, setSelectedTemplates] = useState<string[]>(
+    initialSelection ?? [],
+  );
 
   return (
     <TemplateFilter
       {...props}
-      selectedValues={selectedValues}
+      selectedTemplates={selectedTemplates}
       onChange={setSelectedTemplates}
     />
   );
@@ -85,9 +44,8 @@ const ControlledTemplateFilter = ({
 export const Default: Story = {
   args: {
     label: "Science Group",
-    filterValues: templates,
-    selectedValues: [],
-    variant: "outlined",
+    templates: templates,
+    selectedTemplates: [],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
@@ -95,32 +53,32 @@ export const Default: Story = {
 export const Preselected: Story = {
   args: {
     label: "Science Group",
-    filterValues: templates,
-    selectedValues: ["tomography"],
+    templates: templates,
+    selectedTemplates: ["tomography"],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
 
 export const MultipleSelected: Story = {
   args: {
-    filterValues: templates,
-    selectedValues: ["tomography", "mx-processing"],
+    templates: templates,
+    selectedTemplates: ["tomography", "mx-processing"],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
 
 export const Empty: Story = {
   args: {
-    filterValues: [],
-    selectedValues: [],
+    templates: [],
+    selectedTemplates: [],
   },
   render: (args) => <ControlledTemplateFilter {...args} />,
 };
 
 export const MultipleFilters: Story = {
   args: {
-    filterValues: templates,
-    selectedValues: [],
+    templates: templates,
+    selectedTemplates: [],
   },
   render: (args) => (
     <div
@@ -142,8 +100,8 @@ export const MultipleFilters: Story = {
 
 export const ResponsiveWidth: Story = {
   args: {
-    filterValues: templates,
-    selectedValues: ["tomography", "mx-processing", "visr-reconstruction"],
+    templates: templates,
+    selectedTemplates: ["tomography", "mx-processing", "visr-reconstruction"],
   },
   render: (args) => (
     <div

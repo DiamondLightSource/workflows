@@ -23,5 +23,5 @@
 
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["lib", ".storybook/**/*.ts", ".storybook/**/*.tsx", "tests"]
+  "include": ["lib", ".storybook/**/*.ts", ".storybook/**/*.tsx", "tests", "TemplateFilter.stories.tsx"]
 }

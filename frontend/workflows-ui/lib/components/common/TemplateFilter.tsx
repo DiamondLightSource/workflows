@@ -1,3 +1,4 @@
+import { useId } from "react";
 import {
   Divider,
   FormControl,
@@ -25,6 +26,8 @@ const TemplateFilter = ({
   selectedTemplates,
   onChange,
 }: TemplateFilterProps) => {
+  const id = useId();
+  const labelId = '${iD}-label';
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
 
@@ -52,13 +55,13 @@ const TemplateFilter = ({
 
   return (
     <FormControl fullWidth variant="outlined">
-      <InputLabel id="template-filter-label" shrink>
+      <InputLabel id={labelId} shrink>
         {label}
       </InputLabel>
 
       <Select
-        labelId="template-filter-label"
-        id="template-filter"
+        labelId={labelId}
+        id={id}
         multiple
         displayEmpty
         value={selectedTemplates}
