@@ -149,25 +149,63 @@ class Controller(BaseHTTPRequestHandler):
             "value": filter.values
           })
 
+      visitExprs = []
+
       if namespace != "events":
-        dataFilters.append({
-          "path": "body.doc.instrument_session",
-          "type": "string",
-          "value": [namespace],
-        })
+        visitExprs = [
+            {
+                "expr": f"blueskyVisit == {json.dumps(namespace)}",
+                "fields": [
+                    {
+                        "name": "blueskyVisit",
+                        "path": "body.doc.instrument_session",
+                    }
+                ],
+            },
+            {
+                "expr": (
+                    f"gdaVisit =~ "
+                    f"{json.dumps(f'(^|/){re.escape(namespace)}/?$')}"
+                ),
+                "fields": [
+                    {
+                        "name": "gdaVisit",
+                        "path": "body.visitDirectory",
+                    }
+                ],
+            },
+        ]
+      if dataFilters or visitExprs:
+          filters = {}
 
-      if dataFilters:
-        dependency.update({"filters": {"data": dataFilters}})
+          if dataFilters:
+              filters["data"] = dataFilters
 
+          if visitExprs:
+              filters["exprs"] = visitExprs
+              filters["exprLogicalOperator"] = "or"
+
+          dependency.update({
+              "filters": filters,
+              "filtersLogicalOperator": "and",
+          })
       dependencies.append(dependency)
 
+      visit_source = {
+          "dependencyName": name,
+          "dataTemplate": (
+              '{{- $visit := dig "doc" "instrument_session" "" .Input.body -}}'
+              "{{- if $visit -}}"
+              "{{ $visit }}"
+              "{{- else -}}"
+              "{{ base .Input.body.visitDirectory }}"
+              "{{- end -}}"
+          ),
+      }
       sensorParams = [{
-          "src": {
-            "dependencyName": name,
-            "dataKey": "body.doc.instrument_session"
-          },
-          "dest": "metadata.namespace"
-        }]
+          "src": visit_source,
+          "dest": "metadata.namespace",
+      }]
       templateArgs = []
       for userParam in workflow.parameters:
         param_name: str = userParam.name
@@ -218,11 +256,8 @@ class Controller(BaseHTTPRequestHandler):
       if USE_PREPARE_SERVICE:
         payload = [
           {
-            "src": {
-              "dependencyName": name,
-              "dataKey": "body.doc.instrument_session"
-            },
-            "dest": "namespace"
+              "src": visit_source,
+              "dest": "namespace",
           },
           {
             "src": {"dependencyName": name, "contextKey": "id"},
