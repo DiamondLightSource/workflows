@@ -21,7 +21,9 @@ vcluster:
     distro:
       k8s:
         apiServer:
-          extraArgs: []
+          extraArgs:
+            - --feature-gates=MutatingAdmissionPolicy=true
+            - --runtime-config=admissionregistration.k8s.io/v1beta1=true
     backingStore:
       etcd:
         deploy:
