@@ -1,0 +1,41 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: {{ .Release.Name }}-posix-uid-label
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["argoproj.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["workflows"]
+  variables:
+    - name: posixUidExtra
+      expression: request.userInfo.?extra[?'workflows.diamond.ac.uk/posixuid'][?0].orValue('')
+    - name: triggerUid
+      expression: object.metadata.?labels[?'workflows.diamond.ac.uk/triggeruid'].orValue('')
+    - name: posixUid
+      expression: >-
+        {{- if .Values.allowTriggerUid }}
+        variables.posixUidExtra != '' ? variables.posixUidExtra : variables.triggerUid
+        {{- else }}
+        variables.posixUidExtra
+        {{- end }}
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            metadata: Object.metadata{
+              labels: {'workflows.diamond.ac.uk/creator-posix-uid': variables.posixUid}
+            }
+          }
+  reinvocationPolicy: IfNeeded
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: {{ .Release.Name }}-posix-uid-label
+spec:
+  policyName: {{ .Release.Name }}-posix-uid-label

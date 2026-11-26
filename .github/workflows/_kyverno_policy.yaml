@@ -18,6 +18,10 @@ jobs:
 
       - name: Create kind cluster
         uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
+        with:
+          config: .github/kind-config.yaml
+          # Kubernetes >= 1.34 is required for the MutatingAdmissionPolicy feature gate.
+          node_image: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
 
       - name: Install chart dependencies
         run: |
@@ -59,13 +63,11 @@ jobs:
 
       - name: Deploy and wait for Policies, ClusterRoles, and ClusterRoleBindings
         run: |
-          helm template sessionspaces charts/sessionspaces | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
-          # NOTE: workflows-posix-uid-label policy has been excluded from chainsaw testing
-          # To make testing work with this policy in place, it will be required to emulate the existence
-          # of a POSIX uid label as part of request.userInfo.extra
-          helm template workflows charts/workflows | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding") | select(.metadata.name != "workflows-posix-uid-label")' | tee -a /tmp/policies.yaml | kubectl apply -f -
-          helm template identity-mapper charts/identity-mapper | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
-          helm template events charts/events | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' | tee -a /tmp/policies.yaml | kubectl apply -f -
+          KINDS='.kind == "Policy" or .kind == "ClusterPolicy" or .kind == "GeneratingPolicy" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding" or .kind == "ValidatingAdmissionPolicy" or .kind == "ValidatingAdmissionPolicyBinding" or .kind == "MutatingAdmissionPolicy" or .kind == "MutatingAdmissionPolicyBinding"'
+          helm template sessionspaces charts/sessionspaces | yq e ". | select($KINDS)" | tee -a /tmp/policies.yaml | kubectl apply -f -
+          helm template workflows charts/workflows | yq e ". | select($KINDS)" | tee -a /tmp/policies.yaml | kubectl apply -f -
+          helm template identity-mapper charts/identity-mapper | yq e ". | select($KINDS)" | tee -a /tmp/policies.yaml | kubectl apply -f -
+          helm template events charts/events | yq e ". | select($KINDS)" | tee -a /tmp/policies.yaml | kubectl apply -f -
           cat /tmp/policies.yaml | yq e '. | select(.kind == "Policy" or .kind == "ClusterPolicy")' | kubectl wait --for=condition=Ready --timeout=120s -f -
 
       - name: Wait for Kyverno

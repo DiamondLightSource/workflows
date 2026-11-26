@@ -1,0 +1,107 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: posix-uid-label
+spec:
+  steps:
+    - name: triggeruid-is-copied
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-trigger
+                labels:
+                  workflows.diamond.ac.uk/triggeruid: "12345"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-trigger
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"
+
+    - name: no-uid-writes-empty-label
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-labels
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: no-labels
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: ""
+
+    - name: forged-label-with-trigger-is-overwritten
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: forged-with-trigger
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "0"
+                  workflows.diamond.ac.uk/triggeruid: "12345"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: forged-with-trigger
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "12345"
+
+    - name: forged-label-without-uid-is-cleared
+      try:
+        - apply:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: forged-no-uid
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "0"
+              spec: {}
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: forged-no-uid
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: ""
+
+    - name: posixuid-extra-wins
+      try:
+        - script:
+            content: |
+              kubectl create -n "$NAMESPACE" --as=test-user --as-group=system:masters \
+                --as-user-extra=workflows.diamond.ac.uk/posixuid=98765 -f - <<'EOF'
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-extra
+                labels:
+                  workflows.diamond.ac.uk/triggeruid: "12345"
+              spec: {}
+              EOF
+        - assert:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: with-extra
+                labels:
+                  workflows.diamond.ac.uk/creator-posix-uid: "98765"
