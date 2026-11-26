@@ -2,6 +2,7 @@ import { useId } from "react";
 import {
   Divider,
   FormControl,
+  Checkbox,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -83,6 +84,7 @@ const TemplateFilter = ({
 
         {templates.map((template) => (
           <MenuItem key={template} value={template}>
+            <Checkbox checked= {selectedTemplates.includes(template)} />
             <ListItemText primary={template} />
           </MenuItem>
         ))}
