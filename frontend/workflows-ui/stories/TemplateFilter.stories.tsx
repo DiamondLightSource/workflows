@@ -1,10 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  TemplateFilter,
-  type TemplateFilterProps,
-} from "../lib/main";
+import { TemplateFilter, type TemplateFilterProps } from "../lib/main";
 
 const templates = [
   "mx-processing",
@@ -22,15 +19,13 @@ export default meta;
 
 type Story = StoryObj<typeof TemplateFilter>;
 
-
 // Wrapper to manage controlled filter state
 const ControlledTemplateFilter = ({
   selectedTemplates: initialSelection,
   ...props
 }: TemplateFilterProps) => {
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>(
-    initialSelection ?? [],
-  );
+  const [selectedTemplates, setSelectedTemplates] =
+    useState<string[]>(initialSelection);
 
   return (
     <TemplateFilter

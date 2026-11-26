@@ -196,7 +196,11 @@ describe("TemplateFilter", () => {
     render(
       <TemplateFilter
         templates={templates}
-        selectedTemplates={["tomography", "mx-processing", "visr-reconstruction"]}
+        selectedTemplates={[
+          "tomography",
+          "mx-processing",
+          "visr-reconstruction",
+        ]}
         onChange={vi.fn()}
       />,
     );

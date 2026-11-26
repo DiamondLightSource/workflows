@@ -28,7 +28,7 @@ const TemplateFilter = ({
   onChange,
 }: TemplateFilterProps) => {
   const id = useId();
-  const labelId = '${iD}-label';
+  const labelId = "${iD}-label";
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
 
@@ -84,7 +84,7 @@ const TemplateFilter = ({
 
         {templates.map((template) => (
           <MenuItem key={template} value={template}>
-            <Checkbox checked= {selectedTemplates.includes(template)} />
+            <Checkbox checked={selectedTemplates.includes(template)} />
             <ListItemText primary={template} />
           </MenuItem>
         ))}
