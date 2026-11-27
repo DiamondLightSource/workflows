@@ -13,7 +13,7 @@
   "dependencies": {
     "keycloak-js": "^26.2.4",
     "msw": "^2.15.0",
-    "react-router-dom": "^7.18.4",
+    "react-router-dom": "^7.18.6",
     "workflows-ui": "../workflows-ui",
     "workflows-apollo": "../workflows-apollo"
   },
