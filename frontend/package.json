@@ -20,7 +20,7 @@
     "@mui/material": "^7.3.11",
     "@mui/system": "^7.3.11",
     "@mui/x-date-pickers": "^8.0.0",
-    "@xyflow/react": "^12.12.1",
+    "@xyflow/react": "^13.0.2",
     "ajv": "^8.20.0",
     "fuse.js": "^7.5.0",
     "graphql": "17.1.0",
