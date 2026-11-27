@@ -11,14 +11,10 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
-<<<<<<< HEAD
-  "eslintConfig": {},
-  "peerDependencies": {},
   "devDependencies": {
     "@storybook/addon-docs": "^10.6.7",
     "@storybook/react-vite": "^10.6.7"
-  }
-=======
+  },
   "peerDependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -26,7 +22,5 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
-  "devDependencies": {},
   "eslintConfig": {}
->>>>>>> 000e2c24 (refactor(workflows-ui): add TemplateFilter to workflows-ui)
 }

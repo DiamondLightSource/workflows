@@ -3,14 +3,14 @@ import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import { TemplateFilter } from "../../lib/main";
 
-const templates = ["mx-processing", "tomography", "visr-reconstruction"];
+const filterValues = ["mx-processing", "tomography", "visr-reconstruction"];
 
 describe("TemplateFilter", () => {
   it("renders the template filter", () => {
     render(
       <TemplateFilter
         label="Science Group"
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={[]}
         onChange={vi.fn()}
       />,
@@ -21,12 +21,12 @@ describe("TemplateFilter", () => {
     ).toBeInTheDocument();
   });
 
-  it("displays available templates", async () => {
+  it("displays available filterValues", async () => {
     const user = userEvent.setup();
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={[]}
         onChange={vi.fn()}
       />,
@@ -49,7 +49,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={[]}
         onChange={onChange}
       />,
@@ -62,10 +62,10 @@ describe("TemplateFilter", () => {
     expect(onChange).toHaveBeenCalledWith(["tomography"]);
   });
 
-  it("displays templates selected through props", () => {
+  it("displays filterValues selected through props", () => {
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={["tomography"]}
         onChange={vi.fn()}
       />,
@@ -79,7 +79,7 @@ describe("TemplateFilter", () => {
 
     const { rerender } = render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
@@ -89,7 +89,7 @@ describe("TemplateFilter", () => {
 
     rerender(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={["mx-processing"]}
         onChange={onChange}
       />,
@@ -106,7 +106,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
@@ -125,7 +125,7 @@ describe("TemplateFilter", () => {
 
     render(
       <TemplateFilter
-        templates={[]}
+        filterValues={[]}
         selectedTemplates={[]}
         onChange={vi.fn()}
       />,
@@ -146,7 +146,7 @@ describe("TemplateFilter", () => {
 
     const { rerender } = render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={[]}
         onChange={onChange}
       />,
@@ -161,7 +161,7 @@ describe("TemplateFilter", () => {
     // Simulate the parent updating the controlled state.
     rerender(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={["tomography"]}
         onChange={onChange}
       />,
@@ -172,13 +172,13 @@ describe("TemplateFilter", () => {
     expect(onChange).toHaveBeenLastCalledWith(["tomography", "mx-processing"]);
   });
 
-  it("clears all selected templates", async () => {
+  it("clears all selected filterValues", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
 
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={["tomography", "mx-processing"]}
         onChange={onChange}
       />,
@@ -192,10 +192,10 @@ describe("TemplateFilter", () => {
     expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
-  it("displays the selected templates", () => {
+  it("displays the selected filterValues", () => {
     render(
       <TemplateFilter
-        templates={templates}
+        filterValues={filterValues}
         selectedTemplates={[
           "tomography",
           "mx-processing",
@@ -213,14 +213,14 @@ describe("TemplateFilter", () => {
       <>
         <TemplateFilter
           label="Science Group"
-          templates={templates}
+          filterValues={filterValues}
           selectedTemplates={[]}
           onChange={vi.fn()}
         />
 
         <TemplateFilter
-          label="Workflow Templates"
-          templates={templates}
+          label="Workflow filterValues"
+          filterValues={filterValues}
           selectedTemplates={[]}
           onChange={vi.fn()}
         />

@@ -1,8 +1,8 @@
 import { useId } from "react";
 import {
+  Checkbox,
   Divider,
   FormControl,
-  Checkbox,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -13,7 +13,7 @@ import {
 export interface TemplateFilterProps {
   label?: string;
   emptyLabel?: string;
-  templates: string[];
+  filterValues: string[];
   selectedTemplates: string[];
   onChange: (selectedTemplates: string[]) => void;
 }
@@ -22,13 +22,14 @@ const CLEAR_ALL_VALUE = "__clear_all__";
 
 const TemplateFilter = ({
   label = "Science Group",
-  emptyLabel = "All ",
-  templates,
+  emptyLabel = "All",
+  filterValues,
   selectedTemplates,
   onChange,
 }: TemplateFilterProps) => {
   const id = useId();
-  const labelId = "${iD}-label";
+  const labelId = `${id}-label`;
+
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
 
@@ -82,10 +83,10 @@ const TemplateFilter = ({
         </MenuItem>
         <Divider />
 
-        {templates.map((template) => (
-          <MenuItem key={template} value={template}>
-            <Checkbox checked={selectedTemplates.includes(template)} />
-            <ListItemText primary={template} />
+        {filterValues.map((value) => (
+          <MenuItem key={value} value={value}>
+            <Checkbox checked={selectedTemplates.includes(value)} />
+            <ListItemText primary={value} />
           </MenuItem>
         ))}
       </Select>
