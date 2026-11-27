@@ -11,10 +11,16 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
-  "eslintConfig": {},
-  "peerDependencies": {},
   "devDependencies": {
     "@storybook/addon-docs": "^10.6.7",
     "@storybook/react-vite": "^10.6.7"
-  }
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "eslintConfig": {}
 }
