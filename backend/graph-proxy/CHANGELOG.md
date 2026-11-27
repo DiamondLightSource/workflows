@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.4.1...graph-proxy@v0.5.0) (2026-11-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **graph-proxy:** validate value count for label filter operations
+* **graph-proxy:** rename label selector input
+
+### Features
+
+* **graph-proxy:** add creator subj to triggers as label ([17057b5](https://github.com/DiamondLightSource/workflows/commit/17057b571b994168bf29f8b58a17e51fe56d8c08))
+* **graph-proxy:** align trigger query API with supergraph ([c0c4ecb](https://github.com/DiamondLightSource/workflows/commit/c0c4ecb797edf2e4a6a1c26fa7abf4b2d534ec1c))
+* **graph-proxy:** rename label selector input ([dc1be53](https://github.com/DiamondLightSource/workflows/commit/dc1be53a7579559013eec2acaed35054e050d4a1))
+* **graph-proxy:** validate value count for label filter operations ([341b7a2](https://github.com/DiamondLightSource/workflows/commit/341b7a2c405b455c8f88576637c6db09a3f7b074))
+
 ## [0.4.1](https://github.com/DiamondLightSource/workflows/compare/graph-proxy@v0.4.0...graph-proxy@v0.4.1) (2026-10-29)
 
 
