@@ -1,7 +1,6 @@
 import { Clear, Search } from "@mui/icons-material";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 
-
 export interface TemplateSearchProps {
   label?: string;
   placeholder?: string;

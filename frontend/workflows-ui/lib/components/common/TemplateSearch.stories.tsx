@@ -1,10 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  TemplateSearch,
-  type TemplateSearchProps,
-} from "../../main";
+import { TemplateSearch, type TemplateSearchProps } from "../../main";
 
 const meta: Meta<typeof TemplateSearch> = {
   title: "Components/TemplateSearch",
