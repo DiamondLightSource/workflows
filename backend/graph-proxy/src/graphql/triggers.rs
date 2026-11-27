@@ -16,9 +16,9 @@ use async_graphql::{
 use chrono::{DateTime, Utc};
 use jsonwebtoken::dangerous::insecure_decode;
 use kube::{
-    api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams},
-    core::duration::Duration,
-    Api, Client, Config, CustomResource,
+    api::{DeleteParams, ListParams, ObjectMeta, Patch, PatchParams, PostParams, Preconditions},
+    core::{duration::Duration, response::reason},
+    Api, Client, Config, CustomResource, ResourceExt,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -43,9 +43,58 @@ enum TriggerError {
     ClientCreationError,
     #[error(r#"Permission denied: You may only access your own triggers"#)]
     ForbiddenAccess,
-    #[error(r#"Unable to find trigger {0}"#)]
-    TriggerNotFound(String),
+    #[error("Workflow Trigger not found: {source}")]
+    TriggerNotFound {
+        name: String,
+        source: Box<kube::Error>,
+    },
+    #[error("Workflow Trigger already exists: {source}")]
+    TriggerAlreadyExists { source: Box<kube::Error> },
+    #[error("Workflow Trigger invalid: {source}")]
+    InvalidTrigger {
+        message: String,
+        source: Box<kube::Error>,
+    },
+    #[error(r#"No updatable fields were provided"#)]
+    NoUpdatableFields,
+    #[error(transparent)]
+    Kube(Box<kube::Error>),
 }
+
+impl From<kube::Error> for TriggerError {
+    fn from(err: kube::Error) -> Self {
+        Self::Kube(Box::new(err))
+    }
+}
+
+/// Convert generic kubernetes error into most specific TriggerError available
+fn convert_kube_error_into_trigger_error(err: kube::Error) -> TriggerError {
+    match err {
+        kube::Error::Api(ref status) if status.is_already_exists() => {
+            TriggerError::TriggerAlreadyExists {
+                source: Box::new(err),
+            }
+        }
+        kube::Error::Api(ref status) if status.reason == reason::INVALID => {
+            TriggerError::InvalidTrigger {
+                message: status.message.clone(),
+                source: Box::new(err),
+            }
+        }
+        other => other.into(),
+    }
+}
+
+/// Label holding the POSIX uid of the trigger's owner; used for ownership checks
+const POSIX_UID_LABEL: &str = "workflows.diamond.ac.uk/posixuid";
+/// Label holding the token subject of the trigger's creator
+const CREATOR_LABEL: &str = "workflows.diamond.ac.uk/creator";
+/// Label holding the preferred username of the trigger's creator
+const CREATOR_PREFERRED_USERNAME_LABEL: &str = "workflows.diamond.ac.uk/creator-preferred-username";
+/// Label holding the Fed-ID of the trigger's creator
+const CREATOR_FEDID_LABEL: &str = "workflows.diamond.ac.uk/creator-fedid";
+/// Label holding the beamline a trigger monitors
+const BEAMLINE_LABEL: &str = "workflows.diamond.ac.uk/beamline";
 
 /// Information that uniquely identifies a single trigger
 #[derive(Debug, InputObject)]
@@ -95,6 +144,114 @@ struct WorkflowTriggerOrderInput {
     direction: SortOrder,
 }
 
+/// Categories of expected workflow trigger mutation failure
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Enum)]
+enum WorkflowTriggerMutationErrorCode {
+    /// The caller is not allowed to create or modify the trigger
+    Forbidden,
+    /// The trigger does not exist
+    NotFound,
+    /// A trigger with the requested name already exists
+    AlreadyExists,
+    /// The supplied input is not valid for the requested operation
+    InvalidInput,
+}
+
+/// An expected failure encountered while creating or modifying a workflow trigger
+#[derive(Debug, Clone, SimpleObject)]
+struct WorkflowTriggerMutationError {
+    /// A machine-readable category for the failure
+    code: WorkflowTriggerMutationErrorCode,
+    /// A human-readable description of the failure
+    message: String,
+}
+
+/// Input for creating a workflow trigger
+#[derive(Debug, InputObject)]
+struct CreateWorkflowTriggerInput {
+    /// The name of the ClusterTriggerTemplate to create the trigger from
+    template_ref: String,
+    /// An explicit name for the trigger. If omitted, a name is generated
+    name: Option<String>,
+    /// The session the trigger belongs to. If omitted, the trigger is visit-agnostic
+    session: Option<VisitInput>,
+}
+
+/// Input for updating the editable properties of a workflow trigger
+#[derive(Debug, InputObject)]
+struct UpdateWorkflowTriggerInput {
+    /// Identifies the trigger to update
+    reference: WorkflowTriggerReferenceInput,
+    /// The new ClusterTriggerTemplate reference. If omitted, the current value is kept
+    template_ref: Option<String>,
+}
+
+/// Input for deleting a workflow trigger
+#[derive(Debug, InputObject)]
+struct DeleteWorkflowTriggerInput {
+    /// Identifies the trigger to delete
+    reference: WorkflowTriggerReferenceInput,
+}
+
+/// Input for enabling a workflow trigger
+#[derive(Debug, InputObject)]
+struct EnableWorkflowTriggerInput {
+    /// Identifies the trigger to enable
+    reference: WorkflowTriggerReferenceInput,
+}
+
+/// Input for disabling a workflow trigger
+#[derive(Debug, InputObject)]
+struct DisableWorkflowTriggerInput {
+    /// Identifies the trigger to disable
+    reference: WorkflowTriggerReferenceInput,
+}
+
+/// The result of creating a workflow trigger
+#[derive(Debug, SimpleObject)]
+struct CreateWorkflowTriggerPayload {
+    /// The trigger that was created, if creation succeeded
+    workflow_trigger: Option<WorkflowTrigger>,
+    /// Expected failures encountered while creating the trigger
+    errors: Vec<WorkflowTriggerMutationError>,
+}
+
+/// The result of updating a workflow trigger
+#[derive(Debug, SimpleObject)]
+struct UpdateWorkflowTriggerPayload {
+    /// The trigger after the update, if it succeeded
+    workflow_trigger: Option<WorkflowTrigger>,
+    /// Expected failures encountered while updating the trigger
+    errors: Vec<WorkflowTriggerMutationError>,
+}
+
+/// The result of enabling a workflow trigger
+#[derive(Debug, SimpleObject)]
+struct EnableWorkflowTriggerPayload {
+    /// The enabled trigger, if the operation succeeded
+    workflow_trigger: Option<WorkflowTrigger>,
+    /// Expected failures encountered while enabling the trigger
+    errors: Vec<WorkflowTriggerMutationError>,
+}
+
+/// The result of disabling a workflow trigger
+#[derive(Debug, SimpleObject)]
+struct DisableWorkflowTriggerPayload {
+    /// The disabled trigger, if the operation succeeded
+    workflow_trigger: Option<WorkflowTrigger>,
+    /// Expected failures encountered while disabling the trigger
+    errors: Vec<WorkflowTriggerMutationError>,
+}
+
+/// The result of deleting a workflow trigger
+#[derive(Debug, SimpleObject)]
+struct DeleteWorkflowTriggerPayload {
+    /// The name of the trigger that was deleted, if deletion succeeded
+    deleted_workflow_trigger_name: Option<String>,
+    /// Expected failures encountered while deleting the trigger
+    errors: Vec<WorkflowTriggerMutationError>,
+}
+
 /// Information about the creator of a Trigger.
 #[derive(Debug, Clone, SimpleObject, Eq, PartialEq, Serialize, Deserialize)]
 struct WorkflowTriggerCreator {
@@ -114,8 +271,8 @@ impl WorkflowTriggerCreator {
     fn from_trigger_labels(labels: &Option<BTreeMap<String, String>>) -> Self {
         let creator_id = match labels {
             Some(l) => l
-                .get("workflows.diamond.ac.uk/creator-preferred-username")
-                .or_else(|| l.get("workflows.diamond.ac.uk/creator-fedid"))
+                .get(CREATOR_PREFERRED_USERNAME_LABEL)
+                .or_else(|| l.get(CREATOR_FEDID_LABEL))
                 .cloned()
                 .unwrap_or("Unknown".into()),
             None => "Unknown".into(),
@@ -144,8 +301,8 @@ impl TriggerCreator {
     fn from_trigger_labels(labels: &Option<BTreeMap<String, String>>) -> Self {
         let creator_id = match labels {
             Some(l) => l
-                .get("workflows.diamond.ac.uk/creator-preferred-username")
-                .or_else(|| l.get("workflows.diamond.ac.uk/creator-fedid"))
+                .get(CREATOR_PREFERRED_USERNAME_LABEL)
+                .or_else(|| l.get(CREATOR_FEDID_LABEL))
                 .cloned()
                 .unwrap_or("Unknown".into()),
             None => "Unknown".into(),
@@ -231,7 +388,7 @@ impl From<Trigger> for TriggerGQL {
                 .metadata
                 .labels
                 .as_ref()
-                .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
+                .and_then(|l| l.get(BEAMLINE_LABEL).cloned()),
             visit,
             enabled: t.spec.enabled,
             creator: TriggerCreator::from_trigger_labels(&t.metadata.labels),
@@ -282,7 +439,7 @@ impl From<Trigger> for WorkflowTrigger {
                 .metadata
                 .labels
                 .as_ref()
-                .and_then(|l| l.get("workflows.diamond.ac.uk/beamline").cloned()),
+                .and_then(|l| l.get(BEAMLINE_LABEL).cloned()),
             session,
             enabled: t.spec.enabled,
             creator: WorkflowTriggerCreator::from_trigger_labels(&t.metadata.labels),
@@ -390,25 +547,33 @@ async fn get_posix_from_ctx(ctx: &Context<'_>) -> Result<UserClaims, TriggerErro
     })
 }
 
-/// Uses the provided API to retrieve a Trigger, if the posix uid argument matches the label on the Trigger
-async fn get_trigger_with_matching_posix(
-    api: &Api<Trigger>,
-    posix_uid: &str,
-    name: &str,
-) -> anyhow::Result<Option<WorkflowTrigger>> {
-    match api.get(name).await {
-        Ok(trigger) => {
-            if trigger.clone().metadata.labels.is_some_and(|f| {
-                f.get("workflows.diamond.ac.uk/posixuid")
-                    .is_some_and(|l| l == posix_uid)
-            }) {
-                Ok(Some(trigger.into()))
-            } else {
-                Err(TriggerError::ForbiddenAccess.into())
-            }
+/// Fetches the referenced trigger after checking the caller owns it.
+/// Returns the trigger together with an API scoped to its namespace.
+async fn get_owned_trigger(
+    ctx: &Context<'_>,
+    reference: WorkflowTriggerReferenceInput,
+) -> Result<(Api<Trigger>, Trigger), TriggerError> {
+    let client = setup_client(ctx).await?;
+    let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
+    let api: Api<Trigger> = Api::namespaced(client, &session_namespace(reference.session));
+    let trigger = match api.get(&reference.name).await {
+        Ok(trigger) => trigger,
+        Err(kube::Error::Api(status)) if status.code == 404 => {
+            return Err(TriggerError::TriggerNotFound {
+                name: reference.name,
+                source: Box::new(kube::Error::Api(status)),
+            });
         }
-        Err(err) => Err(err.into()),
+        Err(err) => return Err(err.into()),
+    };
+    let owned_by_caller = trigger
+        .labels()
+        .get(POSIX_UID_LABEL)
+        .is_some_and(|uid| *uid == posix_uid);
+    if !owned_by_caller {
+        return Err(TriggerError::ForbiddenAccess);
     }
+    Ok((api, trigger))
 }
 
 /// Uses the provided API to retrieve a Trigger without checking the posix uid
@@ -418,21 +583,172 @@ async fn get_trigger(api: &Api<Trigger>, name: &str) -> anyhow::Result<Option<Wo
         .map_or_else(|err| Err(err.into()), |t| Ok(Some(t.into())))
 }
 
-/// Sets the value of the `enabled` field of a Trigger to the supplied value
-async fn toggle_trigger(
+/// Merge-patches the `spec` of a Trigger with the supplied fields.
+/// The patch carries the trigger's `resourceVersion`, so it fails with a conflict if the
+/// trigger has changed since it was fetched (e.g. deleted and recreated by another user).
+async fn patch_trigger_spec(
     api: &Api<Trigger>,
-    name: &str,
-    enabled: bool,
-) -> anyhow::Result<Option<TriggerGQL>> {
+    trigger: &Trigger,
+    spec: Value,
+) -> Result<WorkflowTrigger, TriggerError> {
     let patch = serde_json::json!({
-        "spec": {
-            "enabled": enabled
-        }
+        "metadata": { "resourceVersion": trigger.resource_version() },
+        "spec": spec,
     });
-    let patch = Patch::Merge(&patch);
-    let pp = PatchParams::apply("graph-proxy");
-    let trigger_patched = api.patch(name, &pp, &patch).await?;
-    Ok(Some(trigger_patched.into()))
+    let trigger_patched = api
+        .patch(
+            &trigger.name_any(),
+            &PatchParams::apply("graph-proxy"),
+            &Patch::Merge(&patch),
+        )
+        .await
+        .map_err(convert_kube_error_into_trigger_error)?;
+    Ok(trigger_patched.into())
+}
+
+/// Converts an expected domain failure into a [`WorkflowTriggerMutationError`].
+/// Unexpected errors are returned unchanged so they surface as GraphQL errors.
+fn convert_trigger_error_to_workflow_trigger_mutation_error(
+    err: TriggerError,
+) -> anyhow::Result<WorkflowTriggerMutationError> {
+    let (code, message) = match err {
+        TriggerError::ForbiddenAccess => {
+            (WorkflowTriggerMutationErrorCode::Forbidden, err.to_string())
+        }
+        TriggerError::TriggerNotFound { name, .. } => (
+            WorkflowTriggerMutationErrorCode::NotFound,
+            format!("Unable to find trigger {name}"),
+        ),
+        TriggerError::TriggerAlreadyExists { .. } => (
+            WorkflowTriggerMutationErrorCode::AlreadyExists,
+            String::from("A trigger with the requested name already exists"),
+        ),
+        TriggerError::InvalidTrigger { message, .. } => {
+            (WorkflowTriggerMutationErrorCode::InvalidInput, message)
+        }
+        TriggerError::NoUpdatableFields => (
+            WorkflowTriggerMutationErrorCode::InvalidInput,
+            err.to_string(),
+        ),
+        other => return Err(other.into()),
+    };
+    Ok(WorkflowTriggerMutationError { code, message })
+}
+
+/// The namespace holding triggers for a session; visit-agnostic triggers live in `events`
+fn session_namespace(session: Option<VisitInput>) -> String {
+    session.map_or(String::from("events"), |v| v.to_string())
+}
+
+/// Creates a trigger from a ClusterTriggerTemplate, labelled as owned by the caller
+async fn create_owned_workflow_trigger(
+    ctx: &Context<'_>,
+    input: CreateWorkflowTriggerInput,
+) -> Result<WorkflowTrigger, TriggerError> {
+    let client = setup_client(ctx).await?;
+    let UserClaims {
+        posix_uid,
+        preferred_username,
+        fedid,
+        sub,
+    } = get_posix_from_ctx(ctx).await?;
+    let api: Api<Trigger> = Api::namespaced(client, &session_namespace(input.session));
+    let mut labels = BTreeMap::from([
+        (String::from(POSIX_UID_LABEL), posix_uid),
+        (String::from(CREATOR_LABEL), sub),
+    ]);
+    if let Some(preferred_username) = preferred_username {
+        labels.insert(
+            String::from(CREATOR_PREFERRED_USERNAME_LABEL),
+            preferred_username,
+        );
+    }
+    if let Some(fedid) = fedid {
+        labels.insert(String::from(CREATOR_FEDID_LABEL), fedid);
+    }
+    let trigger = Trigger {
+        metadata: ObjectMeta {
+            generate_name: Some(format!("{}-", input.template_ref)),
+            name: input.name,
+            labels: Some(labels),
+            ..Default::default()
+        },
+        spec: TriggerSpec {
+            template_ref: Some(input.template_ref),
+            enabled: true,
+            lifetime: None,
+            workflow: None,
+        },
+    };
+    let created = api
+        .create(&PostParams::default(), &trigger)
+        .await
+        .map_err(convert_kube_error_into_trigger_error)?;
+    Ok(created.into())
+}
+
+/// Deletes the referenced trigger if the caller owns it, returning the trigger as it was before deletion.
+/// The delete is conditional on the trigger's `uid`, so a trigger recreated since the
+/// ownership check is never deleted.
+async fn delete_owned_workflow_trigger(
+    ctx: &Context<'_>,
+    reference: WorkflowTriggerReferenceInput,
+) -> Result<WorkflowTrigger, TriggerError> {
+    let (api, trigger) = get_owned_trigger(ctx, reference).await?;
+    let params = DeleteParams {
+        preconditions: Some(Preconditions {
+            uid: trigger.uid(),
+            resource_version: None,
+        }),
+        ..Default::default()
+    };
+    api.delete(&trigger.name_any(), &params)
+        .await
+        .map_err(convert_kube_error_into_trigger_error)?;
+    Ok(trigger.into())
+}
+
+/// Enables or disables the referenced trigger if the caller owns it, returning the updated trigger
+async fn set_owned_workflow_trigger_enabled(
+    ctx: &Context<'_>,
+    reference: WorkflowTriggerReferenceInput,
+    enabled: bool,
+) -> Result<WorkflowTrigger, TriggerError> {
+    let (api, trigger) = get_owned_trigger(ctx, reference).await?;
+    patch_trigger_spec(&api, &trigger, serde_json::json!({ "enabled": enabled })).await
+}
+
+/// Updates the editable properties of the referenced trigger if the caller owns it
+async fn update_owned_workflow_trigger(
+    ctx: &Context<'_>,
+    input: UpdateWorkflowTriggerInput,
+) -> Result<WorkflowTrigger, TriggerError> {
+    let Some(template_ref) = input.template_ref else {
+        return Err(TriggerError::NoUpdatableFields);
+    };
+    let (api, trigger) = get_owned_trigger(ctx, input.reference).await?;
+    patch_trigger_spec(
+        &api,
+        &trigger,
+        serde_json::json!({ "templateRef": template_ref }),
+    )
+    .await
+}
+
+/// Splits an operation outcome into the `(value, errors)` fields shared by every payload.
+/// Expected failures become payload errors; unexpected ones are returned as GraphQL errors.
+fn into_payload_fields<T>(
+    result: Result<T, TriggerError>,
+) -> anyhow::Result<(Option<T>, Vec<WorkflowTriggerMutationError>)> {
+    match result {
+        Ok(value) => Ok((Some(value), vec![])),
+        Err(err) => Ok((
+            None,
+            vec![convert_trigger_error_to_workflow_trigger_mutation_error(
+                err,
+            )?],
+        )),
+    }
 }
 
 /// Queries related to [`Trigger`]s
@@ -515,10 +831,7 @@ impl TriggerQuery {
         reference: WorkflowTriggerReferenceInput,
     ) -> anyhow::Result<Option<WorkflowTrigger>> {
         let client = setup_client(ctx).await?;
-        let namespace = reference
-            .session
-            .map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
+        let api: Api<Trigger> = Api::namespaced(client, &session_namespace(reference.session));
         get_trigger(&api, &reference.name).await
     }
 
@@ -580,7 +893,78 @@ pub struct TriggerMutation;
 
 #[Object(guard = "AuthGuard")]
 impl TriggerMutation {
-    /// Create a Trigger from a template
+    /// Create a workflow trigger from a workflow trigger template
+    async fn create_workflow_trigger(
+        &self,
+        ctx: &Context<'_>,
+        input: CreateWorkflowTriggerInput,
+    ) -> anyhow::Result<Option<CreateWorkflowTriggerPayload>> {
+        let result = create_owned_workflow_trigger(ctx, input).await;
+        let (workflow_trigger, errors) = into_payload_fields(result)?;
+        Ok(Some(CreateWorkflowTriggerPayload {
+            workflow_trigger,
+            errors,
+        }))
+    }
+
+    /// Update the editable properties of a workflow trigger
+    async fn update_workflow_trigger(
+        &self,
+        ctx: &Context<'_>,
+        input: UpdateWorkflowTriggerInput,
+    ) -> anyhow::Result<Option<UpdateWorkflowTriggerPayload>> {
+        let result = update_owned_workflow_trigger(ctx, input).await;
+        let (workflow_trigger, errors) = into_payload_fields(result)?;
+        Ok(Some(UpdateWorkflowTriggerPayload {
+            workflow_trigger,
+            errors,
+        }))
+    }
+
+    /// Delete a workflow trigger
+    async fn delete_workflow_trigger(
+        &self,
+        ctx: &Context<'_>,
+        input: DeleteWorkflowTriggerInput,
+    ) -> anyhow::Result<Option<DeleteWorkflowTriggerPayload>> {
+        let result = delete_owned_workflow_trigger(ctx, input.reference).await;
+        let (deleted_trigger, errors) = into_payload_fields(result)?;
+        Ok(Some(DeleteWorkflowTriggerPayload {
+            deleted_workflow_trigger_name: deleted_trigger.and_then(|t| t.name),
+            errors,
+        }))
+    }
+
+    /// Enable a workflow trigger
+    async fn enable_workflow_trigger(
+        &self,
+        ctx: &Context<'_>,
+        input: EnableWorkflowTriggerInput,
+    ) -> anyhow::Result<Option<EnableWorkflowTriggerPayload>> {
+        let result = set_owned_workflow_trigger_enabled(ctx, input.reference, true).await;
+        let (workflow_trigger, errors) = into_payload_fields(result)?;
+        Ok(Some(EnableWorkflowTriggerPayload {
+            workflow_trigger,
+            errors,
+        }))
+    }
+
+    /// Disable a workflow trigger
+    async fn disable_workflow_trigger(
+        &self,
+        ctx: &Context<'_>,
+        input: DisableWorkflowTriggerInput,
+    ) -> anyhow::Result<Option<DisableWorkflowTriggerPayload>> {
+        let result = set_owned_workflow_trigger_enabled(ctx, input.reference, false).await;
+        let (workflow_trigger, errors) = into_payload_fields(result)?;
+        Ok(Some(DisableWorkflowTriggerPayload {
+            workflow_trigger,
+            errors,
+        }))
+    }
+
+    #[graphql(deprecation = "Use createWorkflowTrigger instead")]
+    /// Create a Trigger from a template (DEPRECATED)
     async fn create_trigger(
         &self,
         ctx: &Context<'_>,
@@ -588,97 +972,69 @@ impl TriggerMutation {
         name: Option<String>,
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
-        let client = setup_client(ctx).await?;
-        let UserClaims {
-            posix_uid,
-            preferred_username,
-            fedid,
-            sub,
-        } = get_posix_from_ctx(ctx).await?;
-        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        let mut labels = BTreeMap::from([
-            (String::from("workflows.diamond.ac.uk/posixuid"), posix_uid),
-            (String::from("workflows.diamond.ac.uk/creator"), sub),
-        ]);
-        preferred_username.map(|p| {
-            labels.insert(
-                String::from("workflows.diamond.ac.uk/creator-preferred-username"),
-                p,
-            )
-        });
-        fedid.map(|f| labels.insert(String::from("workflows.diamond.ac.uk/creator-fedid"), f));
-        let trigger = Trigger {
-            metadata: ObjectMeta {
-                generate_name: Some(format!("{}-", template_ref)),
-                name,
-                labels: Some(labels),
-                ..Default::default()
-            },
-            spec: TriggerSpec {
-                template_ref: Some(template_ref),
-                enabled: true,
-                lifetime: None,
-                workflow: None,
-            },
+        let input = CreateWorkflowTriggerInput {
+            template_ref,
+            name,
+            session: visit,
         };
-
-        match api.create(&PostParams::default(), &trigger).await {
-            Ok(creation) => Ok(Some(creation.into())),
-            Err(err) => Err(err.into()),
-        }
+        Ok(Some(
+            create_owned_workflow_trigger(ctx, input).await?.into(),
+        ))
     }
 
-    /// Delete an automated workflow trigger
+    #[graphql(deprecation = "Use deleteWorkflowTrigger instead")]
+    /// Delete an automated workflow trigger (DEPRECATED)
     async fn delete_trigger(
         &self,
         ctx: &Context<'_>,
         name: String,
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>, anyhow::Error> {
-        let client = setup_client(ctx).await?;
-        let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
-        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
-
-        let trigger = get_trigger_with_matching_posix(&api, &posix_uid, &name)
-            .await?
-            .ok_or(TriggerError::TriggerNotFound(name.clone()))?;
-
-        api.delete(&name, &DeleteParams::default()).await?;
-        Ok(Some(trigger.into()))
+        let reference = WorkflowTriggerReferenceInput {
+            name,
+            session: visit,
+        };
+        Ok(Some(
+            delete_owned_workflow_trigger(ctx, reference).await?.into(),
+        ))
     }
 
-    /// Disable an automated workflow trigger
+    #[graphql(deprecation = "Use disableWorkflowTrigger instead")]
+    /// Disable an automated workflow trigger (DEPRECATED)
     async fn disable_trigger(
         &self,
         ctx: &Context<'_>,
         name: String,
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
-        let client = setup_client(ctx).await?;
-        let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
-
-        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        get_trigger_with_matching_posix(&api, &posix_uid, &name).await?;
-        toggle_trigger(&api, &name, false).await
+        let reference = WorkflowTriggerReferenceInput {
+            name,
+            session: visit,
+        };
+        Ok(Some(
+            set_owned_workflow_trigger_enabled(ctx, reference, false)
+                .await?
+                .into(),
+        ))
     }
 
-    /// Reactivate a disabled automated workflow trigger
+    #[graphql(deprecation = "Use enableWorkflowTrigger instead")]
+    /// Reactivate a disabled automated workflow trigger (DEPRECATED)
     async fn enable_trigger(
         &self,
         ctx: &Context<'_>,
         name: String,
         visit: Option<VisitInput>,
     ) -> anyhow::Result<Option<TriggerGQL>> {
-        let client = setup_client(ctx).await?;
-        let UserClaims { posix_uid, .. } = get_posix_from_ctx(ctx).await?;
-
-        let namespace = visit.map_or(String::from("events"), |v| v.to_string());
-        let api: Api<Trigger> = Api::namespaced(client, &namespace);
-        get_trigger_with_matching_posix(&api, &posix_uid, &name).await?;
-        toggle_trigger(&api, &name, true).await
+        let reference = WorkflowTriggerReferenceInput {
+            name,
+            session: visit,
+        };
+        Ok(Some(
+            set_owned_workflow_trigger_enabled(ctx, reference, true)
+                .await?
+                .into(),
+        ))
     }
 }
 
@@ -846,6 +1202,130 @@ users:
             .with_body_from_file(asset(response_fixture))
             .create_async()
             .await
+    }
+
+    /// Mocks a single trigger operation that responds with a Kubernetes `Status`
+    /// error of the given HTTP `code` (e.g. 404, 409).
+    async fn mock_trigger_status(
+        server: &mut ServerGuard,
+        method: &str,
+        name: &str,
+        ns: &str,
+        code: u16,
+        reason: &str,
+    ) -> mockito::Mock {
+        let status = json!({
+            "kind": "Status",
+            "apiVersion": "v1",
+            "metadata": {},
+            "status": "Failure",
+            "message": format!("triggers.workflows.diamond.ac.uk \"{name}\" {reason}"),
+            "reason": reason,
+            "details": {
+                "name": name,
+                "group": "workflows.diamond.ac.uk",
+                "kind": "triggers"
+            },
+            "code": code
+        });
+        server
+            .mock(
+                method,
+                &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{ns}/triggers/{name}")
+                    [..],
+            )
+            .with_status(code.into())
+            .match_query(Matcher::Any)
+            .with_header("content-type", "application/json")
+            .with_body(status.to_string())
+            .create_async()
+            .await
+    }
+
+    /// Mocks a single trigger operation that only matches when the request body
+    /// contains `expected_body`.
+    async fn mock_trigger_op_matching_body(
+        server: &mut ServerGuard,
+        method: &str,
+        name: &str,
+        ns: &str,
+        expected_body: Value,
+        response_fixture: &str,
+    ) -> mockito::Mock {
+        server
+            .mock(
+                method,
+                &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{ns}/triggers/{name}")
+                    [..],
+            )
+            .match_query(Matcher::Any)
+            .match_body(Matcher::PartialJson(expected_body))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(asset(response_fixture))
+            .create_async()
+            .await
+    }
+
+    /// Mocks a trigger creation that fails with a Kubernetes `Status` error.
+    async fn mock_create_trigger_status(
+        server: &mut ServerGuard,
+        ns: &str,
+        code: u16,
+        reason: &str,
+        message: &str,
+    ) -> mockito::Mock {
+        let status = json!({
+            "kind": "Status",
+            "apiVersion": "v1",
+            "metadata": {},
+            "status": "Failure",
+            "message": message,
+            "reason": reason,
+            "code": code
+        });
+        server
+            .mock(
+                "POST",
+                &format!("/apis/workflows.diamond.ac.uk/v1alpha1/namespaces/{ns}/triggers?")[..],
+            )
+            .with_status(code.into())
+            .with_header("content-type", "application/json")
+            .with_body(status.to_string())
+            .create_async()
+            .await
+    }
+
+    /// The `resourceVersion` of the trigger in the GET fixtures
+    const FIXTURE_RESOURCE_VERSION: &str = "44311920";
+    /// The `uid` of the trigger in the GET fixtures
+    const FIXTURE_UID: &str = "2ff86138-9952-46f6-8d42-a60b7da9b003";
+
+    /// Executes a mutation and asserts it succeeds with no GraphQL errors.
+    async fn execute_ok(
+        schema: &Schema<TriggerQuery, TriggerMutation, EmptySubscription>,
+        query: impl Into<String>,
+    ) -> Value {
+        let response = schema.execute(query.into()).await;
+        assert!(
+            response.errors.is_empty(),
+            "expected no GraphQL errors, got {:?}",
+            response.errors
+        );
+        response.data.into_json().unwrap()
+    }
+
+    /// Executes a mutation and asserts it fails with a GraphQL error.
+    async fn execute_err(
+        schema: &Schema<TriggerQuery, TriggerMutation, EmptySubscription>,
+        query: impl Into<String>,
+    ) {
+        let response = schema.execute(query.into()).await;
+        assert!(
+            !response.errors.is_empty(),
+            "expected a GraphQL error, got {:?}",
+            response.data
+        );
     }
 
     #[rstest]
@@ -1358,6 +1838,854 @@ users:
         mock.assert_async().await;
         assert_eq!(actual, expected_triggers());
         Ok(())
+    }
+
+    #[rstest]
+    #[case(
+        r#"
+        mutation {
+            createWorkflowTrigger(input: { templateRef: "test-trigger" }) {
+                workflowTrigger { name }
+                errors { code message }
+            }
+        }
+        "#,
+        "make-trigger.json",
+        "events",
+        json!({
+            "createWorkflowTrigger": {
+                "workflowTrigger": { "name": "test-trigger-s6qzl" },
+                "errors": []
+            }
+        })
+    )]
+    #[case(
+        r#"
+        mutation {
+            createWorkflowTrigger(input: { templateRef: "test-trigger", name: "custom-name" }) {
+                workflowTrigger { name }
+            }
+        }
+        "#,
+        "named-trigger.json",
+        "events",
+        json!({
+            "createWorkflowTrigger": {
+                "workflowTrigger": { "name": "custom-name" }
+            }
+        })
+    )]
+    #[case(
+        r#"
+        mutation {
+            createWorkflowTrigger(input: {
+                templateRef: "test-trigger",
+                session: { proposalCode: "mg", proposalNumber: 36964, number: 1 }
+            }) {
+                workflowTrigger { name }
+            }
+        }
+        "#,
+        "namespaced-trigger.json",
+        "mg36964-1",
+        json!({
+            "createWorkflowTrigger": {
+                "workflowTrigger": { "name": "test-trigger-s6qzl" }
+            }
+        })
+    )]
+    #[tokio::test]
+    async fn create_workflow_trigger_mutation(
+        #[case] query: &str,
+        #[case] fixture: &str,
+        #[case] namespace: &str,
+        #[case] expected: Value,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let mock = mock_create_trigger(&mut ctx.server, namespace, fixture).await;
+        let actual = execute_ok(&ctx.schema, query).await;
+        mock.assert_async().await;
+        assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_workflow_trigger_conflict_returns_payload_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let mock = mock_create_trigger_status(
+            &mut ctx.server,
+            "events",
+            409,
+            "AlreadyExists",
+            "triggers.workflows.diamond.ac.uk \"test-trigger\" already exists",
+        )
+        .await;
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                createWorkflowTrigger(input: { templateRef: "test-trigger" }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        mock.assert_async().await;
+        assert_eq!(
+            actual,
+            json!({
+                "createWorkflowTrigger": {
+                    "workflowTrigger": null,
+                    "errors": [{
+                        "code": "ALREADY_EXISTS",
+                        "message": "A trigger with the requested name already exists"
+                    }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn update_workflow_trigger_mutation() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await;
+        let patch_mock = mock_trigger_op_matching_body(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            json!({
+                "metadata": { "resourceVersion": FIXTURE_RESOURCE_VERSION },
+                "spec": { "templateRef": "test-trigger" }
+            }),
+            "get-single-trigger.json",
+        )
+        .await;
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                updateWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" },
+                    templateRef: "test-trigger"
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "updateWorkflowTrigger": {
+                    "workflowTrigger": { "name": "example-trigger-mfvpj" },
+                    "errors": []
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn update_workflow_trigger_without_fields_returns_invalid_input() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+        let patch_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                updateWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" }
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "updateWorkflowTrigger": {
+                    "workflowTrigger": null,
+                    "errors": [{
+                        "code": "INVALID_INPUT",
+                        "message": "No updatable fields were provided"
+                    }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn update_workflow_trigger_forbidden_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "unauthorised-trigger.json",
+        )
+        .await;
+        let patch_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                updateWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" },
+                    templateRef: "test-trigger"
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "updateWorkflowTrigger": {
+                    "workflowTrigger": null,
+                    "errors": [{ "code": "FORBIDDEN", "message": "Permission denied: You may only access your own triggers" }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn update_workflow_trigger_not_found_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_trigger_status(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            404,
+            "not found",
+        )
+        .await;
+        let patch_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                updateWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" },
+                    templateRef: "test-trigger"
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "updateWorkflowTrigger": {
+                    "workflowTrigger": null,
+                    "errors": [{ "code": "NOT_FOUND", "message": "Unable to find trigger example-trigger-mfvpj" }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[rstest]
+    #[case(
+        "disableWorkflowTrigger",
+        "get-single-trigger.json",
+        "get-disabled-trigger.json",
+        false
+    )]
+    #[case(
+        "enableWorkflowTrigger",
+        "get-disabled-trigger.json",
+        "get-single-trigger.json",
+        true
+    )]
+    #[tokio::test]
+    async fn workflow_trigger_toggle_mutations(
+        #[case] mutation_name: &str,
+        #[case] get_result: &str,
+        #[case] mutation_result: &str,
+        #[case] expected_enabled: bool,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            get_result,
+        )
+        .await;
+        let patch_mock = mock_trigger_op_matching_body(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "ks10000-1",
+            json!({
+                "metadata": { "resourceVersion": FIXTURE_RESOURCE_VERSION },
+                "spec": { "enabled": expected_enabled }
+            }),
+            mutation_result,
+        )
+        .await;
+        let query = format!(
+            r#"
+            mutation {{
+                {}(input: {{
+                    reference: {{
+                        name: "example-trigger-mfvpj",
+                        session: {{ proposalCode: "ks", proposalNumber: 10000, number: 1 }}
+                    }}
+                }}) {{
+                    workflowTrigger {{ name enabled }}
+                    errors {{ code message }}
+                }}
+            }}
+            "#,
+            mutation_name
+        );
+
+        let actual = execute_ok(&ctx.schema, query).await;
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                mutation_name: {
+                    "workflowTrigger": {
+                        "name": "example-trigger-mfvpj",
+                        "enabled": expected_enabled
+                    },
+                    "errors": []
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[rstest]
+    #[case("disableWorkflowTrigger")]
+    #[case("enableWorkflowTrigger")]
+    #[tokio::test]
+    async fn workflow_trigger_toggle_forbidden_returns_payload_error(
+        #[case] mutation_name: &str,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "unauthorised-trigger.json",
+        )
+        .await;
+        let patch_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let query = format!(
+            r#"
+            mutation {{
+                {}(input: {{
+                    reference: {{ name: "example-trigger-mfvpj" }}
+                }}) {{
+                    workflowTrigger {{ name }}
+                    errors {{ code message }}
+                }}
+            }}
+            "#,
+            mutation_name
+        );
+
+        let actual = execute_ok(&ctx.schema, query).await;
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                mutation_name: {
+                    "workflowTrigger": null,
+                    "errors": [{
+                        "code": "FORBIDDEN",
+                        "message": "Permission denied: You may only access your own triggers"
+                    }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[rstest]
+    #[case("disableWorkflowTrigger")]
+    #[case("enableWorkflowTrigger")]
+    #[tokio::test]
+    async fn workflow_trigger_toggle_not_found_returns_payload_error(
+        #[case] mutation_name: &str,
+    ) -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_trigger_status(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            404,
+            "not found",
+        )
+        .await;
+        let patch_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let query = format!(
+            r#"
+            mutation {{
+                {}(input: {{
+                    reference: {{ name: "example-trigger-mfvpj" }}
+                }}) {{
+                    workflowTrigger {{ name }}
+                    errors {{ code message }}
+                }}
+            }}
+            "#,
+            mutation_name
+        );
+
+        let actual = execute_ok(&ctx.schema, query).await;
+        get_mock.assert();
+        patch_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                mutation_name: {
+                    "workflowTrigger": null,
+                    "errors": [{
+                        "code": "NOT_FOUND",
+                        "message": "Unable to find trigger example-trigger-mfvpj"
+                    }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn delete_workflow_trigger_mutation() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await;
+        let delete_mock = mock_trigger_op_matching_body(
+            &mut ctx.server,
+            "DELETE",
+            "example-trigger-mfvpj",
+            "events",
+            json!({ "preconditions": { "uid": FIXTURE_UID } }),
+            "get-single-trigger.json",
+        )
+        .await;
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                deleteWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" }
+                }) {
+                    deletedWorkflowTriggerName
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        delete_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "deleteWorkflowTrigger": {
+                    "deletedWorkflowTriggerName": "example-trigger-mfvpj",
+                    "errors": []
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn delete_workflow_trigger_unauthorized_errors() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "unauthorised-trigger.json",
+        )
+        .await;
+        let delete_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "DELETE",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                deleteWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" }
+                }) {
+                    deletedWorkflowTriggerName
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        delete_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "deleteWorkflowTrigger": {
+                    "deletedWorkflowTriggerName": null,
+                    "errors": [{ "code": "FORBIDDEN", "message": "Permission denied: You may only access your own triggers" }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn delete_workflow_trigger_not_found_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_trigger_status(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            404,
+            "not found",
+        )
+        .await;
+        let delete_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "DELETE",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await
+        .expect(0);
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                deleteWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" }
+                }) {
+                    deletedWorkflowTriggerName
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        get_mock.assert();
+        delete_mock.assert();
+        assert_eq!(
+            actual,
+            json!({
+                "deleteWorkflowTrigger": {
+                    "deletedWorkflowTriggerName": null,
+                    "errors": [{ "code": "NOT_FOUND", "message": "Unable to find trigger example-trigger-mfvpj" }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn unexpected_kube_error_is_graphql_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        mock_trigger_status(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            500,
+            "Internal Error",
+        )
+        .await;
+
+        execute_err(
+            &ctx.schema,
+            r#"
+            mutation {
+                enableWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" }
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_workflow_trigger_invalid_returns_payload_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let message = "Trigger.workflows.diamond.ac.uk \"Bad_Name\" is invalid: metadata.name: \
+                       Invalid value: \"Bad_Name\": a lowercase RFC 1123 subdomain must consist of \
+                       lower case alphanumeric characters, '-' or '.'";
+        let mock =
+            mock_create_trigger_status(&mut ctx.server, "events", 422, "Invalid", message).await;
+
+        let actual = execute_ok(
+            &ctx.schema,
+            r#"
+            mutation {
+                createWorkflowTrigger(input: { templateRef: "test-trigger", name: "Bad_Name" }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+
+        mock.assert_async().await;
+        assert_eq!(
+            actual,
+            json!({
+                "createWorkflowTrigger": {
+                    "workflowTrigger": null,
+                    "errors": [{ "code": "INVALID_INPUT", "message": message }]
+                }
+            })
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_workflow_trigger_missing_namespace_is_graphql_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let mock = mock_create_trigger_status(
+            &mut ctx.server,
+            "mg36964-1",
+            404,
+            "NotFound",
+            "namespaces \"mg36964-1\" not found",
+        )
+        .await;
+
+        execute_err(
+            &ctx.schema,
+            r#"
+            mutation {
+                createWorkflowTrigger(input: {
+                    templateRef: "test-trigger",
+                    session: { proposalCode: "mg", proposalNumber: 36964, number: 1 }
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+        mock.assert_async().await;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn trigger_changed_since_lookup_is_graphql_error() -> anyhow::Result<()> {
+        let mut ctx = TestContext::new().await?;
+        let get_mock = mock_single_trigger_op(
+            &mut ctx.server,
+            "GET",
+            "example-trigger-mfvpj",
+            "events",
+            "get-single-trigger.json",
+        )
+        .await;
+        let patch_mock = mock_trigger_status(
+            &mut ctx.server,
+            "PATCH",
+            "example-trigger-mfvpj",
+            "events",
+            409,
+            "Conflict",
+        )
+        .await;
+
+        execute_err(
+            &ctx.schema,
+            r#"
+            mutation {
+                disableWorkflowTrigger(input: {
+                    reference: { name: "example-trigger-mfvpj" }
+                }) {
+                    workflowTrigger { name }
+                    errors { code message }
+                }
+            }
+            "#,
+        )
+        .await;
+        get_mock.assert();
+        patch_mock.assert();
+        Ok(())
+    }
+
+    #[test]
+    fn schema_exposes_workflow_trigger_mutations() {
+        let schema = Schema::build(TriggerQuery, TriggerMutation, EmptySubscription).finish();
+        let sdl = schema.sdl();
+
+        for field in [
+            "createWorkflowTrigger(input: CreateWorkflowTriggerInput!): CreateWorkflowTriggerPayload",
+            "updateWorkflowTrigger(input: UpdateWorkflowTriggerInput!): UpdateWorkflowTriggerPayload",
+            "deleteWorkflowTrigger(input: DeleteWorkflowTriggerInput!): DeleteWorkflowTriggerPayload",
+            "enableWorkflowTrigger(input: EnableWorkflowTriggerInput!): EnableWorkflowTriggerPayload",
+            "disableWorkflowTrigger(input: DisableWorkflowTriggerInput!): DisableWorkflowTriggerPayload",
+        ] {
+            assert!(sdl.contains(field), "missing new field {field} in SDL");
+        }
+    }
+
+    #[test]
+    fn schema_deprecates_old_mutations() {
+        let schema = Schema::build(TriggerQuery, TriggerMutation, EmptySubscription).finish();
+        let sdl = schema.sdl();
+
+        for (old, reason) in [
+            (
+                "createTrigger(templateRef: String!, name: String, visit: VisitInput): Trigger",
+                "Use createWorkflowTrigger instead",
+            ),
+            (
+                "deleteTrigger(name: String!, visit: VisitInput): Trigger",
+                "Use deleteWorkflowTrigger instead",
+            ),
+            (
+                "enableTrigger(name: String!, visit: VisitInput): Trigger",
+                "Use enableWorkflowTrigger instead",
+            ),
+            (
+                "disableTrigger(name: String!, visit: VisitInput): Trigger",
+                "Use disableWorkflowTrigger instead",
+            ),
+        ] {
+            assert!(sdl.contains(old), "missing deprecated field {old} in SDL");
+            assert!(
+                sdl.contains(&format!("@deprecated(reason: \"{reason}\")")),
+                "missing deprecation reason for {old}"
+            );
+        }
     }
 
     fn expected_triggers() -> Value {
